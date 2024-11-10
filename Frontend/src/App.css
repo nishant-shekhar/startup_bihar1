@@ -1,0 +1,8 @@
+.left-bar {
+    overflow-y: scroll; /* Ensure the element is scrollable */
+}
+
+.left-bar::-webkit-scrollbar {
+    width: 0; /* Hides the scrollbar */
+    background: transparent; /* Optional: Makes the background transparent */
+}

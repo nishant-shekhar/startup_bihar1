@@ -1,0 +1,26 @@
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-scroll {
+    display: flex;
+    gap: 1rem;
+    animation: scroll 30s linear infinite; /* Slower scroll with 30s duration */
+    width: calc(200% + 1rem); /* Ensures enough width for a continuous loop */
+}
+
+.animate-scroll:hover {
+    animation-play-state: paused; /* Pauses animation on hover */
+}
+.profile-card {
+    transition: transform 0.2s ease; /* Smooth transition for scaling */
+}
+
+.profile-card:hover {
+    transform: scale(1.05); /* Slightly increase the size */
+}

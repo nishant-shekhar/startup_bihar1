@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* global.css or any existing global CSS file like App.css */
+@keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-in-out;
+  }
+  /* Import the font files */
+@font-face {
+  font-family: 'YourFont';
+  src: url('./assets/Fonts/Fontfabric---Mont-Regular-Italic.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'YourFont';
+  src: url('./assets/Fonts/Fontfabric---Mont-Black.otf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+/* Apply the font globally */
+body {
+  font-family: 'Fontfabric', sans-serif;
+}
+
+@font-face {
+  font-family: 'Amsterdam';
+  src: url('./assets/fonts/AmsterdamOne.ttf') format('truetype');
+}
+  

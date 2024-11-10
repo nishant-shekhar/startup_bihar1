@@ -1,0 +1,224 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Admin {
+  id String @id @default(uuid())
+  admin_id  String    @unique
+  password  String
+}
+
+model User {
+  id                    String               @id @default(uuid()) @map("_id")
+  user_id               String               @unique
+  password              String
+  registration_no       String               @unique
+  company_name          String
+  document              Document?            // One-to-one relation
+  seedFund              SeedFund?            // One-to-one relation
+  secondTranche         SecondTranche?       // One-to-one relation
+  postSeedFund          PostSeedFund?        // One-to-one relation
+  qReport               QReport?             // One-to-one relation
+  accelerationProgram   AccelerationProgram? // One-to-one relation
+  matchingLoan          MatchingLoan?        // One-to-one relation
+  coworkingApplication  CoWorkingApplication?
+  incubationApplication IncubationApplication?
+  iprReimbursement      IPRReimbursement?
+}
+
+model Document {
+  id                     String   @id @default(uuid()) @map("_id")
+  logoName               String
+  logoPath               String
+  certName               String
+  certPath               String
+  registrationNo         String   @unique
+  founderName            String
+  founderAadharNumber    String
+  coFounderNames         String
+  coFounderAadharNumbers String
+  sector                 String
+  businessConcept        String
+  mobileNumbers          String
+  email                  String
+  websiteLink            String?
+  category               String
+  gender                 String
+  dpiitRecognitionNo     String?
+  appliedIPR             Boolean
+  user                   User     @relation(fields: [userId], references: [user_id]) // One-to-one relation
+  userId                 String   @unique
+  documentStatus         String
+ 
+}
+
+
+
+model SeedFund {
+  id                     String   @id @default(uuid()) @map("_id") 
+  companyName            String
+  registrationNumber     String
+  dateOfIncorporation    DateTime
+  businessEntityType     String
+  companyCertificate     String?
+  rocDistrict            String
+  companyAddress         String
+  pincode                String
+  bankName               String
+  ifscCode               String
+  currentAccountNumber   String
+  currentAccountHolderName String
+  branchName             String
+  branchAddress          String
+  cancelChequeOrPassbook String?
+  panNumber              String
+  gstNumber              String
+
+
+  userId                 String   @unique // One-to-one relation
+  user                   User     @relation(fields: [userId], references: [user_id]) // Many-to-one relation
+  documentStatus         String
+}
+
+model SecondTranche {
+  id                     String   @id @default(uuid()) @map("_id") 
+  utilizationCertificate  String?
+  statusReport            String?
+  expenditurePlan         String?
+  bankStatement           String?
+  expenditureInvoice      String?
+  geoTaggedPhotos         String?
+
+
+  userId                 String   @unique // One-to-one relation
+  user                   User     @relation(fields: [userId], references: [user_id]) // Many-to-one relation
+  documentStatus         String
+}
+
+model PostSeedFund {
+  id                     String   @id @default(uuid()) @map("_id") 
+  currentStage           String   // dropdown (Ideation, Prototype Validation, MVP, Scaling)
+  technicalKnowledge     Boolean  // Checkbox (Yes/No)
+  auditedBalanceSheet    String?  // File path for audited balance sheet (nullable)
+  gstReturn              String?  // File path for GST return (nullable)
+  raisedFunds            Boolean  // Checkbox (Yes/No)
+  employment             Boolean  // Checkbox (Yes/No)
+  projectReport          String?  // File path for project report (nullable)
+ 
+  userId                 String   @unique // One-to-one relation
+  user                   User     @relation(fields: [userId], references: [user_id])
+  documentStatus         String
+}
+
+
+model QReport {
+    id                 String   @id @default(uuid()) @map("_id")
+    currentStage       String
+    averageTurnover    Float
+    currentRevenue     Float
+    netProfitOrLoss    String   // 'Profit' or 'Loss'
+    fundRaised         Boolean
+    workOrders         Int
+    directEmployment   Int
+    indirectEmployment Int
+    maleEmployees      Int
+    femaleEmployees    Int
+    partnerships       String
+    nextQuarterGoals   String
+    userId             String   @unique
+   
+    user               User     @relation(fields: [userId], references: [user_id])
+    documentStatus         String
+}
+
+
+model AccelerationProgram {
+  id                       String   @id @default(uuid()) @map("_id") 
+  hostInstitute             String
+  programName               String
+  startDate                 DateTime
+  endDate                   DateTime
+  programWebsite            String?
+  founderName               String
+  coFounderName             String?
+  participationFee          Float
+  travelAccommodationCost   Float
+  totalPersons              Int
+  totalFee                  Float
+ 
+  userId                    String   @unique // Unique userId from JWT
+  user                      User     @relation(fields: [userId], references: [user_id]) // Relation to User
+  documentStatus         String
+
+}
+
+model MatchingLoan {
+  id                              String   @id @default(uuid()) @map("_id") 
+  fundRaised                      Float    // Total Amount of fund raised from recognized investors
+  investorName                    String   // Name of recognized investors
+  matchingGrantAmount              Float    // Amount required under Matching Grants
+  proofOfInvestmentName            String?  // File name for Proof of Investment
+  proofOfInvestmentPath            String?  // File path for Proof of Investment
+  accountStatementName             String?  // File name for Account Statement
+  accountStatementPath             String?  // File path for Account Statement
+  investorUndertakingName          String?  // File name for Investor Undertaking
+  investorUndertakingPath          String?  // File path for Investor Undertaking
+  equityDilutionProofName          String?  // File name for Equity Dilution Proof
+  equityDilutionProofPath          String?  // File path for Equity Dilution Proof
+  utilizationPlanName              String?  // File name for Fund Utilization Plan
+  utilizationPlanPath              String?  // File path for Fund Utilization Plan
+  boardResolutionName              String?  // File name for Board Resolution
+  boardResolutionPath              String?  // File path for Board Resolution
+
+  user                             User     @relation(fields: [userId], references: [user_id])
+  userId                           String   @unique // Foreign key to User
+  documentStatus         String
+  
+}
+
+model IncubationApplication {
+  id                String   @id @default(uuid()) @map("_id") 
+  userId            String   @unique// Relates to the User model
+  incubationCenter  String   // Dropdown value for the selected Incubation Center
+  status            String   // Status of the application
+ 
+  user              User     @relation(fields: [userId], references: [user_id])
+  documentStatus         String
+}
+
+
+model CoWorkingApplication {
+  id               String   @id @default(uuid()) @map("_id") 
+  coworkingCenter  String
+  seatNo           String
+  status           String
+
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [user_id])
+  documentStatus         String
+
+}
+
+model IPRReimbursement {
+  id                             String   @id @default(uuid()) @map("_id") 
+  iprType                         String
+  iprCertificateFileName          String
+  iprCertificateFilePath          String
+  feePaidForApplicationForm       String
+  feePaidInvoiceFileName          String
+  feePaidInvoiceFilePath          String
+  consultancyFee                  String?
+  consultancyInvoiceFileName      String?
+  consultancyInvoiceFilePath      String?
+ 
+  userId                          String   @unique
+  user                            User     @relation(fields: [userId], references: [user_id])
+  documentStatus         String
+}

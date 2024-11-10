@@ -1,0 +1,21 @@
+.notifications-scroll {
+    position: relative;
+    overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.notifications-scroll.show-notifications,
+.notifications-scroll.show-app-notifications {
+    animation: scrollNotifications 16s linear infinite;
+}
+
+@keyframes scrollNotifications {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-100%);
+    }
+}
