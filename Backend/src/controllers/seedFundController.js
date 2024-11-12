@@ -61,7 +61,7 @@ const submitSeedFund = async (req, res) => {
         cancelChequeOrPassbook,
         panNumber,
         gstNumber,
-        documentStatus : "created"
+        documentStatus: "created"
       },
       create: {
         companyName,
@@ -81,6 +81,7 @@ const submitSeedFund = async (req, res) => {
         cancelChequeOrPassbook,
         panNumber,
         gstNumber,
+        documentStatus: "created",
         userId // Associate the entry with the user ID
       }
     });

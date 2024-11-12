@@ -25,7 +25,7 @@ const LoginCopy = () => {
     }
 
     try {
-      const loginUrl = isAdminLogin ? 'http://localhost:3000/api/adminlogin' : 'http://localhost:3000/api/userlogin';
+      const loginUrl = isAdminLogin ? 'https://startup-bihar1.onrender.com/api/adminlogin' : 'https://startup-bihar1.onrender.com/api/userlogin';
 
       const response = await fetch(loginUrl, {
         method: 'POST',
@@ -50,7 +50,7 @@ const LoginCopy = () => {
         }
 
         // Redirect based on login type
-        navigate(isAdminLogin ? '/startupProfile' : '/UserProfile');
+        navigate(isAdminLogin ? '/adminMain' : '/UserProfile');
       } else {
         setErrorMessage(data.error || 'Login failed');
         toast.error(data.error || 'Login failed');

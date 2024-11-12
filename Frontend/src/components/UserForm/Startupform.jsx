@@ -38,7 +38,7 @@ const DocumentUpload = () => {
         }
       }
       try {
-        const response = await axios.post('http://localhost:3000/api/StartupProfile', formData, {
+        const response = await axios.post('https://startup-bihar1.onrender.com/api/StartupProfile', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `${localStorage.getItem('token')}`, // Assuming you store the token in localStorage

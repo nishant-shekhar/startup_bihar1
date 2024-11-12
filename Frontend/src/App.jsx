@@ -37,7 +37,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginCopy onLogin={handleLogin} />} />
+      <Route path="/login" element={<LoginCopy onLogin={handleLogin} />} />
 
         {/* Wrap all the routes that need LeftBar inside LayoutWithLeftBar */}
         <Route element={<LeftBarfix isLoggedIn={isLoggedIn} />}>
@@ -75,7 +75,7 @@ const App = () => {
 
         {/* Routes without LeftBar */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/adminprofile" element={<AdminApp />} />
+        <Route path="/adminMain" element={< adminMainProfile/>} />
         <Route path="/TopNavbar" element={<TopNavbar />} />
       </Routes>
     </Router>

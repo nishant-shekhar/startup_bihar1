@@ -98,7 +98,6 @@ const createUser = async (req, res) => {
         user_id: newUser.user_id,
         registration_no: newUser.registration_no,
         company_name: newUser.company_name,
-        password: newUser.password,
       },
     });
   } catch (error) {
