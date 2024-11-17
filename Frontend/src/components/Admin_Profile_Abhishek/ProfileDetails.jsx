@@ -12,7 +12,7 @@ const ProfileDetails = ({ id }) => {
 			if (id) {
 				try {
 					const response = await axios.get(
-						`http://localhost:3000/api/StartupProfile/v1/${id}`,
+						`http://localhost:3010/api/StartupProfile/v1/${id}`,
 
 						{
 							headers: {
@@ -35,7 +35,7 @@ const ProfileDetails = ({ id }) => {
 	const handleReject = async () => {
 		try {
 			const response = await axios.put(
-				`http://localhost:3000/api/StartupProfile/v2/${id}`,
+				`http://localhost:3010/api/StartupProfile/v2/${id}`,
 				{
 
 					documentStatus: "Rejected",
@@ -43,7 +43,7 @@ const ProfileDetails = ({ id }) => {
 				{
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
+						Authorization: `${token}`,
 					},
 				},
 			);
@@ -56,14 +56,14 @@ const ProfileDetails = ({ id }) => {
 	const handleAccept = async () => {
 		try {
 			const response = await axios.put(
-				`http://localhost:3000/api/StartupProfile/v2/${id}`,
+				`http://localhost:3010/api/StartupProfile/v2/${id}`,
 				{
 					documentStatus: "Accepted",
 				},
 				{
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
+						Authorization: ` ${token}`,
 					},
 				},
 			);

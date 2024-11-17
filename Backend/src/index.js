@@ -1,8 +1,6 @@
 
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config({ path: '../.env' });
-
 
 const documentRoutes = require('./routes/documentRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -98,7 +96,7 @@ app.use('/api/iprReimbursement', iprReimbursementRoutes);
   //http://localhost:3000/api/matchingLoan/u1/:id
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3007;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

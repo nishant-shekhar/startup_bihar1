@@ -1,83 +1,72 @@
-
-
-
 const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
 
 const JWT_SECRET = 'your_jwt_secret_key'; // Use your actual JWT secret
 
+// Post Seed Fund form submission controller
 const submitPostSeedFund = async (req, res) => {
   try {
-    // Check for authorization token
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
+    // Ensure a token is provided in the request headers
+    const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer <token> format
+    if (!token) {
       return res.status(401).json({ error: 'Authorization token is required' });
     }
 
-    const token = authHeader.split(' ')[1]; // Assuming "Bearer <token>" format
-    let userId;
-
-    // Verify the token and extract user ID
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      userId = decoded.user_id; // Ensure this matches your JWT structure
-      if (!userId) {
-        return res.status(401).json({ error: 'Invalid token: user ID missing' });
-      }
-    } catch (err) {
-      return res.status(403).json({ error: 'Invalid token' });
-    }
+    // Decode the JWT to get the user ID
+    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+    const userId = decoded.user_id; // Adjust according to your token payload structure
 
     // Extract form data from the request body
-    const { currentStage, technicalKnowledge, raisedFunds, employment } = req.body;
-
-    if (!currentStage) {
-      return res.status(400).json({ error: 'Current stage is required' });
-    }
+    const {
+      currentStage,
+      technicalKnowledge,
+      raisedFunds,
+      employment
+    } = req.body;
 
     // Handle file uploads
-    const auditedBalanceSheet = req.files?.auditedBalanceSheet?.[0]?.path || null;
-    const gstReturn = req.files?.gstReturn?.[0]?.path || null;
-    const projectReport = req.files?.projectReport?.[0]?.path || null;
+				const auditedBalanceSheet = req.files.auditedBalanceSheet
+					? req.files.auditedBalanceSheet[0].location
+					: null;
+    const gstReturn = req.files.gstReturn ? req.files.gstReturn[0].location : null;
+    const projectReport = req.files.projectReport
+					? req.files.projectReport[0].location
+					: null;
 
-    // Perform upsert operation
-    const postSeedFundEntry = await prisma.postSeedFund.upsert({
-      where: { userId },
-      update: {
-        currentStage,
-        technicalKnowledge: technicalKnowledge === 'true', // Convert string to boolean
-        auditedBalanceSheet,
-        gstReturn,
-        raisedFunds: raisedFunds === 'true',
-        employment: employment === 'true',
-        projectReport,
-        documentStatus: "created",
-      },
-      create: {
-        userId,
-        currentStage,
-        technicalKnowledge: technicalKnowledge === 'true',
-        auditedBalanceSheet,
-        gstReturn,
-        raisedFunds: raisedFunds === 'true',
-        employment: employment === 'true',
-        projectReport,
-        documentStatus: "created",
-      },
-    });
+    // Upsert: Create or update the PostSeedFund entry
+				const postSeedFundEntry = await prisma.postSeedFund.upsert({
+					where: { userId }, // Use userId to find existing entry
+					update: {
+						currentStage,
+						technicalKnowledge: technicalKnowledge === "Yes", // Convert string to boolean
+						auditedBalanceSheet,
+						gstReturn,
+						raisedFunds: raisedFunds === "Yes", // Convert string to boolean
+						employment: employment === "Yes", // Convert string to boolean
+						projectReport,
+						documentStatus: "created",
+					},
+					create: {
+						currentStage,
+						technicalKnowledge: technicalKnowledge === "Yes", // Convert string to boolean
+						auditedBalanceSheet,
+						gstReturn,
+						raisedFunds: raisedFunds === "Yes", // Convert string to boolean
+						employment: employment === "Yes", // Convert string to boolean
+						projectReport,
+						userId, // Associate the entry with the user ID
+						documentStatus: "created",
+					},
+				});
 
-    // Successful response
     res.status(200).json({
       message: postSeedFundEntry ? 'Post Seed Fund entry updated successfully' : 'Post Seed Fund entry created successfully',
-      data: postSeedFundEntry,
+      data: postSeedFundEntry
     });
   } catch (error) {
-    console.error('Error in submitPostSeedFund:', error);
-    res.status(500).json({
-      error: 'An error occurred while submitting the form',
-      details: error.message || error,
-    });
+    console.error('Error creating/updating Post Seed Fund entry:', error);
+    res.status(500).json({ error: 'An error occurred while submitting the form.' });
   }
 };
 
@@ -91,14 +80,7 @@ const getAllpostWithUserDetails = async (req, res) => {
             user_id: true,             // Fields from the User model
             registration_no: true,
             company_name: true,
-            document: {
-              select: {                // Fields from the Document model
-                coFounderNames: true,
-                logoPath: true,
-                category: true,
-                founderName: true,
-              },
-            },
+           
           },
         },
       },
@@ -145,7 +127,7 @@ const getpostById = async (req, res) => {
 
 const updatepostStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus } = req.body;
+  const { documentStatus,comment } = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
@@ -162,7 +144,7 @@ const updatepostStatus = async (req, res) => {
 
     const updatedDocument = await prisma.postSeedFund.update({
       where: { id },
-      data: { documentStatus },
+      data: { documentStatus ,comment},
     });
 
     res.status(200).json({

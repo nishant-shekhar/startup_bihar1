@@ -16,7 +16,7 @@ const StartupProfile = ({ onSelect }) => {
 			try {
 				console.log(token);
 				const response = await axios.get(
-					"http://localhost:3000/api/StartupProfile/v2",
+					"http://localhost:3010/api/StartupProfile/v2",
 					{
 						headers: {
 							"Content-Type" : "application/json",

@@ -42,13 +42,13 @@ const uploadDocuments = async (req, res) => {
       if (req.files.logo && req.files.logo.length > 0) {
         const logoFile = req.files.logo[0];
         newDocumentData.logoName = logoFile.filename;
-        newDocumentData.logoPath = logoFile.path;
+        newDocumentData.logoPath = logoFile.location;
       }
 
       if (req.files.certificate && req.files.certificate.length > 0) {
         const certificateFile = req.files.certificate[0];
         newDocumentData.certName = certificateFile.filename;
-        newDocumentData.certPath = certificateFile.path;
+        newDocumentData.certPath = certificateFile.location;
       }
     }
 

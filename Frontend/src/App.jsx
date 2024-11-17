@@ -15,7 +15,6 @@ import Acceleration from './components/UserForm/Acceleration';
 import Coworking from './components/UserForm/Coworking';
 import Matchingloan from './components/UserForm/Matchingloan';
 import Reimbursement from './components/UserForm/Reimbursement';
-import PostSeed from './components/UserForm/PostSeed';
 import SeedFunded from './components/UserForm/SeedFunded';
 import Qpr from './components/UserForm/Qpr';
 import HomePage from './components/HomePage/Home';
@@ -26,6 +25,8 @@ import SecondTrancheAdmin from './components/Profile/AdminProfile/SecondTrancheA
 import GrievanceContainer from './components/Profile/UserProfile/grievance-container';
 import Grievance from './components/UserForm/Grievance';
 import Incubation from './components/UserForm/Incubation';
+import AdminMainProfile from './components/Admin_Profile_Abhishek/AdminMainProfile';
+import PostSeed from './components/UserForm/Postseed';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -37,7 +38,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
-      <Route path="/login" element={<LoginCopy onLogin={handleLogin} />} />
+        <Route path="/login" element={<LoginCopy onLogin={handleLogin} />} />
 
         {/* Wrap all the routes that need LeftBar inside LayoutWithLeftBar */}
         <Route element={<LeftBarfix isLoggedIn={isLoggedIn} />}>
@@ -61,7 +62,7 @@ const App = () => {
         {/*Admin Route with fixNavbar hello*/}
         <Route element={<Navbarfix isLoggedIn={isLoggedIn} />}>
 
-          <Route path="/startupProfile" element={<AdminForm />} />
+          <Route path="/adminMain" element={<AdminMainProfile />} />
 
           <Route path="/seedFund" element={<SeedAdminForm />} />
 
@@ -75,7 +76,7 @@ const App = () => {
 
         {/* Routes without LeftBar */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/adminMain" element={< adminMainProfile/>} />
+        <Route path="/adminprofile" element={<AdminApp />} />
         <Route path="/TopNavbar" element={<TopNavbar />} />
       </Routes>
     </Router>

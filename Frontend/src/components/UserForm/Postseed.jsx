@@ -62,7 +62,7 @@ const PostSeed = () => {
       }
 
       try {
-        const response = await axios.post('http://localhost:3000/api/post-seed', formData, {
+        const response = await axios.post('http://localhost:3010/api/post-seed', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization:`${localStorage.getItem('token')}`,
@@ -75,7 +75,6 @@ const PostSeed = () => {
       } catch (error) {
         setErrorMessage(error.response?.data?.error || 'An error occurred during submission');
         setSuccessMessage('');
-
       }
     },
   });

@@ -1,6 +1,3 @@
-
-
-
 const express = require('express');
 
 const { uploadDocuments,getDocumentById,getAllDocumentsWithUserDetails,updateDocumentStatus,getUserDocument} = require('../controllers/documentController');
@@ -14,7 +11,10 @@ const router = express.Router();
 router.post(
   '/', 
   authenticateUser, // Protect the route with JWT authentication
-  upload.fields([{ name: 'logo' }, { name: 'certificate' }]), // Handle file uploads
+  upload.fields([
+    { name: 'logo', maxCount: 1 },
+    { name: 'certificate', maxCount: 1 },
+  ]),
   uploadDocuments // Controller to handle form and file data
 );
 

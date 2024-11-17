@@ -7,17 +7,14 @@ const JWT_SECRET = 'your_jwt_secret_key';
 // Seed fund form submission controller
 const submitSeedFund = async (req, res) => {
   try {
-    // Ensure a token is provided in the request headers
-    const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer <token> format
+    const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ error: 'Authorization token is required' });
     }
 
-    // Decode the JWT to get the user ID
-    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
-    const userId = decoded.user_id; // Adjust according to your token payload structure
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id;
 
-    // Extract form data from the request body
     const {
       companyName,
       registrationNumber,
@@ -36,13 +33,12 @@ const submitSeedFund = async (req, res) => {
       gstNumber
     } = req.body;
 
-    // Handle file uploads
-    const companyCertificate = req.files.companyCertificate ? req.files.companyCertificate[0].path : null;
-    const cancelChequeOrPassbook = req.files.cancelChequeOrPassbook ? req.files.cancelChequeOrPassbook[0].path : null;
+    // Extract the S3 URLs from the file upload response
+    const companyCertificate = req.files.companyCertificate ? req.files.companyCertificate[0].location : null;
+    const cancelChequeOrPassbook = req.files.cancelChequeOrPassbook ? req.files.cancelChequeOrPassbook[0].location : null;
 
-    // Upsert: Create or update the seed fund entry
     const seedFundEntry = await prisma.seedFund.upsert({
-      where: { userId }, // Use userId to find existing entry
+      where: { userId },
       update: {
         companyName,
         registrationNumber,
@@ -61,7 +57,7 @@ const submitSeedFund = async (req, res) => {
         cancelChequeOrPassbook,
         panNumber,
         gstNumber,
-        documentStatus: "created"
+        documentStatus: "Updated"
       },
       create: {
         companyName,
@@ -82,7 +78,7 @@ const submitSeedFund = async (req, res) => {
         panNumber,
         gstNumber,
         documentStatus: "created",
-        userId // Associate the entry with the user ID
+        userId
       }
     });
 
@@ -96,6 +92,7 @@ const submitSeedFund = async (req, res) => {
   }
 };
 
+
 const getAllSeedWithUserDetails = async (req, res) => {
   try {
     const documents = await prisma.seedFund.findMany({
@@ -106,14 +103,7 @@ const getAllSeedWithUserDetails = async (req, res) => {
             user_id: true,             // Fields from the User model
             registration_no: true,
             company_name: true,
-            document: {
-              select: {                // Fields from the Document model
-                coFounderNames: true,
-                logoPath: true,
-                category: true,
-                founderName: true,
-              },
-            },
+            
           },
         },
       },
@@ -160,37 +150,31 @@ const getseedById = async (req, res) => {
 
 const updateSeedStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus } = req.body;
+  const { documentStatus, comment } = req.body;
 
   if (!documentStatus) {
-    return res.status(400).json({ error: 'Document status is required' });
+    return res.status(400).json({ error: 'Seed Fund Document status is required' });
   }
 
   try {
-    const document = await prisma.seedFund.findUnique({
-      where: { id },
-    });
+    const seedFund = await prisma.seedFund.findUnique({ where: { id } });
 
-    if (!document) {
-      return res.status(404).json({ error: 'Document not found' });
+    if (!seedFund) {
+      return res.status(404).json({ error: 'Seed Fund Document not found' });
     }
 
     const updatedDocument = await prisma.seedFund.update({
       where: { id },
-      data: { documentStatus },
+      data: { documentStatus, comment },
     });
 
     res.status(200).json({
-      message: 'Document status updated successfully',
+      message: 'Seed Fund Document status and comment updated successfully',
       document: updatedDocument,
     });
   } catch (error) {
     console.error(error);
-
-    res.status(500).json({
-      error: 'Failed to update document status',
-      details: error.message,
-    });
+    res.status(500).json({ error: 'Failed to update Seed Fund document status and comment' });
   }
 };
 

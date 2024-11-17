@@ -4,57 +4,75 @@ const { PrismaClient } = require('@prisma/client');
 const jwt = require('jsonwebtoken'); // Import the jsonwebtoken library
 const prisma = new PrismaClient();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Use environment variable
+//const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Use environment variable
+const JWT_SECRET = 'your_jwt_secret_key';
 
 const submitQuarterlyReport = async (req, res) => {
   try {
-    // Extract the JWT from the request headers
-    const token = req.headers.authorization?.split(' ')[1]; // Assuming the token is in the format "Bearer <token>"
-
-    // Verify and decode the JWT to get the user ID and userName
+    // Ensure a token is provided in the request headers
+    const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer <token> format
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+      return res.status(401).json({ error: 'Authorization token is required' });
     }
 
-    let userId;
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET); // Use your secret key
-      userId = decoded.user_id; // Assuming the JWT payload contains the user ID as "user_id"
-      
-    } catch (err) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-    }
+    // Decode the JWT to get the user ID
+    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+    const userId = decoded.user_id; // Adjust according to your token payload structure
 
-    // Prepare data for the quarterly report
-    const reportData = {
-      currentStage: req.body.currentStage,
-      averageTurnover: parseFloat(req.body.averageTurnover),
-      currentRevenue: parseFloat(req.body.currentRevenue),
-      netProfitOrLoss: req.body.netProfitOrLoss,
-      fundRaised: req.body.fundRaised === 'Yes', // Convert to boolean
-      workOrders: parseInt(req.body.workOrders, 10),
-      directEmployment: parseInt(req.body.directEmployment, 10),
-      indirectEmployment: parseInt(req.body.indirectEmployment, 10),
-      maleEmployees: parseInt(req.body.maleEmployees, 10),
-      femaleEmployees: parseInt(req.body.femaleEmployees, 10),
-      partnerships: req.body.partnerships, // Assume this is a multiline string
-      nextQuarterGoals: req.body.nextQuarterGoals, // Assume this is a multiline string
-      documentStatus : "created"
-    };
+    const {
+      currentStage,
+      averageTurnover,
+      currentRevenue,
+      netProfitOrLoss,
+      fundRaised,
+      workOrders,
+      directEmployment,
+      indirectEmployment,
+      maleEmployees,
+      femaleEmployees,
+      partnerships,
+      nextQuarterGoals
+    } = req.body;
+    
 
-    // Upsert the quarterly report
-    const qReport = await prisma.qReport.upsert({
-      where: { userId }, // Check if report exists for this user
-      update: {
-        ...reportData
-      },
-      create: {
-        ...reportData,
-        userId, // Associate the report with the authenticated user
-      },
-    });
+      // Upsert: Create or update the PostSeedFund entry
+      const qReport = await prisma.qReport.upsert({
+        where: { userId }, // Use userId to find existing entry
+        update: {
+          currentStage , // Default to empty string
+          averageTurnover, // Ensure string format
+          currentRevenue,
+          netProfitOrLoss,
+          fundRaised: req.body.fundRaised === "Yes", // Convert "Yes" to boolean
+          workOrders,
+          directEmployment,
+          indirectEmployment,
+          maleEmployees,
+          femaleEmployees,
+          partnerships,
+          nextQuarterGoals,
+          documentStatus: 'Updates', // Default value
+        },
+        create: {
+          currentStage , // Default to empty string
+          averageTurnover, // Ensure string format
+          currentRevenue,
+          netProfitOrLoss,
+          fundRaised: req.body.fundRaised === "Yes", // Convert "Yes" to boolean
+          workOrders,
+          directEmployment,
+          indirectEmployment,
+          maleEmployees,
+          femaleEmployees,
+          partnerships,
+          nextQuarterGoals,
+          userId,
+          documentStatus: 'Created', // Default value
+        },
+      });
 
-    // Return the created or updated report in the response
+   
+
     return res.status(200).json({
       message: qReport ? 'Quarterly report updated successfully' : 'Quarterly report created successfully',
       qReport,
@@ -130,7 +148,7 @@ const getQReportnById = async (req, res) => {
 
 const updateQreportStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus } = req.body;
+  const { documentStatus,comment } = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
@@ -147,7 +165,7 @@ const updateQreportStatus = async (req, res) => {
 
     const updatedDocument = await prisma.qReport.update({
       where: { id },
-      data: { documentStatus },
+      data: { documentStatus , comment},
     });
 
     res.status(200).json({

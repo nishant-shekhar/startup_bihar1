@@ -9,10 +9,10 @@ const JWT_SECRET = 'your'; // Store securely in env vars
 
 const adminLogin = async (req, res) => {
   try {
-    const { admin_id, password } = req.body;
+    const { admin_id, password} = req.body;
 
     // Check if admin_id and password are provided
-    if (!admin_id || !password) {
+    if (!admin_id || !password ) {
       return res.status(400).json({ error: 'admin_id and password are required' });
     }
 
@@ -43,6 +43,12 @@ const adminLogin = async (req, res) => {
     res.status(200).json({
       message: 'Admin login successful',
       token,
+      
+      admin_id: admin.admin_id,
+      role: admin.role,       
+      designation: admin.designation,       
+      name: admin.name,      
+      contact: admin.contact,      
     });
   } catch (error) {
     console.error(error);
@@ -52,11 +58,11 @@ const adminLogin = async (req, res) => {
 
 const createAdmin = async (req, res) => {
   try {
-    const { admin_id, password } = req.body;
+    const { admin_id, password ,  name, role,designation,contact } = req.body;
 
     // Check if admin_id and password are provided
-    if (!admin_id || !password) {
-      return res.status(400).json({ error: 'admin_id and password are required' });
+    if (!admin_id || !password ||!role ||!name ||!designation||!contact) {
+      return res.status(400).json({ error: 'admin_id , password, name, designation, role and contact are required' });
     }
 
     // Check if an admin with the same admin_id already exists
@@ -76,6 +82,10 @@ const createAdmin = async (req, res) => {
       data: {
         admin_id,
         password: hashedPassword,
+        name:name,
+        role:role,
+        designation:designation,
+        contact:contact
       },
     });
 

@@ -11,8 +11,26 @@ datasource db {
 
 model Admin {
   id String @id @default(uuid())
-  admin_id  String    @unique
-  password  String
+  admin_id      String    @unique
+  password      String
+  role          String
+  designation   String
+  contact       String?
+  name          String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
+
+
+}
+
+model UserNotification {
+  id                    String               @id @default(uuid()) @map("_id")
+  user_id               String               @unique
+  admin_id              String
+  notification          String
+  related_to            String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 model User {
@@ -20,6 +38,7 @@ model User {
   user_id               String               @unique
   password              String
   registration_no       String               @unique
+  registration_year     String?
   company_name          String
   document              Document?            // One-to-one relation
   seedFund              SeedFund?            // One-to-one relation
@@ -31,13 +50,28 @@ model User {
   coworkingApplication  CoWorkingApplication?
   incubationApplication IncubationApplication?
   iprReimbursement      IPRReimbursement?
+
+  instagram             String?
+  website               String?
+  linkedin              String?
+  facebook              String?
+  twitter               String?
+  email                 String?
+  mobile                String?
+
+  startup_since         String?
+  about                 String?
+  moto                  String?
+  logo                  String?
+  founder_dp            String?
+  founder_name          String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 model Document {
   id                     String   @id @default(uuid()) @map("_id")
-  logoName               String
   logoPath               String
-  certName               String
   certPath               String
   registrationNo         String   @unique
   founderName            String
@@ -83,11 +117,14 @@ model SeedFund {
   cancelChequeOrPassbook String?
   panNumber              String
   gstNumber              String
+  comment                String?
 
 
   userId                 String   @unique // One-to-one relation
   user                   User     @relation(fields: [userId], references: [user_id]) // Many-to-one relation
   documentStatus         String
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 model SecondTranche {
@@ -103,6 +140,9 @@ model SecondTranche {
   userId                 String   @unique // One-to-one relation
   user                   User     @relation(fields: [userId], references: [user_id]) // Many-to-one relation
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 model PostSeedFund {
@@ -118,27 +158,33 @@ model PostSeedFund {
   userId                 String   @unique // One-to-one relation
   user                   User     @relation(fields: [userId], references: [user_id])
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 
 model QReport {
     id                 String   @id @default(uuid()) @map("_id")
     currentStage       String
-    averageTurnover    Float
-    currentRevenue     Float
+    averageTurnover    String
+    currentRevenue     String
     netProfitOrLoss    String   // 'Profit' or 'Loss'
     fundRaised         Boolean
-    workOrders         Int
-    directEmployment   Int
-    indirectEmployment Int
-    maleEmployees      Int
-    femaleEmployees    Int
+    workOrders         String
+    directEmployment   String
+    indirectEmployment String
+    maleEmployees      String
+    femaleEmployees    String
     partnerships       String
     nextQuarterGoals   String
     userId             String   @unique
    
     user               User     @relation(fields: [userId], references: [user_id])
-    documentStatus         String
+    documentStatus     String
+    comment            String?
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 
@@ -159,6 +205,9 @@ model AccelerationProgram {
   userId                    String   @unique // Unique userId from JWT
   user                      User     @relation(fields: [userId], references: [user_id]) // Relation to User
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 
 }
 
@@ -183,6 +232,9 @@ model MatchingLoan {
   user                             User     @relation(fields: [userId], references: [user_id])
   userId                           String   @unique // Foreign key to User
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
   
 }
 
@@ -194,6 +246,9 @@ model IncubationApplication {
  
   user              User     @relation(fields: [userId], references: [user_id])
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 
@@ -206,6 +261,9 @@ model CoWorkingApplication {
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [user_id])
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 
 }
 
@@ -224,4 +282,7 @@ model IPRReimbursement {
   userId                          String   @unique
   user                            User     @relation(fields: [userId], references: [user_id])
   documentStatus         String
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 }

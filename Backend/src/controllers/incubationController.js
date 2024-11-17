@@ -32,15 +32,28 @@ const applyForIncubation = async (req, res) => {
       return res.status(400).json({ error: 'Please provide all required fields' });
     }
 
+
     // Create an incubation application
-    const application = await prisma.incubationApplication.create({
-      data: {
-        userId: userId,
-        incubationCenter: incubationCenter,
-        status: status,
-        documentStatus : "created"
-      }
+   
+
+    const data = {
+      incubationCenter: req.body.incubationCenter,
+      status: req.body.status,
+
+      documentStatus : "created"
+    };
+     // Upsert: Create or update the acceleration program application
+     const application = await prisma.incubationApplication.upsert({
+      where: { userId }, // Check if there's already an application for this user
+      update: {
+        ...data
+      },
+      create: {
+        ...data,
+        userId, // Associate the program application with the authenticated user
+      },
     });
+
 
     return res.status(200).json({
       message: 'Incubation application submitted successfully',
@@ -63,14 +76,7 @@ const getAllIncubationWithUserDetails = async (req, res) => {
             user_id: true,             // Fields from the User model
             registration_no: true,
             company_name: true,
-            document: {
-              select: {                // Fields from the Document model
-                coFounderNames: true,
-                logoPath: true,
-                category: true,
-                founderName: true,
-              },
-            },
+           
           },
         },
       },
@@ -117,7 +123,7 @@ const getIncubationnById = async (req, res) => {
 
 const updateincubationStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus } = req.body;
+  const { documentStatus,comment } = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
@@ -134,7 +140,7 @@ const updateincubationStatus = async (req, res) => {
 
     const updatedDocument = await prisma.incubationApplication.update({
       where: { id },
-      data: { documentStatus },
+      data: { documentStatus,comment },
     });
 
     res.status(200).json({

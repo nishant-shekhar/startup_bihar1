@@ -1,4 +1,5 @@
 import React from "react";
+import Navbar from "../Navbar/Navbar";
 import LeftBar from "./LeftBar";
 import StartupProfile from "./StartupProfile";
 import ProfileDetails from "./ProfileDetails";
@@ -18,7 +19,7 @@ import GrievanceRedressalSystem from "./Grievance_Redressal_System/GrievanceRedr
 
 import { useState } from "react";
 
-const adminMainProfile = () => {
+const AdminMainProfile = () => {
 
 	const [activePage , setActivePage] = useState("StartupProfile");
 	const [selectedId, setSelectedId] = useState("");
@@ -87,4 +88,4 @@ const adminMainProfile = () => {
 	);
 };
 
-export default adminMainProfile;
+export default AdminMainProfile;
