@@ -20,46 +20,73 @@ const uploadDocuments = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 
-    const newDocumentData = {
-      registrationNo: req.body.registrationNo,
-      founderName: req.body.founderName,
-      founderAadharNumber: req.body.founderAadharNumber,
-      coFounderNames: req.body.coFounderNames ? req.body.coFounderNames.trim() : null, // Use as a single string
-      coFounderAadharNumbers: req.body.coFounderAadharNumbers ? req.body.coFounderAadharNumbers.trim() : null, // Use as a single string
-      sector: req.body.sector,
-      businessConcept: req.body.businessConcept,
-      mobileNumbers: req.body.mobileNumbers ? req.body.mobileNumbers.trim() : null, // Use as a single string
-      email: req.body.email,
-      websiteLink: req.body.websiteLink,
-      category: req.body.category,
-      gender: req.body.gender,
-      dpiitRecognitionNo: req.body.dpiitRecognitionNo,
-      appliedIPR: req.body.appliedIPR === 'true',
-      documentStatus: "created"
-    };
-
-    if (req.files) {
-      if (req.files.logo && req.files.logo.length > 0) {
-        const logoFile = req.files.logo[0];
-        newDocumentData.logoName = logoFile.filename;
-        newDocumentData.logoPath = logoFile.location;
-      }
-
-      if (req.files.certificate && req.files.certificate.length > 0) {
-        const certificateFile = req.files.certificate[0];
-        newDocumentData.certName = certificateFile.filename;
-        newDocumentData.certPath = certificateFile.location;
-      }
-    }
-
+   
+   
+    const {
+      registrationNo,
+      founderName,
+      founderAadharNumber,
+      coFounderNames, // Use as a single string
+      coFounderAadharNumbers, // Use as a single string
+      sector,
+      businessConcept,
+      mobileNumbers, // Use as a single string
+      email,
+      websiteLink,
+      category,
+      gender,
+      dpiitRecognitionNo,
+      appliedIPR,
+    } = req.body;
+     // Extract the S3 URLs from the file upload response
+     const logoPath = req.files.logo ? req.files.logo[0].location : null;
+     const certPath = req.files.certificate ? req.files.certificate[0].location : null;
     const document = await prisma.document.upsert({
-      where: { userId }, 
-      update: { ...newDocumentData },
-      create: {
-        ...newDocumentData,
-        userId
+      where: { userId },
+      update: {
+        registrationNo,
+        founderName,
+        founderAadharNumber,
+        coFounderNames: req.body.coFounderNames ? req.body.coFounderNames.trim() : null, // Use as a single string
+        coFounderAadharNumbers: req.body.coFounderAadharNumbers ? req.body.coFounderAadharNumbers.trim() : null, // Use as a single string
+        sector,
+        businessConcept,
+        mobileNumbers: req.body.mobileNumbers ? req.body.mobileNumbers.trim() : null, // Use as a single string
+        email,
+        websiteLink,
+        category,
+        gender,
+        dpiitRecognitionNo,
+        appliedIPR: req.body.appliedIPR === 'true',
+        logoPath,
+        certPath,
+        documentStatus: "Updated"
       },
+      create: {
+        registrationNo,
+        founderName,
+        founderAadharNumber,
+        coFounderNames: req.body.coFounderNames ? req.body.coFounderNames.trim() : null, // Use as a single string
+        coFounderAadharNumbers: req.body.coFounderAadharNumbers ? req.body.coFounderAadharNumbers.trim() : null, // Use as a single string
+        sector,
+        businessConcept,
+        mobileNumbers: req.body.mobileNumbers ? req.body.mobileNumbers.trim() : null, // Use as a single string
+        email,
+        websiteLink,
+        category,
+        gender,
+        dpiitRecognitionNo,
+        appliedIPR: req.body.appliedIPR === 'true',
+        logoPath,
+        certPath,
+        documentStatus: "created",
+        userId
+      }
     });
+
+
+   
+
 
     return res.status(200).json({
       message: document ? 'Document updated successfully' : 'Document created successfully',
