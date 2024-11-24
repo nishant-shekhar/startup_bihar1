@@ -1,238 +1,335 @@
-import React, { useState } from 'react';
-import Textbox from './Textbox';
-import Datepicker from './Datepicker';
-import { useFormik } from 'formik';
+import React from "react";
+import { useFormik } from "formik";
+import axios from "axios";
 
-const validate = values => {
-    const errors = {};
+const validate = (values) => {
+  const errors = {};
 
-    if (!values.NameofHostInstitute) {
-        errors.NameofHostInstitute = 'Required';
-    }
-    if (!values.NameofProgramme) {
-        errors.NameofProgramme = 'Required';
-    }
-    if (!values.StartDate) {
-        errors.StartDate = 'Required';
-    }
-    if (!values.EndDate) {
-        errors.EndDate = 'Required';
-    }
-    if (!values.Programwebsite) {
-        errors.Programwebsite = 'Required';
-    }
-    if (!values.Foundername) {
-        errors.Foundername = 'Required';
-    }
-    if (!values.Cofoundername) {
-        errors.Cofoundername = 'Required';
-    }
-    if (!values.FeesPaid) {
-        errors.FeesPaid = 'Required';
-    }
-    if (!values.Railfare) {
-        errors.Railfare = 'Required';
-    }
-    if (!values.Totalpersons) {
-        errors.Totalpersons = 'Required';
-    }
-    if (!values.Totalfees) {
-        errors.Totalfees = 'Required';
-    }
-  
-    return errors;
+  if (!values.hostInstitute) {
+    errors.hostInstitute = "Required";
+  }
+  if (!values.programName) {
+    errors.programName = "Required";
+  }
+  if (!values.startDate) {
+    errors.startDate = "Required";
+  }
+  if (!values.endDate) {
+    errors.endDate = "Required";
+  }
+  if (!values.programWebsite) {
+    errors.programWebsite = "Required";
+  }
+  if (!values.founderName) {
+    errors.founderName = "Required";
+  }
+  if (!values.coFounderName) {
+    errors.coFounderName = "Required";
+  }
+  if (!values.participationFee) {
+    errors.participationFee = "Required";
+  }
+  if (!values.travelAccommodationCost) {
+    errors.travelAccommodationCost = "Required";
+  }
+  if (!values.totalPersons) {
+    errors.totalPersons = "Required";
+  }
+  if (!values.totalFee) {
+    errors.totalFee = "Required";
+  }
+
+  return errors;
 };
 
 const Acceleration = () => {
-    const [uploadedFile, setUploadedFile] = useState(null);
-    const [submitted, setSubmitted] = useState(false);
-    const formik = useFormik({
-        initialValues: {
-            NameofHostInstitute: '',
-            NameofProgramme: '',
-            StartDate: '',
-            EndDate: '',
-            Programwebsite: '',
-            Foundername: '',
-            Cofoundername: '',
-            FeesPaid: '',
-            Railfare: '',
-            Totalpersons: '',
-            Totalfees: ''
-        },
-        validate,
-        onSubmit: values => {
-            alert(JSON.stringify(values, null, 2));
-            setSubmitted(true)
-        },
-    });
+  const formik = useFormik({
+    initialValues: {
+      hostInstitute: "",
+      programName: "",
+      startDate: "",
+      endDate: "",
+      programWebsite: "",
+      founderName: "",
+      coFounderName: "",
+      participationFee: "",
+      travelAccommodationCost: "",
+      totalPersons: "",
+      totalFee: "",
+    },
+    validate,
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        console.log("Submitting data:", values);
+        const response = await axios.post(
+          "http://localhost:3007/api/acceleration",
+          values,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        console.log("Server response:", response.data);
+        alert("Data submitted successfully!");
+        resetForm();
+      } catch (error) {
+        console.error(
+          "Error submitting data:",
+          error.response?.data || error.message
+        );
+        alert("Failed to submit data. Check console for details.");
+      }
+    },
+  });
 
-    
-    const handleFileChange = (file) => {
-        setUploadedFile(file);
-    };
+  return (
+    <div className="h-screen overflow-y-auto flex flex-col items-center">
+      <div className="flex w-full max-w-5xl mt-10 space-x-10">
+        {/* Left Column */}
+        <form onSubmit={formik.handleSubmit} className="w-1/2 p-8 rounded-lg">
+          <h3 className="font-semibold text-xl mb-6">
+            Apply for Acceleration Program
+          </h3>
 
-    return (
-        <div className="h-screen overflow-y-auto  flex flex-col items-center">
-              {submitted && (
-                        <div className="mt-4 font-bold text-blacl-600">
-                            Form submitted successfully!
-                        </div>
-                    )}
-            <div className="flex w-full max-w-5xl mt-10 space-x-10">
-                <form onSubmit={formik.handleSubmit} className="w-1/2 p-8 rounded-lg">
-                    <h3 className="font-semibold text-xl mb-6">Apply for Acceleration Program</h3>
-                    
-                    <div className="mb-6">
-                        <Textbox
-                            label="Name of the Host Institute/Organisation"
-                            name="NameofHostInstitute"
-                            onChange={formik.handleChange}
-                            value={formik.values.NameofHostInstitute}
-                        />
-                        {formik.errors.NameofHostInstitute && (
-                            <div className="text-red-600">{formik.errors.NameofHostInstitute}</div>
-                        )}
-                    </div>
-                    
-                    <div className="mb-6">
-                        <Textbox
-                            label="Name of Programme/ Event"
-                            name="NameofProgramme"
-                            onChange={formik.handleChange}
-                            value={formik.values.NameofProgramme}
-                        />
-                        {formik.errors.NameofProgramme && (
-                            <div className="text-red-600">{formik.errors.NameofProgramme}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="hostInstitute"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Name of the Host Institute/Organisation
+            </label>
+            <input
+              id="hostInstitute"
+              name="hostInstitute"
+              type="text"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.hostInstitute}
+            />
+            {formik.errors.hostInstitute && (
+              <div className="text-red-600">{formik.errors.hostInstitute}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Datepicker
-                            label="Program/Event Start date"
-                            name="StartDate"
-                            onChange={formik.handleChange}
-                            value={formik.values.StartDate}
-                        />
-                        {formik.errors.StartDate && (
-                            <div className="text-red-600">{formik.errors.StartDate}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="programName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Name of Programme/Event
+            </label>
+            <input
+              id="programName"
+              name="programName"
+              type="text"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.programName}
+            />
+            {formik.errors.programName && (
+              <div className="text-red-600">{formik.errors.programName}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Datepicker
-                            label="Program/Event End date"
-                            name="EndDate"
-                            onChange={formik.handleChange}
-                            value={formik.values.EndDate}
-                        />
-                        {formik.errors.EndDate && (
-                            <div className="text-red-600">{formik.errors.EndDate}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="startDate"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Program/Event Start Date
+            </label>
+            <input
+              id="startDate"
+              name="startDate"
+              type="date"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.startDate}
+            />
+            {formik.errors.startDate && (
+              <div className="text-red-600">{formik.errors.startDate}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Textbox
-                            label="Website of the program/event (if any)"
-                            name="Programwebsite"
-                            onChange={formik.handleChange}
-                            value={formik.values.Programwebsite}
-                        />
-                        {formik.errors.Programwebsite && (
-                            <div className="text-red-600">{formik.errors.Programwebsite}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="endDate"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Program/Event End Date
+            </label>
+            <input
+              id="endDate"
+              name="endDate"
+              type="date"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.endDate}
+            />
+            {formik.errors.endDate && (
+              <div className="text-red-600">{formik.errors.endDate}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Textbox
-                            label="Name of founder attended the program/event"
-                            name="Foundername"
-                            onChange={formik.handleChange}
-                            value={formik.values.Foundername}
-                        />
-                        {formik.errors.Foundername && (
-                            <div className="text-red-600">{formik.errors.Foundername}</div>
-                        )}
-                    </div>
-                </form>
+          <div className="mb-6">
+            <label
+              htmlFor="programWebsite"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Website of the Program/Event (if any)
+            </label>
+            <input
+              id="programWebsite"
+              name="programWebsite"
+              type="url"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.programWebsite}
+            />
+            {formik.errors.programWebsite && (
+              <div className="text-red-600">{formik.errors.programWebsite}</div>
+            )}
+          </div>
+        </form>
 
-                <form onSubmit={formik.handleSubmit} className="w-1/2 mt-12 p-8 rounded-lg">
-                    <div className="mb-6">
-                        <Textbox
-                            label="Name of Co-founder attended the program/event"
-                            name="Cofoundername"
-                            onChange={formik.handleChange}
-                            value={formik.values.Cofoundername}
-                        />
-                        {formik.errors.Cofoundername && (
-                            <div className="text-red-600">{formik.errors.Cofoundername}</div>
-                        )}
-                    </div>
+        {/* Right Column */}
+        <form onSubmit={formik.handleSubmit} className="w-1/2 p-8 rounded-lg">
+          <div className="mb-6">
+            <label
+              htmlFor="founderName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Name of Founder Attended the Program/Event
+            </label>
+            <input
+              id="founderName"
+              name="founderName"
+              type="text"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.founderName}
+            />
+            {formik.errors.founderName && (
+              <div className="text-red-600">{formik.errors.founderName}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Textbox
-                            label="Total Fees paid for the participation per person (INR)"
-                            name="FeesPaid"
-                            onChange={formik.handleChange}
-                            value={formik.values.FeesPaid}
-                        />
-                        {formik.errors.FeesPaid && (
-                            <div className="text-red-600">{formik.errors.FeesPaid}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="coFounderName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Name of Co-Founder Attended the Program/Event
+            </label>
+            <input
+              id="coFounderName"
+              name="coFounderName"
+              type="text"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.coFounderName}
+            />
+            {formik.errors.coFounderName && (
+              <div className="text-red-600">{formik.errors.coFounderName}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Textbox
-                            label="Total rail fare/air tickets and hotel room charges (INR)"
-                            name="Railfare"
-                            onChange={formik.handleChange}
-                            value={formik.values.Railfare}
-                        />
-                        {formik.errors.Railfare && (
-                            <div className="text-red-600">{formik.errors.Railfare}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="participationFee"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Participation Fee (INR)
+            </label>
+            <input
+              id="participationFee"
+              name="participationFee"
+              type="number"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.participationFee}
+            />
+            {formik.errors.participationFee && (
+              <div className="text-red-600">{formik.errors.participationFee}</div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Textbox
-                            label="Total Persons"
-                            name="Totalpersons"
-                            onChange={formik.handleChange}
-                            value={formik.values.Totalpersons}
-                        />
-                        {formik.errors.Totalpersons && (
-                            <div className="text-red-600">{formik.errors.Totalpersons}</div>
-                        )}
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="travelAccommodationCost"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Travel & Accommodation Cost (INR)
+            </label>
+            <input
+              id="travelAccommodationCost"
+              name="travelAccommodationCost"
+              type="number"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.travelAccommodationCost}
+            />
+            {formik.errors.travelAccommodationCost && (
+              <div className="text-red-600">
+                {formik.errors.travelAccommodationCost}
+              </div>
+            )}
+          </div>
 
-                    <div className="mb-6">
-                        <Textbox
-                            label="Total Fees"
-                            name="Totalfees"
-                            onChange={formik.handleChange}
-                            value={formik.values.Totalfees}
-                        />
-                        {formik.errors.Totalfees && (
-                            <div className="text-red-600">{formik.errors.Totalfees}</div>
-                        )}
-                    </div>
-                    <div className="mt-6 flex items-center justify-end gap-x-6">
-                        <button type="button" className="text-sm font-semibold leading-6 text-gray-900">Cancel</button>
-                        <button 
-                            type="submit" 
-                            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                        >
-                            Upload
-                        </button>
-                    </div>
+          <div className="mb-6">
+            <label
+              htmlFor="totalPersons"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Total Persons
+            </label>
+            <input
+              id="totalPersons"
+              name="totalPersons"
+              type="number"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.totalPersons}
+            />
+            {formik.errors.totalPersons && (
+              <div className="text-red-600">{formik.errors.totalPersons}</div>
+            )}
+          </div>
 
-                  
-                </form>
-                
-            </div>
-        
-        </div>
-    );
+          <div className="mb-6">
+            <label
+              htmlFor="totalFee"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Total Fee (INR)
+            </label>
+            <input
+              id="totalFee"
+              name="totalFee"
+              type="number"
+              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600"
+              onChange={formik.handleChange}
+              value={formik.values.totalFee}
+            />
+            {formik.errors.totalFee && (
+              <div className="text-red-600">{formik.errors.totalFee}</div>
+            )}
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-x-6">
+            <button
+              type="submit"
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default Acceleration;

@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import apply_now from '../../../assets/apply_now_.png';
+import apply_now from '../../../../assets/apply_now_.png';
 
-const Applytranche = ({ text, text1,navigateTo }) => {
-  const navigate = useNavigate(); // useNavigate hook for navigation
-
+const Applytranche = ({ text, text1,changePanel }) => {
   const handleClick = () => {
-    navigate(navigateTo); // Programmatic navigation
+    if (changePanel) {
+      changePanel();
+    }
   };
 
   return (

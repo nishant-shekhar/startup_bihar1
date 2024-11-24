@@ -61,15 +61,7 @@ const NavBarNew = () => {
               >
                 Startups List
               </ScrollLink>
-              <ScrollLink
-                to="mentors"
-                smooth={true}
-                offset={-50}
-                duration={500}
-                className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
-              >
-                Mentors List
-              </ScrollLink>
+            
               <ScrollLink
                 to="coworking"
                 smooth={true}
@@ -77,7 +69,16 @@ const NavBarNew = () => {
                 duration={500}
                 className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
               >
-                Coworking Space
+                Vission
+              </ScrollLink>
+              <ScrollLink
+                to="mentors"
+                smooth={true}
+                offset={-50}
+                duration={500}
+                className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
+              >
+                Facilities
               </ScrollLink>
               <ScrollLink
                 to="work"

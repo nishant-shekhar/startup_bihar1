@@ -9,7 +9,7 @@ const MentorsList = ({ onProfileClick }) => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					"http://localhost:3000/api/startupProfile/list",
+					"http://localhost:3007/api/startupProfile/list",
 				);
 				setSdata(response.data.documents);
 			} catch (error) {

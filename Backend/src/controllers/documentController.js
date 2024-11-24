@@ -132,30 +132,28 @@ const getAllDocumentsWithUserDetails = async (req, res) => {
   try {
     const documents = await prisma.document.findMany({
       select: {
-        id: true,
-        coFounderNames: true,
-        logoPath: true,
-        category:true,
-         // Only select coFounderNames from Document
+        id:true,
         user: {
           select: {
-            user_id: true,          // Include other fields from User as needed
-            registration_no: true,  // Example field; adjust as necessary
-            company_name:true
-            // Add more fields if needed, but exclude `password`
+            user_id: true,             // Fields from the User model
+            registration_no: true,
+            company_name: true,
+            
           },
         },
       },
     });
 
     return res.status(200).json({
-      message: 'Documents with user details retrieved successfully',
-      documents,
+      message: 'Documents with user and program details retrieved successfully',
+      data: documents,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching documents with user details:', error);
     res.status(500).json({ error: 'An error occurred while fetching documents' });
   }
+
+  
 };
 
 const updateDocumentStatus = async (req, res) => {

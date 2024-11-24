@@ -3,10 +3,10 @@ import { useFormik } from 'formik';
 import axios from 'axios';
 import Upload from './Upload';
 
-const DocumentUpload = () => {
+const StartupForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  
+
 
   // Formik setup
   const formik = useFormik({
@@ -38,7 +38,7 @@ const DocumentUpload = () => {
         }
       }
       try {
-        const response = await axios.post('http://localhost:3010/api/StartupProfile', formData, {
+        const response = await axios.post('http://localhost:3007/api/StartupProfile', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `${localStorage.getItem('token')}`, // Assuming you store the token in localStorage
@@ -55,7 +55,7 @@ const DocumentUpload = () => {
 
     },
   });
-  const handleFileChange = (file, fieldName) => {
+  const handleFileChangeForm = (file, fieldName) => {
     // Update Formik's state with the selected file
     formik.setFieldValue(fieldName, file);
   };
@@ -197,8 +197,14 @@ const DocumentUpload = () => {
                   className="border rounded w-full py-2 px-3"
                   id="websiteLink"
                   name="websiteLink"
-                  type="url"
-                  onChange={formik.handleChange}
+                  type="text"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formik.setFieldValue(
+                      "websiteLink",
+                      value.startsWith("http") ? value : `https://${value}`
+                    );
+                  }}
                   value={formik.values.websiteLink}
                 />
               </div>
@@ -265,7 +271,7 @@ const DocumentUpload = () => {
                 <Upload
                   label="companyLogo"
                   name="logo"
-                  onChange={(file) => handleFileChange(file, 'logo')}
+                  onChange={(file) => handleFileChangeForm(file, 'logo')}
                 />
               </div>
 
@@ -274,7 +280,7 @@ const DocumentUpload = () => {
                 <Upload
                   label="certificate"
                   name="certificate"
-                  onChange={(file) => handleFileChange(file, 'certificate')}
+                  onChange={(file) => handleFileChangeForm(file, 'certificate')}
                 />
               </div>
 
@@ -286,10 +292,10 @@ const DocumentUpload = () => {
           </div>
         </div>
       </div>
-      
+
     </div>
 
   );
 };
 
-export default DocumentUpload;
+export default StartupForm;

@@ -25,7 +25,7 @@ const LoginCopy = () => {
     }
 
     try {
-      const loginUrl = isAdminLogin ? 'http://localhost:3010/api/userlogin/api/adminlogin' : 'http://localhost:3010/api/userlogin';
+      const loginUrl = isAdminLogin ? 'http://localhost:3007/api/adminlogin' : 'http://localhost:3007/api/userlogin';
 
       const response = await fetch(loginUrl, {
         method: 'POST',
@@ -44,13 +44,21 @@ const LoginCopy = () => {
       if (response.ok) {
         toast.success(data.message || 'Login successful!');
         localStorage.setItem('token', `Bearer ${data.token}`);
-        if (!isAdminLogin) {
-          localStorage.setItem('user_id', data.user_id);
-          localStorage.setItem('registration_no', data.registration_no);
-        }
 
+        if (!isAdminLogin) {
+          localStorage.setItem('registration_no', data.registration_no);
+          localStorage.setItem('user_id', data.user_id);
+
+        }else if(isAdminLogin){
+          localStorage.setItem('admin_id', data.admin_id);
+          localStorage.setItem('admin_name', data.name);
+          localStorage.setItem('admin_designation', data.designation);
+          localStorage.setItem('admin_role', data.role);
+
+        }
+       
         // Redirect based on login type
-        navigate(isAdminLogin ? '/adminMain' : '/UserProfile');
+        navigate(isAdminLogin ? '/AdminProfile' : '/StartupProfile');
       } else {
         setErrorMessage(data.error || 'Login failed');
         toast.error(data.error || 'Login failed');

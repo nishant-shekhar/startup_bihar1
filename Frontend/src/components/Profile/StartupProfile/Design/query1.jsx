@@ -2,7 +2,12 @@ import React, { Fragment } from 'react'
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom';
 
-const Query1 = ({ text, text1, text2, navigateTo }) => {
+const Query1 = ({ text, text1, text2, changePanel }) => {
+  const handleClick = () => {
+    if (changePanel) {
+      changePanel();
+    }
+  };
 
   return (
     // Trigger navigation on click

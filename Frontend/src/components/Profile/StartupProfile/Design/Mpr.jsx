@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Mpr =({navigateTo}) => {
-  const navigate = useNavigate(); // useNavigate hook for navigation
-
+const Mpr =({changePanel}) => {
   const handleClick = () => {
-    navigate(navigateTo); // Programmatic navigation
+    if (changePanel) {
+      changePanel();
+    }
   };
 
   return (

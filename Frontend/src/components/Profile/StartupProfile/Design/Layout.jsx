@@ -1,5 +1,5 @@
 import React from 'react';
-import LeftBar from './Navbar/LeftBar'; // Adjust the import path as needed
+import LeftBar from '../Navbar/LeftBar'; // Adjust the import path as needed
 
 const Layout = ({ children, showLeftBar }) => {
     return (

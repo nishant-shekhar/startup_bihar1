@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import apply_now from '../../../assets/apply_now_.png';
+import apply_now from '../../../../assets/apply_now_.png';
 import { useNavigate } from 'react-router-dom';
 
-const GrievanceContainer = ({ text, text1, navigateTo}) => {
-  const navigate = useNavigate(); // useNavigate hook for navigation
-
+const GrievanceContainer = ({ text, text1, changePanel}) => {
   const handleClick = () => {
-    navigate(navigateTo); // Programmatic navigation
+    if (changePanel) {
+      changePanel();
+    }
   };
   return (
     <div className="w-72 h-30 cursor-pointer flex relative justify-between items-start mt-6 p-4 rounded-xl bg-gradient-to-r from-green-600 to-teal-600 transition-transform duration-300 ease-in-out hover:scale-105" onClick={handleClick}> {/* Match width and height with Applytranche */}

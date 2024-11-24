@@ -1,11 +1,12 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import Startupfinanceandemployee from './startupfinanceandemployee';
-import Applytranche from './applytranche';
-import Query1 from './query1';
-import GrievanceContainer from './grievance-container';
+import Startupfinanceandemployee from './Design/startupfinanceandemployee';
+import Applytranche from './Design/applytranche';
+import Query1 from './Design/query1';
+import GrievanceContainer from './Design/grievance-container';
 
-const UserProfile = (props) => {
+const UserProfile = ({ changePanel }) => {
+  console.log(changePanel);
   return (
     <div className="flex flex-col h-screen overflow-auto items-start justify-start p-4">
       <Helmet>
@@ -58,7 +59,7 @@ const UserProfile = (props) => {
               text1="Please describe the issue in detail"
               imageSrc="/external/grievance-image.png"
               imageAlt="Grievance Form Image"
-              navigateTo="/grievance"
+              changePanel={() => changePanel('Grievance')}
             />
           </div>
 
@@ -68,13 +69,13 @@ const UserProfile = (props) => {
             <Applytranche
               text="MPR"
               text1="Upload MPR for verification"
-              navigateTo="/Upload"
+              changePanel={() => changePanel('Mpr')}
             />
             <h3 className="text-gray-900 text-lg mt-8">Post Seed Fund</h3>
             <Applytranche
               text="Apply for Post Seed Fund"
               text1="Fill all the required elements of the form."
-              navigateTo="/postseed"
+              changePanel={() => changePanel('PostSeed')}
             />
           </div>
 
@@ -95,5 +96,6 @@ const UserProfile = (props) => {
     </div>
   );
 };
+
 
 export default UserProfile;

@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-const QPRModuleDetails = ({ id }) => {
+const AccelerationProgrammeModuleDetails = ({ id }) => {
 	const [data, setData] = useState({});
 	const [isCommentVisible, setIsCommentVisible] = useState(false);
 	const [comment, setComment] = useState("");
 	const [showDialog, setShowDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const token = localStorage.getItem("token");
+
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
 
@@ -15,7 +17,7 @@ const QPRModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://localhost:3007/api/Qreport/v1/${id}`,
+					`http://localhost:3007/api/acceleration/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -44,7 +46,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/Qreport/u1/${id}`,
+				`http://localhost:3007/api/acceleration/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -68,7 +70,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to partial reject...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/Qreport/u1/${id}`,
+				`http://localhost:3007/api/acceleration/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -92,7 +94,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/Qreport/u1/${id}`,
+				`http://localhost:3007/api/acceleration/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -145,9 +147,12 @@ const QPRModuleDetails = ({ id }) => {
 	return (
 		<div
 			className="h-screen overflow-y-auto"
-			style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
+			style={{
+				msOverflowStyle: "none",
+				scrollbarWidth: "none",
+			}}
 		>
-			<h1 className="pt-5 pl-8 text-2xl">QPR Module Details</h1>
+			<h1 className="pt-5 pl-8 text-2xl">Acceleration Programme Module Details</h1>
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">
 					<tbody>
@@ -161,75 +166,48 @@ const QPRModuleDetails = ({ id }) => {
 							</tr>
 						)}
 						<tr>
-							<td className="py-4 px-4 border">
-								Current stage of your startup
-							</td>
-							<td className="py-4 px-4 border">{data.currentStage}</td>
+							<td className="py-4 px-4 border">Name of the Host Institute/Organisation</td>
+							<td className="py-4 px-4 border">{data.hostInstitute}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">
-								Average turnover (In Lakhs, Since company formation till date)
-							</td>
-							<td className="py-4 px-4 border">{data.averageTurnover}</td>
+							<td className="py-4 px-4 border">Name of Programme/ Event</td>
+							<td className="py-4 px-4 border">{data.programName}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">
-								Current revenue (In lakhs, Last Financial Year)
-							</td>
-							<td className="py-4 px-4 border">{data.currentRevenue}</td>
+							<td className="py-4 px-4 border">Program/Event Start date</td>
+							<td className="py-4 px-4 border">{data.startDate}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">Net Profit or Loss</td>
-							<td className="py-4 px-4 border">{data.netProfitOrLoss}</td>
+							<td className="py-4 px-4 border">Program/Event End date</td>
+							<td className="py-4 px-4 border">{data.endDate}</td>
 						</tr>
 						<tr>
-  <td className="py-4 px-4 border">
-    Any other fund raised or Grant received?
-  </td>
-  <td className="py-4 px-4 border">
-    {data.fundRaised ? "Yes" : "No"}
-  </td>
-</tr>
-
-						<tr>
-							<td className="py-4 px-4 border">No. of work orders received</td>
-							<td className="py-4 px-4 border">{data.workOrders}</td>
+							<td className="py-4 px-4 border">Website of the program/event (if any)</td>
+							<td className="py-4 px-4 border">{data.programWebsite}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">
-								Total Direct Employment generated
-							</td>
-							<td className="py-4 px-4 border">
-								{data.directEmployment}
-							</td>
+							<td className="py-4 px-4 border">Name of founder attended the program/event</td>
+							<td className="py-4 px-4 border">{data.founderName}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">
-								Total indirect employment generated
-							</td>
-							<td className="py-4 px-4 border">
-								{data.indirectEmployment}
-							</td>
+							<td className="py-4 px-4 border">Name of Co-founder attended the program/event</td>
+							<td className="py-4 px-4 border">{data.coFounderName}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">Total male employees</td>
-							<td className="py-4 px-4 border">{data.maleEmployees}</td>
+							<td className="py-4 px-4 border">Total Fees paid for the participation per person (INR)</td>
+							<td className="py-4 px-4 border">{data.participationFee}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">Total female employees</td>
-							<td className="py-4 px-4 border">{data.femaleEmployees}</td>
+							<td className="py-4 px-4 border">Total rail fare/ air tickets and hotel room charges (INR)</td>
+							<td className="py-4 px-4 border">{data.travelAccommodationCost}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">
-								New partnerships or collaborations?
-							</td>
-							<td className="py-4 px-4 border">
-								{data.partnerships}
-							</td>
+							<td className="py-4 px-4 border">Total Persons</td>
+							<td className="py-4 px-4 border">{data.totalPersons}</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border">Goals for next Quarter</td>
-							<td className="py-4 px-4 border">{data.nextQuarterGoals}</td>
+							<td className="py-4 px-4 border">Total Fees</td>
+							<td className="py-4 px-4 border">{data.totalFee}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -314,7 +292,7 @@ const QPRModuleDetails = ({ id }) => {
 				)}
 				{showDialog && (
 					<div className="fixed inset-0 flex items-center justify-center z-50">
-						<div className="bg-black bg-opacity-50 absolute inset-0" />
+						<div className="bg-black bg-opacity-50 absolute inset-0"></div>
 						<div className="bg-white p-6 rounded-md shadow-lg z-10">
 							<p className="text-lg font-semibold">{dialogMessage}</p>
 						</div>
@@ -325,4 +303,4 @@ const QPRModuleDetails = ({ id }) => {
 	);
 };
 
-export default QPRModuleDetails;
+export default AccelerationProgrammeModuleDetails;

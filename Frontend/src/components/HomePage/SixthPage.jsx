@@ -37,7 +37,7 @@ const SixthPage = () => {
             .then((response) => {
                 if (response.ok) {
                     setIsSubmitted(true);
-                    setTimeout(() => setIsSubmitted(false), 3000); // Hide success message after 3 seconds
+                    setTimeout(() => setIsSubmitted(false), 3010); // Hide success message after 3 seconds
                 }
             })
             .catch(() => {
@@ -59,7 +59,7 @@ const SixthPage = () => {
                             Have questions? Fill the form, and we will get back to you!
                         </p>
                         <form onSubmit={handleSubmit} method="POST" className="mt-6 space-y-4">
-                            <input type="hidden" name="access_key" value="d4872793-1083-41ad-815d-044acab7243f" />
+                            <input type="hidden" name="access_key" value="d6295a64-037f-47f0-adb4-cf487d753a74" />
 
                             {/* Row for Name and Email */}
                             <div className="flex gap-4">
@@ -154,11 +154,11 @@ const SixthPage = () => {
 
                         <div className="absolute bottom-40 left-0 w-full text-white text-center">
                             <p className="flex items-center justify-center gap-2 text-lg font-medium">
-                                📞 Phone: 957234601 / 957234601
+                                📞 Phone: 957234XXXX / 957234XXXX
                             </p>
                             <p className="mt-2 text-lg font-medium">
                                 📍 Address: Mauryalok Complex B-hub 5th floor, Patna <br />
-                                Pincode: 901503
+                                Pincode: 800001
                             </p>
                         </div>
                     </div>
