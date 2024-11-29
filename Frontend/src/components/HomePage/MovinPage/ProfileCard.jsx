@@ -15,13 +15,14 @@ const ProfileCard = ({ status, statusColor, profileImage, companyName, founderNa
                     src={profileImage}
                     alt="Profile"
                     className="rounded-full"
-                    style={{ width: '110px', height: '110px' }}
+
+                    style={{ width: '110px', height: '110px' ,borderColor: '#4C51BF',borderWidth:'5px'}}
                 />
             </div>
 
             {/* Company and Founder Information */}
             <div className="text-start mb-4">
-                <h2 className="text-lg font-bold text-gray-800">{companyName}</h2>
+                <h2 className="text-base font-bold text-gray-800">{companyName}</h2>
                 <p className="text-gray-500 text-sm">{`Founder, ${founderName}`}</p>
             </div>
 

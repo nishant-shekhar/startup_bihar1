@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 
 
-const CompanyCard2 = ({ logo, fundingStatus, name, founder, founderLogo,startupSince, Category, tagline }) => {
+const StartupCardWide = ({ logo, fundingStatus, name, founder, founderLogo,startupSince, Category, tagline }) => {
   const dotColor = fundingStatus === 'Seed Funded' ? 'bg-green-500' : 'bg-red-500';
 
   return (
@@ -48,4 +48,4 @@ const CompanyCard2 = ({ logo, fundingStatus, name, founder, founderLogo,startupS
   );
 };
 
-export default CompanyCard2;
+export default StartupCardWide;

@@ -33,6 +33,7 @@ const FormAccepted = ({ url }) => {
       // Set the message based on the document status
       const statusMessages = {
         created: "Document Status: Initiated - Your document is under review.",
+        Updated: "Document Status: Initiated - Your document is under review.",
         accepted: "Document Status: Accepted - Your document has been approved.",
         rejected: "Document Status: Rejected - Your document has been rejected.",
       };

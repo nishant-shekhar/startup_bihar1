@@ -106,7 +106,7 @@ const getStartupDetails = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { user_id, password, registration_no, company_name, startup_since, about ,founder_name} = req.body;
+    const { user_id, password, registration_no, company_name, startup_since, about ,founder_name,mobile,email,topStartup} = req.body;
 
     if (!user_id || !password || !registration_no || !company_name) {
       return res.status(400).json({ error: 'All fields are required: user_id, password, registration_no, and company_name' });
@@ -130,7 +130,10 @@ const createUser = async (req, res) => {
         company_name,
         startup_since,
         founder_name,
-        about
+        about,
+        mobile,
+        email,
+        topStartup: topStartup === undefined ? true : topStartup, // Default to true if not provided
       },
     });
 
@@ -347,6 +350,48 @@ const updateAbout = async (req, res) => {
   }
 };
 
+// Fetch all top startups
+const getTopStartupDetails = async (req, res) => {
+  try {
+    // Find the startups where topStartup is true and select only basic fields
+    const startups = await prisma.user.findMany({
+      where: { topStartup: true },
+      select: {
+        user_id: true,
+        company_name: true,
+        registration_no: true,
+        registration_year: true,
+        about: true,
+        moto: true,
+        facebook: true,
+        website: true,
+        twitter: true,
+        instagram: true,
+        mobile: true,
+        logo: true,
+        founder_dp: true,
+        founder_name: true,
+        startup_since:true
+      },
+    });
+
+    // If no startups are found, return an error
+    if (startups.length === 0) {
+      console.log('No startup found with topStartup tag');
+      return res.status(404).json({ error: 'No top startups found' });
+    }
+
+    console.log('Top startup details:', startups);
+
+    // Respond with the basic details
+    res.status(200).json({ startups });
+  } catch (error) {
+    console.error('Error fetching startup details:', error);
+    res.status(500).json({ error: 'An error occurred while fetching startup details', details: error.message });
+  }
+};
+
+
 
 module.exports = {
   userLogin,
@@ -361,5 +406,7 @@ module.exports = {
   updateTwitter,
   updateMoto,
   updateLogo,
-  updateFounderDp
+  updateFounderDp,
+  getTopStartupDetails,
+
 };

@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp } = require('../controllers/userController');
+const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails } = require('../controllers/userController');
 const { authenticateUser } = require('../middlewares/authenticateUser');
 
 const router = express.Router();
@@ -25,6 +25,7 @@ router.put('/update-founder_dp', authenticateUser, upload.fields([
     { name: 'founder_dp', maxCount: 1 }
 ]), updateFounderDp);
 router.get('/startup-details', getStartupDetails);
+router.get('/top-startups', getTopStartupDetails);
 
 
 module.exports = router;

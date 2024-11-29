@@ -14,11 +14,14 @@ import QPRModuleDetails from "./QPR_Module/QPRModule";
 import AccelerationProgrammeModuleDetails from "./Acceleration_Programme_Module/AccerelationModuleDetails.jsx";
 import IncubationModuleDetails from "./Incubation_Module/IncubationModuleDetails.jsx";
 import StartupProfileDetails from "./ProfileDetails.jsx";
+import RegisterStartup from "./RegisterStartup.jsx";
 
 const AdminMainProfile = () => {
 	const [activePage, setActivePage] = useState("StartupProfile"); // Controls second section
 	const [selectedId, setSelectedId] = useState(""); // Controls selected ID for details
 	const [detailsView, setDetailsView] = useState(false); // Controls if third section is displayed
+	const [hasDetailsPanel, setHasDetailsPanel] = useState(true); // Controls the visibility of the third section
+
 
 	// Handles the main content section (second section) based on `activePage`
 	function handlePageChange() {
@@ -110,7 +113,10 @@ const AdminMainProfile = () => {
 				return <CoworkingModule />;
 
 			case "StartupList":
+				setHasDetailsPanel(false); // Disable third section for this case
 				return <StartupList />;
+			case "RegisterStartup":
+				return <RegisterStartup />;
 
 			case "DataMining":
 				return <DataMining />;
@@ -166,17 +172,29 @@ const AdminMainProfile = () => {
 	};
 
 	return (
-		<div className="grid grid-cols-12 ">
+		<div className="grid grid-cols-12">
 			{/* First Section - Left Sidebar */}
-			<div className="col-span-2 ">
+			<div className="col-span-2">
 				<LeftBar changePanel={changePanel} />
 			</div>
 
 			{/* Second Section - Main Content Area */}
-			<div className="col-span-3">{handlePageChange()}</div>
+			<div
+				className={
+					hasDetailsPanel
+						? "col-span-3"
+						: "col-span-10"
+				}
+			>
+				{handlePageChange()}
+			</div>
 
-			{/* Third Section - Details Section */}
-			<div className="col-span-7  bg-gray-100">{renderDetailsSection()}</div>
+			{/* Third Section - Details Section (conditionally rendered) */}
+			{hasDetailsPanel && (
+				<div className="col-span-7 bg-gray-100">
+					{renderDetailsSection()}
+				</div>
+			)}
 		</div>
 	);
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaSearch } from 'react-icons/fa'; // Importing a search icon from react-icons
 
-const SearchBox = () => {
+const SearchBoxb = () => {
   return (
     <div className="mr-3 flex items-center bg-[#f4f5fa] p-2 rounded-full w-full max-w-md mx-auto">
       <FaSearch className="text-gray-400 m-2" />
@@ -14,4 +14,4 @@ const SearchBox = () => {
   );
 };
 
-export default SearchBox;
+export default SearchBoxb;

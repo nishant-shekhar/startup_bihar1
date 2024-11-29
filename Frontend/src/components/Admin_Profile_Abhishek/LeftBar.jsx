@@ -33,6 +33,7 @@ const LeftBar = ({ changePanel }) => {
     { label: "Startup List", panel: "StartupList" },
     { label: "Data Mining", panel: "DataMining" },
     { label: "Mentors List", panel: "MentorsList" },
+    { label: "Register New Startups", panel: "RegisterStartup" },
     { label: "Grievance Redressal System", panel: "GrievanceRedressalSystem" },
   ];
 
@@ -52,6 +53,7 @@ const LeftBar = ({ changePanel }) => {
 	  "Startup List",
 	  "Data Mining",
 	  "Mentors List",
+	  "Register New Startups",
 	  "Grievance Redressal System",
 	],
 	finance: [

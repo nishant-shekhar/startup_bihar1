@@ -59,6 +59,9 @@ model User {
   email                 String?
   mobile                String?
 
+  topStartup            Boolean  @default(false) // Add this field
+
+
   startup_since         String?
   about                 String?
   moto                  String?

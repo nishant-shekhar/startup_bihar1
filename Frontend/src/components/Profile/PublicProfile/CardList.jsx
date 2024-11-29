@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CompanyCard2 from './CompanyCard copy';
+import CompanyCard2 from './StartupCardWide';
 
 const CardList = ({ category }) => {
   // Sample card data

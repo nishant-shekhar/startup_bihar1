@@ -16,30 +16,31 @@ const StartupProfileDetails = ({ id }) => {
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false); // State to manage PDF modal visibility
 
-	useEffect(() => {
-		const fetchData = async () => {
-			if (id) {
-				try {
-					const response = await axios.get(`http://localhost:3007/api/StartupProfile/v1/${id}`, {
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `${token}`,
-						},
-					});
-					setData(response.data);
+	
+	console.log(data);
+	const fetchData = async () => {
+		if (id) {
+			try {
+				const response = await axios.get(`http://localhost:3007/api/StartupProfile/v1/${id}`, {
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`,
+					},
+				});
+				setData(response.data);
 
-				} catch (error) {
-					console.error("Error fetching data:", error);
-				}
-				console.log(`http://localhost:3007/api/StartupProfile/v1/${id}`);
-				console.log(data)
+			} catch (error) {
+				console.error("Error fetching data:", error);
 			}
-		};
+			console.log(`http://localhost:3007/api/StartupProfile/v1/${id}`);
+			console.log(data)
+		}
+	};
+	useEffect(() => {
+		
 
 		fetchData();
 	}, [id]);
-	console.log(data);
-
 
 	const handleReject = async () => {
 		handleDialog("Updating status to reject...");

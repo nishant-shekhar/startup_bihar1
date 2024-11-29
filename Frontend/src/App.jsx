@@ -4,6 +4,8 @@ import LoginCopy from './components/Login/LoginCopy';
 import HomePage from './components/HomePage/Home';
 import StartupProfileMain from './components/Profile/StartupProfile/StartupProfileMain';
 import AdminMainProfile from './components/Admin_Profile_Abhishek/AdminMainProfile';
+import StartupListCategory from './components/Profile/PublicProfile/StartupListCategory';
+import StartupPublicProfile from './components/Profile/PublicProfile/StartupPublicProfile';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,6 +21,8 @@ const App = () => {
         <Route path="/StartupProfile" element={<StartupProfileMain />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/AdminProfile" element={<AdminMainProfile />} />
+        <Route path="/StartupList" element={<StartupListCategory />} />
+        <Route path="/StartupPublicProfile" element={<StartupPublicProfile />} />
       </Routes>
     </Router>
   );
