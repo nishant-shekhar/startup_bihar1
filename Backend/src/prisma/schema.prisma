@@ -29,6 +29,7 @@ model UserNotification {
   admin_id              String
   notification          String
   related_to            String?
+  docLink               String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
 }
@@ -61,11 +62,16 @@ model User {
 
   topStartup            Boolean  @default(false) // Add this field
 
+  revenueLY             int?
+  employeeCount         int?
+  workOrders            int?
+  projects              int?
 
   startup_since         String?
   about                 String?
   moto                  String?
   logo                  String?
+  coverPic              String?
   founder_dp            String?
   founder_name          String?
   createdAt             DateTime @default(now())

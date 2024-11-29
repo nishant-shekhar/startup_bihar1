@@ -144,7 +144,7 @@ const HomeSection = () => {
 		{
 			imgurl:
 				"https://images.unsplash.com/photo-1517433456452-f9633a875f6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Clean energy startup
-			dateandtime: "10AM 25th April 2024",
+			dateandtime: "10AM 26th April 2024",
 			title: "EcoCharge",
 			subtitle: "Revolutionizing renewable energy",
 			tag: "Energy",

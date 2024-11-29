@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 
-const HomeSection = (startup_id="ns_apps") => {
+const StartupPublicProfile = (startup_id = "ns_apps") => {
 	const [startup, setStartup] = useState([]);
 	const data = [
 		{
@@ -158,7 +158,7 @@ const HomeSection = (startup_id="ns_apps") => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=${startup_id}`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=ns_apps`,
 			);
 
 			setStartup(response.data.startup);
@@ -186,7 +186,6 @@ const HomeSection = (startup_id="ns_apps") => {
 		// 		className="absolute left-20 top-48 w-72 h-72 rounded-3xl border-8 border-gray-200/30"
 		// 	/>
 		// </div>
-		<div className="h-screen overflow-y-auto">
 
 		<div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-100">
 			{/* Navigation */}
@@ -258,83 +257,88 @@ const HomeSection = (startup_id="ns_apps") => {
 				className="w-full h-52 object-cover"
 				alt="Cover Pic"
 			/>
-
 			{/* Profile Section */}
-			<div className=" px-4 ">
-				<div className="flex  md:flex-row items-start">
-					{/* Profile Image */}
-					<div className="rounded-3xl overflow-hidden w-5/12">
+			<div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 mx-4 sm:mx-10 lg:mx-20 my-2 sm:my-4">
+				{/* Image Container */}
+				<div className="sm:col-span-4 md:col-span-3 lg:col-span-2 flex items-center justify-center lg:justify-start h-[120px] sm:h-[150px] lg:h-[180px]">
+					<div className="w-[120px] sm:w-[150px] lg:w-[180px] aspect-w-1 aspect-h-1 overflow-hidden flex items-center justify-center">
 						<img
 							src={startup.logo || "default-logo.png"}
 							alt="Profile"
-							className=" mt-3 mx-2 object-cover rounded-3xl border-8 border-gray-200/30"
+							className="object-cover w-full h-full rounded-lg border-8 border-pink-200"
 						/>
 					</div>
+				</div>
 
-					{/* Startup Name and stuff */}
-					<div className="flex px-8 max-w-screen-lg w-screen ml-5 justify-between py-8">
-						<div className="">
-							<div className="flex items-center gap-2 ">
-								<h1 className="text-2xl font-semibold">
-									{startup.company_name}
-								</h1>
-								<span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center">
-									<svg
-										className="w-3 h-3 mr-1"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-										xmlns="http://www.w3.org/2000/svg"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M13 10V3L4 14h7v7l9-11h-7z"
-										/>
-									</svg>
-									PRO
-								</span>
-							</div>
-							<div className="text-lg mt-1">{startup.moto}</div>
-							<p className="text-gray-600 ">
-								{startup.founder_name} (Founder)
-								<br />
-							</p>
-
-							<div className="flex gap-3 mb-2 mt-5 ">
-								<button className="px-6 py-2 bg-black text-white rounded-lg">
-									Contact
-								</button>
-								<a
-									href={startup.website || "#"}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="px-6 py-2 border border-gray-300 rounded-lg"
-								>
-									Visit Website
-								</a>
-							</div>
-						</div>
+				{/* Green Container */}
+				<div className="sm:col-span-8 md:col-span-9 lg:col-span-6 h-[150px] sm:h-[150px] lg:h-[180px] flex flex-col justify-center sm:justify-start items-center sm:items-start  p-4">
+					<div className="flex items-center gap-2 text-center sm:text-left">
+						<h1 className="text-2xl font-semibold">
+							{startup.company_name}
+						</h1>
+						<span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center">
+							<svg
+								className="w-3 h-3 mr-1"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M13 10V3L4 14h7v7l9-11h-7z"
+								/>
+							</svg>
+							Top Startup
+						</span>
 					</div>
 
-					{/* Stats & Links*/}
-					<div className="py-10 pr-10">
-						<div className="flex justify-between items-center">
+					<div className="text-lg mt-1 text-center sm:text-left">
+						{startup.moto}
+					</div>
+
+					<p className="text-gray-600 text-center sm:text-left">
+						{startup.founder_name} (Founder)
+						<br />
+					</p>
+
+					<div className="flex gap-3 mb-2 mt-5 justify-center sm:justify-start">
+						<button className="px-6 py-2 bg-black text-white rounded-lg">
+							Contact
+						</button>
+						<a
+							href={startup.website || "#"}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="px-6 py-2 border border-gray-300 rounded-lg"
+						>
+							Visit Website
+						</a>
+					</div>
+				</div>
+
+
+				{/* Purple Container */}
+				<div className="sm:col-span-12 lg:col-span-4  ">
+					{/* Add content here if needed to ensure the height expands properly */}
+					<div className="">
+						<div className="flex justify-center lg:justify-end items-center gap-4 sm:my-4">
 							<div className="text-center">
-								<div className="text-xl font-semibold">2,985</div>
+								<div className="text-xl font-semibold">12</div>
 								<div className="text-gray-600">Employees</div>
 							</div>
 							<div className="text-center">
-								<div className="text-xl font-semibold">132</div>
-								<div className="text-gray-600">Following</div>
+								<div className="text-xl font-semibold">16</div>
+								<div className="text-gray-600">Work Order</div>
 							</div>
 							<div className="text-center">
-								<div className="text-xl font-semibold">548</div>
-								<div className="text-gray-600">Likes</div>
+								<div className="text-xl font-semibold">3</div>
+								<div className="text-gray-600">Projects</div>
 							</div>
 						</div>
-						<div className="flex gap-6  mt-3">
+						<div className="flex justify-center lg:justify-end  gap-6 mt-3 lg:mt-6">
 							<a
 								href={startup.twitter || "#"}
 								target="_blank"
@@ -372,27 +376,11 @@ const HomeSection = (startup_id="ns_apps") => {
 							</a>
 						</div>
 					</div>
-
-					<br />
-
-					{/* Badges */}
-					{/* <div className="flex gap-2">
-							<span className="w-8 h-8 flex items-center justify-center bg-orange-500 text-white rounded-full">
-								26
-							</span>
-							<span className="w-8 h-8 flex items-center justify-center bg-purple-600 text-white rounded-full">
-								6
-							</span>
-							<span className="w-8 h-8 flex items-center justify-center bg-gray-900 text-white rounded-full">
-								12
-							</span>
-						</div> */}
 				</div>
-				<hr className="mx-10 border-gray-500/30" />
 			</div>
 
-			<h1 className="pl-10 mt-5 font-bold font-poppins text-2xl ">Showcase</h1>
-			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6	mx-5">
+			<h1 className="pl-10 mt-5 font-bold font-poppins text-lg sm:text-xl lg:text-2xl lg:mx-20">Showcase</h1>
+			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6	mx-5 lg:mx-20">
 				{data.map((data, index) => (
 					<ShowcaseCard
 						key={index}
@@ -404,9 +392,8 @@ const HomeSection = (startup_id="ns_apps") => {
 					/>
 				))}
 			</div>
-			</div>
-			</div>
-		);
+		</div>
+	);
 };
 
-export default HomeSection;
+export default StartupPublicProfile;
