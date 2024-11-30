@@ -83,7 +83,6 @@ const getShowcaseUser = async (req, res) => {
     const showcase = await prisma.showcase.findUnique({
       where: { user_id },
       select: {
-        user_id: true,
         title: true,
         subtitle: true,
         projectLink: true,
@@ -104,7 +103,7 @@ const getShowcaseUser = async (req, res) => {
     console.log('showcase details:', showcase);
 
     // Respond with the basic details
-    res.status(200).json({ startup });
+    res.status(200).json({ showcase });
   } catch (error) {
     console.error('Error fetching showcase details:', error);
     res.status(500).json({ error: 'An error occurred while fetching showcase details', details: error.message });
