@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const {  postShowcase, getShowcaseUser, } = require('../controllers/showcaseController');
+const {  postShowcase, getShowcaseUser, deleteShowcase, } = require('../controllers/showcaseController');
 const { authenticateUser } = require('../middlewares/authenticateUser');
 
 const router = express.Router();
@@ -13,7 +13,8 @@ router.post('/post', authenticateUser,
     upload.fields([
         { name: 'picUrl', maxCount: 1 },
       ]),postShowcase);
-router.get('/get-showcase', getShowcaseUser);
+      router.get('/get-showcase/:user_id', getShowcaseUser);
+      router.delete('/delete/:id',authenticateUser, deleteShowcase);
 
 
 
