@@ -234,6 +234,29 @@ const updateInstagram = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating Instagram' });
   }
 };
+// Update Linkedin
+const updateLinkedin = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+
+    const user_id = getUserIdFromToken(token);
+    const { linkedin } = req.body;
+    if (!linkedin) {
+      return res.status(400).json({ error: 'Correct Field required' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { user_id },
+      data: { linkedin },
+    });
+
+    res.status(200).json({ message: 'Instagram updated successfully', linkedin: updatedUser.linkedin });
+  } catch (error) {
+    console.error('Error updating Instagram:', error);
+    res.status(500).json({ error: 'An error occurred while updating LinkedIn' });
+  }
+};
 
 // Update Website
 const updateWebsite = async (req, res) => {
@@ -301,6 +324,27 @@ const updateFounderDp = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating Website' });
   }
 };
+// Update applicantDp
+const updateCoverDp = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+
+    const user_id = getUserIdFromToken(token);
+    const coverPic = req.files.coverPic ? req.files.coverPic[0].location : null;
+
+
+    const updatedUser = await prisma.user.update({
+      where: { user_id },
+      data: { coverPic },
+    });
+
+    res.status(200).json({ message: 'Website updated successfully', founder_dp: updatedUser.coverPic });
+  } catch (error) {
+    console.error('Error updating Website:', error);
+    res.status(500).json({ error: 'An error occurred while updating Website' });
+  }
+};
 
 // Update Moto
 const updateMoto = async (req, res) => {
@@ -359,19 +403,12 @@ const getTopStartupDetails = async (req, res) => {
       select: {
         user_id: true,
         company_name: true,
-        registration_no: true,
-        registration_year: true,
-        about: true,
         moto: true,
-        facebook: true,
-        website: true,
-        twitter: true,
-        instagram: true,
-        mobile: true,
         logo: true,
         founder_dp: true,
         founder_name: true,
-        startup_since:true
+        startup_since:true,
+        category:true
       },
     });
 
@@ -406,6 +443,7 @@ module.exports = {
   updateTwitter,
   updateMoto,
   updateLogo,
+  updateCoverDp,
   updateFounderDp,
   getTopStartupDetails,
 

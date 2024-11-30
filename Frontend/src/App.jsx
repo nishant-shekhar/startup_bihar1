@@ -22,8 +22,8 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/AdminProfile" element={<AdminMainProfile />} />
         <Route path="/StartupList" element={<StartupListCategory />} />
-        <Route path="/StartupPublicProfile" element={<StartupPublicProfile />} />
-      </Routes>
+        <Route path="/StartupPublicProfile/:id" element={<StartupPublicProfile />} />
+        </Routes>
     </Router>
   );
 };

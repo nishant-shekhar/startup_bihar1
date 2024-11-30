@@ -66,15 +66,20 @@ const ThirdPage = () => {
                                         women.
                                     </p>
                                 </div>
-                                <div className="relative min-h-[30rem] w-full grow max-lg:mx-auto max-lg:max-w-sm">
-                                    <div className="absolute inset-x-10 bottom-0 top-10 overflow-hidden rounded-t-[12cqw] border-x-8 border-t-8 border-gray-700 bg-gray-900 shadow-2xl">
-                                        <img
-                                            className="size-full object-cover object-top"
-                                            src="https://firebasestorage.googleapis.com/v0/b/vehicleprocurement-95a91.appspot.com/o/StartupPortal%2Fstartup_policy.webp?alt=media&token=ac622602-e085-4018-9320-417613fc45b8"
-                                            alt="Mobile friendly"
-                                        />
-                                    </div>
-                                </div>
+                                <div
+  className="relative min-h-[30rem] w-full grow max-lg:mx-auto max-lg:max-w-sm cursor-pointer"
+  onClick={() => window.open("https://www.startupindia.gov.in/srf/portal/SRF_2022_Result_page/Bihar.pdf", "_blank")}
+  title="Click to view the PDF"
+>
+  <div className="absolute inset-x-10 bottom-0 top-10 overflow-hidden rounded-t-[12cqw] border-x-8 border-t-8 border-gray-700 bg-gray-900 shadow-2xl transition-transform duration-300 hover:scale-105">
+    <img
+      className="size-full object-cover object-top"
+      src="https://firebasestorage.googleapis.com/v0/b/vehicleprocurement-95a91.appspot.com/o/StartupPortal%2Fstartup_policy.webp?alt=media&token=ac622602-e085-4018-9320-417613fc45b8"
+      alt="Mobile friendly"
+    />
+  </div>
+</div>
+
                             </div>
                             <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 lg:rounded-l-[2rem]"></div>
                         </div>

@@ -61,11 +61,13 @@ model User {
   mobile                String?
 
   topStartup            Boolean  @default(false) // Add this field
+  status                String?
+  category              String?
 
-  revenueLY             int?
-  employeeCount         int?
-  workOrders            int?
-  projects              int?
+  revenueLY             Int?
+  employeeCount         Int?
+  workOrders            Int?
+  projects              Int?
 
   startup_since         String?
   about                 String?
@@ -76,6 +78,20 @@ model User {
   founder_name          String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
+}
+
+model Showcase{
+  id                     String   @id @default(uuid()) @map("_id")
+  user_id                String               @unique
+ 
+  title                  String
+  subtitle               String
+  picUrl                 String
+  projectLink            String?
+  location               String?
+  date                   String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
 }
 
 model Document {

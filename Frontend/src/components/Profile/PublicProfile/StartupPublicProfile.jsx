@@ -1,5 +1,7 @@
 import React from "react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
+
 import { useEffect, useState } from "react";
 import {
 	FaTwitter,
@@ -10,7 +12,9 @@ import {
 } from "react-icons/fa";
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 
-const StartupPublicProfile = (startup_id = "ns_apps") => {
+const StartupPublicProfile = () => {
+	const { id } = useParams(); // Fetch the dynamic id from the URL
+
 	const [startup, setStartup] = useState([]);
 	const data = [
 		{
@@ -158,7 +162,7 @@ const StartupPublicProfile = (startup_id = "ns_apps") => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=ns_apps`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);

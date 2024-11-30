@@ -14,6 +14,7 @@ const matchingLoanRoutes = require('./routes/matchingLoanRoutes')
 const incubationRoutes = require('./routes/incubationRoutes')
 const coWorkingApplicationRoutes = require('./routes/coWorkingApplicationRoutes')
 const iprReimbursementRoutes = require('./routes/iprReimbursementRoutes')
+const showcaseRoutes = require('./routes/showcaseRoutes')
 
 
 const { PrismaClient } = require('@prisma/client');
@@ -40,6 +41,7 @@ app.use('/api/matchingLoan', matchingLoanRoutes);
 app.use('/api/incubation', incubationRoutes);
 app.use('/api/coworking', coWorkingApplicationRoutes);
 app.use('/api/iprReimbursement', iprReimbursementRoutes);
+app.use('/api/showcase', showcaseRoutes);
 
 
 

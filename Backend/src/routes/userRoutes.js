@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails } = require('../controllers/userController');
+const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp } = require('../controllers/userController');
 const { authenticateUser } = require('../middlewares/authenticateUser');
 
 const router = express.Router();
@@ -18,6 +18,7 @@ router.put('/update-instagram', updateInstagram);
 router.put('/update-website', updateWebsite);
 router.put('/update-moto', updateMoto);
 router.put('/update-about', updateAbout);
+router.put('/update-cover-pic', updateCoverDp);
 router.put('/update-logo', authenticateUser, upload.fields([
     { name: 'logo', maxCount: 1 }
 ]), updateLogo);

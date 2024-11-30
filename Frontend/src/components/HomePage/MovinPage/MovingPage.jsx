@@ -10,6 +10,29 @@ const MovingPage = () => {
     const [profiles, setProfiles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const startupMottos = [
+        "Innovating for a better tomorrow.",
+        "Empowering ideas, transforming industries.",
+        "Where creativity meets technology.",
+        "Revolutionizing the way the world works.",
+        "Your vision, our innovation.",
+        "Connecting people, changing lives.",
+        "Building solutions for a smarter future.",
+        "Redefining possibilities, one step at a time.",
+        "Passion for progress, driven by purpose.",
+        "Fueling growth, igniting potential.",
+        "Making dreams a reality, every day.",
+        "Think big, act bold, achieve greatness.",
+        "Breaking barriers, shaping the future.",
+        "Inspiring change, empowering communities.",
+        "From concept to creation, we lead the way.",
+        "Driving sustainability through innovation.",
+        "Empowering startups, elevating success.",
+        "Transforming challenges into opportunities.",
+        "Dream it, build it, grow it.",
+        "Innovation at the heart of everything we do."
+    ];
+
     // Fetching data from the backend API
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -17,15 +40,17 @@ const MovingPage = () => {
                 const response = await axios.get('http://localhost:3007/api/userlogin/top-startups');
                 if (response.data && response.data.startups) {
                     const startups = response.data.startups.map((startup) => ({
-                        status: "Seed Funded", // Assuming default status
+                        user_id: startup.user_id, // Assuming default status
+                        status: startup.status||"Seed Funded", // Assuming default status
                         statusColor: "bg-green-500", // Assuming default status color
                         profileImage: startup.logo || "https://dummyimage.com/100x100/000/fff.png&text=Logo",
                         companyName: startup.company_name,
                         founderName: startup.founder_name,
-                        since: startup.registration_year || "N/A",
+                        since: startup.startup_since || "N/A",
                         sinceColor: "bg-yellow-500", // Assuming default since color
-                        category: startup.about || "N/A", // Assuming about as category
+                        category: startup.category || "N/A", // Assuming about as category
                         categoryColor: "bg-teal-500", // Assuming default category color
+                        moto: startup.moto || startupMottos[Math.floor(Math.random() * startupMottos.length)]
                     }));
                     setProfiles(startups);
                 }
@@ -67,14 +92,7 @@ const MovingPage = () => {
                                 </div>
                             </div>
                         ))}
-                        {/* Duplicate set of profile cards for seamless looping */}
-                        {profiles.map((profile, index) => (
-                            <div key={`duplicate-${index}`} className="flex-shrink-0 w-60">
-                                <div className="profile-card"> {/* Add the hover effect class here */}
-                                    <ProfileCard {...profile} />
-                                </div>
-                            </div>
-                        ))}
+                        
                     </div>
                 )}
             </div>
