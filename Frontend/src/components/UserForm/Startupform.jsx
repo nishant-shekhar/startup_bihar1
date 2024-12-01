@@ -3,13 +3,19 @@ import { useFormik } from 'formik';
 import axios from 'axios';
 import Upload from './Upload';
 import * as Yup from 'yup';
+import StatusDialog from "./StatusDialog"; // Import the new dialog component
+
 
 const StartupForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [statusPopup, setStatusPopup] = useState(false);
+	const [title, setTitle] = useState("");
+	const [buttonVisible, setButtonVisible] = useState(true);
+	const [subtitle, setSubtitle] = useState("");
+	const [isSuccess, setIsSuccess] = useState(""); // Add success state
 
 
-  const [isLoading, setIsLoading] = useState(false);
 
   // Form validation schema using Yup
   const validationSchema = Yup.object({
@@ -31,13 +37,14 @@ const StartupForm = () => {
     certificate: Yup.mixed().nullable(),
   });
 
+
   // Formik setup
   const formik = useFormik({
     initialValues: {
       registrationNo: '',
       founderName: '',
       founderAadharNumber: '',
-      coFounderNames: 'CC',
+      coFounderNames: '',
       coFounderAadharNumbers: '',
       sector: '',
       businessConcept: '',
@@ -53,6 +60,12 @@ const StartupForm = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
+      setTitle("Submitting Post Seed Fund Form");
+			setSubtitle("Please wait while we submit your form");
+			setButtonVisible(false);
+			setStatusPopup(true);
+
+			setStatusPopup(true);
       const formData = new FormData();
       for (const key in values) {
         if (values[key] instanceof File) {
@@ -62,7 +75,6 @@ const StartupForm = () => {
         }
       }
 
-      setIsLoading(true);
       try {
         const response = await axios.post('http://localhost:3007/api/StartupProfile', formData, {
           headers: {
@@ -73,11 +85,27 @@ const StartupForm = () => {
         setSuccessMessage(response.data.message);
         setErrorMessage('');
         formik.resetForm();
+        setTitle("Submission Successful");
+				setSubtitle(response.data.message);
+				setButtonVisible(true);
+				setSuccessMessage(response.data.message);
+				setErrorMessage("");
+				setIsSuccess("success"); // Set success state
+
       } catch (error) {
         setErrorMessage(error.response?.data?.error || 'An error occurred during submission');
         setSuccessMessage('');
+        setTitle("Submission Failed");
+				setSubtitle(
+					error.response?.data?.error || "An error occurred during submission"
+				);
+				setButtonVisible(true);
+				setErrorMessage(
+					error.response?.data?.error || "An error occurred during submission"
+				);
+				setSuccessMessage("");
+				setIsSuccess("failed"); // Set success state
       } finally {
-        setIsLoading(false);
       }
     },
   });
@@ -111,12 +139,7 @@ const StartupForm = () => {
         
       </div>
 
-      {/* Loading Spinner */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-gray-100 opacity-75 flex items-center justify-center">
-          <div className="loader border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
-        </div>
-      )}
+      
 
 
       <h2 className="text-center text-2xl font-bold mb-6 mt-8">Startup Profile Form
@@ -339,13 +362,20 @@ const StartupForm = () => {
           <button
             type="submit"
             className="bg-blue-500 text-white py-2 px-6 rounded hover:bg-blue-600"
-            disabled={isLoading}
           >
-            {isLoading ? 'Submitting...' : 'Submit'}
           </button>
         </div>
 
       </form>
+      <StatusDialog
+				isVisible={statusPopup}
+				title={title}
+				subtitle={subtitle}
+				buttonVisible={buttonVisible}
+				status={isSuccess} // Pass success state
+
+				onClose={() => setStatusPopup(false)}
+			/>
     </div>
   );
 

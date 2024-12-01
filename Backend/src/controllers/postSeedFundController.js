@@ -127,7 +127,13 @@ const getpostById = async (req, res) => {
 
 const updatepostStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus,comment } = req.body;
+  const {
+    documentStatus,
+    comment,
+    auditedBalanceSheet,
+    gstReturn,
+    projectReport,
+  } = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
@@ -142,9 +148,22 @@ const updatepostStatus = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
+    // Prepare update data dynamically based on what is provided in the request
+    const updateData = { documentStatus, comment };
+
+    if (auditedBalanceSheet !== undefined) {
+      updateData.auditedBalanceSheet = auditedBalanceSheet;
+    }
+    if (gstReturn !== undefined) {
+      updateData.gstReturn = gstReturn;
+    }
+    if (projectReport !== undefined) {
+      updateData.projectReport = projectReport;
+    }
+
     const updatedDocument = await prisma.postSeedFund.update({
       where: { id },
-      data: { documentStatus ,comment},
+      data: updateData,
     });
 
     res.status(200).json({
@@ -152,7 +171,7 @@ const updatepostStatus = async (req, res) => {
       document: updatedDocument,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error updating document status:', error);
 
     res.status(500).json({
       error: 'Failed to update document status',
