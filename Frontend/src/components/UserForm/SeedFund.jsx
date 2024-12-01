@@ -3,7 +3,7 @@ import { useFormik } from 'formik';
 import axios from 'axios';
 import Upload from './Upload';
 
-const SeedFunded = () => {
+const SeedFund = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); // Track form submission status
@@ -53,7 +53,7 @@ const SeedFunded = () => {
         }
       }
       try {
-        const response = await axios.post('http://localhost:3008/api/seed-fund', formData, {
+        const response = await axios.post('http://localhost:3007/api/seed-fund', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `${localStorage.getItem('token')}`,
@@ -327,4 +327,4 @@ const SeedFunded = () => {
   );
 };
 
-export default SeedFunded;
+export default SeedFund;

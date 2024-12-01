@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Upload from './Upload'; // Make sure to adjust the import path if necessary
 import { useFormik } from 'formik';
 
-const SecondTrance = () => {
+const SecondTranche = () => {
   const [uploadedFiles, setUploadedFiles] = useState({
     utilizationCertificate: null,
     statusReport: null,
@@ -151,4 +151,4 @@ const SecondTrance = () => {
   );
 };
 
-export default SecondTrance;
+export default SecondTranche;

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
-
-import SecondTrance from "../../UserForm/SecondTrance";
+import axios from "axios";
+import LeftBar from "./Navbar/LeftBar";
+import SecondTranche from "../../UserForm/SecondTranche";
 import PostSeed from "../../UserForm/PostSeed";
 import Qpr from "../../UserForm/Qpr";
 import Matchingloan from "../../UserForm/Matchingloan";
@@ -11,185 +11,129 @@ import Acceleration from "../../UserForm/Acceleration";
 import Reimbursement from "../../UserForm/Reimbursement";
 import Coworking from "../../UserForm/Coworking";
 import UserProfile from "./Home";
-import Grievance from "../../UserForm/Grievance";
-import LeftBar from "./Navbar/LeftBar";
-import SeedFunded from "../../UserForm/SeedFunded";
-import Upload from "../../UserForm/Upload";
-import StartupForm from "../../UserForm/Startupform";
-import FormAccepted, { App } from "../../UserForm/FormAccepted";
 import HomeSection from "./HomeSection";
+import Grievance from "../../UserForm/Grievance";
+import SeedFund from "../../UserForm/SeedFund";
+import StartupForm from "../../UserForm/Startupform";
+import StatusDialog from "../../UserForm/StatusDialog";
 
+const COMPONENTS = {
+  HomeSection,
+  Matchingloan,
+  Incubation,
+  SeedFund,
+  Qpr,
+  Reimbursement,
+  Coworking,
+  Acceleration,
+  StartupForm,
+  SecondTranche,
+  PostSeed,
+  Grievance,
+};
 
 const StartupProfileMain = () => {
-    const [activePage, setActivePage] = useState('UserProfile');
-    const [selectedItem, setSelectedItem] = useState(null);
-    const [isDocumentChecking, setIsDocumentChecking] = useState(false);
-    const [statusMessage, setStatusMessage] = useState('Checking form status...');
-    const [statusColor, setStatusColor] = useState('text-black');
-    const [timer, setTimer] = useState(5);
-    const navigate = useNavigate();
+  const [activePage, setActivePage] = useState("HomeSection");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: true, status: "" });
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        // Check if token exists in localStorage
-        const token = localStorage.getItem('token');
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No token found");
+      }
+    } catch (error) {
+      console.error("Authentication error:", error);
+      navigate("/login");
+    }
+  }, [navigate]);
 
-        if (!token) {
-            navigate('/login');
-        }
-    }, [navigate]);
+  
+  const checkFormStatus = async (newPanel) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setDialogStatus({ isVisible: true, title: "Authentication Error", subtitle: "No token found", buttonVisible: true, status: "failed" });
+      return;
+    }
 
-    // Function to handle panel change after status check
-    const changePanel = async (newPanel) => {
-        if (isFormPanel(newPanel)) {
-            setIsDocumentChecking(true);
-            const token = localStorage.getItem('token');
-            if (!token) {
-                return 'noToken';
-            }
-            // Check form status by calling the document status check logic
-            try {
-                const response = await axios.get('http://localhost:3007/api/StartupProfile/user-document', {
-                    headers: { Authorization: token },
-                });
+    try {
+      let apiUrl = "";
+      if (newPanel === "StartupForm") {
+        apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
+      } else if (newPanel === "SeedFund") {
+        apiUrl = "http://localhost:3007/api/seed-fund/seed-fund-status";
+      } else if (newPanel === "SecondTranche") {
+        apiUrl = "http://localhost:3007/api/SecondTranche/user-document";
+      }
 
-                console.log("Response received:", response.data);
+      if (apiUrl) {
+        const response = await axios.get(apiUrl, {
+          headers: { Authorization: token },
+        });
 
-                const { document } = response.data;
+        if (response.data && response.data.document) {
+          const { document } = response.data;
+          const formStatus = document.documentStatus;
 
-                // Set the message based on the document status
-                const formStatus=document.documentStatus;
-                if (formStatus === 'null') {
-                    setActivePage(newPanel);
-                } else if (formStatus === 'Accepted') {
-                    setStatusMessage('Form is accepted.');
-                    setStatusColor('text-green-500');
-                } else if (formStatus === 'Rejected') {
-                    setStatusMessage('Form is rejected. Moving to page to refill the form.');
-                    setStatusColor('text-red-500');
-                    startTimer(newPanel);
-                } else if (formStatus === 'created' || formStatus === 'Updated') {
-                    setStatusMessage('Form is under review.');
-                    setStatusColor('text-black');
-                }
-
-                //setStatusMessage(document.documentStatus || "Document status is unknown.");
-
-            } catch (error) {
-                console.error('Error fetching document status:', error);
-                setStatusMessage("Failed to retrieve document status.");
-            }
-            
-        } else {
-            // Directly change to non-form panel
+          if (formStatus === "null") {
+            setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
             setActivePage(newPanel);
+          } else if (formStatus === "Accepted") {
+            setDialogStatus({ isVisible: true, title: "Form Accepted", subtitle: "Your form has been accepted.", buttonVisible: true, status: "success" });
+            setActivePage("UserProfile");
+          } else if (formStatus === "Rejected") {
+            setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: "Your form has been rejected. Redirecting to refill...", buttonVisible: false, status: "failed" });
+            setTimeout(() => {
+              setActivePage(newPanel);
+              setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
+            }, 3000);
+          } else if (formStatus === "created" || formStatus === "Updated") {
+            setDialogStatus({ isVisible: true, title: "Form Under Review", subtitle: "Your form is under review.", buttonVisible: true, status: "under review" });
+            setActivePage("UserProfile");
+          }
+        } else {
+          throw new Error("Invalid response structure");
         }
-    };
+      } else {
+        setActivePage(newPanel);
+      }
+    } catch (error) {
+      console.error("Error checking form status:", error);
+      setDialogStatus({ isVisible: true, title: "Error", subtitle: "Failed to retrieve form status.", buttonVisible: true, status: "failed" });
+    }
+  };
 
-   
+  const changePanel = (newPanel) => {
+    if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche") {
+      checkFormStatus(newPanel);
+    } else if (COMPONENTS[newPanel]) {
+      setActivePage(newPanel);
+    } else {
+      console.error("Invalid panel name:", newPanel);
+      setActivePage("UserProfile");
+    }
+  };
 
-    // Function to determine if the selected panel is a form
-    const isFormPanel = (panel) => {
-        const formPanels = [
-            'SecondTranche',
-            'Qpr',
-            'Matchingloan',
-            'Incubation',
-            'Acceleration',
-            'Reimbursement',
-            'Coworking',
-            'StartupForm',
-            'Grievance',
-            'Mpr',
-            'PostSeed',
-            'Query',
-        ];
-        return formPanels.includes(panel);
-    };
+  const ActiveComponent = COMPONENTS[activePage] || UserProfile;
 
-    // Timer to redirect after rejection
-    const startTimer = (newPanel) => {
-        let countdown = 5;
-        const interval = setInterval(() => {
-            setTimer(countdown);
-            countdown -= 1;
-            if (countdown < 0) {
-                clearInterval(interval);
-                setActivePage(newPanel);
-                setIsDocumentChecking(false);
-            }
-        }, 1000);
-    };
-
-    // Handle page rendering based on activePage state
-    const handlePageChange = () => {
-
-        switch (activePage) {
-            case "UserProfile":
-                return <HomeSection />;
-            case "Matchingloan":
-                return <Matchingloan />;
-            case "Incubation":
-                return <Incubation />;
-            case "SeedFund":
-                return <SeedFunded />;
-            case "Qpr":
-                return <Qpr />;
-            case "Reimbursement":
-                return <Reimbursement />;
-            case "Coworking":
-                return <Coworking />;
-            case "Acceleration":
-                return <Acceleration />;
-            case "StartupForm":
-                return <StartupForm />;
-            case "SecondTranche":
-                return <SecondTrance />;
-            case "Bills":
-                return <Bills />;
-            case "Grievance":
-                return <Grievance />;
-            case "Mpr":
-                return <Upload />;
-            case "PostSeed":
-                return <PostSeed />;
-            case "Accepted":
-                return <App />;
-            case "Query":
-                return <Query />;
-            default:
-                return <UserProfile changePanel={changePanel} />;
-        }
-    };
-
-    return (
-        <div className="flex w-screen">
-            <LeftBar changePanel={changePanel} selectedItem={selectedItem} />
-            {isDocumentChecking ? (
-                <div className="flex-grow w-[75%]">
-
-                    <div className="isolate bg-white px-6 py-24 h-screen flex flex-col items-center justify-center">
-                        <div className="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl" aria-hidden="true">
-                            <div
-                                className="relative left-1/2 -z-10 aspect-[1155/678] w-[36.125rem] max-w-none -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30"
-                                style={{
-                                    clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-                                }}
-                            ></div>
-                        </div>
-                        <h3 className="font-semibold text-xl mb-6 text-center">Form Status</h3>
-                        <p className={`text-lg text-center ${statusColor}`}>{statusMessage}</p>
-                        {statusColor === 'text-red-500' && (
-                            <p className="text-center mt-4">Redirecting to the form in {timer} seconds...</p>
-                        )}
-                    </div>
-                </div>
-            ) : (
-                <div className="flex-grow w-[75%]">
-                    {handlePageChange()}
-                </div>
-            )}
-        </div>
-    );
+  return (
+    <div className="flex w-screen">
+      <LeftBar changePanel={changePanel} selectedItem={selectedItem} />
+      <div className="flex-grow w-[75%]">
+        <ActiveComponent changePanel={changePanel} />
+      </div>
+      <StatusDialog
+        isVisible={dialogStatus.isVisible}
+        title={dialogStatus.title}
+        subtitle={dialogStatus.subtitle}
+        buttonVisible={dialogStatus.buttonVisible}
+        onClose={() => setDialogStatus({ ...dialogStatus, isVisible: false })}
+        status={dialogStatus.status}
+      />
+    </div>
+  );
 };
 
 export default StartupProfileMain;

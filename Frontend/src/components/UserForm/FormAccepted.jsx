@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export const App = () => {
-  return (
-    <div>
-      {/* Provide the URL as a prop here for FormAccepted */}
-      <FormAccepted url="http://localhost:3007/api/StartupProfile/user-document" />
-    </div>
-  );
-};
 
-const FormAccepted = ({ url }) => {
+
+const FormStatus = ({ url }) => {
   const [statusMessage, setStatusMessage] = useState("Checking form status...");
 
   const checkDocumentStatus = async (url) => {
@@ -68,4 +61,4 @@ const FormAccepted = ({ url }) => {
   );
 };
 
-export default App;
+export default FormStatus;

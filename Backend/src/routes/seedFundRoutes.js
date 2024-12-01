@@ -2,7 +2,7 @@
 
 const express = require('express');
 
-const {submitSeedFund,getAllSeedWithUserDetails,getseedById,updateSeedStatus} = require('../controllers/seedFundController');
+const {submitSeedFund,getAllSeedWithUserDetails,getseedById,updateSeedStatus, getSeedFundStatus} = require('../controllers/seedFundController');
 const {authenticateUser} = require('../middlewares/authenticateUser');
 const {authenticateAdmin} = require('../middlewares/authenticateAdmin');
 
@@ -34,5 +34,12 @@ router.patch(
   '/u1/:id',authenticateAdmin,
   updateSeedStatus
 )
+
+router.get(
+  '/seed-fund-status',
+  authenticateUser,  // Ensure the user is authenticated
+  getSeedFundStatus    // Controller function to get the user's document
+);
+
 
 module.exports = router;

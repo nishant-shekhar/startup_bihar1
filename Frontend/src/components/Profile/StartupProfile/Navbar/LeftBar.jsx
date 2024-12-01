@@ -6,7 +6,7 @@ import menu from '../../../../assets/menu.png';
 import axios from 'axios';
 
 const menuItems = [
-    { name: 'Home', panel: 'UserProfile', iconClass: 'fas fa-chart-bar' },
+    { name: 'Home', panel: 'HomeSection', iconClass: 'fas fa-chart-bar' },
     { name: 'SSU', panel: 'ssu', iconClass: 'fas fa-chart-bar' },
     { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
     { name: 'Notification', panel: 'notification', iconClass: 'fas fa-bell', notificationCount: 21 },

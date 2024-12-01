@@ -144,13 +144,24 @@ const getSecondById = async (req, res) => {
 
 const updateSecondStatus = async (req, res) => {
 	const { id } = req.params;
-	const { documentStatus } = req.body;
+	const {
+		documentStatus,
+		comment,
+		utilizationCertificate,
+		statusReport,
+		expenditurePlan,
+		bankStatement,
+		expenditureInvoice,
+		geoTaggedPhotos,
+	} = req.body;
 
+	// Check if documentStatus is provided
 	if (!documentStatus) {
 		return res.status(400).json({ error: "Document status is required" });
 	}
 
 	try {
+		// Find the document
 		const document = await prisma.secondTranche.findUnique({
 			where: { id },
 		});
@@ -159,11 +170,25 @@ const updateSecondStatus = async (req, res) => {
 			return res.status(404).json({ error: "Document not found" });
 		}
 
+		// Build the data object dynamically
+		const updateData = {
+			documentStatus,
+			comment,
+			...(utilizationCertificate !== undefined && { utilizationCertificate }),
+			...(statusReport !== undefined && { statusReport }),
+			...(expenditurePlan !== undefined && { expenditurePlan }),
+			...(bankStatement !== undefined && { bankStatement }),
+			...(expenditureInvoice !== undefined && { expenditureInvoice }),
+			...(geoTaggedPhotos !== undefined && { geoTaggedPhotos }),
+		};
+
+		// Update the document
 		const updatedDocument = await prisma.secondTranche.update({
 			where: { id },
-			data: { documentStatus },
+			data: updateData,
 		});
 
+		// Send a successful response
 		res.status(200).json({
 			message: "Document status updated successfully",
 			document: updatedDocument,
@@ -171,6 +196,7 @@ const updateSecondStatus = async (req, res) => {
 	} catch (error) {
 		console.error(error);
 
+		// Send an error response
 		res.status(500).json({
 			error: "Failed to update document status",
 			details: error.message,

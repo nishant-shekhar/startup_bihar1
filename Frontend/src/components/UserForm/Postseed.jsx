@@ -16,12 +16,12 @@ export const App = () => {
 
 const PostSeed = () => {
 	const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [statusPopup, setStatusPopup] = useState(false);
-  const [title, setTitle] = useState("");
-  const [buttonVisible, setButtonVisible] = useState(true);
-  const [subtitle, setSubtitle] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false); // Add success state
+	const [errorMessage, setErrorMessage] = useState("");
+	const [statusPopup, setStatusPopup] = useState(false);
+	const [title, setTitle] = useState("");
+	const [buttonVisible, setButtonVisible] = useState(true);
+	const [subtitle, setSubtitle] = useState("");
+	const [isSuccess, setIsSuccess] = useState(""); // Add success state
 
 
 	const validationSchema = Yup.object({
@@ -49,13 +49,13 @@ const PostSeed = () => {
 			projectReport: null,
 		},
 		validationSchema,
-    validateOnChange: false, // Disable validation on change
-    validateOnBlur: false,   // Disable validation on blur
+		validateOnChange: false, // Disable validation on change
+		validateOnBlur: false,   // Disable validation on blur
 		onSubmit: async (values) => {
-			 setTitle("Submitting Post Seed Fund Form");
-      setSubtitle("Please wait while we submit your form");
-      setButtonVisible(false);
-      setStatusPopup(true);
+			setTitle("Submitting Post Seed Fund Form");
+			setSubtitle("Please wait while we submit your form");
+			setButtonVisible(false);
+			setStatusPopup(true);
 
 			setStatusPopup(true);
 			const formData = new FormData();
@@ -79,28 +79,28 @@ const PostSeed = () => {
 					},
 				);
 				formik.resetForm();
-				
-			
 
-        setTitle("Submission Successful");
-        setSubtitle(response.data.message);
-        setButtonVisible(true);
-        setSuccessMessage(response.data.message);
-        setErrorMessage("");
-        setIsSuccess(true); // Set success state
 
-				 // Reset form fields after submission
+
+				setTitle("Submission Successful");
+				setSubtitle(response.data.message);
+				setButtonVisible(true);
+				setSuccessMessage(response.data.message);
+				setErrorMessage("");
+				setIsSuccess("success"); // Set success state
+
+				// Reset form fields after submission
 			} catch (error) {
 				setTitle("Submission Failed");
-        setSubtitle(
-          error.response?.data?.error || "An error occurred during submission"
-        );
-        setButtonVisible(true);
-        setErrorMessage(
-          error.response?.data?.error || "An error occurred during submission"
-        );
-        setSuccessMessage("");
-        setIsSuccess(false); // Set success state
+				setSubtitle(
+					error.response?.data?.error || "An error occurred during submission"
+				);
+				setButtonVisible(true);
+				setErrorMessage(
+					error.response?.data?.error || "An error occurred during submission"
+				);
+				setSuccessMessage("");
+				setIsSuccess("failed"); // Set success state
 
 			}
 		},
@@ -303,7 +303,7 @@ const PostSeed = () => {
 					Submit
 				</button>
 
-				
+
 
 				{/* Success and Error Messages */}
 				{successMessage && (
@@ -313,15 +313,15 @@ const PostSeed = () => {
 					<div className="text-red-500 mt-4">{errorMessage}</div>
 				)}
 			</form>
-      <StatusDialog
-        isVisible={statusPopup}
-        title={title}
-        subtitle={subtitle}
-        buttonVisible={buttonVisible}
-        isSuccess={isSuccess} // Pass success state
+			<StatusDialog
+				isVisible={statusPopup}
+				title={title}
+				subtitle={subtitle}
+				buttonVisible={buttonVisible}
+				status={isSuccess} // Pass success state
 
-        onClose={() => setStatusPopup(false)}
-      />
+				onClose={() => setStatusPopup(false)}
+			/>
 		</div>
 	);
 };

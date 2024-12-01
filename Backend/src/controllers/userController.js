@@ -85,6 +85,13 @@ const getStartupDetails = async (req, res) => {
         logo: true,
         founder_dp: true,
         founder_name: true,
+        coverPic:true,
+        category:true,
+        revenueLY:true,
+        employeeCount:true,
+        workOrders:true,
+        projects:true
+
       }
     });
 
@@ -427,7 +434,91 @@ const getTopStartupDetails = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while fetching startup details', details: error.message });
   }
 };
+const updateMetrics = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
+    const user_id = getUserIdFromToken(token);
+    const { employeeCount, workOrders, projects, revenueLY } = req.body;
+
+    // Validate at least one field is provided
+    if (
+      employeeCount === undefined &&
+      workOrders === undefined &&
+      projects === undefined &&
+      revenueLY === undefined
+    ) {
+      return res.status(400).json({ error: 'At least one field (employeeCount, workOrders, projects, revenueLY) is required' });
+    }
+
+    // Prepare data object dynamically
+    const dataToUpdate = {};
+    if (employeeCount !== undefined) dataToUpdate.employeeCount = employeeCount;
+    if (workOrders !== undefined) dataToUpdate.workOrders = workOrders;
+    if (projects !== undefined) dataToUpdate.projects = projects;
+    if (revenueLY !== undefined) dataToUpdate.revenueLY = revenueLY;
+
+    // Update user in the database
+    const updatedUser = await prisma.user.update({
+      where: { user_id },
+      data: dataToUpdate,
+    });
+
+    res.status(200).json({
+      message: 'Metrics updated successfully',
+      updatedMetrics: {
+        employeeCount: updatedUser.employeeCount,
+        workOrders: updatedUser.workOrders,
+        projects: updatedUser.projects,
+        revenueLY: updatedUser.revenueLY,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating metrics:', error);
+    res.status(500).json({ error: 'An error occurred while updating metrics' });
+  }
+};
+const updateUserField = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+
+    const user_id = getUserIdFromToken(token);
+
+    // Extract fields from the request body
+    const { facebook, twitter, instagram, linkedin, website, moto, about } = req.body;
+
+    // Build a dynamic object with only the provided fields
+    const fieldsToUpdate = {};
+    if (facebook !== undefined) fieldsToUpdate.facebook = facebook;
+    if (twitter !== undefined) fieldsToUpdate.twitter = twitter;
+    if (instagram !== undefined) fieldsToUpdate.instagram = instagram;
+    if (linkedin !== undefined) fieldsToUpdate.linkedin = linkedin;
+    if (website !== undefined) fieldsToUpdate.website = website;
+    if (moto !== undefined) fieldsToUpdate.moto = moto;
+    if (about !== undefined) fieldsToUpdate.about = about;
+
+    // Ensure there is at least one field to update
+    if (Object.keys(fieldsToUpdate).length === 0) {
+      return res.status(400).json({ error: 'No valid fields provided for update' });
+    }
+
+    // Update the user in the database
+    const updatedUser = await prisma.user.update({
+      where: { user_id },
+      data: fieldsToUpdate,
+    });
+
+    res.status(200).json({
+      message: 'User fields updated successfully',
+      updatedFields: fieldsToUpdate,
+    });
+  } catch (error) {
+    console.error('Error updating user fields:', error);
+    res.status(500).json({ error: 'An error occurred while updating user fields' });
+  }
+};
 
 
 module.exports = {
@@ -446,5 +537,6 @@ module.exports = {
   updateCoverDp,
   updateFounderDp,
   getTopStartupDetails,
-
+  updateMetrics,
+  updateUserField
 };

@@ -1,14 +1,18 @@
 import React from "react";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 
-const StatusDialog = ({ isVisible, title, subtitle, buttonVisible, onClose, isSuccess }) => {
+const StatusDialog = ({ isVisible, title, subtitle, buttonVisible, onClose, status }) => {
   if (!isVisible) return null; // Render nothing if the dialog is not visible
 
   // Dynamically set colors based on success or failure
-  const textColor = isSuccess ? "text-green-600" : "text-red-600";
-  const buttonColor = isSuccess
+  const textColor =
+  status === "success" ? "text-green-600" : status === "failed" ? "text-red-600" : "text-black";  
+  const buttonColor =
+  status === "success"
     ? "bg-green-600 hover:bg-green-500"
-    : "bg-red-600 hover:bg-red-500";
+    : status === "failed"
+    ? "bg-red-600 hover:bg-red-500"
+    : "bg-black hover:bg-gray-800";
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

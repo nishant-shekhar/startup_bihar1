@@ -95,13 +95,13 @@ const submitSeedFund = async (req, res) => {
 
 const getAllSeedWithUserDetails = async (req, res) => {
   try {
-    const documents = await prisma.seedFund.findMany({
+    const seedFund = await prisma.seedFund.findMany({
       select: {
         id:true,
         user: {
           select: {
             user_id: true,             // Fields from the User model
-            registration_no: true,
+            registrationNumber: true,
             company_name: true,
             
           },
@@ -111,7 +111,7 @@ const getAllSeedWithUserDetails = async (req, res) => {
 
     return res.status(200).json({
       message: 'Documents with user and program details retrieved successfully',
-      data: documents,
+      data: seedFund,
     });
   } catch (error) {
     console.error('Error fetching documents with user details:', error);
@@ -178,9 +178,52 @@ const updateSeedStatus = async (req, res) => {
   }
 };
 
+const getSeedFundStatus = async (req, res) => {
+  try {
+    // Extract the token from headers
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    }
+
+    // Decode the token to get the user ID
+    let userId;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userId = decoded.user_id;
+    } catch (err) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+
+    // Query for documents linked to this user ID
+    const document = await prisma.seedFund.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        documentStatus: true,
+        comment: true,
+        // add other fields as necessary
+      },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: 'No seed fund status found for this user' });
+    }
+
+    // Send the document and its status in response
+    return res.status(200).json({
+      message: 'Seed Fund Status retrieved successfully',
+      document,
+    });
+  } catch (error) {
+    console.error('Error retrieving user seed fund status:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the seed fund status' });
+  }
+};
 module.exports = {
   submitSeedFund,
   getseedById,
   getAllSeedWithUserDetails,
-  updateSeedStatus
+  updateSeedStatus,
+  getSeedFundStatus
 }
