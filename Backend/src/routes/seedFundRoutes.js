@@ -36,7 +36,7 @@ router.patch(
 )
 
 router.get(
-  '/seed-fund-status',
+  '/status',
   authenticateUser,  // Ensure the user is authenticated
   getSeedFundStatus    // Controller function to get the user's document
 );

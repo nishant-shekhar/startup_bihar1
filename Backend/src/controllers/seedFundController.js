@@ -101,7 +101,7 @@ const getAllSeedWithUserDetails = async (req, res) => {
         user: {
           select: {
             user_id: true,             // Fields from the User model
-            registrationNumber: true,
+            registration_no: true,
             company_name: true,
             
           },

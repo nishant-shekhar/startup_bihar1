@@ -2,7 +2,7 @@
 
 const express = require('express');
 
-const {submitSecondTranche,getAllSecnWithUserDetails,getSecondById,updateSecondStatus} = require('../controllers/secondTrancheController');
+const {submitSecondTranche,getAllSecnWithUserDetails,getSecondById,updateSecondStatus, getSecondTrancheStatus} = require('../controllers/secondTrancheController');
 
 const router = express.Router();
 
@@ -39,4 +39,9 @@ router.patch(
   '/u1/:id',authenticateAdmin,
   updateSecondStatus
 )
+router.get(
+  '/status',
+  authenticateUser,  // Ensure the user is authenticated
+  getSecondTrancheStatus    // Controller function to get the user's document
+);
 module.exports = router;

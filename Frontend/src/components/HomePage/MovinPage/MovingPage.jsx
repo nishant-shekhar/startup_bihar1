@@ -92,6 +92,30 @@ const MovingPage = () => {
                                 </div>
                             </div>
                         ))}
+                        {/* Primary set of profile cards */}
+                        {profiles.map((profile, index) => (
+                            <div key={index} className="flex-shrink-0 w-60">
+                                <div className="profile-card"> {/* Add the hover effect class here */}
+                                    <ProfileCard {...profile} />
+                                </div>
+                            </div>
+                        ))}
+                        {/* Primary set of profile cards */}
+                        {profiles.map((profile, index) => (
+                            <div key={index} className="flex-shrink-0 w-60">
+                                <div className="profile-card"> {/* Add the hover effect class here */}
+                                    <ProfileCard {...profile} />
+                                </div>
+                            </div>
+                        ))}
+                        {/* Primary set of profile cards */}
+                        {profiles.map((profile, index) => (
+                            <div key={index} className="flex-shrink-0 w-60">
+                                <div className="profile-card"> {/* Add the hover effect class here */}
+                                    <ProfileCard {...profile} />
+                                </div>
+                            </div>
+                        ))}
                         
                     </div>
                 )}

@@ -57,7 +57,6 @@ const PostSeed = () => {
 			setButtonVisible(false);
 			setStatusPopup(true);
 
-			setStatusPopup(true);
 			const formData = new FormData();
 
 			for (const key in values) {

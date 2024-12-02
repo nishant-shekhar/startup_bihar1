@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Upload from './Upload'; // Make sure to adjust the import path if necessary
 import { useFormik } from 'formik';
+import StatusDialog from "./StatusDialog"; // Import the new dialog component
+
 
 const SecondTranche = () => {
   const [uploadedFiles, setUploadedFiles] = useState({
@@ -11,6 +13,12 @@ const SecondTranche = () => {
     expenditureInvoice: null,
     geoTaggedPhotos: null,
   });
+
+  const [statusPopup, setStatusPopup] = useState(false);
+  const [title, setTitle] = useState("");
+  const [buttonVisible, setButtonVisible] = useState(true);
+  const [subtitle, setSubtitle] = useState("");
+  const [isSuccess, setIsSuccess] = useState(""); // Add success state
 
   const requiredFiles = [
     'utilizationCertificate',
@@ -30,8 +38,13 @@ const SecondTranche = () => {
       // Your other form fields can be added here if needed
     },
     onSubmit: async (values) => {
+      setTitle("Submitting Post Seed Fund Form");
+      setSubtitle("Please wait while we submit your form");
+      setButtonVisible(false);
+      setStatusPopup(true);
+
       const formData = new FormData();
-      
+
       // Only append files that are not null
       Object.entries(uploadedFiles).forEach(([key, file]) => {
         if (file) {
@@ -49,15 +62,24 @@ const SecondTranche = () => {
         });
 
         const data = await response.json();
-        if (response.ok) {
-          alert('Form submitted successfully!');
-          console.log(data);
-        } else {
-          alert('Error: ' + data.error);
-        }
+        formik.resetForm();
+
+        setTitle("Submission Successful");
+        setSubtitle("Files uploaded successfully")
+        setButtonVisible(true);
+        setIsSuccess("success"); // Set success state
+
+        console.log(data);
+
       } catch (error) {
         console.error('Error submitting form:', error);
-        alert('An error occurred while submitting the form.');
+        setTitle("Submission Failed");
+        setSubtitle(
+          error.response?.data?.error || "An error occurred during submission"
+        );
+        setButtonVisible(true);
+
+        setIsSuccess("failed"); // Set success state
       }
     },
   });
@@ -87,7 +109,7 @@ const SecondTranche = () => {
 
           {/* Registration Number Field */}
           <div className="mb-6">
-            <Upload 
+            <Upload
               label="C.A certified utilization certificate"
               name="utilizationCertificate"
               onChange={(file) => handleFileChange(file, 'utilizationCertificate')}
@@ -96,7 +118,7 @@ const SecondTranche = () => {
 
           {/* Status Report Field */}
           <div className="mb-6">
-            <Upload 
+            <Upload
               label="Status Report"
               name="statusReport"
               onChange={(file) => handleFileChange(file, 'statusReport')}
@@ -105,7 +127,7 @@ const SecondTranche = () => {
 
           {/* Expenditure Plan Field */}
           <div className="mb-6">
-            <Upload 
+            <Upload
               label="Upload Self-declared second tranche expenditure plan in the letterhead of the entity"
               name="expenditurePlan"
               onChange={(file) => handleFileChange(file, 'expenditurePlan')}
@@ -117,7 +139,7 @@ const SecondTranche = () => {
         <form onSubmit={handleSubmit} className="w-1/2 p-8 mt-11 rounded-lg">
           {/* Bank Statement Field */}
           <div className="mb-6">
-            <Upload 
+            <Upload
               label="Bank statement (Highlight the fund received and expenditure made)"
               name="bankStatement"
               onChange={(file) => handleFileChange(file, 'bankStatement')}
@@ -126,7 +148,7 @@ const SecondTranche = () => {
 
           {/* Expenditure Invoice Field */}
           <div className="mb-6">
-            <Upload 
+            <Upload
               label="Upload Expenditure Invoice"
               name="expenditureInvoice"
               onChange={(file) => handleFileChange(file, 'expenditureInvoice')}
@@ -135,7 +157,7 @@ const SecondTranche = () => {
 
           {/* Geo-tagged Photos Field */}
           <div className="mb-6">
-            <Upload 
+            <Upload
               label="Upload geo-tagged photos of your offices/ units"
               name="geoTaggedPhotos"
               onChange={(file) => handleFileChange(file, 'geoTaggedPhotos')}
@@ -147,6 +169,15 @@ const SecondTranche = () => {
       <button onClick={handleSubmit} className="mt-4 px-4 py-2 text-sm font-semibold rounded-lg bg-blue-500 text-white hover:bg-blue-600">
         Submit
       </button>
+      <StatusDialog
+        isVisible={statusPopup}
+        title={title}
+        subtitle={subtitle}
+        buttonVisible={buttonVisible}
+        status={isSuccess} // Pass success state
+
+        onClose={() => setStatusPopup(false)}
+      />
     </div>
   );
 };

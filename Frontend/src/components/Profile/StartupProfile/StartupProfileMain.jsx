@@ -63,15 +63,20 @@ const StartupProfileMain = () => {
       if (newPanel === "StartupForm") {
         apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "http://localhost:3007/api/seed-fund/seed-fund-status";
+        apiUrl = "http://localhost:3007/api/seed-fund/status";
+      }else if (newPanel === "PostSeed") {
+        apiUrl = "http://localhost:3007/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "http://localhost:3007/api/SecondTranche/user-document";
+        apiUrl = "http://localhost:3007/api/second-tranche/status";
       }
 
       if (apiUrl) {
+        setDialogStatus({ isVisible: true, title: "Checking Form Status", subtitle: "Wait while we are fetching form status!", buttonVisible: true, status: "checking" });
+
         const response = await axios.get(apiUrl, {
           headers: { Authorization: token },
         });
+        console.log(response.data);
 
         if (response.data && response.data.document) {
           const { document } = response.data;
@@ -84,7 +89,7 @@ const StartupProfileMain = () => {
             setDialogStatus({ isVisible: true, title: "Form Accepted", subtitle: "Your form has been accepted.", buttonVisible: true, status: "success" });
             setActivePage("UserProfile");
           } else if (formStatus === "Rejected") {
-            setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: "Your form has been rejected. Redirecting to refill...", buttonVisible: false, status: "failed" });
+            setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: `Your form has been rejected. Redirecting to refill...\n${document.comment}`, buttonVisible: false, status: "failed" });
             setTimeout(() => {
               setActivePage(newPanel);
               setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
@@ -92,6 +97,13 @@ const StartupProfileMain = () => {
           } else if (formStatus === "created" || formStatus === "Updated") {
             setDialogStatus({ isVisible: true, title: "Form Under Review", subtitle: "Your form is under review.", buttonVisible: true, status: "under review" });
             setActivePage("UserProfile");
+          }else if(formStatus === "Partially Rejected"){
+            setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: `Your form has been partially rejected. Redirecting to refill...\n${document.comment}`, buttonVisible: false, status: "failed" });
+
+            setTimeout(() => {
+              setActivePage(newPanel);
+              setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
+            }, 3000);
           }
         } else {
           throw new Error("Invalid response structure");
@@ -106,7 +118,7 @@ const StartupProfileMain = () => {
   };
 
   const changePanel = (newPanel) => {
-    if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche") {
+    if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche" || newPanel==="PostSeed") {
       checkFormStatus(newPanel);
     } else if (COMPONENTS[newPanel]) {
       setActivePage(newPanel);

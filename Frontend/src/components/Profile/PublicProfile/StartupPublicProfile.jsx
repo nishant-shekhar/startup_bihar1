@@ -10,150 +10,26 @@ import {
 	FaLinkedin,
 	FaGlobe,
 } from "react-icons/fa";
-import ShowcaseCard from "../PublicProfile/ShowcaseCard";
+import ShowcaseCard from "./ShowcaseCard";
 
 const StartupPublicProfile = () => {
 	const { id } = useParams(); // Fetch the dynamic id from the URL
 
 	const [startup, setStartup] = useState([]);
-	const data = [
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1497493292307-31c376b6e479?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Food industry
-			dateandtime: "5PM 15th May 2024",
-			title: "TeamFusion",
-			subtitle: "Bringing teams closer with collaborative tools",
-			tag: "Technology",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Startup workspace
-			dateandtime: "11AM 20th June 2024",
-			title: "WorkSpaces",
-			subtitle: "Redefining office spaces for startups",
-			tag: "Design",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1519389950473-47ba0277781c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Innovative tech
-			dateandtime: "4PM 10th August 2024",
-			title: "InnoTech",
-			subtitle: "Innovations powering the future",
-			tag: "Technology",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1504384308090-c894fdcc538d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Entrepreneurs at work
-			dateandtime: "3PM 5th July 2024",
-			title: "HealthPioneers",
-			subtitle: "Next-gen solutions in healthcare",
-			tag: "Healthcare",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1504384308090-c894fdcc538d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Entrepreneurs at work
-			dateandtime: "2PM 30th April 2024",
-			title: "StartStrong",
-			subtitle: "Empowering budding entrepreneurs",
-			tag: "Business",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1557164346-4db5b0c3a1d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Renewable energy startup
-			dateandtime: "12PM 28th June 2024",
-			title: "GreenTech",
-			subtitle: "Advancing sustainable solutions",
-			tag: "Environment",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1521790945508-bf2a36314e85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // E-learning innovation
-			dateandtime: "10AM 12th May 2024",
-			title: "LearnNext",
-			subtitle: "Revolutionizing education with technology",
-			tag: "Education",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1599492000590-8e8ce215c7a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Fintech solutions
-			dateandtime: "9AM 25th April 2024",
-			title: "FinFuture",
-			subtitle: "Simplifying financial operations",
-			tag: "Finance",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1533750349088-cd871a92f312?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // AI-driven startups
-			dateandtime: "8AM 30th May 2024",
-			title: "AiGen",
-			subtitle: "AI solutions for every industry",
-			tag: "AI",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1497493292307-31c376b6e479?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Food industry
-			dateandtime: "6PM 5th August 2024",
-			title: "FoodVenture",
-			subtitle: "Culinary innovations for modern dining",
-			tag: "FoodTech",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1581093588401-a093a8d8b5f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Startup pitch meeting
-			dateandtime: "1PM 22nd June 2024",
-			title: "PitchHub",
-			subtitle: "Empowering startups to ace their pitches",
-			tag: "Business",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1542744173-8e7e53415bb0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Logistics and transportation
-			dateandtime: "11AM 10th July 2024",
-			title: "TransLogix",
-			subtitle: "Streamlined logistics solutions",
-			tag: "Logistics",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Fashion tech startup
-			dateandtime: "7PM 17th May 2024",
-			title: "StyleNow",
-			subtitle: "Bringing technology into fashion",
-			tag: "Fashion",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1568495248636-643ea19a3be6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Retail transformation
-			dateandtime: "5PM 15th April 2024",
-			title: "RetailX",
-			subtitle: "Innovative solutions for retail spaces",
-			tag: "Retail",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1590608897129-79b8f5f14616?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Transportation innovation
-			dateandtime: "8AM 19th August 2024",
-			title: "MoveSmart",
-			subtitle: "Smart solutions for urban transport",
-			tag: "Transport",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1586274459732-9e3d42db9626?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Software innovation
-			dateandtime: "3PM 12th May 2024",
-			title: "SoftSolutions",
-			subtitle: "Developing next-gen software",
-			tag: "Software",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1517433456452-f9633a875f6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Clean energy startup
-			dateandtime: "10AM 25th April 2024",
-			title: "EcoCharge",
-			subtitle: "Revolutionizing renewable energy",
-			tag: "Energy",
-		},
-	];
+	const [showcases, setShowcases] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
+
+	const categories = ['Showcase', "About Startup"];
+
+    const [selectedCategory, setSelectedCategory] = useState('Showcase');
+
+    // Handle category click
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+    };
+
+
+
 
 
 
@@ -166,15 +42,25 @@ const StartupPublicProfile = () => {
 			);
 
 			setStartup(response.data.startup);
-			console.log(startup);
+			// Fetch showcase data
+			const showcaseResponse = await axios.get(
+				`http://localhost:3007/api/showcase/get-showcase/${id}`
+			);
+			setShowcases(showcaseResponse.data.showcase);
+
+			setIsLoading(false);
 		} catch (error) {
-			console.error("Failed to fetch startup details:", error);
+			console.error("Failed to fetch data:", error);
+			setIsLoading(false);
 		}
 	};
+
+
 
 	useEffect(() => {
 		fetchDetails();
 	}, []);
+
 
 	return (
 		// <div>
@@ -269,7 +155,7 @@ const StartupPublicProfile = () => {
 						<img
 							src={startup.logo || "default-logo.png"}
 							alt="Profile"
-							className="object-cover w-full h-full rounded-lg border-8 border-pink-200"
+							className="object-cover w-full h-full rounded-lg "
 						/>
 					</div>
 				</div>
@@ -382,19 +268,65 @@ const StartupPublicProfile = () => {
 					</div>
 				</div>
 			</div>
+			<div className="mx-5 lg:mx-20 justify-start mt-10 mb-4">
+				{/* Tabs Section */}
+				<div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
+					<nav className="justify-start space-x-2">
+						{categories.map((category) => (
+							<button
+								key={category}
+								onClick={() => handleCategoryClick(category)}
+								className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
+										? "bg-[#bac2cd] text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
+										: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-[#F8F7F3] hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
+									}`}
+							>
+								{category}
+							</button>
+						))}
+					</nav>
+				</div>
+			</div>
 
-			<h1 className="pl-10 mt-5 font-bold font-poppins text-lg sm:text-xl lg:text-2xl lg:mx-20">Showcase</h1>
-			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6	mx-5 lg:mx-20">
-				{data.map((data, index) => (
-					<ShowcaseCard
-						key={index}
-						imgurl={data.imgurl || "default-logo.png"}
-						dateandtime={data.dateandtime}
-						title={data.title}
-						subtitle={data.subtitle || "Subtitle"}
-						tag={data.tag}
-					/>
-				))}
+
+			<div className="mx-5 lg:mx-20 p-6 bg-white shadow rounded-md">
+				{/* Showcase Content */}
+				{selectedCategory === "Showcase" && (
+					<>
+						<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
+							Showcase
+						</h1>
+						<hr className="mb-6 border-gray-500/30" />
+						{isLoading ? (
+							<p className="text-center text-gray-500 mt-8">Loading...</p>
+						) : (
+							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+								{[...showcases].reverse().map((showcase, index) => (
+									<ShowcaseCard
+										key={index}
+										imgurl={showcase.picUrl}
+										dateandtime={showcase.date}
+										title={showcase.title}
+										subtitle={showcase.subtitle}
+										tag={showcase.location}
+										projectLink={showcase.projectLink}
+									/>
+								))}
+							</div>
+						)}
+					</>
+				)}
+
+				{/* About Content */}
+				{selectedCategory === "About Startup" && (
+					<>
+						<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
+							About Startup
+						</h1>
+						<hr className="mb-6 border-gray-500/30" />
+						<p className="text-gray-700 text-lg">{startup.moto}</p>
+					</>
+				)}
 			</div>
 		</div>
 	);

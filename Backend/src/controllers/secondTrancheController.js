@@ -204,9 +204,53 @@ const updateSecondStatus = async (req, res) => {
 	}
 };
 
+const getSecondTrancheStatus = async (req, res) => {
+	try {
+	  // Extract the token from headers
+	  const token = req.headers.authorization?.split(' ')[1];
+	  if (!token) {
+		return res.status(401).json({ error: 'Unauthorized: No token provided' });
+	  }
+  
+	  // Decode the token to get the user ID
+	  let userId;
+	  try {
+		const decoded = jwt.verify(token, JWT_SECRET);
+		userId = decoded.user_id;
+	  } catch (err) {
+		return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+	  }
+  
+	  // Query for documents linked to this user ID
+	  const document = await prisma.secondTranche.findUnique({
+		where: { userId },
+		select: {
+		  id: true,
+		  documentStatus: true,
+		  comment: true,
+		  // add other fields as necessary
+		},
+	  });
+  
+	  if (!document) {
+		return res.status(404).json({ error: 'No seed fund status found for this user' });
+	  }
+  
+	  // Send the document and its status in response
+	  return res.status(200).json({
+		message: 'Seed Fund Status retrieved successfully',
+		document,
+	  });
+	} catch (error) {
+	  console.error('Error retrieving user seed fund status:', error);
+	  res.status(500).json({ error: 'An error occurred while fetching the seed fund status' });
+	}
+  };
+
 module.exports = {
 	submitSecondTranche,
 	getSecondById,
 	getAllSecnWithUserDetails,
 	updateSecondStatus,
+	getSecondTrancheStatus
 };

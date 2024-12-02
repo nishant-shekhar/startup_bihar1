@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 
-const {submitPostSeedFund,getpostById,getAllpostWithUserDetails,updatepostStatus} = require('../controllers/postSeedFundController');
+const {submitPostSeedFund,getpostById,getAllpostWithUserDetails,updatepostStatus, getPostSeedFundStatus} = require('../controllers/postSeedFundController');
 
 // Setup Multer for file uploads
 
@@ -37,5 +37,10 @@ router.patch(
   '/u1/:id',authenticateAdmin,
   updatepostStatus
 )
+router.get(
+  '/status',
+  authenticateUser,  // Ensure the user is authenticated
+  getPostSeedFundStatus    // Controller function to get the user's document
+);
 
 module.exports = router;
