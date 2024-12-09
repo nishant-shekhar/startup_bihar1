@@ -324,7 +324,7 @@ const StartupPublicProfile = () => {
 							About Startup
 						</h1>
 						<hr className="mb-6 border-gray-500/30" />
-						<p className="text-gray-700 text-lg">{startup.moto}</p>
+						<p className="text-gray-700 text-lg">{startup.about}</p>
 					</>
 				)}
 			</div>

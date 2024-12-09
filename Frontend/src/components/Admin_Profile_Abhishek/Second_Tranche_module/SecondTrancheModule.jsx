@@ -9,6 +9,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 	const [showDialog, setShowDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const token = localStorage.getItem("token");
+	const [selectedOptions, setSelectedOptions] = useState([]);
 
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false); // State to manage PDF modal visibility
@@ -27,7 +28,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 				);
 				setData(response.data);
 			} catch (error) {
-				console.error({id}+"Error fetching data:", error);
+				console.error({ id } + "Error fetching data:", error);
 			}
 		}
 	};
@@ -41,6 +42,16 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		setShowDialog(true);
 		setTimeout(() => setShowDialog(false), 2000); // Close after 2 seconds
 	};
+
+	const handleCheckboxChange = (event) => {
+		const { value } = event.target;
+		setSelectedOptions((prevSelectedOptions) =>
+			prevSelectedOptions.includes(value)
+				? prevSelectedOptions.filter((option) => option !== value)
+				: [...prevSelectedOptions, value],
+		);
+	};
+	console.log(selectedOptions);
 
 	const handleReject = async () => {
 		handleDialog("Updating status to reject...");
@@ -69,11 +80,16 @@ const SecondTrancheModuleDetails = ({ id }) => {
 	const handlePartialReject = async () => {
 		handleDialog("Updating status to partial reject...");
 		try {
+			const updateFields = selectedOptions.reduce((acc, field) => {
+				acc[field] = null;
+				return acc;
+			}, {});
 			await axios.patch(
 				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
+					...updateFields,
 				},
 				{
 					headers: {
@@ -82,6 +98,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 					},
 				},
 			);
+
 			handleDialog("Application is partially rejected.");
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
@@ -189,7 +206,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.utilizationCertificate}
+															{data.utilizationCertificate ? (
+																data.utilizationCertificate
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -250,7 +273,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.statusReport}
+															{data.statusReport ? (
+																data.statusReport
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -303,7 +332,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.expenditurePlan}
+															{data.expenditurePlan ? (
+																data.expenditurePlan
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -356,7 +391,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.bankStatement}
+															{data.bankStatement ? (
+																data.bankStatement
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -406,7 +447,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.expenditureInvoice}
+															{data.expenditureInvoice ? (
+																data.expenditureInvoice
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -460,7 +507,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.geoTaggedPhotos}
+															{data.geoTaggedPhotos ? (
+																data.geoTaggedPhotos
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -520,34 +573,124 @@ const SecondTrancheModuleDetails = ({ id }) => {
 				</div>
 
 				{isCommentVisible && (
-					<div className="absolute top-64 w-3/12 bg-white rounded-md shadow-xl p-4 z-10 left-[37%]">
+					<div className="fixed top-1/4 w-5/12 bg-white/40 rounded-md shadow-xl p-4 z-10 left-1/3 bg-opacity-30 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 ">
 						<h2 className="text-lg font-semibold">Add Comment</h2>
 						<textarea
 							value={comment}
 							onChange={(e) => setComment(e.target.value)}
-							className="mt-2 border rounded-md w-full h-20 pl-2 pt-2"
+							className="mt-2  border rounded-md w-full h-20 pl-2 pt-2"
 						/>
+						<p className="my-2 text-slate-950">
+							Select documents for partial reject{" "}
+						</p>
+						<hr />
+						{/* Checkbox Group */}
+						<div className="my-4 space-y-2 ">
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="utilizationCertificate"
+									checked={selectedOptions.includes("utilizationCertificate")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none" // square checkbox
+								/>
+								<span className="text-sm text-slate-950">
+									C.A certified utilization certificate
+								</span>
+							</label>
+
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="statusReport"
+									checked={selectedOptions.includes("statusReport")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">Status Report</span>
+							</label>
+
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="expenditurePlan"
+									checked={selectedOptions.includes("expenditurePlan")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">
+									Upload Self declared second tranche expenditure plan in the
+									letter head of entity
+								</span>
+							</label>
+
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="bankStatement"
+									checked={selectedOptions.includes("bankStatement")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">
+									Bank statement (Highlight the fund received and expenditure
+									made)
+								</span>
+							</label>
+
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="expenditureInvoice"
+									checked={selectedOptions.includes("expenditureInvoice")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">
+									Upload Expenditure Invoice
+								</span>
+							</label>
+
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="geoTaggedPhotos"
+									checked={selectedOptions.includes("geoTaggedPhotos")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">
+									Upload geo-tagged photos of your offices/ units
+								</span>
+							</label>
+						</div>
 						<div className="flex justify-end gap-x-2 mt-4">
 							<button
 								type="button"
-								className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
+								className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
 								onClick={() => setIsCommentVisible(false)}
 							>
 								Cancel
 							</button>
 							<button
 								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-								onClick={handleReject}
-							>
-								Reject
-							</button>
-							<button
-								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
+								className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white"
 								onClick={handlePartialReject}
 							>
 								Partial Reject
+							</button>
+							<button
+								type="button"
+								className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white"
+								onClick={handleReject}
+							>
+								Reject
 							</button>
 						</div>
 					</div>

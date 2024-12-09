@@ -12,6 +12,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
+	const [selectedOptions, setSelectedOptions] = useState([]);
 
 	const fetchData = async () => {
 		if (id) {
@@ -69,11 +70,16 @@ const PostSeedFundModuleDetails = ({ id }) => {
 	const handlePartialReject = async () => {
 		handleDialog("Updating status to partial reject...");
 		try {
+			const updateFields = selectedOptions.reduce((acc, field) => {
+				acc[field] = null;
+				return acc;
+			}, {});
 			await axios.patch(
 				`http://localhost:3007/api/post-seed/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
+					...updateFields,
 				},
 				{
 					headers: {
@@ -129,7 +135,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		if (data.documentStatus === "Rejected")
 			return "Document has been partially rejected";
 		if (data.documentStatus === "Partially Rejected")
-			return "Document has been rejected";
+			return "Document has been Partially rejected";
 		return "";
 	};
 
@@ -143,6 +149,16 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		setIsPdfModalVisible(false);
 		setPdfUrl("");
 	};
+
+	const handleCheckboxChange = (event) => {
+		const { value } = event.target;
+		setSelectedOptions((prevSelectedOptions) =>
+			prevSelectedOptions.includes(value)
+				? prevSelectedOptions.filter((option) => option !== value)
+				: [...prevSelectedOptions, value],
+		);
+	};
+	console.log(selectedOptions);
 
 	return (
 		<div
@@ -226,7 +242,13 @@ const PostSeedFundModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.projectReport}
+															{data.projectReport ? (
+																data.projectReport
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -279,7 +301,13 @@ const PostSeedFundModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.gstReturn}
+															{data.gstReturn ? (
+																data.gstReturn
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -331,7 +359,13 @@ const PostSeedFundModuleDetails = ({ id }) => {
 													</svg>
 													<div className="ml-4 flex min-w-0 flex-1 gap-2">
 														<span className="truncate font-medium">
-															{data.auditedBalanceSheet}
+															{data.auditedBalanceSheet ? (
+																data.auditedBalanceSheet
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
 														</span>
 													</div>
 												</div>
@@ -393,34 +427,76 @@ const PostSeedFundModuleDetails = ({ id }) => {
 				</div>
 
 				{isCommentVisible && (
-					<div className="absolute top-64 w-3/12 bg-white rounded-md shadow-xl p-4 z-10 left-[37%]">
+					<div className="fixed top-1/4 w-5/12 bg-white/40 rounded-md shadow-xl p-4 z-10 left-1/3 bg-opacity-30 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 ">
 						<h2 className="text-lg font-semibold">Add Comment</h2>
 						<textarea
 							value={comment}
 							onChange={(e) => setComment(e.target.value)}
-							className="mt-2 border rounded-md w-full h-20 pl-2 pt-2"
+							className="mt-2  border rounded-md w-full h-20 pl-2 pt-2"
 						/>
+						<p className="my-2 text-slate-950">
+							Select documents for partial reject{" "}
+						</p>
+						<hr />
+						{/* Checkbox Group */}
+						<div className="my-4 space-y-2 ">
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="projectReport"
+									checked={selectedOptions.includes("projectReport")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">Project Report</span>
+							</label>
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="gstReturn"
+									checked={selectedOptions.includes("gstReturn")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">GST Return</span>
+							</label>
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="auditedBalanceSheet"
+									checked={selectedOptions.includes("auditedBalanceSheet")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">
+									Audited Balance Sheet
+								</span>
+							</label>
+						</div>
 						<div className="flex justify-end gap-x-2 mt-4">
 							<button
 								type="button"
-								className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
+								className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
 								onClick={() => setIsCommentVisible(false)}
 							>
 								Cancel
 							</button>
 							<button
 								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-								onClick={handleReject}
-							>
-								Reject
-							</button>
-							<button
-								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
+								className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white"
 								onClick={handlePartialReject}
 							>
 								Partial Reject
+							</button>
+							<button
+								type="button"
+								className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white"
+								onClick={handleReject}
+							>
+								Reject
 							</button>
 						</div>
 					</div>

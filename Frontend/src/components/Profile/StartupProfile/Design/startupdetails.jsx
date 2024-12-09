@@ -222,11 +222,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
   );
 };
 
-Startupdetails.defaultProps = {
-  founderimage: 'https://via.placeholder.com/80',
-  companyname: 'Unknown Company',
-  year: 'N/A',
-};
+
 
 Startupdetails.propTypes = {
   founderimage: PropTypes.string,

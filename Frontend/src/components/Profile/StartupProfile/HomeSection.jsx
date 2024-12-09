@@ -541,7 +541,7 @@ const HomeSection = () => {
 									setSubtitle("Please wait while we post your update");
 									setButtonVisible(false);
 									setStatusPopup(true);
-									isSuccess("uploading");
+									setIsSuccess("uploading");
 
 									const token = localStorage.getItem("token");
 									console.log(token);

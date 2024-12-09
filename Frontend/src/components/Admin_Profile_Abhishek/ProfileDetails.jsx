@@ -11,36 +11,44 @@ const StartupProfileDetails = ({ id }) => {
 	const [showDialog, setShowDialog] = useState(false);
 	const [comment, setComment] = useState("");
 	const [dialogMessage, setDialogMessage] = useState("");
-
+	const [selectedOptions, setSelectedOptions] = useState([]);
 
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false); // State to manage PDF modal visibility
 
-	
 	console.log(data);
 	const fetchData = async () => {
 		if (id) {
 			try {
-				const response = await axios.get(`http://localhost:3007/api/StartupProfile/v1/${id}`, {
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `${token}`,
+				const response = await axios.get(
+					`http://localhost:3007/api/StartupProfile/v1/${id}`,
+					{
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `${token}`,
+						},
 					},
-				});
+				);
 				setData(response.data);
-
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
 			console.log(`http://localhost:3007/api/StartupProfile/v1/${id}`);
-			console.log(data)
+			console.log(data);
 		}
 	};
 	useEffect(() => {
-		
-
 		fetchData();
 	}, [id]);
+
+	const handleCheckboxChange = (event) => {
+		const { value } = event.target;
+		setSelectedOptions((prevSelectedOptions) =>
+			prevSelectedOptions.includes(value)
+				? prevSelectedOptions.filter((option) => option !== value)
+				: [...prevSelectedOptions, value],
+		);
+	};
 
 	const handleReject = async () => {
 		handleDialog("Updating status to reject...");
@@ -68,7 +76,7 @@ const StartupProfileDetails = ({ id }) => {
 	const handleDialog = (message) => {
 		setDialogMessage(message);
 		setShowDialog(true);
-	
+
 		// Automatically hide the dialog after 2 seconds
 		setTimeout(() => {
 			setShowDialog(false);
@@ -79,6 +87,21 @@ const StartupProfileDetails = ({ id }) => {
 	const handlePartialReject = async () => {
 		handleDialog("Updating status to partial reject...");
 		try {
+			await axios.patch(
+				`http://localhost:3007/api/StartupProfile/u1/${id}`,
+				{
+					certPath: null,
+					comment: `Document has been partially rejected for reason: ${comment}`,
+				},
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`,
+					},
+				},
+			);
+
+
 			await axios.patch(
 				`http://localhost:3007/api/StartupProfile/u1/${id}`,
 				{
@@ -193,9 +216,7 @@ const StartupProfileDetails = ({ id }) => {
 							</tr>
 						)}
 						<tr>
-							<td className="py-4 px-4 border-b border-l border-t">
-								ID
-							</td>
+							<td className="py-4 px-4 border-b border-l border-t">ID</td>
 							<td className="py-4 px-4 border-b border-l border-t border-r w-[35vw]">
 								{data.id}
 							</td>
@@ -297,6 +318,8 @@ const StartupProfileDetails = ({ id }) => {
 											className="text-gray-600 hover:text-gray-900"
 											onClick={closeImageModal}
 										>
+											
+											
 											✕
 										</button>
 									</div>
@@ -379,9 +402,7 @@ const StartupProfileDetails = ({ id }) => {
 														<span className="truncate font-medium">
 															DPIIT Certificate
 														</span>
-														<span className="shrink-0 text-gray-400">
-
-														</span>
+														<span className="shrink-0 text-gray-400"></span>
 													</div>
 												</div>
 												<div className="ml-4 shrink-0">
@@ -418,7 +439,6 @@ const StartupProfileDetails = ({ id }) => {
 								</div>
 							</td>
 						</tr>
-
 					</tbody>
 				</table>
 
@@ -453,40 +473,55 @@ const StartupProfileDetails = ({ id }) => {
 				</div>
 			</div>
 
-		
 			{isCommentVisible && (
-					<div className="absolute top-64 w-3/12 bg-white rounded-md shadow-xl p-4 z-10 left-[37%]">
-						<h2 className="text-lg font-semibold">Add Comment</h2>
-						<textarea
-							value={comment}
-							onChange={(e) => setComment(e.target.value)}
-							className="mt-2 border rounded-md w-full h-20 pl-2 pt-2"
-						/>
-						<div className="flex justify-end gap-x-2 mt-4">
-							<button
-								type="button"
-								className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
-								onClick={() => setIsCommentVisible(false)}
-							>
-								Cancel
-							</button>
-							<button
-								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-								onClick={handleReject}
-							>
-								Reject
-							</button>
-							<button
-								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-								onClick={handlePartialReject}
-							>
-								Partial Reject
-							</button>
-						</div>
+				<div className="fixed top-1/4 w-5/12 bg-white/40 rounded-md shadow-xl p-4 z-10 left-1/3 bg-opacity-30 backdrop-filter backdrop-blur-lg border border-white border-opacity-30">
+					<h2 className="text-lg font-semibold">Add Comment</h2>
+					<textarea
+						value={comment}
+						onChange={(e) => setComment(e.target.value)}
+						className="mt-2 border rounded-md w-full h-20 pl-2 pt-2"
+					/>
+					<p className="my-2 text-slate-950">Select documents for partial reject</p>
+					<hr />
+					{/* Checkbox Group */}
+					<div className="my-4 space-y-2">
+						<label className="flex items-center space-x-2 cursor-pointer">
+							<input
+								type="checkbox"
+								name="rejectReason"
+								value="dpiitCertificate"
+								checked={selectedOptions.includes("dpiitCertificate")}
+								onChange={handleCheckboxChange}
+								className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+							/>
+							<span className="text-sm text-slate-950">DPIIT Certificate</span>
+						</label>
 					</div>
-				)}
+					<div className="flex justify-end gap-x-2 mt-4">
+						<button
+							type="button"
+							className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+							onClick={() => setIsCommentVisible(false)}
+						>
+							Cancel
+						</button>
+						<button
+							type="button"
+							className="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white"
+							onClick={handlePartialReject}
+						>
+							Partial Reject
+						</button>
+						<button
+							type="button"
+							className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white"
+							onClick={handleReject}
+						>
+							Reject
+						</button>
+					</div>
+				</div>
+			)}
 			{/* PDF View Modal */}
 			{isPdfModalVisible && (
 				<div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">

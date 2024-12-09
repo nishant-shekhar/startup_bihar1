@@ -158,7 +158,7 @@ const getAllDocumentsWithUserDetails = async (req, res) => {
 
 const updateDocumentStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus, comment } = req.body;
+  const { documentStatus, comment ,certPath} = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
@@ -170,10 +170,15 @@ const updateDocumentStatus = async (req, res) => {
     if (!document) {
       return res.status(404).json({ error: 'Document not found' });
     }
+    const updateData = { documentStatus, comment };
+
+    if (certPath !== undefined) {
+      updateData.certPath = certPath;
+    }
 
     const updatedDocument = await prisma.document.update({
       where: { id },
-      data: { documentStatus, comment },
+      data: updateData,
     });
 
     res.status(200).json({

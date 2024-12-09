@@ -16,6 +16,16 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
         onSelect(id);
     };
 
+    const categories = ['All', "Accepted", "Rejected"];
+
+    const [selectedCategory, setSelectedCategory] = useState('All');
+
+    // Handle category click
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+    };
+
+
     useEffect(() => {
       const fetchData = async () => {
           try {
@@ -110,6 +120,23 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
         disabled={isExporting}
     />
             </div>
+            {/* Tabs Section */}
+				<div className="border-2 border-white rounded-2xl px-2 py-2 bg-transparent mx-4 mb-2">
+					<nav className="justify-start space-x-2">
+						{categories.map((category) => (
+							<button
+								key={category}
+								onClick={() => handleCategoryClick(category)}
+								className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
+										? "bg-[#bac2cd] text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
+										: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-[#F8F7F3] hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
+									}`}
+							>
+								{category}
+							</button>
+						))}
+					</nav>
+				</div>
 
             {/* Search Box */}
             <div className="flex items-center pl-5 mb-4">
