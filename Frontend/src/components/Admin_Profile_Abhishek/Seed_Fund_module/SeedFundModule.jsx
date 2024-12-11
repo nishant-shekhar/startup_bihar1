@@ -16,7 +16,7 @@ const SeedFundModule = ({ onSelect }) => {
 			try {
 				console.log(token);
 				const response = await axios.get(
-					"http://localhost:3007/api/seed-fund/v2",
+					"https://startup-bihar1.onrender.com/api/seed-fund/v2",
 					{
 						headers: {
 							"Content-Type": "application/json",

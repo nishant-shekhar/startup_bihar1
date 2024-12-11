@@ -3,7 +3,7 @@ import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useEffect, useState } from "react";
 import StatusDialog from "../../UserForm/StatusDialog"; // Import the new dialog component
-
+import UpdateSocialMediaURL from "./FieldsUpdate/UpdateUserField";
 import {
 	FaTwitter,
 	FaFacebook,
@@ -21,6 +21,7 @@ const HomeSection = () => {
 	const [showDialog, setShowDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 
+	const [selectedPlatform, setSelectedPlatform] = useState(null);
 	const [statusPopup, setStatusPopup] = useState(false);
 	const [title, setTitle] = useState("");
 	const [buttonVisible, setButtonVisible] = useState(true);
@@ -28,6 +29,11 @@ const HomeSection = () => {
 	const [isSuccess, setIsSuccess] = useState(""); // Add success state
 
 	const fileInputRef = useRef(null);
+
+	// function to handle the icon click 
+	const handleIconClick = (platform) => {
+		setSelectedPlatform(platform);
+	  };
 
 	const openFileSelector = () => {
 		if (fileInputRef.current) {
@@ -366,7 +372,9 @@ const HomeSection = () => {
 								<a
 									href={startup.twitter || "#"}
 									target="_blank"
+									onClick={() => handleIconClick("twitter")}
 									rel="noopener noreferrer"
+									
 								>
 									<FaTwitter className="text-3xl cursor-pointer hover:text-blue-500" />
 								</a>
@@ -399,6 +407,7 @@ const HomeSection = () => {
 									<FaGlobe className="text-3xl cursor-pointer hover:text-green-600" />
 								</a>
 							</div>
+							{selectedPlatform && <UpdateSocialMediaURL startup={startup}  />}
 						</div>
 
 						<br />

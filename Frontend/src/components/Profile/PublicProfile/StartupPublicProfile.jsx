@@ -38,13 +38,13 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
+				`https://startup-bihar1.onrender.com/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`http://localhost:3007/api/showcase/get-showcase/${id}`
+				`https://startup-bihar1.onrender.com/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
@@ -155,7 +155,7 @@ const StartupPublicProfile = () => {
 						<img
 							src={startup.logo || "default-logo.png"}
 							alt="Profile"
-							className="object-cover w-full h-full rounded-lg "
+							className="object-cover w-full h-full rounded-lg"
 						/>
 					</div>
 				</div>

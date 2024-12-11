@@ -15,7 +15,7 @@ const StartupProfile = ({ onSelect }) => {
 			try {
 				console.log(token);
 				const response = await axios.get(
-					"http://localhost:3007/api/StartupProfile/v2",
+					"https://startup-bihar1.onrender.com/api/StartupProfile/v2",
 					{
 						headers: {
 							"Content-Type": "application/json",

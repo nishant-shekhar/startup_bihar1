@@ -16,6 +16,7 @@ import Grievance from "../../UserForm/Grievance";
 import SeedFund from "../../UserForm/SeedFund";
 import StartupForm from "../../UserForm/Startupform";
 import StatusDialog from "../../UserForm/StatusDialog";
+import SecondTranchePartialReject from "./FieldsUpdate/SecondTranchePartialReject";
 
 const COMPONENTS = {
   HomeSection,
@@ -30,6 +31,7 @@ const COMPONENTS = {
   SecondTranche,
   PostSeed,
   Grievance,
+  SecondTranchePartialReject
 };
 
 const StartupProfileMain = () => {
@@ -61,13 +63,13 @@ const StartupProfileMain = () => {
     try {
       let apiUrl = "";
       if (newPanel === "StartupForm") {
-        apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
+        apiUrl = "https://startup-bihar1.onrender.com/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "http://localhost:3007/api/seed-fund/status";
+        apiUrl = "https://startup-bihar1.onrender.com/api/seed-fund/status";
       }else if (newPanel === "PostSeed") {
-        apiUrl = "http://localhost:3007/api/post-seed/status";
+        apiUrl = "https://startup-bihar1.onrender.com/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "http://localhost:3007/api/second-tranche/status";
+        apiUrl = "https://startup-bihar1.onrender.com/api/second-tranche/status";
       }
 
       if (apiUrl) {
@@ -101,7 +103,7 @@ const StartupProfileMain = () => {
             setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: `Your form has been partially rejected. Redirecting to refill...\n${document.comment}`, buttonVisible: false, status: "failed" });
 
             setTimeout(() => {
-              setActivePage(newPanel);
+              setActivePage("SecondTranchePartialReject");
               setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
             }, 3000);
           }
