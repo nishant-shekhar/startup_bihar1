@@ -141,6 +141,41 @@ const getSecondById = async (req, res) => {
 			.json({ error: "An error occurred while retrieving the document" });
 	}
 };
+const getSecondByToken = async (req, res) => {
+// Ensure a token is provided in the request headers
+
+	try {
+		const token = req.headers.authorization?.split(" ")[1]; // Assuming Bearer <token> format
+		if (!token) {
+			return res.status(401).json({ error: "Authorization token is required" });
+		}
+		
+		// Decode the JWT to get the user ID
+		const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+		const userId = decoded.user_id; // Adjust according to your token payload structure
+
+		
+
+		// Fetch the document from the database
+		const document = await prisma.secondTranche.findUnique({
+			where: { userId: userId }, // Use the ID to query the database
+		});
+
+		if (!document) {
+			// Return 404 if document is not found
+			return res.status(404).json({ error: "Document not found" });
+		}
+
+		// Return the document if found
+		return res.status(200).json(document); // Explicitly set status to 200
+	} catch (error) {
+		// Handle any server error
+		console.error(`Error retrieving document with id ${id}:`, error);
+		return res
+			.status(500)
+			.json({ error: "An error occurred while retrieving the document" });
+	}
+};
 
 const updateSecondStatus = async (req, res) => {
 	const { id } = req.params;
@@ -252,5 +287,6 @@ module.exports = {
 	getSecondById,
 	getAllSecnWithUserDetails,
 	updateSecondStatus,
-	getSecondTrancheStatus
+	getSecondTrancheStatus,
+	getSecondByToken
 };

@@ -2,7 +2,7 @@
 
 const express = require('express');
 
-const {submitSecondTranche,getAllSecnWithUserDetails,getSecondById,updateSecondStatus, getSecondTrancheStatus} = require('../controllers/secondTrancheController');
+const {submitSecondTranche,getAllSecnWithUserDetails,getSecondById,updateSecondStatus, getSecondTrancheStatus, getSecondByToken} = require('../controllers/secondTrancheController');
 
 const router = express.Router();
 
@@ -32,6 +32,10 @@ router.get(
 router.get(
   '/v1/:id',authenticateAdmin,
   getSecondById
+);
+router.get(
+  '/v3',authenticateUser,
+  getSecondByToken
 );
 
 

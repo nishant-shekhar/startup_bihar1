@@ -9,7 +9,7 @@ const StartupList = ({ onProfileClick }) => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					"https://startup-bihar1.onrender.com/api/startupProfile/list",
+					"http://localhost:3007/api/startupProfile/list",
 				);
 				setSdata(response.data.documents);
 			} catch (error) {

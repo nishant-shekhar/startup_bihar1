@@ -45,7 +45,7 @@ const QprForm = () => {
       try {
         console.log("Submitting data:", values);
         const response = await axios.post(
-          "https://startup-bihar1.onrender.com/api/Qreport",
+          "http://localhost:3007/api/Qreport",
           values,
           {
             headers: {

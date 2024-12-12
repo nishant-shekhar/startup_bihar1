@@ -1,148 +1,189 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { Formik, Form, ErrorMessage } from "formik";
 import axios from "axios";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin, FaGlobe } from "react-icons/fa";
-import ShowcaseCard from "../../PublicProfile/ShowcaseCard";
-import HomeSection from "../HomeSection";
-import SecondTranche from "../../../UserForm/SecondTranche";
+import * as Yup from "yup";
 
-const SecondTranchePartialReject = () => {
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
-
-  const fileInputRef = useRef(null);
-
-  const openFileSelector = () => {
-    if (fileInputRef.current) fileInputRef.current.click();
-  };
-
-
-  const [statusPopup, setStatusPopup] = useState(false);
-  const [title, setTitle] = useState("");
-  const [buttonVisible, setButtonVisible] = useState(true);
-  const [subtitle, setSubtitle] = useState("");
-  const [isSuccess, setIsSuccess] = useState(""); // Add success state
-
-
-  const validationSchema = Yup.object({
-      currentStage: Yup.string().required("Current Stage is required"),
-      technicalKnowledge: Yup.string().required(
-          "Technical Knowledge is required",
-      ),
-      raisedFunds: Yup.string().required("Raised Funds is required"),
-      employment: Yup.string().required("Employment is required"),
-      auditedBalanceSheet: Yup.mixed().required(
-          "Audited Balance Sheet is required",
-      ),
-      gstReturn: Yup.mixed().required("GST Return is required"),
-      projectReport: Yup.mixed().required("Project Report is required"),
+const SecondTranchePartialReject = ({ isVisible, comment,onClose }) => {
+  const [initialValues, setInitialValues] = useState({
+    utilizationCertificate: null,
+    statusReport: null,
+    expenditurePlan: null,
+    bankStatement: null,
+    expenditureInvoice: null,
+    geoTaggedPhotos: null,
   });
-  // Formik setup for handling form submission
-  const formik = useFormik({
-      initialValues: {
-          currentStage: "",
-          technicalKnowledge: "",
-          raisedFunds: "",
-          employment: "",
-          auditedBalanceSheet: null,
-          gstReturn: null,
-          projectReport: null,
-      },
-      validationSchema,
-      validateOnChange: false, // Disable validation on change
-      validateOnBlur: false,   // Disable validation on blur
-      onSubmit: async (values) => {
-          setTitle("Submitting Post Seed Fund Form");
-          setSubtitle("Please wait while we submit your form");
-          setButtonVisible(false);
-          setStatusPopup(true);
+  const [requiredFiles, setRequiredFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-          const formData = new FormData();
-
-          for (const key in values) {
-              formData.append(
-                  key,
-                  values[key] instanceof File ? values[key] : values[key],
-              );
+  useEffect(() => {
+    const fetchDocumentStatus = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:3007/api/second-tranche/v3",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
           }
+        );
 
-          try {
-              const response = await axios.post(
-                  "https://startup-bihar1.onrender.com/api/post-seed",
-                  formData,
-                  {
-                      headers: {
-                          "Content-Type": "multipart/form-data",
-                          Authorization: `${localStorage.getItem("token")}`,
-                      },
-                  },
-              );
-              formik.resetForm();
+        const document = response.data;
+        console.log(document.utilizationCertificate);
+        console.log(comment)
 
+        // Populate initialValues with existing document fields
+        const newInitialValues = {
+          utilizationCertificate: document.utilizationCertificate || null,
+          statusReport: document.statusReport || null,
+          expenditurePlan: document.expenditurePlan || null,
+          bankStatement: document.bankStatement || null,
+          expenditureInvoice: document.expenditureInvoice || null,
+          geoTaggedPhotos: document.geoTaggedPhotos || null,
+        };
 
+        // Determine required fields
+        const required = [];
+        if (document.utilizationCertificate == null) required.push("utilizationCertificate");
+        if (document.statusReport == null) required.push("statusReport");
+        if (document.expenditurePlan == null) required.push("expenditurePlan");
+        if (document.bankStatement == null) required.push("bankStatement");
+        if (document.expenditureInvoice == null) required.push("expenditureInvoice");
+        if (document.geoTaggedPhotos == null) required.push("geoTaggedPhotos");
 
-              setTitle("Submission Successful");
-              setSubtitle(response.data.message);
-              setButtonVisible(true);
-              setSuccessMessage(response.data.message);
-              setErrorMessage("");
-              setIsSuccess("success"); // Set success state
+        setInitialValues(newInitialValues);
+        setRequiredFiles(required);
+      } catch (error) {
+        console.error("Error fetching document status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-              // Reset form fields after submission
-          } catch (error) {
-              setTitle("Submission Failed");
-              setSubtitle(
-                  error.response?.data?.error || "An error occurred during submission"
-              );
-              setButtonVisible(true);
-              setErrorMessage(
-                  error.response?.data?.error || "An error occurred during submission"
-              );
-              setSuccessMessage("");
-              setIsSuccess("failed"); // Set success state
+    if (isVisible) fetchDocumentStatus();
+  }, [isVisible]);
 
-          }
-      },
-  });
+  // Validation schema based on required files
+  const validationSchema = Yup.object(
+    requiredFiles.reduce((schema, file) => {
+      schema[file] = Yup.mixed()
+        .required(`${file.replace(/([A-Z])/g, " $1")} is required.`)
+        .test(
+          "fileSize",
+          "File size is too large. Max size is 5MB.",
+          (value) => !value || (value && value.size <= 5 * 1024 * 1024)
+        );
+      return schema;
+    }, {})
+  );
+
+  if (!isVisible) return null;
 
   return (
-    <div>
-        <HomeSection/>
-      					<div className="fixed inset-0 flex items-center justify-center  z-40">
-                          <div className="absolute inset-0 bg-black opacity-10"></div>
-						<div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-5/12 p-8 rounded-lg shadow-lg">
-							
-							<h2 className="text-2xl font-bold mb-4">Correct the Form</h2>
-                            <Form className=" rounded-lg  w-full p-6">
-                                {/* File Upload: Project Report */}
-				<div className="mb-6">
-					<label
-						htmlFor="projectReport"
-						className="block text-sm font-medium text-gray-700"
-					>
-						Upload Project Report:
-					</label>
-					<input
-						id="projectReport"
-						name="projectReport"
-						type="file"
-						onChange={(event) =>
-							formik.setFieldValue(
-								"projectReport",
-								event.currentTarget.files[0],
-							)
-						}
-					/>
-					{formik.errors.projectReport && (
-						<div className="text-red-600">{formik.errors.projectReport}</div>
-					)}
-				</div>
-</Form>
+    <div className="fixed inset-0 flex items-center justify-center z-40">
+      <div className="absolute inset-0 bg-black opacity-10"></div>
+      <div className="relative bg-white p-8 rounded-lg shadow-lg w-5/12">
+        {loading ? (
+          <div className="text-center">Loading...</div>
+        ) : (
+          <>
+            <h2 className="text-xl font-bold mb-4">Upload Required Documents</h2>
+            <p className="text-base">Reason for rejection:</p>
+            <p className="text-sm text-red-500 mb-4">{comment}</p>
 
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={onClose}
+            >
+              &times;
+            </button>
 
-</div>
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={async (values, { setSubmitting }) => {
+                const formData = new FormData();
+
+                // Append only the uploaded files
+                Object.entries(values).forEach(([key, file]) => {
+                  if (file && file instanceof File) {
+                    formData.append(key, file);
+                  }
+                });
+
+                try {
+                  const response = await axios.post(
+                    "http://localhost:3007/api/second-tranche",
+                    formData,
+                    {
+                      headers: {
+                        Authorization: localStorage.getItem("token"),
+                      },
+                    }
+                  );
+                  console.log("Documents uploaded successfully:", response.data);
+                  onClose();
+                } catch (error) {
+                  console.error("Error uploading documents:", error);
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              {({ setFieldValue, isSubmitting }) => (
+                <Form className="space-y-6">
+                  {Object.keys(initialValues).map((fileKey) => (
+                    // Render input field only if the initial value is `null`
+                    initialValues[fileKey] === null && (
+                      <div className="mb-6" key={fileKey}>
+                        <label
+                          htmlFor={fileKey}
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Upload {fileKey.replace(/([A-Z])/g, " $1")}:
+                        </label>
+                        <input
+                          id={fileKey}
+                          name={fileKey}
+                          type="file"
+                          onChange={(event) =>
+                            setFieldValue(fileKey, event.currentTarget.files[0])
+                          }
+                          className="mt-1 block w-full border-gray-300 rounded-md"
+                        />
+                        <ErrorMessage
+                          name={fileKey}
+                          component="div"
+                          className="text-red-600 text-sm mt-1"
+                        />
+                      </div>
+                    )
+                  ))}
+
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md mr-2"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit"}
+                    </button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </>
+        )}
+      </div>
     </div>
-    </div>
-
   );
 };
 

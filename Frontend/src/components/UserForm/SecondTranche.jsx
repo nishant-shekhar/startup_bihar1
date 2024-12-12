@@ -53,7 +53,7 @@ const SecondTranche = () => {
       });
 
       try {
-        const response = await fetch('https://startup-bihar1.onrender.com/api/second-tranche', {
+        const response = await fetch('http://localhost:3007/api/second-tranche', {
           method: 'POST',
           headers: {
             Authorization: `${localStorage.getItem('token')}`, // Adjust according to your token storage

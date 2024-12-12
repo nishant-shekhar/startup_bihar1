@@ -25,7 +25,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
     const fetchDetails = async () => {
       try {
         const response = await axios.get(
-          `https://startup-bihar1.onrender.com/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
+          `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
         );
 
         const { startup } = response.data;
@@ -58,7 +58,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
         setShowDialog(true);
         setDialogMessage("Uploading logo...");
 
-        const response = await axios.put('https://startup-bihar1.onrender.com/api/userlogin/update-logo', formData, {
+        const response = await axios.put('http://localhost:3007/api/userlogin/update-logo', formData, {
           headers: {
             Authorization: `${localStorage.getItem('token')}`, // No 'Bearer' prefix as requested
             'Content-Type': 'multipart/form-data',
@@ -85,12 +85,12 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
 
   const handleUpdate = async (field, value) => {
     const urlMap = {
-      moto: 'https://startup-bihar1.onrender.com/api/userlogin/update-moto',
-      twitter: 'https://startup-bihar1.onrender.com/api/userlogin/update-twitter',
-      facebook: 'https://startup-bihar1.onrender.com/api/userlogin/update-facebook',
-      instagram: 'https://startup-bihar1.onrender.com/api/userlogin/update-instagram',
-      linkedin: 'https://startup-bihar1.onrender.com/api/userlogin/update-linkedin',
-      website: 'https://startup-bihar1.onrender.com/api/userlogin/update-website',
+      moto: 'http://localhost:3007/api/userlogin/update-moto',
+      twitter: 'http://localhost:3007/api/userlogin/update-twitter',
+      facebook: 'http://localhost:3007/api/userlogin/update-facebook',
+      instagram: 'http://localhost:3007/api/userlogin/update-instagram',
+      linkedin: 'http://localhost:3007/api/userlogin/update-linkedin',
+      website: 'http://localhost:3007/api/userlogin/update-website',
     };
 
     setShowDialog(true);

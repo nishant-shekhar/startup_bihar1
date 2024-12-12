@@ -38,6 +38,7 @@ const StartupProfileMain = () => {
   const [activePage, setActivePage] = useState("HomeSection");
   const [selectedItem, setSelectedItem] = useState(null);
   const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: true, status: "" });
+  const [secondT_PR, setSecondTPRDialog] = useState({ isVisible: false ,comment:""});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,13 +64,13 @@ const StartupProfileMain = () => {
     try {
       let apiUrl = "";
       if (newPanel === "StartupForm") {
-        apiUrl = "https://startup-bihar1.onrender.com/api/StartupProfile/user-document";
+        apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "https://startup-bihar1.onrender.com/api/seed-fund/status";
+        apiUrl = "http://localhost:3007/api/seed-fund/status";
       }else if (newPanel === "PostSeed") {
-        apiUrl = "https://startup-bihar1.onrender.com/api/post-seed/status";
+        apiUrl = "http://localhost:3007/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "https://startup-bihar1.onrender.com/api/second-tranche/status";
+        apiUrl = "http://localhost:3007/api/second-tranche/status";
       }
 
       if (apiUrl) {
@@ -83,13 +84,14 @@ const StartupProfileMain = () => {
         if (response.data && response.data.document) {
           const { document } = response.data;
           const formStatus = document.documentStatus;
+          const comment = document.comment;
 
           if (formStatus === "null") {
             setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
             setActivePage(newPanel);
           } else if (formStatus === "Accepted") {
             setDialogStatus({ isVisible: true, title: "Form Accepted", subtitle: "Your form has been accepted.", buttonVisible: true, status: "success" });
-            setActivePage("UserProfile");
+            //setActivePage("UserProfile");
           } else if (formStatus === "Rejected") {
             setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: `Your form has been rejected. Redirecting to refill...\n${document.comment}`, buttonVisible: false, status: "failed" });
             setTimeout(() => {
@@ -98,12 +100,12 @@ const StartupProfileMain = () => {
             }, 3000);
           } else if (formStatus === "created" || formStatus === "Updated") {
             setDialogStatus({ isVisible: true, title: "Form Under Review", subtitle: "Your form is under review.", buttonVisible: true, status: "under review" });
-            setActivePage("UserProfile");
+            //setActivePage("UserProfile");
           }else if(formStatus === "Partially Rejected"){
             setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: `Your form has been partially rejected. Redirecting to refill...\n${document.comment}`, buttonVisible: false, status: "failed" });
 
             setTimeout(() => {
-              setActivePage("SecondTranchePartialReject");
+              setSecondTPRDialog({isVisible:true,comment:comment});
               setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
             }, 3000);
           }
@@ -145,6 +147,12 @@ const StartupProfileMain = () => {
         buttonVisible={dialogStatus.buttonVisible}
         onClose={() => setDialogStatus({ ...dialogStatus, isVisible: false })}
         status={dialogStatus.status}
+      />
+       <SecondTranchePartialReject
+        isVisible={secondT_PR.isVisible}
+        comment={secondT_PR.comment}
+        onClose={() => setSecondTPRDialog({  isVisible: false })}
+
       />
     </div>
   );

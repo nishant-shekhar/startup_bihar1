@@ -38,13 +38,13 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`https://startup-bihar1.onrender.com/api/userlogin/startup-details?user_id=${id}`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`https://startup-bihar1.onrender.com/api/showcase/get-showcase/${id}`
+				`http://localhost:3007/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
