@@ -17,6 +17,7 @@ import SeedFund from "../../UserForm/SeedFund";
 import StartupForm from "../../UserForm/Startupform";
 import StatusDialog from "../../UserForm/StatusDialog";
 import SecondTranchePartialReject from "./FieldsUpdate/SecondTranchePartialReject";
+import PostSeedPartialReject from "./FieldsUpdate/PostSeedPartialReject";
 
 const COMPONENTS = {
   HomeSection,
@@ -33,13 +34,17 @@ const COMPONENTS = {
   Grievance,
   SecondTranchePartialReject
 };
+const PARTIAL_REJECT_COMPONENTS = {
+  SecondTranche: SecondTranchePartialReject,
+  PostSeed:PostSeedPartialReject
+};
 
 const StartupProfileMain = () => {
   const [activePage, setActivePage] = useState("HomeSection");
   const [selectedItem, setSelectedItem] = useState(null);
-  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: true, status: "" });
-  const [secondT_PR, setSecondTPRDialog] = useState({ isVisible: false ,comment:""});
+  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
   const navigate = useNavigate();
+  const [partialReject, setPartialReject] = useState({isVisible: false,comment: "",component: null,});
 
   useEffect(() => {
     try {
@@ -53,11 +58,11 @@ const StartupProfileMain = () => {
     }
   }, [navigate]);
 
-  
+
   const checkFormStatus = async (newPanel) => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setDialogStatus({ isVisible: true, title: "Authentication Error", subtitle: "No token found", buttonVisible: true, status: "failed" });
+      setDialogStatus({ isVisible: true, title: "Authentication Error", subtitle: "No token found", buttonVisible: false, status: "failed" });
       return;
     }
 
@@ -67,14 +72,14 @@ const StartupProfileMain = () => {
         apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
         apiUrl = "http://localhost:3007/api/seed-fund/status";
-      }else if (newPanel === "PostSeed") {
+      } else if (newPanel === "PostSeed") {
         apiUrl = "http://localhost:3007/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
         apiUrl = "http://localhost:3007/api/second-tranche/status";
       }
 
       if (apiUrl) {
-        setDialogStatus({ isVisible: true, title: "Checking Form Status", subtitle: "Wait while we are fetching form status!", buttonVisible: true, status: "checking" });
+        setDialogStatus({ isVisible: true, title: "Checking Form Status", subtitle: "Wait while we are fetching form status!", buttonVisible: false, status: "checking" });
 
         const response = await axios.get(apiUrl, {
           headers: { Authorization: token },
@@ -101,13 +106,34 @@ const StartupProfileMain = () => {
           } else if (formStatus === "created" || formStatus === "Updated") {
             setDialogStatus({ isVisible: true, title: "Form Under Review", subtitle: "Your form is under review.", buttonVisible: true, status: "under review" });
             //setActivePage("UserProfile");
-          }else if(formStatus === "Partially Rejected"){
-            setDialogStatus({ isVisible: true, title: "Form Rejected", subtitle: `Your form has been partially rejected. Redirecting to refill...\n${document.comment}`, buttonVisible: false, status: "failed" });
+          } else if (formStatus === "Partially Rejected") {
+            const PartialRejectComponent = PARTIAL_REJECT_COMPONENTS[newPanel];
+            if (PartialRejectComponent) {
+              setDialogStatus({
+                isVisible: true,
+                title: "Form Partially Rejected",
+                subtitle: `Your form has been partially rejected.`,
+                buttonVisible: false,
+                status: "failed",
+              });
 
-            setTimeout(() => {
-              setSecondTPRDialog({isVisible:true,comment:comment});
-              setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
-            }, 3000);
+              setTimeout(() => {
+                setPartialReject({
+                  isVisible: true,
+                  comment,
+                  component: PartialRejectComponent,
+                });
+                setDialogStatus({
+                  isVisible: false,
+                  title: "",
+                  subtitle: "",
+                  buttonVisible: false,
+                  status: "",
+                });
+              }, 3000);
+            }else{
+
+            }
           }
         } else {
           throw new Error("Invalid response structure");
@@ -122,7 +148,7 @@ const StartupProfileMain = () => {
   };
 
   const changePanel = (newPanel) => {
-    if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche" || newPanel==="PostSeed") {
+    if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche" || newPanel === "PostSeed") {
       checkFormStatus(newPanel);
     } else if (COMPONENTS[newPanel]) {
       setActivePage(newPanel);
@@ -148,12 +174,14 @@ const StartupProfileMain = () => {
         onClose={() => setDialogStatus({ ...dialogStatus, isVisible: false })}
         status={dialogStatus.status}
       />
-       <SecondTranchePartialReject
-        isVisible={secondT_PR.isVisible}
-        comment={secondT_PR.comment}
-        onClose={() => setSecondTPRDialog({  isVisible: false })}
-
-      />
+       {partialReject.isVisible &&
+        partialReject.component && (
+          <partialReject.component
+            isVisible={partialReject.isVisible}
+            comment={partialReject.comment}
+            onClose={() => setPartialReject({ isVisible: false, comment: "", component: null })}
+          />
+        )}
     </div>
   );
 };

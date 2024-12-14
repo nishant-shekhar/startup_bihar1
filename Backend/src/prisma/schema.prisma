@@ -129,7 +129,6 @@ model SeedFund {
   registrationNumber     String
   dateOfIncorporation    DateTime
   businessEntityType     String
-  companyCertificate     String?
   rocDistrict            String
   companyAddress         String
   pincode                String
@@ -139,7 +138,14 @@ model SeedFund {
   currentAccountHolderName String
   branchName             String
   branchAddress          String
+
   cancelChequeOrPassbook String?
+  companyCertificate     String?
+  inc33                  String?
+  inc34                  String?
+  partnershipAgreement   String?
+  dpr                    String?
+
   panNumber              String
   gstNumber              String
   comment                String?

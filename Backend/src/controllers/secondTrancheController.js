@@ -4,7 +4,6 @@ const prisma = new PrismaClient();
 
 const JWT_SECRET = "your_jwt_secret_key";
 
-// Second Tranche form submission controller
 const submitSecondTranche = async (req, res) => {
 	try {
 		// Ensure a token is provided in the request headers
@@ -17,29 +16,34 @@ const submitSecondTranche = async (req, res) => {
 		const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
 		const userId = decoded.user_id; // Adjust according to your token payload structure
 
+		// Fetch existing second tranche entry for the user
+		const existingEntry = await prisma.secondTranche.findUnique({
+			where: { userId },
+		});
+
 		// Handle file uploads
 		const utilizationCertificate = req.files.utilizationCertificate
 			? req.files.utilizationCertificate[0].location
-			: null;
+			: existingEntry?.utilizationCertificate;
 		const statusReport = req.files.statusReport
 			? req.files.statusReport[0].location
-			: null;
+			: existingEntry?.statusReport;
 		const expenditurePlan = req.files.expenditurePlan
 			? req.files.expenditurePlan[0].location
-			: null;
+			: existingEntry?.expenditurePlan;
 		const bankStatement = req.files.bankStatement
 			? req.files.bankStatement[0].location
-			: null;
+			: existingEntry?.bankStatement;
 		const expenditureInvoice = req.files.expenditureInvoice
 			? req.files.expenditureInvoice[0].location
-			: null;
+			: existingEntry?.expenditureInvoice;
 		const geoTaggedPhotos = req.files.geoTaggedPhotos
 			? req.files.geoTaggedPhotos[0].location
-			: null;
+			: existingEntry?.geoTaggedPhotos;
 
 		// Upsert: Create or update the second tranche entry
 		const secondTrancheEntry = await prisma.secondTranche.upsert({
-			where: { userId }, // Use userId to find existing entry
+			where: { userId },
 			update: {
 				utilizationCertificate,
 				statusReport,
@@ -47,7 +51,7 @@ const submitSecondTranche = async (req, res) => {
 				bankStatement,
 				expenditureInvoice,
 				geoTaggedPhotos,
-				documentStatus: "created",
+				documentStatus: "created", // Update document status
 			},
 			create: {
 				utilizationCertificate,
@@ -58,12 +62,11 @@ const submitSecondTranche = async (req, res) => {
 				geoTaggedPhotos,
 				userId,
 				documentStatus: "created",
-				// Associate the entry with the user ID
 			},
 		});
 
 		res.status(200).json({
-			message: secondTrancheEntry
+			message: existingEntry
 				? "Second tranche entry updated successfully"
 				: "Second tranche entry created successfully",
 			data: secondTrancheEntry,
@@ -75,6 +78,7 @@ const submitSecondTranche = async (req, res) => {
 			.json({ error: "An error occurred while submitting the form." });
 	}
 };
+
 
 const getAllSecnWithUserDetails = async (req, res) => {
 	try {
