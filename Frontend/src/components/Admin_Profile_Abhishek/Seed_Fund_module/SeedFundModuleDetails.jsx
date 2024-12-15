@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import FileViewPanel from "../FileViewPanel";
 
 const SeedfundModuleDetails = ({ id }) => {
 	const [data, setData] = useState({});
@@ -26,12 +27,13 @@ const SeedfundModuleDetails = ({ id }) => {
 					},
 				);
 				setData(response.data);
+				console.log(response.data);
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
 		}
 	};
-
+	
 	useEffect(() => {
 		fetchData();
 	}, [id]);
@@ -188,29 +190,7 @@ const SeedfundModuleDetails = ({ id }) => {
 							<td className="py-4 px-4 border">Business Entity Type</td>
 							<td className="py-4 px-4 border">{data.businessEntityType}</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">Company Certificate</td>
-							<td className="py-4 px-4 border">
-								{data.companyCertificate && (
-									<div>
-										<button
-											onClick={() => handleViewPdf(data.companyCertificate)}
-											className="text-blue-500 hover:underline"
-										>
-											View
-										</button>{" "}
-										|{" "}
-										<a
-											className="text-blue-500 hover:underline"
-											href={`${data.companyCertificate}`}
-											download
-										>
-											Download
-										</a>
-									</div>
-								)}
-							</td>
-						</tr>
+
 						<tr>
 							<td className="py-4 px-4 border">ROC District</td>
 							<td className="py-4 px-4 border">{data.rocDistrict}</td>
@@ -249,29 +229,7 @@ const SeedfundModuleDetails = ({ id }) => {
 							<td className="py-4 px-4 border">Branch Address</td>
 							<td className="py-4 px-4 border">{data.branchAddress}</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">Cancelled Cheque or Passbook</td>
-							<td className="py-4 px-4 border">
-								{data.cancelChequeOrPassbook && (
-									<div>
-										<button
-											onClick={() => handleViewPdf(data.cancelChequeOrPassbook)}
-											className="text-blue-500 hover:underline"
-										>
-											View
-										</button>{" "}
-										|{" "}
-										<a
-											className="text-blue-500 hover:underline"
-											href={`${data.cancelChequeOrPassbook}`}
-											download
-										>
-											Download
-										</a>
-									</div>
-								)}
-							</td>
-						</tr>
+
 						<tr>
 							<td className="py-4 px-4 border">PAN Number</td>
 							<td className="py-4 px-4 border">{data.panNumber}</td>
@@ -280,6 +238,71 @@ const SeedfundModuleDetails = ({ id }) => {
 							<td className="py-4 px-4 border">GST Number</td>
 							<td className="py-4 px-4 border">{data.gstNumber}</td>
 						</tr>
+						<tr>
+							<td className="py-4 px-4 border">Cancelled Cheque or Passbook</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<FileViewPanel
+									field={data.cancelChequeOrPassbook}
+									handleViewPdf={handleViewPdf}
+								/>
+							</td>
+						</tr>
+						<tr>
+							<td className="py-4 px-4 border">Detailed Project Report</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<FileViewPanel
+									field={data.dpr}
+									handleViewPdf={handleViewPdf}
+								/>
+							</td>
+						</tr>
+						<tr>
+							<td className="py-4 px-4 border">Company Certificate</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<FileViewPanel
+									field={data.companyCertificate}
+									handleViewPdf={handleViewPdf}
+								/>
+							</td>
+						</tr>
+						{/* Conditional Upload Field for Partnership Firm or Limited Liability Partnership (LLP) */}
+						{(data.businessEntityType === "Partnership Firm" ||
+							data.businessEntityType ===
+								"Limited Liability Partnership (LLP)") && (
+							<tr>
+								<td className="py-4 px-4 border">Partnership Agreement</td>
+								<td className="border-b border-l border-t border-r w-[35vw]">
+									<FileViewPanel
+										field={data.partnershipAgreement}
+										handleViewPdf={handleViewPdf}
+									/>
+								</td>
+							</tr>
+						)}
+
+						{data.businessEntityType ===
+							"Private Limited Company/One Person Company (OPC)" && (
+							<>
+								<tr>
+									<td className="py-4 px-4 border">INC 33</td>
+									<td className="border-b border-l border-t border-r w-[35vw]">
+										<FileViewPanel
+											field={data.inc33}
+											handleViewPdf={handleViewPdf}
+										/>
+									</td>
+								</tr>
+								<tr>
+									<td className="py-4 px-4 border">INC34</td>
+									<td className="border-b border-l border-t border-r w-[35vw]">
+										<FileViewPanel
+											field={data.inc34}
+											handleViewPdf={handleViewPdf}
+										/>
+									</td>
+								</tr>
+							</>
+						)}
 					</tbody>
 				</table>
 
@@ -350,6 +373,65 @@ const SeedfundModuleDetails = ({ id }) => {
 									Cancelled Cheque or Passbook
 								</span>
 							</label>
+							<label className="flex items-center space-x-2 cursor-pointer">
+								<input
+									type="checkbox"
+									name="rejectReason"
+									value="dpr"
+									checked={selectedOptions.includes("dpr")}
+									onChange={handleCheckboxChange}
+									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+								/>
+								<span className="text-sm text-slate-950">
+									Detailed Project Report
+								</span>
+							</label>
+							{(data.businessEntityType === "Partnership Firm" ||
+								data.businessEntityType ===
+									"Limited Liability Partnership (LLP)") && (
+								<label className="flex items-center space-x-2 cursor-pointer">
+									<input
+										type="checkbox"
+										name="rejectReason"
+										value="partnershipAgreement"
+										checked={selectedOptions.includes("partnershipAgreement")}
+										onChange={handleCheckboxChange}
+										className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+									/>
+									<span className="text-sm text-slate-950">
+										Partnership Agreement
+									</span>
+								</label>
+							)}
+							{data.businessEntityType ===
+								"Private Limited Company/One Person Company (OPC)" && (
+								<>
+									<label className="flex items-center space-x-2 cursor-pointer">
+										<input
+											type="checkbox"
+											name="rejectReason"
+											value="inc33"
+											checked={selectedOptions.includes("inc33")}
+											onChange={handleCheckboxChange}
+											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+										/>
+										<span className="text-sm text-slate-950">INC 33</span>
+									</label>
+									<label className="flex items-center space-x-2 cursor-pointer">
+										<input
+											type="checkbox"
+											name="rejectReason"
+											value="inc34"
+											checked={selectedOptions.includes("inc34")}
+											onChange={handleCheckboxChange}
+											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+										/>
+										<span className="text-sm text-slate-950">
+											INC 34
+										</span>
+									</label>
+								</>
+							)}
 						</div>
 						<div className="flex justify-end gap-x-2 mt-4">
 							<button

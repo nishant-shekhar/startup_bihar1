@@ -15,7 +15,11 @@ router.post(
   '/',authenticateUser,
   upload.fields([
     { name: 'companyCertificate', maxCount: 1 },
-    { name: 'cancelChequeOrPassbook', maxCount: 1 }
+    { name: 'cancelChequeOrPassbook', maxCount: 1 },
+    { name: 'inc33', maxCount: 1 }, // Example conditional field
+    { name: 'inc34', maxCount: 1 },
+    { name: 'partnershipAgreement', maxCount: 1 },
+    { name: 'dpr', maxCount: 1 },
   ]),
   submitSeedFund
 );

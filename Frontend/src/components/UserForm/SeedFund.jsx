@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import axios from 'axios';
 import Upload from './Upload';
 
 const SeedFund = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track form submission status
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const districtsOfBihar = [
     "Araria", "Arwal", "Aurangabad", "Banka", "Begusarai", "Bhagalpur", "Bhojpur", "Buxar",
@@ -17,9 +18,62 @@ const SeedFund = () => {
   ];
 
   const businessEntityTypes = [
-    "Private Limited Company/One Person Company (OPC)", "Partnership Firm",
+    "Private Limited Company/One Person Company (OPC)", 
+    "Partnership Firm",
     "Limited Liability Partnership (LLP)"
   ];
+
+  // Validation schema
+  const validationSchema = Yup.object({
+    companyName: Yup.string().required("Company Name is required."),
+    registrationNumber: Yup.string().required("Registration Number is required."),
+    dateOfIncorporation: Yup.date().required("Date of Incorporation is required."),
+    businessEntityType: Yup.string().required("Business Entity Type is required."),
+    rocDistrict: Yup.string().required("ROC District is required."),
+    companyCertificate: Yup.mixed()
+      .required("Company Certificate is required.")
+      .test("fileSize", "File size too large, max size is 5MB",
+            (value) => !value || (value && value.size <= 5 * 1024 * 1024)),
+    companyAddress: Yup.string().required("Company Address is required."),
+    pincode: Yup.number()
+      .typeError("Pincode must be a number.")
+      .required("Pincode is required."),
+    bankName: Yup.string().required("Bank Name is required."),
+    ifscCode: Yup.string().required("IFSC Code is required."),
+    currentAccountNumber: Yup.string().required("Current Account Number is required."),
+    currentAccountHolderName: Yup.string().required("Current Account Holder Name is required."),
+    branchName: Yup.string().required("Branch Name is required."),
+    branchAddress: Yup.string().required("Branch Address is required."),
+    cancelChequeOrPassbook: Yup.mixed()
+      .required("Cancel Cheque or Passbook is required.")
+      .test("fileSize", "File size too large, max size is 5MB",
+            (value) => !value || (value && value.size <= 5 * 1024 * 1024)),
+    panNumber: Yup.string().required("PAN Number is required."),
+    gstNumber: Yup.string().required("GST Number is required."),
+    dpr: Yup.mixed()
+      .required("Detailed Project Report is required.")
+      .test("fileSize", "File size too large, max size is 5MB",
+            (value) => !value || (value && value.size <= 5 * 1024 * 1024)),
+    inc33: Yup.mixed().when("businessEntityType", {
+      is: (value) => value === "Private Limited Company/One Person Company (OPC)",
+      then: Yup.mixed()
+        .required("INC33 (MOA) is required.")
+        .test("fileSize", "File size too large, max size is 5MB",
+              (value) => !value || (value && value.size <= 5 * 1024 * 1024)),
+      otherwise: Yup.mixed().nullable(),
+    }),
+    inc34: Yup.mixed().when("businessEntityType", {
+      is: (value) => value === "Private Limited Company/One Person Company (OPC)",
+      then: Yup.mixed()
+        .required("INC34 (AOA) is required.")
+        .test("fileSize", "File size too large, max size is 5MB",
+              (value) => !value || (value && value.size <= 5 * 1024 * 1024)),
+      otherwise: Yup.mixed().nullable(),
+    }),
+   
+  });
+  
+  
 
   // Formik setup
   const formik = useFormik({
@@ -41,9 +95,14 @@ const SeedFund = () => {
       cancelChequeOrPassbook: null,
       panNumber: '',
       gstNumber: '',
+      inc33: null,
+      inc34: null,
+      partnershipAgreement: null,
+      dpr: null,
     },
+    validationSchema,
     onSubmit: async (values) => {
-      setIsSubmitting(true); // Show the modal dialog
+      setIsSubmitting(true);
       const formData = new FormData();
       for (const key in values) {
         if (values[key] instanceof File) {
@@ -65,8 +124,8 @@ const SeedFund = () => {
         setErrorMessage(error.response?.data?.error || 'An error occurred during submission');
         setSuccessMessage('');
       } finally {
-        setIsSubmitting(false); // Hide the modal dialog after response
-        formik.resetForm(); // Reset form fields after submission
+        setIsSubmitting(false);
+        formik.resetForm();
       }
     },
   });
@@ -75,11 +134,11 @@ const SeedFund = () => {
     formik.setFieldValue(fieldName, file);
   };
 
+
   return (
     <div className="h-screen overflow-y-auto">
       <h2 className="text-center text-xl font-semibold mb-4">Seed Fund Application Form</h2>
 
-      {/* Modal Dialog */}
       {isSubmitting && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded shadow-lg text-center">
@@ -356,7 +415,6 @@ const SeedFund = () => {
               </div>
             </div>
           </div>
-          {/* Footer with buttons */}
           <div className="text-center mt-4">
             <button type="submit" className="bg-blue-500 text-white rounded py-2 px-4">Submit</button>
           </div>

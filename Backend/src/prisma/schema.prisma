@@ -28,8 +28,10 @@ model UserNotification {
   user_id               String               @unique
   admin_id              String
   notification          String
+  subtitle              String?
   related_to            String?
   docLink               String?
+  docLink               color?
   createdAt             DateTime @default(now())
   updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
 }

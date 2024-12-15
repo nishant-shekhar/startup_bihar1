@@ -36,6 +36,10 @@ const submitSeedFund = async (req, res) => {
     // Extract the S3 URLs from the file upload response
     const companyCertificate = req.files.companyCertificate ? req.files.companyCertificate[0].location : null;
     const cancelChequeOrPassbook = req.files.cancelChequeOrPassbook ? req.files.cancelChequeOrPassbook[0].location : null;
+    const inc33 = req.files.inc33 ? req.files.inc33[0].location : null;
+    const inc34 = req.files.inc34 ? req.files.inc34[0].location : null;
+    const partnershipAgreement = req.files.partnershipAgreement ? req.files.partnershipAgreement[0].location : null;
+    const dpr = req.files.dpr ? req.files.dpr[0].location : null;
 
     const seedFundEntry = await prisma.seedFund.upsert({
       where: { userId },
@@ -57,6 +61,10 @@ const submitSeedFund = async (req, res) => {
         cancelChequeOrPassbook,
         panNumber,
         gstNumber,
+        inc33,
+        inc34,
+        partnershipAgreement,
+        dpr,
         documentStatus: "Updated"
       },
       create: {
@@ -75,6 +83,10 @@ const submitSeedFund = async (req, res) => {
         branchName,
         branchAddress,
         cancelChequeOrPassbook,
+        inc33,
+        inc34,
+        partnershipAgreement,
+        dpr,
         panNumber,
         gstNumber,
         documentStatus: "created",

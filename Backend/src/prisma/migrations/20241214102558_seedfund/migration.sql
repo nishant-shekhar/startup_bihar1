@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `SeedFund` ADD COLUMN `dpr` VARCHAR(191) NULL,
+    ADD COLUMN `inc33` VARCHAR(191) NULL,
+    ADD COLUMN `inc34` VARCHAR(191) NULL,
+    ADD COLUMN `partnershipAgreement` VARCHAR(191) NULL;

@@ -30,7 +30,7 @@ const SecondTranchePartialReject = ({ isVisible, comment,onClose }) => {
         );
 
         const document = response.data;
-        console.log(document.utilizationCertificate);
+        //console.log(document.utilizationCertificate);
         console.log(comment)
 
         // Populate initialValues with existing document fields
