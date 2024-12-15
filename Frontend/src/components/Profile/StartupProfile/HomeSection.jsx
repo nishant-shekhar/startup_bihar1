@@ -14,14 +14,12 @@ import {
 } from "react-icons/fa";
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 import { useRef } from "react";
+import UpdateMetrics from "./FieldsUpdate/UpdateMetrics";
 
 const HomeSection = () => {
 	const [startup, setStartup] = useState([]);
-	const [isPopupVisible, setIsPopupVisible] = useState(false);
-	const [showDialog, setShowDialog] = useState(false);
-	const [dialogMessage, setDialogMessage] = useState("");
-
-	const [selectedPlatform, setSelectedPlatform] = useState(null);
+	const [selectedPlatform, setSelectedPlatform] = useState(false);
+	const [showUpdateMetrics, setShowUpdateMetrics] = useState(false);
 	const [statusPopup, setStatusPopup] = useState(false);
 	const [title, setTitle] = useState("");
 	const [buttonVisible, setButtonVisible] = useState(true);
@@ -30,10 +28,10 @@ const HomeSection = () => {
 
 	const fileInputRef = useRef(null);
 
-	// function to handle the icon click 
-	const handleIconClick = (platform) => {
+	// function to handle the icon click
+	const handlePlatformSelect = (platform) => {
 		setSelectedPlatform(platform);
-	  };
+	};
 
 	const openFileSelector = () => {
 		if (fileInputRef.current) {
@@ -47,6 +45,11 @@ const HomeSection = () => {
 			setFieldValue("imgUrl", file);
 		}
 	};
+
+	const [isPopupVisible, setIsPopupVisible] = useState(false);
+	const [showDialog, setShowDialog] = useState(false);
+	const [dialogMessage, setDialogMessage] = useState("");
+	const [isContactVisible, setIsContactVisible] = useState(false);
 
 	const data = [
 		{
@@ -306,7 +309,7 @@ const HomeSection = () => {
 						</div>
 
 						{/* Startup Name and stuff */}
-						<div className="flex px-8 max-w-screen-lg w-screen ml-5 justify-between py-8">
+						<div className="flex pl-8 max-w-screen-lg w-screen ml-5 justify-between py-8">
 							<div className="">
 								<div className="flex items-center gap-2 ">
 									<h1 className="text-2xl font-semibold">
@@ -337,7 +340,10 @@ const HomeSection = () => {
 								</p>
 
 								<div className="flex gap-3 mb-2 mt-5 ">
-									<button className="px-6 py-2 bg-black text-white rounded-lg">
+									<button
+										className="px-6 py-2 bg-black text-white rounded-lg"
+										onClick={() => setIsContactVisible(true)}
+									>
 										Contact
 									</button>
 									<a
@@ -353,61 +359,83 @@ const HomeSection = () => {
 						</div>
 
 						{/* Stats & Links*/}
-						<div className="py-10 pr-10">
-							<div className="flex justify-between items-center">
+						<div className="py-10 pr-10 w-3/4 ">
+							<div className="flex justify-between items-center  gap-3">
 								<div className="text-center">
-									<div className="text-xl font-semibold">2,985</div>
-									<div className="text-gray-600">Employees</div>
+									<div className="text-xl font-semibold">
+										{startup.employeeCount || 0}
+									</div>
+									<div
+										className="text-gray-600 cursor-pointer"
+										onClick={() => setShowUpdateMetrics(true)}
+									>
+										Employees
+									</div>
 								</div>
 								<div className="text-center">
-									<div className="text-xl font-semibold">132</div>
-									<div className="text-gray-600">Following</div>
+									<div className="text-xl font-semibold">
+										{startup.revenueLY || 0}
+									</div>
+									<div className="text-gray-600">Revenue</div>
 								</div>
 								<div className="text-center">
-									<div className="text-xl font-semibold">548</div>
-									<div className="text-gray-600">Likes</div>
+									<div className="text-xl font-semibold">
+										{startup.projects || 0}
+									</div>
+									<div className="text-gray-600">Projects</div>
 								</div>
+								<div className="text-center">
+									<div className="text-xl font-semibold">
+										{startup.workOrders || 0}
+									</div>
+									<div className="text-gray-600">Orders</div>
+								</div>
+								{showUpdateMetrics && (
+									<UpdateMetrics
+										startup={startup}
+										onClose={() => setShowUpdateMetrics(false)}
+									/>
+								)}
 							</div>
-							<div className="flex gap-6  mt-3">
-								<a
-									href={startup.twitter || "#"}
-									target="_blank"
-									onClick={() => handleIconClick("twitter")}
-									rel="noopener noreferrer"
-									
-								>
-									<FaTwitter className="text-3xl cursor-pointer hover:text-blue-500" />
-								</a>
+							<div className="flex gap-6 px-5 mt-3">
+								<button type="button" onClick={() => setSelectedPlatform(true)}>
+									<FaTwitter className="text-4xl cursor-pointer hover:text-blue-500" />
+								</button>
 								<a
 									href={startup.facebook || "#"}
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<FaFacebook className="text-3xl cursor-pointer hover:text-blue-700" />
+									<FaFacebook className="text-4xl cursor-pointer hover:text-blue-700" />
 								</a>
 								<a
-									href={startup.Instagram || "#"}
+									href={startup.instagram || "#"}
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<FaInstagram className="text-3xl cursor-pointer hover:text-pink-500" />
+									<FaInstagram className="text-4xl cursor-pointer hover:text-pink-500" />
 								</a>
 								<a
 									href={startup.linkedin || "#"}
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<FaLinkedin className="text-3xl cursor-pointer hover:text-blue-600" />
+									<FaLinkedin className="text-4xl cursor-pointer hover:text-blue-600" />
 								</a>
 								<a
 									href={startup.website || "#"}
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<FaGlobe className="text-3xl cursor-pointer hover:text-green-600" />
+									<FaGlobe className="text-4xl cursor-pointer hover:text-green-600" />
 								</a>
 							</div>
-							{selectedPlatform && <UpdateSocialMediaURL startup={startup}  />}
+							{selectedPlatform && (
+								<UpdateSocialMediaURL
+									startup={startup}
+									onPlatformSelect={handlePlatformSelect}
+								/>
+							)}
 						</div>
 
 						<br />
@@ -433,44 +461,6 @@ const HomeSection = () => {
 				</h1>
 				<div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6	mx-5">
-						{/* Add New Card*/}
-						{/* <div className="overflow-hidden rounded-lg shadow-lg flex-1 min-w-0">
-							<div className=" bg-gray-600 w-full h-full rounded-lg flex flex-col items-center justify-center bg-opacity-40 backdrop-filter backdrop-blur-lg border border-white border-opacity-30">
-								<FaUserCircle className="text-white text-9xl " />
-								<button
-									type="button"
-									className="bg-white  py-2 px-7 rounded-md mt-5 "
-									onClick={() => setIsPopupVisible(true)}
-								>
-									Add New
-								</button>
-							</div>
-						</div> */}
-						{/* <div className="overflow-hidden rounded-lg shadow-lg flex-1 min-w-0 ">
-							<div className="">
-								<div className="mx-5 mt-4 ">
-									<img src="imgurl" alt="" className="rounded-lg object-fill" />
-								</div>
-							</div>
-							<div className="p-6">
-								<div className="text-md text-green-500 font-semibold mb-2">
-									"dateandtime"
-								</div>
-								<h3 className="text-xl font-semibold mb-2 truncate">tile</h3>
-								<div className="text-sm text-gray-600 truncate">
-									subtitle •tag
-								</div>
-
-								<hr className="mt-3" />
-
-								<button
-									type="button"
-									className="bg-blue-600 py-2 px-5 rounded-md mt-3 text-white"
-								>
-									Project
-								</button>
-							</div>
-						</div> */}
 						<div className="flex justify-center items-center ">
 							<div className="bg-gray-200 shadow-md rounded-lg max-w-sm w-full animate-pulse h-[367px]">
 								<div className="bg-gray-300 h-40 rounded-lg mb-4 mx-5 mt-4 "></div>
@@ -502,16 +492,16 @@ const HomeSection = () => {
 					</div>
 				</div>
 				<StatusDialog
-				isVisible={statusPopup}
-				title={title}
-				subtitle={subtitle}
-				buttonVisible={buttonVisible}
-				status={isSuccess} // Pass success state
+					isVisible={statusPopup}
+					title={title}
+					subtitle={subtitle}
+					buttonVisible={buttonVisible}
+					status={isSuccess} // Pass success state
+					onClose={() => setStatusPopup(false)}
+				/>
 
-				onClose={() => setStatusPopup(false)}
-			/>
 				{isPopupVisible && (
-					<div className="fixed inset-0 flex items-center justify-center  z-40">
+					<div className="fixed inset-0 flex items-center justify-center  z-50">
 						<div className="absolute inset-0 bg-black opacity-10"></div>
 						<div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-5/12 p-8 rounded-lg shadow-lg">
 							<button
@@ -587,10 +577,11 @@ const HomeSection = () => {
 
 											setTitle("Uploading Failed");
 											setSubtitle(
-												error.response?.data?.error || "An error occurred during submission"
+												error.response?.data?.error ||
+													"An error occurred during submission",
 											);
 											setButtonVisible(true);
-											
+
 											setIsSuccess("failed"); // Set success state
 										});
 								}}
@@ -754,14 +745,51 @@ const HomeSection = () => {
 												type="submit"
 												disabled={isSubmitting}
 											>
-												Upload
+												Save
 											</button>
 										</div>
-										
 									</Form>
-
 								)}
 							</Formik>
+						</div>
+					</div>
+				)}
+
+				{isContactVisible && (
+					<div className="fixed inset-0 flex items-center justify-center  z-50">
+						<div className="absolute inset-0 bg-black opacity-10"></div>
+						<div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-5/12 p-8 rounded-lg shadow-lg">
+							<button
+								className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+								onClick={() => setIsContactVisible(false)}
+							>
+								&times;
+							</button>
+							<h1 className="text-2xl font-bold">{startup.company_name}</h1>
+							<h1 className="mb-3">{startup.about}</h1>
+							<h2 className="text-xl font-semibold ">Contact :</h2>
+							Phone :
+							<a href={`tel:${startup.mobile}`} className="text-blue-600 ">
+								{" "}
+								{startup.mobile || "N/A"}
+							</a>
+							<br />
+							Website:
+							<a
+								href={startup.website || "#"}
+								className="text-blue-600 underline"
+							>
+								{" "}
+								{startup.website || "#"}
+							</a>
+							<br />
+							Address:
+							<a
+								href={startup.website || "#"}
+								className="text-blue-600 underline"
+							>
+								{" "}
+							</a>
 						</div>
 					</div>
 				)}
@@ -775,7 +803,6 @@ const HomeSection = () => {
 					</div>
 				)}
 			</div>
-			
 		</div>
 	);
 };

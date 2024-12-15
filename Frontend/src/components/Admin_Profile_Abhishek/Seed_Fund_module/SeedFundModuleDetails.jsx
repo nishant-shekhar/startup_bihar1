@@ -43,6 +43,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		setShowDialog(true);
 		setTimeout(() => setShowDialog(false), 2000); // Close after 2 seconds
 	};
+	console.log(selectedOptions);
 
 	const handleReject = async () => {
 		handleDialog("Updating status to reject...");

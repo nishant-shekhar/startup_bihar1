@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import FileViewPanel from "./FileViewPanel";
 
 const StartupProfileDetails = ({ id }) => {
 	const [data, setData] = useState([]);
@@ -87,26 +88,16 @@ const StartupProfileDetails = ({ id }) => {
 	const handlePartialReject = async () => {
 		handleDialog("Updating status to partial reject...");
 		try {
-			await axios.patch(
-				`http://localhost:3007/api/StartupProfile/u1/${id}`,
-				{
-					certPath: null,
-					comment: `Document has been partially rejected for reason: ${comment}`,
-				},
-				{
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `${token}`,
-					},
-				},
-			);
-
-
+			const updateFields = selectedOptions.reduce((acc, field) => {
+				acc[field] = null;
+				return acc;
+			}, {});
 			await axios.patch(
 				`http://localhost:3007/api/StartupProfile/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
+					...updateFields,
 				},
 				{
 					headers: {
@@ -376,67 +367,12 @@ const StartupProfileDetails = ({ id }) => {
 							</td>
 						</tr>
 						<tr>
-							<td className="py-4 px-4 border-b border-l border-t">
-								DPIIT Certificate
-							</td>
-							<td className=" border-b border-l border-t border-r w-[35vw]">
-								<div className="px-4 py-4 ">
-									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
-											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
-												<div className="flex w-0 flex-1 items-center">
-													<svg
-														className="h-5 w-5 shrink-0 text-gray-400"
-														viewBox="0 0 20 20"
-														fill="currentColor"
-														aria-hidden="true"
-														data-slot="icon"
-													>
-														<path
-															fillRule="evenodd"
-															d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
-															clipRule="evenodd"
-														/>
-													</svg>
-													<div className="ml-4 flex min-w-0 flex-1 gap-2">
-														<span className="truncate font-medium">
-															DPIIT Certificate
-														</span>
-														<span className="shrink-0 text-gray-400"></span>
-													</div>
-												</div>
-												<div className="ml-4 shrink-0">
-													<button
-														onClick={() => handleViewPdf(data.certPath)}
-														className="font-medium text-indigo-600 hover:text-indigo-900"
-													>
-														View
-													</button>
-												</div>
-												<div className="ml-4 shrink-0">
-													<a
-														href={`${data.certPath}`} // Ensure this path points to the correct relative URL of the PDF file
-														download
-														className="font-medium text-indigo-600 hover:text-indigo-900"
-													>
-														Download
-													</a>
-												</div>
-												<div
-													className="ml-4 shrink-0"
-													onClick={() => setIsCommentVisible(true)}
-												>
-													<a
-														href="#"
-														className="font-medium text-indigo-600 hover:text-indigo-900"
-													>
-														Reject
-													</a>
-												</div>
-											</li>
-										</ul>
-									</dd>
-								</div>
+							<td className="py-4 px-4 border">DPIIT Certificate</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<FileViewPanel
+									field={data.certPath}
+									handleViewPdf={handleViewPdf}
+								/>
 							</td>
 						</tr>
 					</tbody>
@@ -489,8 +425,8 @@ const StartupProfileDetails = ({ id }) => {
 							<input
 								type="checkbox"
 								name="rejectReason"
-								value="dpiitCertificate"
-								checked={selectedOptions.includes("dpiitCertificate")}
+								value="certPath"
+								checked={selectedOptions.includes("certPath")}
 								onChange={handleCheckboxChange}
 								className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
 							/>

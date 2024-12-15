@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { uploadDocuments,getDocumentById,getAllDocumentsWithUserDetails,updateDocumentStatus,getUserDocument} = require('../controllers/documentController');
+const { uploadDocuments,getDocumentById,getAllDocumentsWithUserDetails,updateDocumentStatus,getUserDocument, getDocumentByToken, uploadCertificate} = require('../controllers/documentController');
 const { authenticateUser } = require('../middlewares/authenticateUser'); // Import JWT middleware
 const { authenticateAdmin } = require('../middlewares/authenticateAdmin');
 const upload = require('../config/multerconfig');
@@ -18,6 +18,13 @@ router.post(
   uploadDocuments // Controller to handle form and file data
 );
 
+router.post(
+  '/upload-certificate',
+  authenticateUser, // Middleware for authentication
+  upload.fields([{ name: 'certPath', maxCount: 1 }]), // Handle only the certificate file
+  uploadCertificate
+);
+
 router.get(
   '/v1/:id',authenticateAdmin,
   getDocumentById
@@ -32,6 +39,10 @@ router.patch(
   '/u1/:id',authenticateAdmin,
    updateDocumentStatus
 )
+router.get(
+  '/v3',authenticateUser,
+  getDocumentByToken
+);
 
 router.get(
   '/user-document',

@@ -2,7 +2,7 @@
 
 const express = require('express');
 
-const {submitSeedFund,getAllSeedWithUserDetails,getseedById,updateSeedStatus, getSeedFundStatus} = require('../controllers/seedFundController');
+const {submitSeedFund,getAllSeedWithUserDetails,getseedById,updateSeedStatus, getSeedFundStatus, getSeedByToken,updateSeedFundFiles} = require('../controllers/seedFundController');
 const {authenticateUser} = require('../middlewares/authenticateUser');
 const {authenticateAdmin} = require('../middlewares/authenticateAdmin');
 
@@ -23,7 +23,19 @@ router.post(
   ]),
   submitSeedFund
 );
-
+router.post(
+  '/update-files',
+  authenticateUser, // Middleware for authentication
+  upload.fields([
+    { name: 'companyCertificate', maxCount: 1 },
+    { name: 'cancelChequeOrPassbook', maxCount: 1 },
+    { name: 'inc33', maxCount: 1 },
+    { name: 'inc34', maxCount: 1 },
+    { name: 'partnershipAgreement', maxCount: 1 },
+    { name: 'dpr', maxCount: 1 },
+  ]),
+  updateSeedFundFiles
+);
 router.get(
   '/v2',authenticateAdmin,
   getAllSeedWithUserDetails
@@ -32,6 +44,10 @@ router.get(
 router.get(
   '/v1/:id',authenticateAdmin,
   getseedById
+);
+router.get(
+  '/v3',authenticateUser,
+  getSeedByToken
 );
 
 router.patch(

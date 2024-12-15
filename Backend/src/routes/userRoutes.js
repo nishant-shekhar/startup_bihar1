@@ -28,7 +28,7 @@ router.put('/update-founder_dp', authenticateUser, upload.fields([
 router.get('/startup-details', getStartupDetails);
 router.get('/top-startups', getTopStartupDetails);
 
-router.put('/update-data', updateMetrics);
-router.put('/update-user-field', updateUserField);
+router.put('/update-data',authenticateUser, updateMetrics);
+router.put('/update-user-field',authenticateUser, updateUserField);
 
 module.exports = router;

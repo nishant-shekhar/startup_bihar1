@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 
-const {submitPostSeedFund,getpostById,getAllpostWithUserDetails,updatepostStatus, getPostSeedFundStatus} = require('../controllers/postSeedFundController');
+const {submitPostSeedFund,getpostById,getAllpostWithUserDetails,updatepostStatus, getPostSeedFundStatus,updatePostSeedFundFiles, getPostSeedByToken} = require('../controllers/postSeedFundController');
 
 // Setup Multer for file uploads
 
@@ -21,6 +21,16 @@ router.post(
     { name: 'projectReport', maxCount: 1 }
   ]),
   submitPostSeedFund
+);
+router.post(
+  '/update-files',
+  authenticateUser, // Middleware for authentication
+  upload.fields([
+    { name: 'auditedBalanceSheet', maxCount: 1 },
+    { name: 'gstReturn', maxCount: 1 },
+    { name: 'projectReport', maxCount: 1 },
+  ]),
+  updatePostSeedFundFiles
 );
 
 router.get(
@@ -41,6 +51,10 @@ router.get(
   '/status',
   authenticateUser,  // Ensure the user is authenticated
   getPostSeedFundStatus    // Controller function to get the user's document
+);
+router.get(
+  '/v3',authenticateUser,
+  getPostSeedByToken
 );
 
 module.exports = router;

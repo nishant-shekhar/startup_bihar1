@@ -20,17 +20,15 @@ const uploadDocuments = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 
-   
-   
     const {
       registrationNo,
       founderName,
       founderAadharNumber,
-      coFounderNames, // Use as a single string
-      coFounderAadharNumbers, // Use as a single string
+      coFounderNames,
+      coFounderAadharNumbers,
       sector,
       businessConcept,
-      mobileNumbers, // Use as a single string
+      mobileNumbers,
       email,
       websiteLink,
       category,
@@ -38,65 +36,126 @@ const uploadDocuments = async (req, res) => {
       dpiitRecognitionNo,
       appliedIPR,
     } = req.body;
-     // Extract the S3 URLs from the file upload response
-     const logoPath = req.files.logo ? req.files.logo[0].location : null;
-     const certPath = req.files.certificate ? req.files.certificate[0].location : null;
+
+    const updateData = {
+      registrationNo,
+      founderName,
+      founderAadharNumber,
+      coFounderNames: coFounderNames?.trim() || null,
+      coFounderAadharNumbers: coFounderAadharNumbers?.trim() || null,
+      sector,
+      businessConcept,
+      mobileNumbers: mobileNumbers?.trim() || null,
+      email,
+      websiteLink,
+      category,
+      gender,
+      dpiitRecognitionNo,
+      appliedIPR: appliedIPR === 'true',
+      documentStatus: "Updated",
+    };
+
+    const logoPath = req.files.logo ? req.files.logo[0].location : null;
+    const certPath = req.files.certificate ? req.files.certificate[0].location : null;
+
+    if (logoPath) updateData.logoPath = logoPath;
+    if (certPath) updateData.certPath = certPath;
+
+    const createData = {
+      ...updateData,
+      logoPath,
+      certPath,
+      userId,
+      documentStatus: "created",
+    };
+
     const document = await prisma.document.upsert({
       where: { userId },
-      update: {
-        registrationNo,
-        founderName,
-        founderAadharNumber,
-        coFounderNames: req.body.coFounderNames ? req.body.coFounderNames.trim() : null, // Use as a single string
-        coFounderAadharNumbers: req.body.coFounderAadharNumbers ? req.body.coFounderAadharNumbers.trim() : null, // Use as a single string
-        sector,
-        businessConcept,
-        mobileNumbers: req.body.mobileNumbers ? req.body.mobileNumbers.trim() : null, // Use as a single string
-        email,
-        websiteLink,
-        category,
-        gender,
-        dpiitRecognitionNo,
-        appliedIPR: req.body.appliedIPR === 'true',
-        logoPath,
-        certPath,
-        documentStatus: "Updated"
-      },
-      create: {
-        registrationNo,
-        founderName,
-        founderAadharNumber,
-        coFounderNames: req.body.coFounderNames ? req.body.coFounderNames.trim() : null, // Use as a single string
-        coFounderAadharNumbers: req.body.coFounderAadharNumbers ? req.body.coFounderAadharNumbers.trim() : null, // Use as a single string
-        sector,
-        businessConcept,
-        mobileNumbers: req.body.mobileNumbers ? req.body.mobileNumbers.trim() : null, // Use as a single string
-        email,
-        websiteLink,
-        category,
-        gender,
-        dpiitRecognitionNo,
-        appliedIPR: req.body.appliedIPR === 'true',
-        logoPath,
-        certPath,
-        documentStatus: "created",
-        userId
-      }
+      update: updateData,
+      create: createData,
     });
 
-
-   
-
-
-    return res.status(200).json({
-      message: document ? 'Document updated successfully' : 'Document created successfully',
+    res.status(200).json({
+      message: 'Document updated successfully',
       document,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error updating documents:', error);
     res.status(500).json({ error: 'An error occurred while processing the request' });
   }
 };
+
+const uploadCertificate = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Authorization token is required" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id;
+
+    const certPath = req.files.certPath ? req.files.certPath[0].location : null;
+
+    if (!certPath) {
+      return res.status(400).json({ error: "No certificate file uploaded" });
+    }
+
+    // Fetch the user document to ensure all required fields are provided
+    const existingDocument = await prisma.document.findUnique({
+      where: { userId },
+    });
+
+    if (!existingDocument) {
+      return res.status(400).json({ 
+        error: "Document does not exist. Please upload all required fields first."
+      });
+    }
+
+    // Prepare data for update
+    const updateData = { 
+      certPath, 
+      documentStatus: "Updated", 
+      updatedAt: new Date(),
+    };
+
+    const createData = {
+      logoPath: existingDocument.logoPath || "", // Required field
+      registrationNo: existingDocument.registrationNo,
+      founderName: existingDocument.founderName,
+      founderAadharNumber: existingDocument.founderAadharNumber,
+      coFounderNames: existingDocument.coFounderNames,
+      coFounderAadharNumbers: existingDocument.coFounderAadharNumbers,
+      sector: existingDocument.sector,
+      businessConcept: existingDocument.businessConcept,
+      mobileNumbers: existingDocument.mobileNumbers,
+      email: existingDocument.email,
+      websiteLink: existingDocument.websiteLink || null,
+      category: existingDocument.category,
+      gender: existingDocument.gender,
+      dpiitRecognitionNo: existingDocument.dpiitRecognitionNo || null,
+      appliedIPR: existingDocument.appliedIPR,
+      userId,
+      documentStatus: "created",
+      certPath,
+    };
+
+    const document = await prisma.document.upsert({
+      where: { userId },
+      update: updateData,
+      create: createData,
+    });
+
+    res.status(200).json({
+      message: "Certificate updated successfully",
+      document,
+    });
+  } catch (error) {
+    console.error("Error updating certificate:", error);
+    res.status(500).json({ error: "An error occurred while uploading the certificate." });
+  }
+};
+
 
 const getDocumentById = async (req, res) => {
   let { id } = req.params; // Retrieve id from the request parameters
@@ -190,6 +249,31 @@ const updateDocumentStatus = async (req, res) => {
     res.status(500).json({ error: 'Failed to update document status and comment' });
   }
 };
+const getDocumentByToken = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Authorization token is required" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id;
+
+    const document = await prisma.document.findUnique({
+      where: { userId },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    res.status(200).json(document);
+  } catch (error) {
+    console.error("Error retrieving document:", error);
+    res.status(500).json({ error: "An error occurred while retrieving the document" });
+  }
+};
+
 /*const updateDocumentStatus = async (req, res) => {
   const { id } = req.params;
   const { documentStatus } = req.body;
@@ -275,7 +359,9 @@ module.exports = {
   getDocumentById,
   getAllDocumentsWithUserDetails,
   updateDocumentStatus,
-  getUserDocument
+  getUserDocument,
+  getDocumentByToken,
+  uploadCertificate
 };
 
 

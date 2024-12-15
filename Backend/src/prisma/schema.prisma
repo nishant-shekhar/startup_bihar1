@@ -31,7 +31,6 @@ model UserNotification {
   subtitle              String?
   related_to            String?
   docLink               String?
-  docLink               color?
   createdAt             DateTime @default(now())
   updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
 }
@@ -99,7 +98,7 @@ model Showcase{
 model Document {
   id                     String   @id @default(uuid()) @map("_id")
   logoPath               String
-  certPath               String
+  certPath               String?
   registrationNo         String   @unique
   founderName            String
   founderAadharNumber    String

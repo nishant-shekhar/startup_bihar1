@@ -18,6 +18,8 @@ import StartupForm from "../../UserForm/Startupform";
 import StatusDialog from "../../UserForm/StatusDialog";
 import SecondTranchePartialReject from "./FieldsUpdate/SecondTranchePartialReject";
 import PostSeedPartialReject from "./FieldsUpdate/PostSeedPartialReject";
+import SeedFundPartialReject from "./FieldsUpdate/SeedFundPartialReject";
+import StartupFormPartialReject from "./FieldsUpdate/StartupFormPartialReject";
 
 const COMPONENTS = {
   HomeSection,
@@ -36,7 +38,10 @@ const COMPONENTS = {
 };
 const PARTIAL_REJECT_COMPONENTS = {
   SecondTranche: SecondTranchePartialReject,
-  PostSeed:PostSeedPartialReject
+  PostSeed:PostSeedPartialReject,
+  SeedFund:SeedFundPartialReject,
+  StartupForm:StartupFormPartialReject
+
 };
 
 const StartupProfileMain = () => {
@@ -108,14 +113,15 @@ const StartupProfileMain = () => {
             //setActivePage("UserProfile");
           } else if (formStatus === "Partially Rejected") {
             const PartialRejectComponent = PARTIAL_REJECT_COMPONENTS[newPanel];
+            setDialogStatus({
+              isVisible: true,
+              title: "Form Partially Rejected",
+              subtitle: `Your form has been partially rejected.`,
+              buttonVisible: false,
+              status: "failed",
+            });
             if (PartialRejectComponent) {
-              setDialogStatus({
-                isVisible: true,
-                title: "Form Partially Rejected",
-                subtitle: `Your form has been partially rejected.`,
-                buttonVisible: false,
-                status: "failed",
-              });
+              
 
               setTimeout(() => {
                 setPartialReject({

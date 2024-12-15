@@ -103,6 +103,59 @@ const submitSeedFund = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while submitting the form.' });
   }
 };
+const updateSeedFundFiles = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authorization token is required' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id;
+
+    // Extract the S3 URLs from the uploaded files
+    const updatedFields = {};
+    if (req.files.companyCertificate) {
+      updatedFields.companyCertificate = req.files.companyCertificate[0].location;
+    }
+    if (req.files.cancelChequeOrPassbook) {
+      updatedFields.cancelChequeOrPassbook = req.files.cancelChequeOrPassbook[0].location;
+    }
+    if (req.files.inc33) {
+      updatedFields.inc33 = req.files.inc33[0].location;
+    }
+    if (req.files.inc34) {
+      updatedFields.inc34 = req.files.inc34[0].location;
+    }
+    if (req.files.partnershipAgreement) {
+      updatedFields.partnershipAgreement = req.files.partnershipAgreement[0].location;
+    }
+    if (req.files.dpr) {
+      updatedFields.dpr = req.files.dpr[0].location;
+    }
+
+    if (Object.keys(updatedFields).length === 0) {
+      return res.status(400).json({ error: 'No files provided for update' });
+    }
+
+    // Update the seed fund entry in the database
+    const seedFundEntry = await prisma.seedFund.update({
+      where: { userId },
+      data: {
+        ...updatedFields,
+        documentStatus: "Updated",
+      },
+    });
+
+    res.status(200).json({
+      message: 'Seed fund files updated successfully',
+      data: seedFundEntry,
+    });
+  } catch (error) {
+    console.error('Error updating seed fund files:', error);
+    res.status(500).json({ error: 'An error occurred while updating the files.' });
+  }
+};
 
 
 const getAllSeedWithUserDetails = async (req, res) => {
@@ -159,35 +212,103 @@ const getseedById = async (req, res) => {
     return res.status(500).json({ error: 'An error occurred while retrieving the document' });
   }
 };
+const getSeedByToken = async (req, res) => {
+  // Ensure a token is provided in the request headers
+  
+    try {
+      const token = req.headers.authorization?.split(" ")[1]; // Assuming Bearer <token> format
+      if (!token) {
+        return res.status(401).json({ error: "Authorization token is required" });
+      }
+      
+      // Decode the JWT to get the user ID
+      const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+      const userId = decoded.user_id; // Adjust according to your token payload structure
+  
+      
+  
+      // Fetch the document from the database
+      const document = await prisma.seedFund.findUnique({
+        where: { userId: userId }, // Use the ID to query the database
+      });
+  
+      if (!document) {
+        // Return 404 if document is not found
+        return res.status(404).json({ error: "Document not found" });
+      }
+  
+      // Return the document if found
+      return res.status(200).json(document); // Explicitly set status to 200
+    } catch (error) {
+      // Handle any server error
+      console.error(`Error retrieving document with id ${id}:`, error);
+      return res
+        .status(500)
+        .json({ error: "An error occurred while retrieving the document" });
+    }
+  };
 
 const updateSeedStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus, comment } = req.body;
+  const { 
+    documentStatus, 
+    comment, 
+    cancelChequeOrPassbook ,
+    companyCertificate     ,
+    inc33                  ,
+    inc34                  ,
+    partnershipAgreement   ,
+    dpr
+  } = req.body;
 
-  if (!documentStatus) {
-    return res.status(400).json({ error: 'Seed Fund Document status is required' });
-  }
+  
+	// Check if documentStatus is provided
+	if (!documentStatus) {
+		return res.status(400).json({ error: "Document status is required" });
+	}
 
-  try {
-    const seedFund = await prisma.seedFund.findUnique({ where: { id } });
+	try {
+		// Find the document
+		const document = await prisma.seedFund.findUnique({
+			where: { id },
+		});
 
-    if (!seedFund) {
-      return res.status(404).json({ error: 'Seed Fund Document not found' });
-    }
+		if (!document) {
+			return res.status(404).json({ error: "Document not found" });
+		}
 
-    const updatedDocument = await prisma.seedFund.update({
-      where: { id },
-      data: { documentStatus, comment },
-    });
+		// Build the data object dynamically
+		const updateData = {
+			documentStatus,
+			comment,
+			...(cancelChequeOrPassbook !== undefined && { cancelChequeOrPassbook }),
+			...(companyCertificate !== undefined && { companyCertificate }),
+			...(inc33 !== undefined && { inc33 }),
+			...(inc34 !== undefined && { inc34 }),
+			...(partnershipAgreement !== undefined && { partnershipAgreement }),
+			...(dpr !== undefined && { dpr }),
+		};
 
-    res.status(200).json({
-      message: 'Seed Fund Document status and comment updated successfully',
-      document: updatedDocument,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to update Seed Fund document status and comment' });
-  }
+		// Update the document
+		const updatedDocument = await prisma.seedFund.update({
+			where: { id },
+			data: updateData,
+		});
+
+		// Send a successful response
+		res.status(200).json({
+			message: "Document status updated successfully",
+			document: updatedDocument,
+		});
+	} catch (error) {
+		console.error(error);
+
+		// Send an error response
+		res.status(500).json({
+			error: "Failed to update document status",
+			details: error.message,
+		});
+	}
 };
 
 const getSeedFundStatus = async (req, res) => {
@@ -237,5 +358,7 @@ module.exports = {
   getseedById,
   getAllSeedWithUserDetails,
   updateSeedStatus,
-  getSeedFundStatus
+  getSeedFundStatus,
+  getSeedByToken,
+  updateSeedFundFiles
 }

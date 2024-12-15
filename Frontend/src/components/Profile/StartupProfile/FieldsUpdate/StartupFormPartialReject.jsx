@@ -3,11 +3,10 @@ import { Formik, Form, ErrorMessage } from "formik";
 import axios from "axios";
 import * as Yup from "yup";
 
-const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
+const StartupFormPartialReject = ({ isVisible, comment,onClose }) => {
   const [initialValues, setInitialValues] = useState({
-    auditedBalanceSheet: null,
-    gstReturn: null,
-    projectReport: null,
+    certPath: null,
+   
    
   });
   const [requiredFiles, setRequiredFiles] = useState([]);
@@ -18,7 +17,7 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:3007/api/post-seed/v3",
+          "http://localhost:3007/api/StartupProfile/v3",
           {
             headers: {
               "Content-Type": "application/json",
@@ -32,16 +31,13 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
 
         // Populate initialValues with existing document fields
         const newInitialValues = {
-          auditedBalanceSheet: document.auditedBalanceSheet || null,
-          gstReturn: document.gstReturn || null,
-          projectReport: document.projectReport || null,
+          certPath: document.certPath || null,
         };
 
         // Determine required fields
         const required = [];
-        if (document.auditedBalanceSheet == null) required.push("auditedBalanceSheet");
-        if (document.gstReturn == null) required.push("gstReturn");
-        if (document.projectReport == null) required.push("projectReport");
+        if (document.certPath == null) required.push("certPath");
+      
       
         setInitialValues(newInitialValues);
         setRequiredFiles(required);
@@ -105,7 +101,7 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
 
                 try {
                   const response = await axios.post(
-                    "http://localhost:3007/api/post-seed/update-files",
+                    "http://localhost:3007/api/StartupProfile/upload-certificate",
                     formData,
                     {
                       headers: {
@@ -178,4 +174,4 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
   );
 };
 
-export default PostSeedPartialReject;
+export default StartupFormPartialReject;
