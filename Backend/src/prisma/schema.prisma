@@ -27,6 +27,7 @@ model UserNotification {
   id                    String               @id @default(uuid()) @map("_id")
   user_id               String               @unique
   admin_id              String
+  admin_role            String
   notification          String
   subtitle              String?
   related_to            String?

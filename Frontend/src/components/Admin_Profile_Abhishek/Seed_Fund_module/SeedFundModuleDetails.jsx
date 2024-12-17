@@ -14,6 +14,9 @@ const SeedfundModuleDetails = ({ id }) => {
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false); // State to manage PDF modal visibility
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
+	const adminRole = localStorage.getItem("admin_role") || "admin";
+	const adminId = localStorage.getItem("admin_id") || "admin";
+
 	const fetchData = async () => {
 		if (id) {
 			try {
@@ -33,7 +36,7 @@ const SeedfundModuleDetails = ({ id }) => {
 			}
 		}
 	};
-	
+
 	useEffect(() => {
 		fetchData();
 	}, [id]);
@@ -64,6 +67,10 @@ const SeedfundModuleDetails = ({ id }) => {
 			handleDialog("Application is rejected.");
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
+
+			// Post notification
+			await postNotification("Your Seed Fund application has been rejected.");
+
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -93,6 +100,9 @@ const SeedfundModuleDetails = ({ id }) => {
 			handleDialog("Application is partially rejected.");
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
+			// Post notification
+			await postNotification("Your Seed Fund application has been partially rejected.");
+
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -116,11 +126,39 @@ const SeedfundModuleDetails = ({ id }) => {
 			);
 			handleDialog("Application is accepted.");
 			await fetchData(); // Update the data after status change
+			// Post notification
+			await postNotification("Your Seed Fund application has been accepted.");
+
+
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
 	};
 
+	const postNotification = async (notificationMessage) => {
+		try {
+			await axios.post(
+				`http://localhost:3007/api/notifications/`,
+				{
+					user_id: data.userId, // Assuming `userId` is present in `data` fetched earlier
+					admin_id: adminId, // Replace with actual admin ID
+					admin_role: adminRole, // Replace with actual admin role
+					notification: notificationMessage,
+					subtitle: "Seed Fund Application",
+					related_to: `Application ID: ${id}`,
+				},
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`,
+					},
+				},
+			);
+			console.log("Notification posted successfully.");
+		} catch (error) {
+			console.error("Error posting notification:", error);
+		}
+	};
 	const getStatusColor = () => {
 		if (data.documentStatus === "Accepted") return "text-green-500";
 		if (data.documentStatus === "Rejected") return "text-red-500";
@@ -269,41 +307,41 @@ const SeedfundModuleDetails = ({ id }) => {
 						{/* Conditional Upload Field for Partnership Firm or Limited Liability Partnership (LLP) */}
 						{(data.businessEntityType === "Partnership Firm" ||
 							data.businessEntityType ===
-								"Limited Liability Partnership (LLP)") && (
-							<tr>
-								<td className="py-4 px-4 border">Partnership Agreement</td>
-								<td className="border-b border-l border-t border-r w-[35vw]">
-									<FileViewPanel
-										field={data.partnershipAgreement}
-										handleViewPdf={handleViewPdf}
-									/>
-								</td>
-							</tr>
-						)}
+							"Limited Liability Partnership (LLP)") && (
+								<tr>
+									<td className="py-4 px-4 border">Partnership Agreement</td>
+									<td className="border-b border-l border-t border-r w-[35vw]">
+										<FileViewPanel
+											field={data.partnershipAgreement}
+											handleViewPdf={handleViewPdf}
+										/>
+									</td>
+								</tr>
+							)}
 
 						{data.businessEntityType ===
 							"Private Limited Company/One Person Company (OPC)" && (
-							<>
-								<tr>
-									<td className="py-4 px-4 border">INC 33</td>
-									<td className="border-b border-l border-t border-r w-[35vw]">
-										<FileViewPanel
-											field={data.inc33}
-											handleViewPdf={handleViewPdf}
-										/>
-									</td>
-								</tr>
-								<tr>
-									<td className="py-4 px-4 border">INC34</td>
-									<td className="border-b border-l border-t border-r w-[35vw]">
-										<FileViewPanel
-											field={data.inc34}
-											handleViewPdf={handleViewPdf}
-										/>
-									</td>
-								</tr>
-							</>
-						)}
+								<>
+									<tr>
+										<td className="py-4 px-4 border">INC 33</td>
+										<td className="border-b border-l border-t border-r w-[35vw]">
+											<FileViewPanel
+												field={data.inc33}
+												handleViewPdf={handleViewPdf}
+											/>
+										</td>
+									</tr>
+									<tr>
+										<td className="py-4 px-4 border">INC34</td>
+										<td className="border-b border-l border-t border-r w-[35vw]">
+											<FileViewPanel
+												field={data.inc34}
+												handleViewPdf={handleViewPdf}
+											/>
+										</td>
+									</tr>
+								</>
+							)}
 					</tbody>
 				</table>
 
@@ -389,50 +427,50 @@ const SeedfundModuleDetails = ({ id }) => {
 							</label>
 							{(data.businessEntityType === "Partnership Firm" ||
 								data.businessEntityType ===
-									"Limited Liability Partnership (LLP)") && (
-								<label className="flex items-center space-x-2 cursor-pointer">
-									<input
-										type="checkbox"
-										name="rejectReason"
-										value="partnershipAgreement"
-										checked={selectedOptions.includes("partnershipAgreement")}
-										onChange={handleCheckboxChange}
-										className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-									/>
-									<span className="text-sm text-slate-950">
-										Partnership Agreement
-									</span>
-								</label>
-							)}
-							{data.businessEntityType ===
-								"Private Limited Company/One Person Company (OPC)" && (
-								<>
+								"Limited Liability Partnership (LLP)") && (
 									<label className="flex items-center space-x-2 cursor-pointer">
 										<input
 											type="checkbox"
 											name="rejectReason"
-											value="inc33"
-											checked={selectedOptions.includes("inc33")}
-											onChange={handleCheckboxChange}
-											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-										/>
-										<span className="text-sm text-slate-950">INC 33</span>
-									</label>
-									<label className="flex items-center space-x-2 cursor-pointer">
-										<input
-											type="checkbox"
-											name="rejectReason"
-											value="inc34"
-											checked={selectedOptions.includes("inc34")}
+											value="partnershipAgreement"
+											checked={selectedOptions.includes("partnershipAgreement")}
 											onChange={handleCheckboxChange}
 											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
 										/>
 										<span className="text-sm text-slate-950">
-											INC 34
+											Partnership Agreement
 										</span>
 									</label>
-								</>
-							)}
+								)}
+							{data.businessEntityType ===
+								"Private Limited Company/One Person Company (OPC)" && (
+									<>
+										<label className="flex items-center space-x-2 cursor-pointer">
+											<input
+												type="checkbox"
+												name="rejectReason"
+												value="inc33"
+												checked={selectedOptions.includes("inc33")}
+												onChange={handleCheckboxChange}
+												className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+											/>
+											<span className="text-sm text-slate-950">INC 33</span>
+										</label>
+										<label className="flex items-center space-x-2 cursor-pointer">
+											<input
+												type="checkbox"
+												name="rejectReason"
+												value="inc34"
+												checked={selectedOptions.includes("inc34")}
+												onChange={handleCheckboxChange}
+												className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+											/>
+											<span className="text-sm text-slate-950">
+												INC 34
+											</span>
+										</label>
+									</>
+								)}
 						</div>
 						<div className="flex justify-end gap-x-2 mt-4">
 							<button

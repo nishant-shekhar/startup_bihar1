@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LeftBar from "./Navbar/LeftBar";
 import SecondTranche from "../../UserForm/SecondTranche";
-import PostSeed from "../../UserForm/PostSeed";
+import PostSeed from "../../UserForm/Postseed";
 import Qpr from "../../UserForm/Qpr";
 import Matchingloan from "../../UserForm/Matchingloan";
 import Incubation from "../../UserForm/Incubation";

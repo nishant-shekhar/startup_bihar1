@@ -4,6 +4,7 @@ import axios from 'axios';
 import Upload from './Upload';
 import * as Yup from 'yup';
 import StatusDialog from "./StatusDialog"; // Import the new dialog component
+import { useNavigate } from "react-router-dom";
 
 
 const StartupForm = () => {
@@ -14,8 +15,13 @@ const StartupForm = () => {
 	const [buttonVisible, setButtonVisible] = useState(true);
 	const [subtitle, setSubtitle] = useState("");
 	const [isSuccess, setIsSuccess] = useState(""); // Add success state
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
 
+  const handleCloseDialog = () => {
+    setStatusPopup(false); // Close the dialog
+    navigate("/StartupProfile"); // Navigate to StartupProfile route
+  };
 
   // Form validation schema using Yup
   const validationSchema = Yup.object({
@@ -363,6 +369,7 @@ const StartupForm = () => {
             type="submit"
             className="bg-blue-500 text-white py-2 px-6 rounded hover:bg-blue-600"
           >
+            Submit
           </button>
         </div>
 
@@ -374,8 +381,8 @@ const StartupForm = () => {
 				buttonVisible={buttonVisible}
 				status={isSuccess} // Pass success state
 
-				onClose={() => setStatusPopup(false)}
-			/>
+        onClose={handleCloseDialog} // Use the new navigation function here
+        />
     </div>
   );
 
