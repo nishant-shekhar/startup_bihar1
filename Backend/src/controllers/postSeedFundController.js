@@ -123,6 +123,7 @@ const getAllpostWithUserDetails = async (req, res) => {
     const documents = await prisma.postSeedFund.findMany({
       select: {
         id:true,
+        documentStatus:true,
         user: {
           select: {
             user_id: true,             // Fields from the User model

@@ -5,7 +5,7 @@ import axios from "axios";
 const SecondTrancheModuleDetails = ({ id }) => {
 	const [data, setData] = useState({});
 	const [isCommentVisible, setIsCommentVisible] = useState(false);
-	const [comment, setComment] = useState("");
+	const [comment, setComment] = useState("•");
 	const [showDialog, setShowDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const token = localStorage.getItem("token");
@@ -158,6 +158,17 @@ const SecondTrancheModuleDetails = ({ id }) => {
 	const closePdfModal = () => {
 		setIsPdfModalVisible(false);
 		setPdfUrl("");
+	};
+
+	const handleCommentChange = (e) => {
+		setComment(e.target.value);
+	};
+
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			setComment((prevComment) => `${prevComment}\n• `);
+		}
 	};
 
 	return (
@@ -555,7 +566,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 						className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
 						onClick={() => {
 							setIsCommentVisible(true);
-							setComment("");
+							setComment("•");
 						}}
 					>
 						Reject
@@ -565,7 +576,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 						className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
 						onClick={() => {
 							setIsCommentVisible(true);
-							setComment("");
+							setComment("•");
 						}}
 					>
 						Partial Reject
@@ -577,9 +588,17 @@ const SecondTrancheModuleDetails = ({ id }) => {
 						<h2 className="text-lg font-semibold">Add Comment</h2>
 						<textarea
 							value={comment}
-							onChange={(e) => setComment(e.target.value)}
+							onChange={handleCommentChange}
+							onKeyDown={handleKeyDown}
 							className="mt-2  border rounded-md w-full h-20 pl-2 pt-2"
 						/>
+						<button
+							type="button"
+							className="absolute top-24 right-6 bg-blue-500 px-2 my-1 rounded-md"
+							onClick={() => setComment((prevComment) => `${prevComment}\n• `)}
+						>
+							•
+						</button>
 						<p className="my-2 text-slate-950">
 							Select documents for partial reject{" "}
 						</p>

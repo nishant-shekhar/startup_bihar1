@@ -3,16 +3,24 @@ import { Formik, Field, Form } from "formik";
 import axios from "axios";
 import StatusDialog from "../../../UserForm/StatusDialog";
 
-const UpdateSocialMediaURL = ({ startup,  onPlatformSelect }) => {
-	const [isFormVisible, setFormVisible] = useState(false);
-  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
-  
-
-	// sending data to backend
+const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
+	const [dialogStatus, setDialogStatus] = useState({
+		isVisible: false,
+		title: "",
+		subtitle: "",
+		buttonVisible: false,
+		status: "",
+	});
 
 	const handleUpdate = async (field, value) => {
 		try {
-      setDialogStatus({ isVisible: true, title: "Updating user Fields", subtitle: "Wait while we update your user data!", buttonVisible: false, status: "checking" });
+			setDialogStatus({
+				isVisible: true,
+				title: "Updating user Fields",
+				subtitle: "Wait while we update your user data!",
+				buttonVisible: false,
+				status: "checking",
+			});
 
 			await axios.put(
 				"http://localhost:3007/api/userlogin/update-user-field",
@@ -23,29 +31,28 @@ const UpdateSocialMediaURL = ({ startup,  onPlatformSelect }) => {
 					},
 				},
 			);
-      onPlatformSelect(false);
-      setDialogStatus({ isVisible: true, title: "User Field Updated", subtitle: `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`, buttonVisible: true, status: "success" });
-			// alert(
-			// 	`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`,
-			// );
+
+			setDialogStatus({
+				isVisible: true,
+				title: "User Field Updated",
+				subtitle: `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`,
+				buttonVisible: true,
+				status: "success",
+			});
 		} catch (error) {
 			console.error(`Error updating ${field}:`, error);
-      setFormVisible(false);
-      onPlatformSelect(false);
-      setDialogStatus({ isVisible: true, title: "User Field Update Failed", subtitle: "Error updating user data", buttonVisible: true, status: "failed" });
+			setDialogStatus({
+				isVisible: true,
+				title: "User Field Update Failed",
+				subtitle: "Error updating user data",
+				buttonVisible: true,
+				status: "failed",
+			});
 		}
 	};
 
-	const handleClose = (resetForm) => {
-		setFormVisible(false);
-    onPlatformSelect(false);
-
-    // close();
-		resetForm();
-	};
-
 	return (
-		<div className="fixed inset-0 flex items-center justify-center z-50 ">
+		<div className="fixed inset-0 flex items-center justify-center z-50">
 			<div className="bg-white bg-opacity-75 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 rounded-lg shadow-xl w-96 p-6 relative">
 				<button
 					onClick={() => onPlatformSelect(false)}
@@ -73,6 +80,7 @@ const UpdateSocialMediaURL = ({ startup,  onPlatformSelect }) => {
 							}
 						}
 						resetForm();
+						onUpdate();
 					}}
 				>
 					{() => (
@@ -98,9 +106,7 @@ const UpdateSocialMediaURL = ({ startup,  onPlatformSelect }) => {
 							</div>
 
 							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">
-									Instagram URL
-								</label>
+								<label className="block text-gray-700 mb-2">Instagram URL</label>
 								<Field
 									type="url"
 									name="instagram"
@@ -167,7 +173,10 @@ const UpdateSocialMediaURL = ({ startup,  onPlatformSelect }) => {
 					title={dialogStatus.title}
 					subtitle={dialogStatus.subtitle}
 					buttonVisible={dialogStatus.buttonVisible}
-					onClose={() => setDialogStatus({ ...dialogStatus, isVisible: false })}
+					onClose={() => {
+						setDialogStatus({ ...dialogStatus, isVisible: false });
+						onPlatformSelect(false);
+					}}
 					status={dialogStatus.status}
 				/>
 			</div>

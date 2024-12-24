@@ -4,7 +4,6 @@ import axios from 'axios';
 import Upload from './Upload';
 import * as Yup from 'yup';
 import StatusDialog from "./StatusDialog"; // Import the new dialog component
-import { useNavigate } from "react-router-dom";
 
 
 const StartupForm = () => {
@@ -15,13 +14,8 @@ const StartupForm = () => {
 	const [buttonVisible, setButtonVisible] = useState(true);
 	const [subtitle, setSubtitle] = useState("");
 	const [isSuccess, setIsSuccess] = useState(""); // Add success state
-  const navigate = useNavigate(); // Initialize useNavigate hook
 
 
-  const handleCloseDialog = () => {
-    setStatusPopup(false); // Close the dialog
-    navigate("/StartupProfile"); // Navigate to StartupProfile route
-  };
 
   // Form validation schema using Yup
   const validationSchema = Yup.object({
@@ -82,7 +76,7 @@ const StartupForm = () => {
       }
 
       try {
-        const response = await axios.post('http://localhost:3007/api/StartupProfile', formData, {
+        const response = await axios.post('https://startup-bihar1.onrender.com/api/StartupProfile', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `${localStorage.getItem('token')}`,
@@ -121,29 +115,59 @@ const StartupForm = () => {
       setErrorMessage('File size should be less than 2MB');
       return;
     }
-    if (file && !['image/jpeg', 'image/png', 'application/pdf'].includes(file.type)) {
-      setErrorMessage('Invalid file type. Only JPEG, PNG, or PDF are allowed');
+   
+    if (file && file.type !== 'application/pdf') {
+      setErrorMessage('Invalid file type. Only PDF files are allowed');
       return;
     }
+
     formik.setFieldValue(fieldName, file);
     setErrorMessage('');
   };
   return (
     <div className="h-screen overflow-y-auto">
-       <div
-        className="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[-20rem]"
-        aria-hidden="true"
-        style={{ pointerEvents: 'none' }} // Makes the element not clickable
-      >
-        <div
-          className="relative left-1/2 -z-10 aspect-[1155/678] w-[36.125rem] max-w-none -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-40rem)] sm:w-[72.1875rem]"
-          style={{
-            clipPath:
-              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-          }}
-        ></div>
-        
-      </div>
+       
+
+       <div className="relative w-full h-[250px]">
+
+  <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="1440" height="250" preserveAspectRatio="none" viewBox="0 0 1440 250">
+    <g mask="url(#SvgjsMask1000)" fill="none">
+      <rect width="1440" height="250" x="0" y="0" fill="#0e2a47"></rect>
+      <path d="M38 250L288 0L538.5 0L288.5 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+      <path d="M244.60000000000002 250L494.6 0L647.6 0L397.6 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+      <path d="M490.20000000000005 250L740.2 0L911.2 0L661.2 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+      <path d="M728.8000000000001 250L978.8000000000001 0L1289.3000000000002 0L1039.3000000000002 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+      <path d="M1406 250L1156 0L982 0L1232 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+      <path d="M1199.4 250L949.4000000000001 0L749.9000000000001 0L999.9000000000001 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+      <path d="M940.8 250L690.8 0L375.79999999999995 0L625.8 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+      <path d="M704.1999999999999 250L454.19999999999993 0L146.69999999999993 0L396.69999999999993 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+      <path d="M1205.2767553797382 250L1440 15.276755379738262L1440 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+      <path d="M0 250L234.72324462026174 250L 0 15.276755379738262z" fill="url(#SvgjsLinearGradient1002)"></path>
+    </g>
+    <defs>
+      <mask id="SvgjsMask1000">
+        <rect width="1440" height="250" fill="#ffffff"></rect>
+      </mask>
+      <linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="SvgjsLinearGradient1001">
+        <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
+        <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
+      </linearGradient>
+      <linearGradient x1="100%" y1="100%" x2="0%" y2="0%" id="SvgjsLinearGradient1002">
+        <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
+        <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
+      </linearGradient>
+    </defs>
+  </svg>
+
+
+  <div className="absolute top-9 left-0 w-full p-6 text-white">
+    <h1 className="text-3xl font-bold mb-2 relative top-10">Startup Profile Form</h1>
+    <p className="text-lg max-w-xl relative top-10">
+      Share your innovative ideas and secure funding to turn them into reality.
+    </p>
+  </div>
+</div>
+
 
       
 
@@ -159,13 +183,14 @@ const StartupForm = () => {
       {/* Error Messages */}
       {errorMessage && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-6">{errorMessage}</div>}
 
-      <form onSubmit={formik.handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-6 space-x-2">
+  <form onSubmit={formik.handleSubmit} className="gap-6 mx-6 space-x-2 border rounded-md px-5 py-5 ">
         {/* Left Column */}
         <div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="registrationNo">Registration No:</label>
+        <div className="grid sm:grid-cols-12 gap-4">
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="registrationNo">Registration No:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="registrationNo"
               name="registrationNo"
               type="text"
@@ -174,10 +199,10 @@ const StartupForm = () => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="founderName">Founder Name:</label>
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="founderName">Founder Name:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="founderName"
               name="founderName"
               type="text"
@@ -185,11 +210,15 @@ const StartupForm = () => {
               value={formik.values.founderName}
               required
             />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="founderAadharNumber">Founder Aadhaar Number:</label>
+            </div>
+        </div>
+
+        {/* second */}
+        <div className="grid grid-cols-12 gap-4" >
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="founderAadharNumber">Founder Aadhaar Number:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="founderAadharNumber"
               name="founderAadharNumber"
               type="number"
@@ -201,10 +230,11 @@ const StartupForm = () => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="coFounderNames">Co-Founder Names (comma-separated):</label>
+
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="coFounderNames">Co-Founder Names (comma-separated):</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="coFounderNames"
               name="coFounderNames"
               type="text"
@@ -212,10 +242,14 @@ const StartupForm = () => {
               value={formik.values.coFounderNames}
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="coFounderAadharNumbers">Co-Founder Aadhaar Numbers (comma-separated):</label>
+         </div>
+
+  
+        <div className='grid grid-cols-12 gap-4'>
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="coFounderAadharNumbers">Co-Founder Aadhaar Numbers (comma-separated):</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="coFounderAadharNumbers"
               name="coFounderAadharNumbers"
               type="text"
@@ -223,10 +257,10 @@ const StartupForm = () => {
               value={formik.values.coFounderAadharNumbers}
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="sector">Sector:</label>
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="sector">Sector:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="sector"
               name="sector"
               type="text"
@@ -235,10 +269,13 @@ const StartupForm = () => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="businessConcept">Business Concept:</label>
+          </div>
+          
+          <div className='grid grid-cols-12 gap-4'>
+          <div className="mb-4 col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="businessConcept">Business Concept:</label>
             <textarea
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="businessConcept"
               name="businessConcept"
               onChange={formik.handleChange}
@@ -246,10 +283,13 @@ const StartupForm = () => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="mobileNumbers">Mobile Number:</label>
+          </div>
+
+          <div className='grid sm:grid-cols-12 gap-4'>
+          <div className="mb-4 col-span-3">
+            <label className="text-sm/6 font-medium text-gray-900" htmlFor="mobileNumbers">Mobile Number:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="mobileNumbers"
               name="mobileNumbers"
               type="number"
@@ -261,14 +301,14 @@ const StartupForm = () => {
               required
             />
           </div>
-        </div>
+     
 
         {/* Right Column */}
-        <div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="email">Email:</label>
+      
+          <div className="mb-4 col-span-3">
+            <label className="text-sm/6 font-medium text-gray-900" htmlFor="email">Email:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="email"
               name="email"
               type="email"
@@ -277,10 +317,10 @@ const StartupForm = () => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="websiteLink">Website Link:</label>
+          <div className="mb-4 col-span-3">
+            <label className="text-sm/6 font-medium text-gray-900" htmlFor="websiteLink">Website Link:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="websiteLink"
               name="websiteLink"
               type="text"
@@ -294,10 +334,10 @@ const StartupForm = () => {
               value={formik.values.websiteLink}
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="gender">Gender:</label>
+          <div className="mb-4 col-span-3">
+            <label className="text-sm/6 font-medium text-gray-900" htmlFor="gender">Gender:</label>
             <select
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="gender"
               name="gender"
               onChange={formik.handleChange}
@@ -310,10 +350,13 @@ const StartupForm = () => {
               <option value="other">Other</option>
             </select>
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="category">Category:</label>
+          </div>
+        
+           <div className='grid grid-cols-12 gap-4'>
+          <div className="mb-4 col-span-6">
+            <label className="text-sm/6 font-medium text-gray-900" htmlFor="category">Category:</label>
             <input
-              className="border rounded w-full py-2 px-3"
+              className="border rounded-md w-full py-2 px-3"
               id="category"
               name="category"
               type="text"
@@ -322,8 +365,8 @@ const StartupForm = () => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block mb-2" htmlFor="dpiitRecognitionNo">DPIIT Recognition No:</label>
+          <div className="mb-4 col-span-6">
+            <label className="mb-2 text-sm/6 font-medium text-gray-900" htmlFor="dpiitRecognitionNo">DPIIT Recognition No:</label>
             <input
               className="border rounded w-full py-2 px-3"
               id="dpiitRecognitionNo"
@@ -333,8 +376,10 @@ const StartupForm = () => {
               value={formik.values.dpiitRecognitionNo}
             />
           </div>
+           </div>   
+
           <div className="mb-4">
-            <label className="block mb-2" htmlFor="appliedIPR">Applied for IPR:</label>
+            <label className="mb-2 text-sm/6 font-medium text-gray-900" htmlFor="appliedIPR">Applied for IPR:</label>
             <select
               className="border rounded w-full py-2 px-3"
               id="appliedIPR"
@@ -347,30 +392,50 @@ const StartupForm = () => {
               <option value={true}>Yes</option>
             </select>
           </div>
-          <div className="mb-4">
+  
+
+          <div className="grid grid-cols-12 gap-4">
+          <div className="mb-4 col-span-6 text-sm/6 font-medium text-gray-900">
             <Upload
               label="Upload Company Logo:"
               name="logo"
               onChange={(file) => handleFileChangeForm(file, 'logo')}
+              accept=".pdf"
             />
           </div>
-          <div className="mb-4">
+          <div className="mb-4 col-span-6 text-sm/6 font-medium text-gray-900">
             <Upload
               label="Upload Certificate:"
               name="certificate"
               onChange={(file) => handleFileChangeForm(file, 'certificate')}
+              accept=".pdf"
             />
+           </div>
           </div>
+
         </div>
 
         {/* Submit Section */}
-        <div className="col-span-1 md:col-span-2 flex justify-center my-6">
+        <div className="justify-center grid gap-3 sm:grid-cols-12">
+
+          <div className='col-span-6'>
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-6 rounded hover:bg-blue-600"
+            className="w-full py-2 px-4 text-black border hover:bg-indigo-500 hover:text-white rounded"
           >
-            Submit
+            Cancel Form
           </button>
+          </div>
+
+          <div className='col-span-6'>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded"
+          >
+            Submit Form
+          </button>
+          </div>
+
         </div>
 
       </form>
@@ -381,8 +446,8 @@ const StartupForm = () => {
 				buttonVisible={buttonVisible}
 				status={isSuccess} // Pass success state
 
-        onClose={handleCloseDialog} // Use the new navigation function here
-        />
+				onClose={() => setStatusPopup(false)}
+			/>
     </div>
   );
 

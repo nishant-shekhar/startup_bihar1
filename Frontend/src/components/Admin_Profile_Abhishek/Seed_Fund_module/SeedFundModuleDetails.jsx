@@ -5,7 +5,9 @@ import FileViewPanel from "../FileViewPanel";
 const SeedfundModuleDetails = ({ id }) => {
 	const [data, setData] = useState({});
 	const [isCommentVisible, setIsCommentVisible] = useState(false);
-	const [comment, setComment] = useState("");
+	const [comment, setComment] = useState("•");
+		console.log("deafault value is" , comment);
+
 	const [showDialog, setShowDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const token = localStorage.getItem("token");
@@ -16,6 +18,18 @@ const SeedfundModuleDetails = ({ id }) => {
 
 	const adminRole = localStorage.getItem("admin_role") || "admin";
 	const adminId = localStorage.getItem("admin_id") || "admin";
+
+	 const handleCommentChange = (e) => {
+		setComment(e.target.value);
+	};
+
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			setComment((prevComment) => `${prevComment}\n• `);
+		}
+	};
+
 
 	const fetchData = async () => {
 		if (id) {
@@ -36,7 +50,6 @@ const SeedfundModuleDetails = ({ id }) => {
 			}
 		}
 	};
-
 	useEffect(() => {
 		fetchData();
 	}, [id]);
@@ -70,7 +83,6 @@ const SeedfundModuleDetails = ({ id }) => {
 
 			// Post notification
 			await postNotification("Your Seed Fund application has been rejected.");
-
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -101,8 +113,9 @@ const SeedfundModuleDetails = ({ id }) => {
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
 			// Post notification
-			await postNotification("Your Seed Fund application has been partially rejected.");
-
+			await postNotification(
+				"Your Seed Fund application has been partially rejected.",
+			);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -128,8 +141,6 @@ const SeedfundModuleDetails = ({ id }) => {
 			await fetchData(); // Update the data after status change
 			// Post notification
 			await postNotification("Your Seed Fund application has been accepted.");
-
-
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -137,28 +148,39 @@ const SeedfundModuleDetails = ({ id }) => {
 
 	const postNotification = async (notificationMessage) => {
 		try {
-			await axios.post(
+			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
+				console.error("Missing required fields to post a notification.");
+				return;
+			}
+	
+			const response = await axios.post(
 				`http://localhost:3007/api/notifications/`,
 				{
-					user_id: data.userId, // Assuming `userId` is present in `data` fetched earlier
+					user_id: data.userId, // Ensure `userId` is present
 					admin_id: adminId, // Replace with actual admin ID
 					admin_role: adminRole, // Replace with actual admin role
 					notification: notificationMessage,
 					subtitle: "Seed Fund Application",
-					related_to: `Application ID: ${id}`,
+					related_to: `Application ID: ${id}`, // Ensure `id` is defined
 				},
 				{
 					headers: {
 						"Content-Type": "application/json",
-						Authorization: `${token}`,
+						Authorization: `${token}`, // Validate `token` existence
 					},
-				},
+				}
 			);
-			console.log("Notification posted successfully.");
+	
+			if (response.status === 201) {
+				console.log("Notification posted successfully.");
+			} else {
+				console.error("Unexpected response:", response);
+			}
 		} catch (error) {
-			console.error("Error posting notification:", error);
+			console.error("Error posting notification:", error.response?.data || error.message);
 		}
 	};
+	
 	const getStatusColor = () => {
 		if (data.documentStatus === "Accepted") return "text-green-500";
 		if (data.documentStatus === "Rejected") return "text-red-500";
@@ -289,10 +311,7 @@ const SeedfundModuleDetails = ({ id }) => {
 						<tr>
 							<td className="py-4 px-4 border">Detailed Project Report</td>
 							<td className="border-b border-l border-t border-r w-[35vw]">
-								<FileViewPanel
-									field={data.dpr}
-									handleViewPdf={handleViewPdf}
-								/>
+								<FileViewPanel field={data.dpr} handleViewPdf={handleViewPdf} />
 							</td>
 						</tr>
 						<tr>
@@ -307,41 +326,41 @@ const SeedfundModuleDetails = ({ id }) => {
 						{/* Conditional Upload Field for Partnership Firm or Limited Liability Partnership (LLP) */}
 						{(data.businessEntityType === "Partnership Firm" ||
 							data.businessEntityType ===
-							"Limited Liability Partnership (LLP)") && (
+								"Limited Liability Partnership (LLP)") && (
+							<tr>
+								<td className="py-4 px-4 border">Partnership Agreement</td>
+								<td className="border-b border-l border-t border-r w-[35vw]">
+									<FileViewPanel
+										field={data.partnershipAgreement}
+										handleViewPdf={handleViewPdf}
+									/>
+								</td>
+							</tr>
+						)}
+
+						{data.businessEntityType ===
+							"Private Limited Company/One Person Company (OPC)" && (
+							<>
 								<tr>
-									<td className="py-4 px-4 border">Partnership Agreement</td>
+									<td className="py-4 px-4 border">INC 33</td>
 									<td className="border-b border-l border-t border-r w-[35vw]">
 										<FileViewPanel
-											field={data.partnershipAgreement}
+											field={data.inc33}
 											handleViewPdf={handleViewPdf}
 										/>
 									</td>
 								</tr>
-							)}
-
-						{data.businessEntityType ===
-							"Private Limited Company/One Person Company (OPC)" && (
-								<>
-									<tr>
-										<td className="py-4 px-4 border">INC 33</td>
-										<td className="border-b border-l border-t border-r w-[35vw]">
-											<FileViewPanel
-												field={data.inc33}
-												handleViewPdf={handleViewPdf}
-											/>
-										</td>
-									</tr>
-									<tr>
-										<td className="py-4 px-4 border">INC34</td>
-										<td className="border-b border-l border-t border-r w-[35vw]">
-											<FileViewPanel
-												field={data.inc34}
-												handleViewPdf={handleViewPdf}
-											/>
-										</td>
-									</tr>
-								</>
-							)}
+								<tr>
+									<td className="py-4 px-4 border">INC34</td>
+									<td className="border-b border-l border-t border-r w-[35vw]">
+										<FileViewPanel
+											field={data.inc34}
+											handleViewPdf={handleViewPdf}
+										/>
+									</td>
+								</tr>
+							</>
+						)}
 					</tbody>
 				</table>
 
@@ -356,7 +375,7 @@ const SeedfundModuleDetails = ({ id }) => {
 						className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
 						onClick={() => {
 							setIsCommentVisible(true);
-							setComment("");
+							setComment("•");
 						}}
 					>
 						Reject
@@ -365,7 +384,7 @@ const SeedfundModuleDetails = ({ id }) => {
 						className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
 						onClick={() => {
 							setIsCommentVisible(true);
-							setComment("");
+							setComment("•");
 						}}
 					>
 						Partial Reject
@@ -377,9 +396,17 @@ const SeedfundModuleDetails = ({ id }) => {
 						<h2 className="text-lg font-semibold">Add Comment</h2>
 						<textarea
 							value={comment}
-							onChange={(e) => setComment(e.target.value)}
+							onChange={handleCommentChange}
+							onKeyDown={handleKeyDown}
 							className="mt-2  border rounded-md w-full h-20 pl-2 pt-2"
 						/>
+						<button
+							type="button"
+							className="absolute top-24 right-6 bg-blue-500 px-2 my-1 rounded-md"
+							onClick={() => setComment((prevComment) => `${prevComment}\n• `)}
+						>
+							•
+						</button>
 						<p className="my-2 text-slate-950">
 							Select documents for partial reject{" "}
 						</p>
@@ -427,50 +454,48 @@ const SeedfundModuleDetails = ({ id }) => {
 							</label>
 							{(data.businessEntityType === "Partnership Firm" ||
 								data.businessEntityType ===
-								"Limited Liability Partnership (LLP)") && (
+									"Limited Liability Partnership (LLP)") && (
+								<label className="flex items-center space-x-2 cursor-pointer">
+									<input
+										type="checkbox"
+										name="rejectReason"
+										value="partnershipAgreement"
+										checked={selectedOptions.includes("partnershipAgreement")}
+										onChange={handleCheckboxChange}
+										className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+									/>
+									<span className="text-sm text-slate-950">
+										Partnership Agreement
+									</span>
+								</label>
+							)}
+							{data.businessEntityType ===
+								"Private Limited Company/One Person Company (OPC)" && (
+								<>
 									<label className="flex items-center space-x-2 cursor-pointer">
 										<input
 											type="checkbox"
 											name="rejectReason"
-											value="partnershipAgreement"
-											checked={selectedOptions.includes("partnershipAgreement")}
+											value="inc33"
+											checked={selectedOptions.includes("inc33")}
 											onChange={handleCheckboxChange}
 											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
 										/>
-										<span className="text-sm text-slate-950">
-											Partnership Agreement
-										</span>
+										<span className="text-sm text-slate-950">INC 33</span>
 									</label>
-								)}
-							{data.businessEntityType ===
-								"Private Limited Company/One Person Company (OPC)" && (
-									<>
-										<label className="flex items-center space-x-2 cursor-pointer">
-											<input
-												type="checkbox"
-												name="rejectReason"
-												value="inc33"
-												checked={selectedOptions.includes("inc33")}
-												onChange={handleCheckboxChange}
-												className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-											/>
-											<span className="text-sm text-slate-950">INC 33</span>
-										</label>
-										<label className="flex items-center space-x-2 cursor-pointer">
-											<input
-												type="checkbox"
-												name="rejectReason"
-												value="inc34"
-												checked={selectedOptions.includes("inc34")}
-												onChange={handleCheckboxChange}
-												className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-											/>
-											<span className="text-sm text-slate-950">
-												INC 34
-											</span>
-										</label>
-									</>
-								)}
+									<label className="flex items-center space-x-2 cursor-pointer">
+										<input
+											type="checkbox"
+											name="rejectReason"
+											value="inc34"
+											checked={selectedOptions.includes("inc34")}
+											onChange={handleCheckboxChange}
+											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+										/>
+										<span className="text-sm text-slate-950">INC 34</span>
+									</label>
+								</>
+							)}
 						</div>
 						<div className="flex justify-end gap-x-2 mt-4">
 							<button

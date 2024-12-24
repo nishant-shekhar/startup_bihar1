@@ -54,7 +54,7 @@ const StartupPublicProfile = () => {
 			setIsLoading(false);
 		}
 	};
-
+	console.log(showcases.id);
 
 
 	useEffect(() => {

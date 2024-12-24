@@ -85,6 +85,7 @@ const getAllSecnWithUserDetails = async (req, res) => {
 		const documents = await prisma.secondTranche.findMany({
 			select: {
 				id: true,
+				documentStatus:true,
 				user: {
 					select: {
 						user_id: true, // Fields from the User model

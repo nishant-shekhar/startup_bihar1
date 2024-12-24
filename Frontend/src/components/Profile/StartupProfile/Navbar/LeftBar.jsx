@@ -7,16 +7,17 @@ import axios from 'axios';
 
 const menuItems = [
     { name: 'Home', panel: 'HomeSection', iconClass: 'fas fa-chart-bar' },
-    { name: 'SSU', panel: 'ssu', iconClass: 'fas fa-chart-bar' },
-    { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
-    { name: 'Notification', panel: 'notification', iconClass: 'fas fa-bell', notificationCount: 21 },
-    { name: 'Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
     { name: 'SeedFund', panel: 'SeedFund', iconClass: 'fas fa-lightbulb' },
     { name: 'PostSeed', panel: 'PostSeed', iconClass: 'fas fa-lightbulb' },
     { name: 'QPR', panel: 'Qpr', iconClass: 'fas fa-file-alt' },
+
+    { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
+    { name: 'Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
     { name: 'Reimbursement', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
     { name: 'Coworking', panel: 'Coworking', iconClass: 'fas fa-building' },
     { name: 'Acceleration', panel: 'Acceleration', iconClass: 'fas fa-rocket' },
+    { name: 'SSU', panel: 'ssu', iconClass: 'fas fa-chart-bar' },
+
 ];
 
 const LeftBar = ({ changePanel }) => {

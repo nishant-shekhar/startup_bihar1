@@ -15,6 +15,7 @@ import AccelerationProgrammeModuleDetails from "./Acceleration_Programme_Module/
 import IncubationModuleDetails from "./Incubation_Module/IncubationModuleDetails.jsx";
 import StartupProfileDetails from "./ProfileDetails.jsx";
 import RegisterStartup from "./RegisterStartup.jsx";
+import AdminNotification from "./AdminNotification.jsx";
 
 const AdminMainProfile = () => {
 	const [activePage, setActivePage] = useState("StartupProfile"); // Controls second section
@@ -26,6 +27,19 @@ const AdminMainProfile = () => {
 	// Handles the main content section (second section) based on `activePage`
 	function handlePageChange() {
 		switch (activePage) {
+			case "AdminNotification":
+				return (
+					<>
+						<div className="px-10 mt-16">
+							<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
+								Notifications
+							</h1>
+							<hr className="mb-3 border-gray-500/30 " />
+							<AdminNotification />
+						</div>
+					</>
+				);
+			
 			case "StartupProfile":
 				return (
 					<CommonList
@@ -136,6 +150,11 @@ const AdminMainProfile = () => {
 	const changePanel = (newPanel) => {
 		setActivePage(newPanel);
 		setDetailsView(false); // Reset to second section when changing main module
+		if (newPanel === "AdminNotification") {
+			setHasDetailsPanel(false); // Disable third section for AdminNotification
+		} else {
+			setHasDetailsPanel(true); // Enable third section for other modules
+		}
 	};
 
 	// Handles selection within the second section (when clicking on an item to view details)
@@ -181,16 +200,18 @@ const AdminMainProfile = () => {
 			{/* Second Section - Main Content Area */}
 			<div
 				className={
-					hasDetailsPanel
-						? "col-span-3"
-						: "col-span-10"
+					activePage === "AdminNotification"
+						? "col-span-10"
+						: hasDetailsPanel
+							? "col-span-3"
+							: "col-span-10"
 				}
 			>
 				{handlePageChange()}
 			</div>
 
 			{/* Third Section - Details Section (conditionally rendered) */}
-			{hasDetailsPanel && (
+			{hasDetailsPanel && activePage !== "AdminNotification" && (
 				<div className="col-span-7 bg-gray-100">
 					{renderDetailsSection()}
 				</div>

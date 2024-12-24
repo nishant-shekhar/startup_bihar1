@@ -14,7 +14,8 @@ import {
 } from "react-icons/fa";
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 import { useRef } from "react";
-import UpdateMetrics from "./FieldsUpdate/UpdateMetrics";
+import UpdateMetrics from "./FieldsUpdate/updateMetrics";
+import UserNotification from "../../Userform/UserNotification";
 
 const HomeSection = () => {
 	const [startup, setStartup] = useState([]);
@@ -25,6 +26,14 @@ const HomeSection = () => {
 	const [buttonVisible, setButtonVisible] = useState(true);
 	const [subtitle, setSubtitle] = useState("");
 	const [isSuccess, setIsSuccess] = useState(""); // Add success state
+	const [updateCount, setUpdateCount] = useState(0);
+	const [selectedCategory, setSelectedCategory] = useState("Showcase");
+
+	const categories = ["Showcase", "Notifications", "Action History"];
+
+	const handleCategoryClick = (category) => {
+		setSelectedCategory(category);
+	};
 
 	const fileInputRef = useRef(null);
 
@@ -205,7 +214,7 @@ const HomeSection = () => {
 
 	useEffect(() => {
 		fetchDetails();
-	}, []);
+	}, [updateCount]);
 
 	return (
 		// <div>
@@ -394,6 +403,7 @@ const HomeSection = () => {
 									<UpdateMetrics
 										startup={startup}
 										onClose={() => setShowUpdateMetrics(false)}
+										onUpdate={() => setUpdateCount(updateCount + 1)}
 									/>
 								)}
 							</div>
@@ -434,6 +444,7 @@ const HomeSection = () => {
 								<UpdateSocialMediaURL
 									startup={startup}
 									onPlatformSelect={handlePlatformSelect}
+									onUpdate={() => setUpdateCount(updateCount + 1)}
 								/>
 							)}
 						</div>
@@ -455,42 +466,90 @@ const HomeSection = () => {
 					</div>
 					<hr className="mx-10 border-gray-500/30" />
 				</div>
-
-				<h1 className="pl-10 mt-5 font-bold font-poppins text-2xl ">
-					Showcase
-				</h1>
-				<div>
-					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6	mx-5">
-						<div className="flex justify-center items-center ">
-							<div className="bg-gray-200 shadow-md rounded-lg max-w-sm w-full animate-pulse h-[367px]">
-								<div className="bg-gray-300 h-40 rounded-lg mb-4 mx-5 mt-4 "></div>
-								<div className="pl-6">
-									<div className="bg-gray-300 h-4 rounded w-3/4"></div>
-									<div className="bg-gray-300 h-6 rounded w-3/5 mt-4"></div>
-									<div className="bg-gray-300 h-5 rounded w-4/5 mt-4"></div>
-									<button
-										type="button"
-										className="bg-blue-600 py-2 px-5 rounded-md mt-4 text-white"
-										style={{ animation: "none !important" }}
-										onClick={() => setIsPopupVisible(true)}
-									>
-										Add New
-									</button>
-								</div>
-							</div>
-						</div>
-						{data.map((data, index) => (
-							<ShowcaseCard
-								key={index}
-								imgurl={data.imgurl || "default-logo.png"}
-								dateandtime={data.dateandtime}
-								title={data.title}
-								subtitle={data.subtitle || "Subtitle"}
-								tag={data.tag}
-							/>
-						))}
+				{/* Categories Section */}
+				<div className="mx-5 lg:mx-12 justify-start mt-5 mb-4">
+					<div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
+						<nav className="justify-start space-x-2">
+							{categories.map((category) => (
+								<button
+									key={category}
+									onClick={() => handleCategoryClick(category)}
+									className={`py-1 px-4 transition-all duration-300 transform ${
+										selectedCategory === category
+											? "bg-gray-200 text-[#0E0C22] font-semibold rounded-full scale-105"
+											: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-gray-100 hover:text-[#0E0C22] rounded-full"
+									}`}
+								>
+									{category}
+								</button>
+							))}
+						</nav>
 					</div>
 				</div>
+
+				<div className="mx-5 lg:mx-12 p-6 bg-white shadow rounded-md">
+					{/* Showcase Content */}
+					{selectedCategory === "Showcase" && (
+						<>
+							<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
+								Showcase
+							</h1>
+							<hr className="mb-6 border-gray-500/30" />
+							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+								<div className="flex justify-center items-center ">
+									<div className="bg-gray-200 shadow-md rounded-lg max-w-sm w-full animate-pulse h-[367px]">
+										<div className="bg-gray-300 h-40 rounded-lg mb-4 mx-5 mt-4 "></div>
+										<div className="pl-6">
+											<div className="bg-gray-300 h-4 rounded w-3/4"></div>
+											<div className="bg-gray-300 h-6 rounded w-3/5 mt-4"></div>
+											<div className="bg-gray-300 h-5 rounded w-4/5 mt-4"></div>
+											<button
+												type="button"
+												className="bg-blue-600 py-2 px-5 rounded-md mt-4 text-white"
+												style={{ animation: "none !important" }}
+												onClick={() => setIsPopupVisible(true)}
+											>
+												Add New
+											</button>
+										</div>
+									</div>
+								</div>
+								{data.map((data, index) => (
+									<ShowcaseCard
+										key={index}
+										imgurl={data.imgurl || "default-logo.png"}
+										dateandtime={data.dateandtime}
+										title={data.title}
+										subtitle={data.subtitle || "Subtitle"}
+										tag={data.tag}
+									/>
+								))}
+							</div>
+						</>
+					)}
+
+					{/* Notifications Content */}
+					{selectedCategory === "Notifications" && (
+						<>
+							<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
+								Notifications
+							</h1>
+							<hr className="mb-3 border-gray-500/30 " />
+							<UserNotification />
+						</>
+					)}
+
+					{selectedCategory === "Action History" && (
+						<>
+							<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
+								Action History
+							</h1>
+							<hr className="mb-3 border-gray-500/30 " />
+							<UserNotification />
+						</>
+					)}
+				</div>
+
 				<StatusDialog
 					isVisible={statusPopup}
 					title={title}

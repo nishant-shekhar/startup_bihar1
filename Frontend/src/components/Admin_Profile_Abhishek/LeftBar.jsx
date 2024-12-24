@@ -20,6 +20,7 @@ const LeftBar = ({ changePanel }) => {
 
   // Full menu items array
   const menuItems = [
+    { label: "Notifications", panel: "AdminNotification" },
     { label: "Startup Profile", panel: "StartupProfile" },
     { label: "Seed Fund Module", panel: "SeedFundModule" },
     { label: "Second Tranche Module", panel: "SecondTrancheModule" },
@@ -40,6 +41,7 @@ const LeftBar = ({ changePanel }) => {
   // Role-based menu access configuration
   const roleBasedMenuAccess = {
 	"IT": [
+    "Notifications",
 	  "Startup Profile",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
@@ -57,13 +59,14 @@ const LeftBar = ({ changePanel }) => {
 	  "Grievance Redressal System",
 	],
 	finance: [
+    "Notifications",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
 	  "QPR Module",
 	  "Matching Loan",
 	  "Post Seed Fund Module",
 	],
-	guest: ["Startup Profile", "Startup List"],
+	guest: ["Notifications" , "Startup Profile", "Startup List"],
   };
   
 
