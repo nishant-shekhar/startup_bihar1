@@ -74,13 +74,13 @@ const StartupProfileMain = () => {
     try {
       let apiUrl = "";
       if (newPanel === "StartupForm") {
-        apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
+        apiUrl = "http://51.20.52.245:3007/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "http://localhost:3007/api/seed-fund/status";
+        apiUrl = "http://51.20.52.245:3007/api/seed-fund/status";
       } else if (newPanel === "PostSeed") {
-        apiUrl = "http://localhost:3007/api/post-seed/status";
+        apiUrl = "http://51.20.52.245:3007/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "http://localhost:3007/api/second-tranche/status";
+        apiUrl = "http://51.20.52.245:3007/api/second-tranche/status";
       }
 
       if (apiUrl) {

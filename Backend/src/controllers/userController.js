@@ -519,6 +519,73 @@ const updateUserField = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating user fields' });
   }
 };
+const addEmployee = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+
+    const user_id = getUserIdFromToken(token);
+
+    const { name, dp, qualification, designation, display, rank } = req.body;
+
+    if (!name || !qualification || !designation) {
+      return res.status(400).json({ error: 'Name, qualification, and designation are required' });
+    }
+
+    const newEmployee = await prisma.employee.create({
+      data: {
+        startupId: user_id,
+        name,
+        dp,
+        qualification,
+        designation,
+        display: display ?? true,
+        rank: rank ?? 0,
+      },
+    });
+
+    res.status(201).json({
+      message: 'Employee added successfully',
+      employee: newEmployee,
+    });
+  } catch (error) {
+    console.error('Detailed Error:', error.message, error.stack);
+    res.status(500).json({ error: 'An error occurred while adding the employee', details: error.message });
+  }
+};
+
+const getEmployeesByStartup = async (req, res) => {
+  try {
+    const { startupId } = req.query; // Expecting startupId as a query parameter
+
+    // Validate that startupId is provided
+    if (!startupId) {
+      return res.status(400).json({ error: 'startupId is required to fetch employees' });
+    }
+
+    // Fetch employees for the given startupId
+    const employees = await prisma.employee.findMany({
+      where: { startupId },
+      orderBy: [
+        { rank: 'asc' }, // Order employees by rank
+        { createdAt: 'asc' }, // Secondary order by creation date
+      ],
+    });
+
+    // If no employees found, return an empty array
+    if (!employees || employees.length === 0) {
+      return res.status(404).json({ error: 'No employees found for the specified startupId' });
+    }
+
+    res.status(200).json({
+      message: 'Employees retrieved successfully',
+      employees,
+    });
+  } catch (error) {
+    console.error('Error retrieving employees:', error.message);
+    res.status(500).json({ error: 'An error occurred while retrieving employees' });
+  }
+};
 
 
 module.exports = {
@@ -538,5 +605,7 @@ module.exports = {
   updateFounderDp,
   getTopStartupDetails,
   updateMetrics,
-  updateUserField
+  updateUserField,
+  addEmployee,
+  getEmployeesByStartup
 };

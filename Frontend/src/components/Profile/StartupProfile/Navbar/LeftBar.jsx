@@ -138,7 +138,7 @@ const LeftBar = ({ changePanel }) => {
                     <span className="text-sm font-semibold">Initial Forms</span>
                     <button
                         onClick={() => {
-                            //checkDocumentStatus('http://localhost:3007/api/StartupProfile/user-document');
+                            //checkDocumentStatus('http://51.20.52.245:3007/api/StartupProfile/user-document');
                             changePanel('StartupForm');
                             setSelectedItem('StartupForm');
                         }}

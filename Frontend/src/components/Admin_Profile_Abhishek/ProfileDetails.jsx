@@ -22,7 +22,7 @@ const StartupProfileDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://localhost:3007/api/StartupProfile/v1/${id}`,
+					`http://51.20.52.245:3007/api/StartupProfile/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -34,7 +34,7 @@ const StartupProfileDetails = ({ id }) => {
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
-			console.log(`http://localhost:3007/api/StartupProfile/v1/${id}`);
+			console.log(`http://51.20.52.245:3007/api/StartupProfile/v1/${id}`);
 			console.log(data);
 		}
 	};
@@ -55,7 +55,7 @@ const StartupProfileDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/StartupProfile/u1/${id}`,
+				`http://51.20.52.245:3007/api/StartupProfile/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -93,7 +93,7 @@ const StartupProfileDetails = ({ id }) => {
 				return acc;
 			}, {});
 			await axios.patch(
-				`http://localhost:3007/api/StartupProfile/u1/${id}`,
+				`http://51.20.52.245:3007/api/StartupProfile/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -118,7 +118,7 @@ const StartupProfileDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/StartupProfile/u1/${id}`,
+				`http://51.20.52.245:3007/api/StartupProfile/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",

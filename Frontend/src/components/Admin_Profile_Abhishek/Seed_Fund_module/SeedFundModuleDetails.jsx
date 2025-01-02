@@ -35,7 +35,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://localhost:3007/api/seed-fund/v1/${id}`,
+					`http://51.20.52.245:3007/api/seed-fund/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -65,7 +65,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/seed-fund/u1/${id}`,
+				`http://51.20.52.245:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -96,7 +96,7 @@ const SeedfundModuleDetails = ({ id }) => {
 				return acc;
 			}, {});
 			await axios.patch(
-				`http://localhost:3007/api/seed-fund/u1/${id}`,
+				`http://51.20.52.245:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -125,7 +125,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/seed-fund/u1/${id}`,
+				`http://51.20.52.245:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -154,7 +154,7 @@ const SeedfundModuleDetails = ({ id }) => {
 			}
 	
 			const response = await axios.post(
-				`http://localhost:3007/api/notifications/`,
+				`http://51.20.52.245:3007/api/notifications/`,
 				{
 					user_id: data.userId, // Ensure `userId` is present
 					admin_id: adminId, // Replace with actual admin ID
