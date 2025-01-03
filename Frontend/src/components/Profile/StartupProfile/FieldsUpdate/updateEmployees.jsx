@@ -3,7 +3,7 @@ import { Formik, Field, Form } from "formik";
 import axios from "axios";
 import StatusDialog from "../../../UserForm/StatusDialog";
 
-const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
+const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 	const [dialogStatus, setDialogStatus] = useState({
 		isVisible: false,
 		title: "",
@@ -16,14 +16,14 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 		try {
 			setDialogStatus({
 				isVisible: true,
-				title: "Updating user Fields",
-				subtitle: "Wait while we update your user data!",
+				title: "Updating Metrics",
+				subtitle: "Wait while we update your metrics!",
 				buttonVisible: false,
 				status: "checking",
 			});
 
 			await axios.put(
-				"http://localhost:3007/api/userlogin/update-user-field",
+				"http://localhost:3007/api/userlogin/update-data",
 				{ [field]: value },
 				{
 					headers: {
@@ -34,7 +34,7 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 
 			setDialogStatus({
 				isVisible: true,
-				title: "User Field Updated",
+				title: "Metrics Updated",
 				subtitle: `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`,
 				buttonVisible: true,
 				status: "success",
@@ -43,8 +43,8 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 			console.error(`Error updating ${field}:`, error);
 			setDialogStatus({
 				isVisible: true,
-				title: "User Field Update Failed",
-				subtitle: "Error updating user data",
+				title: "Metrics Update Failed",
+				subtitle: "Error updating metrics",
 				buttonVisible: true,
 				status: "failed",
 			});
@@ -55,23 +55,21 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 		<div className="fixed inset-0 flex items-center justify-center z-50">
 			<div className="bg-white bg-opacity-75 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 rounded-lg shadow-xl w-96 p-6 relative">
 				<button
-					onClick={() => onPlatformSelect(false)}
+					type="button"
+					onClick={onClose}
 					className="absolute top-2 right-2 text-[#3B82F6] hover:text-blue-600"
 				>
 					✕
 				</button>
 				<h2 className="text-2xl font-semibold mb-4 text-center">
-					Update Social Media Links
+					Add Employees
 				</h2>
 				<Formik
 					initialValues={{
-						twitter: startup.twitter,
-						facebook: startup.facebook,
-						instagram: startup.instagram,
-						linkedin: startup.linkedin,
-						website: startup.website,
-						moto: startup.moto,
-						about: startup.about,
+						employeeCount: startup.employeeCount || "",
+						workOrders: startup.workOrders || "",
+						projects: startup.projects || "",
+						revenueLY: startup.revenueLY || "",
 					}}
 					onSubmit={async (values, { resetForm }) => {
 						for (const [field, value] of Object.entries(values)) {
@@ -86,71 +84,53 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 					{() => (
 						<Form>
 							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Twitter URL</label>
-								<Field
-									type="url"
-									name="twitter"
-									placeholder="Enter Twitter URL"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Facebook URL</label>
-								<Field
-									type="url"
-									name="facebook"
-									placeholder="Enter Facebook URL"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Instagram URL</label>
-								<Field
-									type="url"
-									name="instagram"
-									placeholder="Enter Instagram URL"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">LinkedIn URL</label>
-								<Field
-									type="url"
-									name="linkedin"
-									placeholder="Enter LinkedIn URL"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Website URL</label>
-								<Field
-									type="url"
-									name="website"
-									placeholder="Enter Website URL"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
-
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Moto</label>
+								<label className="block text-gray-700 mb-2">
+									Employee Name
+								</label>
 								<Field
 									type="text"
-									name="moto"
-									placeholder="Enter Moto"
+									name="employeeName"
+									placeholder="Enter Employee Name"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
 
 							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">About</label>
+								<label className="block text-gray-700 mb-2">Designation</label>
 								<Field
 									type="text"
-									name="about"
-									placeholder="Enter About"
+									name="designation"
+									placeholder="Enter Designation"
+									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+
+							<div className="mb-4">
+								<label className="block text-gray-700 mb-2">
+									Qualification
+								</label>
+								<Field
+									type="text"
+									name="qualification"
+									placeholder="Enter Qualification"
+									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+								/>
+							</div>
+
+							<div className="mb-4 flex items-center gap-2 ">
+								<label className="block text-gray-700 ">Show on Screen</label>
+								<Field
+									type="checkbox"
+									name="showOnScreen"
+									className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+								/>
+							</div>
+
+							<div className="mb-4">
+								<label className="block text-gray-700 mb-2">Photo</label>
+								<Field
+									type="file"
+									name="photo"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
@@ -160,7 +140,7 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 									type="submit"
 									className="bg-[#3B82F6] text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition"
 								>
-									Update Links
+									Update Details
 								</button>
 							</div>
 						</Form>
@@ -175,7 +155,7 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 					buttonVisible={dialogStatus.buttonVisible}
 					onClose={() => {
 						setDialogStatus({ ...dialogStatus, isVisible: false });
-						onPlatformSelect(false);
+						onClose();
 					}}
 					status={dialogStatus.status}
 				/>
@@ -184,4 +164,4 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 	);
 };
 
-export default UpdateSocialMediaURL;
+export default UpdateEmployees;

@@ -74,7 +74,7 @@ const AdminNotification = () => {
 	const fetchUserNotifications = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.52.245:3007/api/notifications/userNotification/${id}`,
+				`http://localhost:3007/api/notifications/userNotification/${id}`,
 				{
 					headers: {
 						"Content-Type": "application/json",

@@ -23,7 +23,7 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 			});
 
 			await axios.put(
-				"http://51.20.52.245:3007/api/userlogin/update-data",
+				"http://localhost:3007/api/userlogin/update-data",
 				{ [field]: value },
 				{
 					headers: {
@@ -31,7 +31,6 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 					},
 				},
 			);
-			
 
 			setDialogStatus({
 				isVisible: true,
@@ -145,8 +144,9 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 					title={dialogStatus.title}
 					subtitle={dialogStatus.subtitle}
 					buttonVisible={dialogStatus.buttonVisible}
-					onClose={() => { setDialogStatus({ ...dialogStatus, isVisible: false })
-					onClose()
+					onClose={() => {
+						setDialogStatus({ ...dialogStatus, isVisible: false });
+						onClose();
 					}}
 					status={dialogStatus.status}
 				/>

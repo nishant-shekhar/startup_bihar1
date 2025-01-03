@@ -10,6 +10,8 @@ const SecondTrancheModuleDetails = ({ id }) => {
 	const [dialogMessage, setDialogMessage] = useState("");
 	const token = localStorage.getItem("token");
 	const [selectedOptions, setSelectedOptions] = useState([]);
+	const adminRole = localStorage.getItem("admin_role") || "admin";
+	const adminId = localStorage.getItem("admin_id") || "admin";
 
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false); // State to manage PDF modal visibility
@@ -18,7 +20,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://51.20.52.245:3007/api/second-tranche/v1/${id}`,
+					`http://localhost:3007/api/second-tranche/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -57,7 +59,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://51.20.52.245:3007/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -72,6 +74,9 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			handleDialog("Application is rejected.");
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
+
+			// Post notification
+			await postNotification("Your Second Tranche application has been rejected.", `Reason: ${comment}`);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -84,8 +89,19 @@ const SecondTrancheModuleDetails = ({ id }) => {
 				acc[field] = null;
 				return acc;
 			}, {});
+
+			const docLinks = selectedOptions.map(option => {
+				const docName = option === "utilizationCertificate" ? "C.A certified utilization certificate" :
+								option === "statusReport" ? "Status Report" :
+								option === "expenditurePlan" ? "Self declared second tranche expenditure plan in the letter head of entity" :
+								option === "bankStatement" ? "Bank statement (Highlight the fund received and expenditure made)" :
+								option === "expenditureInvoice" ? "Expenditure Invoice" :
+								option === "geoTaggedPhotos" ? "Geo-tagged photos of your offices/units" : option;
+				return `${data[option]}:${docName}`;
+			}).join(", ");
+
 			await axios.patch(
-				`http://51.20.52.245:3007/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -102,6 +118,9 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			handleDialog("Application is partially rejected.");
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
+
+			// Post notification
+			await postNotification("Your Second Tranche application has been partially rejected.", docLinks, `Reason: ${comment}`);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -111,7 +130,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://51.20.52.245:3007/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -125,8 +144,51 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			);
 			handleDialog("Application is accepted.");
 			await fetchData(); // Update the data after status change
+			// Post notification
+			await postNotification("Your Second Tranche application has been accepted.");
 		} catch (error) {
 			console.error("Error updating data:", error);
+		}
+	};
+
+	const postNotification = async (notificationMessage, docLink = null, subtitle = "Second Tranche Application") => {
+		try {
+			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
+				console.error("Missing required fields to post a notification.");
+				return;
+			}
+
+			const notificationData = {
+				user_id: data.userId, // Ensure `userId` is present
+				admin_id: adminId, // Replace with actual admin ID
+				admin_role: adminRole, // Replace with actual admin role
+				notification: notificationMessage,
+				subtitle: subtitle,
+				related_to: `Application ID: ${id}`, // Ensure `id` is defined
+			};
+
+			if (docLink) {
+				notificationData.docLink = docLink;
+			}
+
+			const response = await axios.post(
+				"http://localhost:3007/api/notifications/",
+				notificationData,
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`, // Validate `token` existence
+					}
+				},
+			);
+
+			if (response.status === 201) {
+				console.log("Notification posted successfully.");
+			} else {
+				console.error("Unexpected response:", response);
+			}
+		} catch (error) {
+			console.error("Error posting notification:", error.response?.data || error.message);
 		}
 	};
 

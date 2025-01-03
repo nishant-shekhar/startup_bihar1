@@ -9,7 +9,7 @@ const DataMining = ({ onProfileClick }) => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					"http://51.20.52.245:3007/api/startupProfile/list",
+					"http://localhost:3007/api/startupProfile/list",
 				);
 				setSdata(response.data.documents);
 			} catch (error) {

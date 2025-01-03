@@ -35,7 +35,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://51.20.52.245:3007/api/seed-fund/v1/${id}`,
+					`http://localhost:3007/api/seed-fund/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -65,7 +65,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://51.20.52.245:3007/api/seed-fund/u1/${id}`,
+				`http://localhost:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -82,7 +82,7 @@ const SeedfundModuleDetails = ({ id }) => {
 			await fetchData(); // Update the data after status change
 
 			// Post notification
-			await postNotification("Your Seed Fund application has been rejected.");
+			await postNotification("Your Seed Fund application has been rejected.", `Reason: ${comment}`);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -95,8 +95,19 @@ const SeedfundModuleDetails = ({ id }) => {
 				acc[field] = null;
 				return acc;
 			}, {});
+
+			const docLinks = selectedOptions.map(option => {
+				const docName = option === "companyCertificate" ? "Company Certificate" :
+								option === "cancelChequeOrPassbook" ? "Cancelled Cheque or Passbook" :
+								option === "dpr" ? "Detailed Project Report" :
+								option === "partnershipAgreement" ? "Partnership Agreement" :
+								option === "inc33" ? "INC 33" :
+								option === "inc34" ? "INC 34" : option;
+				return `${data[option]}^${docName}`;
+			}).join(", ");
+
 			await axios.patch(
-				`http://51.20.52.245:3007/api/seed-fund/u1/${id}`,
+				`http://localhost:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -113,9 +124,7 @@ const SeedfundModuleDetails = ({ id }) => {
 			setIsCommentVisible(false);
 			await fetchData(); // Update the data after status change
 			// Post notification
-			await postNotification(
-				"Your Seed Fund application has been partially rejected.",
-			);
+			await postNotification("Your Seed Fund application has been partially rejected.", docLinks, `Reason: ${comment}`);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -125,7 +134,7 @@ const SeedfundModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://51.20.52.245:3007/api/seed-fund/u1/${id}`,
+				`http://localhost:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -146,29 +155,35 @@ const SeedfundModuleDetails = ({ id }) => {
 		}
 	};
 
-	const postNotification = async (notificationMessage) => {
+	const postNotification = async (notificationMessage, docLink = null, subtitle = "Seed Fund Application") => {
 		try {
 			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
 				console.error("Missing required fields to post a notification.");
 				return;
 			}
 	
+			const notificationData = {
+				user_id: data.userId, // Ensure `userId` is present
+				admin_id: adminId, // Replace with actual admin ID
+				admin_role: adminRole, // Replace with actual admin role
+				notification: notificationMessage,
+				subtitle: subtitle,
+				related_to: `Application ID: ${id}`, // Ensure `id` is defined
+			};
+	
+			if (docLink) {
+				notificationData.docLink = docLink;
+			}
+	
 			const response = await axios.post(
-				`http://51.20.52.245:3007/api/notifications/`,
-				{
-					user_id: data.userId, // Ensure `userId` is present
-					admin_id: adminId, // Replace with actual admin ID
-					admin_role: adminRole, // Replace with actual admin role
-					notification: notificationMessage,
-					subtitle: "Seed Fund Application",
-					related_to: `Application ID: ${id}`, // Ensure `id` is defined
-				},
+				"http://localhost:3007/api/notifications/",
+				notificationData,
 				{
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `${token}`, // Validate `token` existence
-					},
-				}
+					}
+				},
 			);
 	
 			if (response.status === 201) {

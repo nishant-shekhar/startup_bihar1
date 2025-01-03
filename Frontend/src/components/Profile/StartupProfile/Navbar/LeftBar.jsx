@@ -7,17 +7,28 @@ import axios from 'axios';
 
 const menuItems = [
     { name: 'Home', panel: 'HomeSection', iconClass: 'fas fa-chart-bar' },
+    { name: 'SSU', panel: 'ssu', iconClass: 'fas fa-chart-bar' },
+
+];
+const formsItems = [
+    
+    { name: 'Startup Details', panel: 'StartupForm', iconClass: 'fas fa-lightbulb' },
     { name: 'SeedFund', panel: 'SeedFund', iconClass: 'fas fa-lightbulb' },
-    { name: 'PostSeed', panel: 'PostSeed', iconClass: 'fas fa-lightbulb' },
+    { name: 'Second Tranche', panel: 'SecondTranche', iconClass: 'fas fa-lightbulb' },
+
+    { name: 'Post Seed Fund', panel: 'PostSeed', iconClass: 'fas fa-lightbulb' },
     { name: 'QPR', panel: 'Qpr', iconClass: 'fas fa-file-alt' },
 
     { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
-    { name: 'Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
-    { name: 'Reimbursement', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
-    { name: 'Coworking', panel: 'Coworking', iconClass: 'fas fa-building' },
-    { name: 'Acceleration', panel: 'Acceleration', iconClass: 'fas fa-rocket' },
-    { name: 'SSU', panel: 'ssu', iconClass: 'fas fa-chart-bar' },
 
+    { name: 'Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
+
+    { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
+    { name: 'Reimbursement Form', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
+
+    { name: 'Apply For Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
+    { name: 'Apply for Coworking', panel: 'Coworking', iconClass: 'fas fa-building' },
+    { name: 'Acceleration Programme', panel: 'Acceleration', iconClass: 'fas fa-rocket' },
 ];
 
 const LeftBar = ({ changePanel }) => {
@@ -111,6 +122,7 @@ const LeftBar = ({ changePanel }) => {
                     companyname="AgriTech Firm Pvt Ltd"
                     year="2000"
                 />
+               
 
                 <div className="flex flex-col space-y-4 mb-8">
                     <span className="text-sm font-semibold">Menu</span>
@@ -135,29 +147,27 @@ const LeftBar = ({ changePanel }) => {
                 </div>
 
                 <div className="flex flex-col space-y-4 mb-8">
-                    <span className="text-sm font-semibold">Initial Forms</span>
-                    <button
-                        onClick={() => {
-                            //checkDocumentStatus('http://51.20.52.245:3007/api/StartupProfile/user-document');
-                            changePanel('StartupForm');
-                            setSelectedItem('StartupForm');
-                        }}
-                        className={`flex items-center px-3 py-2 rounded-md ${selectedItem === 'StartupForm' ? 'bg-gray-500' : 'hover:bg-gray-500'}`}
-                    >
-                        <i className="fas fa-rocket"></i>
-                        <span className="ml-2">Startup Profile</span>
-                    </button>
-
-                    <button
-                        onClick={() => {
-                            setSelectedItem('SecondTranche');
-                            changePanel('SecondTranche');}}
-                        className={`flex items-center px-3 py-2 rounded-md ${selectedItem === 'SecondTranche' ? 'bg-gray-500' : 'hover:bg-gray-500'}`}
-                    >
-                        <i className="fas fa-rocket"></i>
-                        <span className="ml-2">Second Tranche</span>
-                    </button>
+                    <span className="text-sm font-semibold">Forms </span>
+                    {formsItems.map((item, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => {
+                                setSelectedItem(item.panel);
+                                changePanel(item.panel);
+                            }}
+                            className={`flex items-center justify-between px-3 py-2 rounded-md ${selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'}`}
+                        >
+                            <span className="flex items-center space-x-2">
+                                <i className={item.iconClass}></i>
+                                <span>{item.name}</span>
+                            </span>
+                            {item.notificationCount && (
+                                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">{item.notificationCount}</span>
+                            )}
+                        </button>
+                    ))}
                 </div>
+               
                 
                 <hr className="border-t border-gray-600 my-2" />
                 

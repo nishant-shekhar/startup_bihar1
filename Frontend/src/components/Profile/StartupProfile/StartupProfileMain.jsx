@@ -20,6 +20,7 @@ import SecondTranchePartialReject from "./FieldsUpdate/SecondTranchePartialRejec
 import PostSeedPartialReject from "./FieldsUpdate/PostSeedPartialReject";
 import SeedFundPartialReject from "./FieldsUpdate/SeedFundPartialReject";
 import StartupFormPartialReject from "./FieldsUpdate/StartupFormPartialReject";
+import UserNotification from "../../UserForm/UserNotification";
 
 const COMPONENTS = {
   HomeSection,
@@ -29,12 +30,13 @@ const COMPONENTS = {
   Qpr,
   Reimbursement,
   Coworking,
-  Acceleration,
+  Acceleration, 
   StartupForm,
   SecondTranche,
   PostSeed,
   Grievance,
-  SecondTranchePartialReject
+  SecondTranchePartialReject,
+  UserNotification,
 };
 const PARTIAL_REJECT_COMPONENTS = {
   SecondTranche: SecondTranchePartialReject,
@@ -74,13 +76,13 @@ const StartupProfileMain = () => {
     try {
       let apiUrl = "";
       if (newPanel === "StartupForm") {
-        apiUrl = "http://51.20.52.245:3007/api/StartupProfile/user-document";
+        apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "http://51.20.52.245:3007/api/seed-fund/status";
+        apiUrl = "http://localhost:3007/api/seed-fund/status";
       } else if (newPanel === "PostSeed") {
-        apiUrl = "http://51.20.52.245:3007/api/post-seed/status";
+        apiUrl = "http://localhost:3007/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "http://51.20.52.245:3007/api/second-tranche/status";
+        apiUrl = "http://localhost:3007/api/second-tranche/status";
       }
 
       if (apiUrl) {
@@ -96,7 +98,7 @@ const StartupProfileMain = () => {
           const formStatus = document.documentStatus;
           const comment = document.comment;
 
-          if (formStatus === "null") {
+          if (formStatus === "null"|| !formStatus) {
             setDialogStatus({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
             setActivePage(newPanel);
           } else if (formStatus === "Accepted") {

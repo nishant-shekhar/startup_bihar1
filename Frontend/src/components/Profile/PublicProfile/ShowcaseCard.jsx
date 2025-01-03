@@ -9,7 +9,8 @@ const ShowcaseCard = ({
 	subtitle,
 	tag,
 	projectLink,
-	id
+	id,
+	delhidden
 }) => {
 	const [dialogStatus, setDialogStatus] = useState({
 		isVisible: false,
@@ -65,14 +66,15 @@ const ShowcaseCard = ({
 					>
 						Project Link
 					</button>
-					<button
-						className="bg-blue-600 py-2 px-4 rounded-md mt-3 text-white ml-3"
-						type="button"
-						onClick={handleDeleteClick}
-
-					>
-						Delete
-					</button>
+					{!delhidden && (
+						<button
+							className="bg-blue-600 py-2 px-4 rounded-md mt-3 text-white ml-3"
+							type="button"
+							onClick={handleDeleteClick}
+						>
+							Delete
+						</button>
+					)}
 				</div>
 			</div>
 

@@ -6,6 +6,7 @@ import FourthPage from './FourthPage';
 import FifthPage from './FifthPage';
 import MovingPage from './MovinPage/MovingPage';
 import SixthPage from './SixthPage';
+import Footer from './Footer';
 
 const HomePage = () => {
   const fadeIn = {
@@ -104,6 +105,7 @@ const HomePage = () => {
       <FourthPage />
       <FifthPage />
       <SixthPage />
+      <Footer />
     </div>
   );
 };

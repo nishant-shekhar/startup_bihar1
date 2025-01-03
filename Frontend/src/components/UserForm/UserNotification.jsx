@@ -74,7 +74,7 @@ const UserNotification = () => {
 	const fetchUserNotifications = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.52.245:3007/api/notifications/userNotification/${id}`,
+				`http://localhost:3007/api/notifications/userNotification/${id}`,
 				{
 					headers: {
 						"Content-Type": "application/json",
@@ -122,6 +122,21 @@ const UserNotification = () => {
 		return formatDistanceToNow(parseISO(date), { addSuffix: true });
 	};
 
+	const renderDocLinks = (docLink) => {
+		if (!docLink) return null;
+		return docLink.split(", ").map((link, index) => {
+			const [url, name] = link.split("^");
+			console.log("the name is " , name);
+			if (!url || !name) return null;
+			console.log(name);
+			return (
+				<a key={index} href={url} className="text-sm/6 text-blue-500 underline mr-2">
+					{name}
+				</a>
+			);
+		});
+	};
+
 	return (
 		<ul role="list" className="divide-y divide-gray-100">
 			{notifications.map((data, index) => (
@@ -143,14 +158,7 @@ const UserNotification = () => {
 						</span>
 
 						<div className="flex items-end gap-3  ">
-							{data.docLink && (
-								<a
-									href={data.docLink}
-									className="text-sm/6 text-blue-500 underline"
-								>
-									document
-								</a>
-							)}{" "}
+								{renderDocLinks(data.docLink)}
 							<p className="mt-1 text-sm/6 ">
 								{getRelativeTime(data.createdAt)}
 							</p>

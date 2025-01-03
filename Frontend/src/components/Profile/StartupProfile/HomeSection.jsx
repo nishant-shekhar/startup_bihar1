@@ -15,12 +15,14 @@ import {
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 import { useRef } from "react";
 import UpdateMetrics from "./FieldsUpdate/updateMetrics";
+import UpdateEmployees from "./FieldsUpdate/updateEmployees";
 import UserNotification from "../../Userform/UserNotification";
 
 const HomeSection = () => {
 	const [startup, setStartup] = useState([]);
 	const [selectedPlatform, setSelectedPlatform] = useState(false);
 	const [showUpdateMetrics, setShowUpdateMetrics] = useState(false);
+	const [showUpdateEmployees, setShowUpdateEmployees] = useState(false);
 	const [statusPopup, setStatusPopup] = useState(false);
 	const [title, setTitle] = useState("");
 	const [buttonVisible, setButtonVisible] = useState(true);
@@ -202,7 +204,7 @@ const HomeSection = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
 			);
 
 			setStartup(response.data.startup);
@@ -440,6 +442,49 @@ const HomeSection = () => {
 									<FaGlobe className="text-4xl cursor-pointer hover:text-green-600" />
 								</a>
 							</div>
+							<div className="flex -space-x-2 overflow-hidden mt-4 pl-3 "
+							onClick={() => setShowUpdateEmployees(true)}>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+								<img
+									alt=""
+									src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+									className="inline-block size-10 rounded-full ring-2 ring-white"
+								/>
+							</div>
 							{selectedPlatform && (
 								<UpdateSocialMediaURL
 									startup={startup}
@@ -447,22 +492,14 @@ const HomeSection = () => {
 									onUpdate={() => setUpdateCount(updateCount + 1)}
 								/>
 							)}
+							{showUpdateEmployees && (
+								<UpdateEmployees
+									startup={startup}
+									onClose={() => setShowUpdateEmployees(false)}
+									onUpdate={() => setUpdateCount(updateCount + 1)}
+								/>
+							)}
 						</div>
-
-						<br />
-
-						{/* Badges */}
-						{/* <div className="flex gap-2">
-							<span className="w-8 h-8 flex items-center justify-center bg-orange-500 text-white rounded-full">
-								26
-							</span>
-							<span className="w-8 h-8 flex items-center justify-center bg-purple-600 text-white rounded-full">
-								6
-							</span>
-							<span className="w-8 h-8 flex items-center justify-center bg-gray-900 text-white rounded-full">
-								12
-							</span>
-						</div> */}
 					</div>
 					<hr className="mx-10 border-gray-500/30" />
 				</div>
@@ -615,7 +652,7 @@ const HomeSection = () => {
 									}
 
 									axios
-										.post("http://51.20.52.245:3007/api/showcase/post", formData, {
+										.post("http://localhost:3007/api/showcase/post", formData, {
 											headers: {
 												Authorization: token, // Include the token in the request headers
 											},

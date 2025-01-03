@@ -341,9 +341,12 @@ const getUserDocument = async (req, res) => {
     });
 
     if (!document) {
-      return res.status(404).json({ error: 'No document found for this user' });
+      // If document not found, return a response with documentStatus: null
+      return res.status(200).json({
+        message: 'No document status found for this user',
+        document: { documentStatus: null, comment: null },
+      });
     }
-
     // Send the document and its status in response
     return res.status(200).json({
       message: 'Document retrieved successfully',
