@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import StatusDialog from "../../UserForm/StatusDialog";
+import axios from "axios";
 
 const ShowcaseCard = ({
 	imgurl,
@@ -22,6 +23,36 @@ const ShowcaseCard = ({
 		actionButton: "",
 	});
 
+
+	const deletePost=()=>{
+		setDialogStatus({ ...dialogStatus, isVisible: false })
+		console.log("Delete Clicked", id);
+		axios.delete(`http://51.20.52.245:3007/api/showcase/delete/${id}`, {
+				headers: {
+					Authorization: `${localStorage.getItem("token")}`,
+				},
+			})
+			.then((response) => {
+				console.log("Data Deleted successfully:", response.data);
+				setDialogStatus({
+					title: "Deleting Showcase",
+					subtitle: "Your post has been deleted.",
+					isVisible: true,
+					buttonVisible: true,
+					status: "success",
+				});
+			})
+			.catch((error) => {
+				console.error("Error posting data:", error);
+				setDialogStatus({
+					title: "Deleting Showcase",
+					subtitle: "Some problem occur",
+					isVisible: true,
+					buttonVisible: true,
+					status: "failed",
+				});
+			});
+	}
 	const handleDeleteClick = () => {
 		setDialogStatus({
 			title: "Delete Showcase",
@@ -29,10 +60,10 @@ const ShowcaseCard = ({
 			isVisible: true,
 			buttonVisible: true,
 			status: "delete",
-			actionButton: "Yes",
-			cancelButton: "No",
+			cancelButton:"Yes",
+			actionButton:"No"
 		});
-		console.log("Delete Clicked", id);
+		
 	};
 
 	return (
@@ -58,7 +89,7 @@ const ShowcaseCard = ({
 						onClick={() => {
 							const url =
 								projectLink.startsWith("http://") ||
-								projectLink.startsWith("https://")
+									projectLink.startsWith("https://")
 									? projectLink
 									: `https://${projectLink}`;
 							window.open(url, "_blank");
@@ -86,7 +117,7 @@ const ShowcaseCard = ({
 				cancelButton={dialogStatus.cancelButton}
 				actionButton={dialogStatus.actionButton}
 				onClose={() => setDialogStatus({ ...dialogStatus, isVisible: false })}
-				onCancel={() => setDialogStatus({ ...dialogStatus, isVisible: false })}
+				onCancel={() => deletePost()}
 				status={dialogStatus.status}
 			/>
 		</div>

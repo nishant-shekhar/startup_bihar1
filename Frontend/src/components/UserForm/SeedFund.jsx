@@ -111,7 +111,7 @@ const SeedFund = () => {
 
 
         <div className="absolute top-9 left-0 w-full p-6 text-white">
-          <h1 className="text-3xl font-bold mb-2 relative top-10">Post Seed Fund</h1>
+          <h1 className="text-3xl font-bold mb-2 relative top-10">Seed Fund</h1>
           <p className="text-lg max-w-xl relative top-10">
             Share your innovative ideas and secure funding to turn them into reality.
           </p>

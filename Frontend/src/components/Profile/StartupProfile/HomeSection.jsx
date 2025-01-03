@@ -570,6 +570,7 @@ const HomeSection = () => {
 										subtitle={showcase.subtitle}
 										tag={showcase.location}
 										projectLink={showcase.projectLink}
+										id={showcase.id}
 									/>
 								))}
 								

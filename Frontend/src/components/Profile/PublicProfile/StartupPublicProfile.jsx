@@ -18,15 +18,17 @@ const StartupPublicProfile = () => {
 	const [startup, setStartup] = useState([]);
 	const [showcases, setShowcases] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isContactVisible, setIsContactVisible] = useState(false);
+
 
 	const categories = ['Showcase', "About Startup"];
 
-    const [selectedCategory, setSelectedCategory] = useState('Showcase');
+	const [selectedCategory, setSelectedCategory] = useState('Showcase');
 
-    // Handle category click
-    const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
-    };
+	// Handle category click
+	const handleCategoryClick = (category) => {
+		setSelectedCategory(category);
+	};
 
 
 	const fetchDetails = async () => {
@@ -189,7 +191,10 @@ const StartupPublicProfile = () => {
 					</p>
 
 					<div className="flex gap-3 mb-2 mt-5 justify-center sm:justify-start">
-						<button className="px-6 py-2 bg-black text-white rounded-lg">
+						<button
+							className="px-6 py-2 bg-black text-white rounded-lg"
+							onClick={() => setIsContactVisible(true)}
+						>
 							Contact
 						</button>
 						<a
@@ -210,15 +215,15 @@ const StartupPublicProfile = () => {
 					<div className="">
 						<div className="flex justify-center lg:justify-end items-center gap-4 sm:my-4">
 							<div className="text-center">
-								<div className="text-xl font-semibold">12</div>
+								<div className="text-xl font-semibold">{startup.employeeCount}</div>
 								<div className="text-gray-600">Employees</div>
 							</div>
 							<div className="text-center">
-								<div className="text-xl font-semibold">16</div>
+								<div className="text-xl font-semibold">{startup.workOrders}</div>
 								<div className="text-gray-600">Work Order</div>
 							</div>
 							<div className="text-center">
-								<div className="text-xl font-semibold">3</div>
+								<div className="text-xl font-semibold">{startup.projects}</div>
 								<div className="text-gray-600">Projects</div>
 							</div>
 						</div>
@@ -271,8 +276,8 @@ const StartupPublicProfile = () => {
 								key={category}
 								onClick={() => handleCategoryClick(category)}
 								className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
-										? "bg-[#bac2cd] text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
-										: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-[#F8F7F3] hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
+									? "bg-[#bac2cd] text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
+									: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-[#F8F7F3] hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
 									}`}
 							>
 								{category}
@@ -322,6 +327,46 @@ const StartupPublicProfile = () => {
 						<p className="text-gray-700 text-lg">{startup.about}</p>
 					</>
 				)}
+
+				{isContactVisible && (
+					<div className="fixed inset-0 flex items-center justify-center  z-50">
+						<div className="absolute inset-0 bg-black opacity-10"></div>
+						<div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-5/12 p-8 rounded-lg shadow-lg">
+							<button
+								className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+								onClick={() => setIsContactVisible(false)}
+							>
+								&times;
+							</button>
+							<h1 className="text-2xl font-bold">{startup.company_name}</h1>
+							<h1 className="mb-3">{startup.about}</h1>
+							<h2 className="text-xl font-semibold ">Contact :</h2>
+							Phone :
+							<a href={`tel:${startup.mobile}`} className="text-blue-600 ">
+								{" "}
+								{startup.mobile || "N/A"}
+							</a>
+							<br />
+							Website:
+							<a
+								href={startup.website || "#"}
+								className="text-blue-600 underline"
+							>
+								{" "}
+								{startup.website || "#"}
+							</a>
+							<br />
+							Address:
+							<a
+								href={startup.website || "#"}
+								className="text-blue-600 underline"
+							>
+								{" "}
+							</a>
+						</div>
+					</div>
+				)}
+
 			</div>
 		</div>
 	);
