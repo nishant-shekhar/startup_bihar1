@@ -14,7 +14,7 @@ const Footer = () => {
 									className="h-24 me-3"
 									alt="FlowBite Logo"
 								/>
-								<span className="self-center text-sm whitespace-nowrap  dark:text-white pl-3 pt-1">
+								<span className="self-center text-sm whitespace-nowrap text-white dark:text-white pl-3 pt-1">
 									DEPARTMENT OF INDUSTRIES <br />
 									Government of Bihar <br />
 									Copyright owned by DoI Bihar,
@@ -23,10 +23,10 @@ const Footer = () => {
 								</span>
 							</a>
 						</div>
-						<div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 items-end">
+						<div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 items-end ">
 							<div>
-								<h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white align-top">
-									Developers
+								<h2 className="mb-6 text-sm font-semibold text-gray-100 uppercase dark:text-white align-top">
+									
 								</h2>
 								<ul className="text-gray-500 dark:text-gray-400 font-medium">
 									<li className="mb-4">
@@ -42,7 +42,7 @@ const Footer = () => {
 											href="#"
 											className="hover:underline"
 										>
-											NS apps
+											Developer's Team
 										</a>
 									</li>
 								</ul>

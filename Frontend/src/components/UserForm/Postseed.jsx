@@ -69,7 +69,7 @@ const PostSeed = () => {
 
 			try {
 				const response = await axios.post(
-					"http://localhost:3007/api/post-seed",
+					"http://51.20.52.245:3007/api/post-seed",
 					formData,
 					{
 						headers: {

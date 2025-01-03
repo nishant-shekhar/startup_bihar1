@@ -31,6 +31,9 @@ const HomeSection = () => {
 	const [updateCount, setUpdateCount] = useState(0);
 	const [selectedCategory, setSelectedCategory] = useState("Showcase");
 
+		const [showcases, setShowcases] = useState([]);
+	
+
 	const categories = ["Showcase", "Notifications", "Action History"];
 
 	const handleCategoryClick = (category) => {
@@ -204,10 +207,15 @@ const HomeSection = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
+				`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
 			);
 
 			setStartup(response.data.startup);
+			const showcaseResponse = await axios.get(
+				`http://51.20.52.245:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+			);
+			setShowcases(showcaseResponse.data.showcase);
+
 			console.log(startup);
 		} catch (error) {
 			console.error("Failed to fetch startup details:", error);
@@ -217,6 +225,8 @@ const HomeSection = () => {
 	useEffect(() => {
 		fetchDetails();
 	}, [updateCount]);
+
+	
 
 	return (
 		// <div>
@@ -551,16 +561,18 @@ const HomeSection = () => {
 										</div>
 									</div>
 								</div>
-								{data.map((data, index) => (
+								{[...showcases].reverse().map((showcase, index) => (
 									<ShowcaseCard
 										key={index}
-										imgurl={data.imgurl || "default-logo.png"}
-										dateandtime={data.dateandtime}
-										title={data.title}
-										subtitle={data.subtitle || "Subtitle"}
-										tag={data.tag}
+										imgurl={showcase.picUrl}
+										dateandtime={showcase.date}
+										title={showcase.title}
+										subtitle={showcase.subtitle}
+										tag={showcase.location}
+										projectLink={showcase.projectLink}
 									/>
 								))}
+								
 							</div>
 						</>
 					)}
@@ -652,7 +664,7 @@ const HomeSection = () => {
 									}
 
 									axios
-										.post("http://localhost:3007/api/showcase/post", formData, {
+										.post("http://51.20.52.245:3007/api/showcase/post", formData, {
 											headers: {
 												Authorization: token, // Include the token in the request headers
 											},

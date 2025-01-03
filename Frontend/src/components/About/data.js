@@ -6,7 +6,7 @@ const contacts = [
       phone: '0612-2235812', 
       image: 'https://via.placeholder.com/150', 
       position: 'Director Industries Department of Industries, GoB', 
-      tag: 'Key Contact' 
+      tag: 'Director Industry' 
     },
     { 
       id: 2, 
