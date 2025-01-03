@@ -47,8 +47,9 @@ const NavBarNew = () => {
 						>
 							<div className="flex lg:flex-1">
 								{/* Smooth scroll to top on logo click */}
-								<a
+								<Link
 									onClick={() => scroll.scrollToTop()}
+									to={"/"}
 									className="-m-1.5 p-1.5 cursor-pointer"
 								>
 									<span className="sr-only">Your Company</span>
@@ -57,7 +58,7 @@ const NavBarNew = () => {
 										src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
 										alt="Company Logo"
 									/>
-								</a>
+								</Link>
 							</div>
 
 							{/* Desktop Menu */}
@@ -69,7 +70,8 @@ const NavBarNew = () => {
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
-									Startups List
+									<Link to="/">
+									Startups List</Link>
 								</ScrollLink>
 
 								<ScrollLink
@@ -79,7 +81,8 @@ const NavBarNew = () => {
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
-									Vission
+									<Link to="/">
+									Vision</Link>
 								</ScrollLink>
 								<ScrollLink
 									to="mentors"
@@ -88,7 +91,8 @@ const NavBarNew = () => {
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
-									Facilities
+									<Link to="/">
+									Facilities</Link>
 								</ScrollLink>
 								<ScrollLink
 									to="work"
@@ -97,7 +101,7 @@ const NavBarNew = () => {
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
-									Work with Us
+									<Link to="/">Work with Us</Link>
 								</ScrollLink>
 								<ScrollLink
 									to="contact"
@@ -106,26 +110,35 @@ const NavBarNew = () => {
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
-									Contact Us
+								<Link to="/">	Contact Us</Link>
 								</ScrollLink>
-								<ScrollLink
-									to="contact"
+								<Link
+									to="/about-us"
 									smooth={true}
 									offset={-50}
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
 									About Us
-								</ScrollLink>
-								<ScrollLink
-									to="contact"
+								</Link>
+								<Link
+									to="/contact-us"
 									smooth={true}
 									offset={-50}
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
 									Our Team
-								</ScrollLink>
+								</Link>
+								<Link
+									to="/ecosystem"
+									smooth={true}
+									offset={-50}
+									duration={500}
+									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
+								>
+									Startup Ecosystem
+								</Link>
 							</div>
 
 							{/* Login Button */}

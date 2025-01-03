@@ -6,6 +6,11 @@ import StartupProfileMain from './components/Profile/StartupProfile/StartupProfi
 import AdminMainProfile from './components/Admin_Profile_Abhishek/AdminMainProfile';
 import StartupListCategory from './components/Profile/PublicProfile/StartupListCategory';
 import StartupPublicProfile from './components/Profile/PublicProfile/StartupPublicProfile';
+import UserNotification from './components/UserForm/UserNotification';
+import AboutUs from './components/About/AboutUs';
+import ContactUs from './components/About/ContactUs';
+import Ecosystem from './components/About/Ecosystem';
+
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,17 +20,24 @@ const App = () => {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginCopy onLogin={handleLogin} />} />
-        <Route path="/StartupProfile" element={<StartupProfileMain />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/AdminProfile" element={<AdminMainProfile />} />
-        <Route path="/StartupList" element={<StartupListCategory />} />
-        <Route path="/StartupPublicProfile/:id" element={<StartupPublicProfile />} />
-        </Routes>
-    </Router>
-  );
+			<Router>
+				<Routes>
+					<Route path="/login" element={<LoginCopy onLogin={handleLogin} />} />
+					<Route path="/about-us" element={<AboutUs />} />
+					<Route path="/contact-us" element={<ContactUs />} />
+					<Route path="/ecosystem" element={<Ecosystem />} />
+					<Route path="/StartupProfile" element={<StartupProfileMain />} />
+					<Route path="/" element={<HomePage />} />
+					<Route path="/AdminProfile" element={<AdminMainProfile />} />
+					<Route path="/StartupList" element={<StartupListCategory />} />
+					<Route
+						path="/StartupPublicProfile/:id"
+						element={<StartupPublicProfile />}
+					/>
+					<Route path="/notif" element={<UserNotification />} />
+				</Routes>
+			</Router>
+		);
 };
 
 export default App;

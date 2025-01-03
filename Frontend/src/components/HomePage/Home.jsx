@@ -6,6 +6,7 @@ import FourthPage from './FourthPage';
 import FifthPage from './FifthPage';
 import MovingPage from './MovinPage/MovingPage';
 import SixthPage from './SixthPage';
+import Countdown from 'react-countdown';
 import Footer from './Footer';
 
 const HomePage = () => {
@@ -27,6 +28,42 @@ const HomePage = () => {
     }
   };
 
+  // coundown code here
+
+  const targetDate = new Date('2025-01-15T00:00:00').getTime();
+
+  const renderer = ({ days, hours, minutes, seconds, completed }) => {
+    if (completed) {
+      return <h2>Hello</h2>;
+    
+    } else {
+
+      return (
+        <div className="flex justify-center gap-8 mt-6 ">
+          <div className="text-center bg-indigo-600 px-5 py-5 text-white shadow-xl rounded-md">
+            <h3 className="text-lg font-semibold">Days</h3>
+            <div className="text-2xl font-bold">{days}</div>
+          </div>
+          <div className="text-center bg-indigo-600 px-5 py-5 text-white shadow-xl rounded-md">
+            <h3 className="text-lg font-semibold">Hours</h3>
+            <div className="text-2xl font-bold">{hours}</div>
+          </div>
+          <div className="text-center bg-indigo-600 px-5 py-5 text-white shadow-xl rounded-md">
+            <h3 className="text-lg font-semibold">Minutes</h3>
+            <div className="text-2xl font-bold">{minutes}</div>
+          </div>
+          <div className="text-center bg-indigo-600 px-5 py-5 text-white shadow-xl rounded-md">
+            <h3 className="text-lg font-semibold">Seconds</h3>
+            <div className="text-2xl font-bold">{seconds}</div>
+          </div>
+        </div>
+      );
+    }
+  };
+
+
+  
+
   return (
     <div className="grid grid-cols-1">
       <NavBarNew />
@@ -46,18 +83,28 @@ const HomePage = () => {
           ></div>
         </div>
 
+       <div className="text-center pt-24">
+            <p1 className="text-l font-bold  text-indigo-600">Launching Startup Bihar Portal in...</p1>
+              <Countdown date={targetDate} renderer={renderer} />
+          </div>
+
         <motion.div
-          className="text-center mx-auto max-w-2xl pt-24 mb-10 sm:pt-40 lg:pt-48"
+          //className="text-center mx-auto max-w-2xl pt-24 mb-10 sm:pt-40 lg:pt-48"
+          className="text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16"
           initial="hidden"
           animate="visible"
           variants={fadeIn}
         >
+          
           <h1
             className="text-4xl font-bold tracking-tight text-gray-600 opacity-35 sm:text-5xl"
             style={{ fontFamily: 'Amsterdam' }}
           >
             Startup Bihar
           </h1>
+
+          {/* pasting countdown code here */}
+
         </motion.div>
 
         <motion.div

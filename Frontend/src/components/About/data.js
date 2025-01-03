@@ -23,7 +23,7 @@ const contacts = [
       email: 'Manish@example.com', 
       phone: '9262993981', 
       image: 'https://via.placeholder.com/150', 
-      position: 'CoOrdinator Startup', 
+      position: 'Co-ordinator Startup', 
       tag: 'StartUp Wing' 
     },
     { 
@@ -68,7 +68,7 @@ const contacts = [
       email: 'Pushkar@example.com', 
       phone: '9262993979', 
       image: 'https://via.placeholder.com/150', 
-      position: 'CoOrdinator Finance', 
+      position: 'Co-ordinator Finance', 
       tag: 'Finance Wing' 
     },
     { 
@@ -77,7 +77,7 @@ const contacts = [
       email: 'Kunal@example.com', 
       phone: '9262993980', 
       image: 'https://via.placeholder.com/150', 
-      position: 'CoOrdinator Finance', 
+      position: 'Co-ordinator Finance', 
       tag: 'Finance Wing' 
     },
     { 
