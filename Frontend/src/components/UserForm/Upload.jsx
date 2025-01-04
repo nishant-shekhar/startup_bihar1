@@ -34,7 +34,6 @@ const Upload = ({ label, onChange, name }) => {
               /> 
             </label>
           </div>
-          <p className="text-xs leading-5 text-gray-600 mt-1">Upload a file (up to 10MB)</p>
         </div>
       </div>
     </div>

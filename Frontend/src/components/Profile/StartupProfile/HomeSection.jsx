@@ -207,12 +207,12 @@ const HomeSection = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
 			);
 
 			setStartup(response.data.startup);
 			const showcaseResponse = await axios.get(
-				`http://51.20.52.245:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+				`http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
@@ -665,7 +665,7 @@ const HomeSection = () => {
 									}
 
 									axios
-										.post("http://51.20.52.245:3007/api/showcase/post", formData, {
+										.post("http://localhost:3007/api/showcase/post", formData, {
 											headers: {
 												Authorization: token, // Include the token in the request headers
 											},

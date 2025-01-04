@@ -53,7 +53,7 @@ const SecondTranche = () => {
       });
 
       try {
-        const response = await fetch('http://51.20.52.245:3007/api/second-tranche', {
+        const response = await fetch('http://localhost:3007/api/second-tranche', {
           method: 'POST',
           headers: {
             Authorization: `${localStorage.getItem('token')}`, // Adjust according to your token storage

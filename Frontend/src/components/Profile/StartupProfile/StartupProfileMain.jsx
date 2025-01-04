@@ -20,7 +20,7 @@ import SecondTranchePartialReject from "./FieldsUpdate/SecondTranchePartialRejec
 import PostSeedPartialReject from "./FieldsUpdate/PostSeedPartialReject";
 import SeedFundPartialReject from "./FieldsUpdate/SeedFundPartialReject";
 import StartupFormPartialReject from "./FieldsUpdate/StartupFormPartialReject";
-import UserNotification from "../../UserForm/UserNotification";
+import UserNotification from "../../Userform/UserNotification";
 
 const COMPONENTS = {
   HomeSection,
@@ -76,13 +76,13 @@ const StartupProfileMain = () => {
     try {
       let apiUrl = "";
       if (newPanel === "StartupForm") {
-        apiUrl = "http://51.20.52.245:3007/api/StartupProfile/user-document";
+        apiUrl = "http://localhost:3007/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "http://51.20.52.245:3007/api/seed-fund/status";
+        apiUrl = "http://localhost:3007/api/seed-fund/status";
       } else if (newPanel === "PostSeed") {
-        apiUrl = "http://51.20.52.245:3007/api/post-seed/status";
+        apiUrl = "http://localhost:3007/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "http://51.20.52.245:3007/api/second-tranche/status";
+        apiUrl = "http://localhost:3007/api/second-tranche/status";
       }
 
       if (apiUrl) {
@@ -155,6 +155,9 @@ const StartupProfileMain = () => {
     }
   };
 
+  const handleFormSubmitSuccess = () => {
+    setActivePage("HomeSection");
+  };
   const changePanel = (newPanel) => {
     if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche" || newPanel === "PostSeed") {
       checkFormStatus(newPanel);
@@ -166,13 +169,14 @@ const StartupProfileMain = () => {
     }
   };
 
-  const ActiveComponent = COMPONENTS[activePage] || UserProfile;
+  const ActiveComponent = COMPONENTS[activePage] || HomeSection;
 
   return (
     <div className="flex w-screen">
       <LeftBar changePanel={changePanel} selectedItem={selectedItem} />
       <div className="flex-grow w-[75%]">
-        <ActiveComponent changePanel={changePanel} />
+        <ActiveComponent changePanel={changePanel} 
+                  onFormSubmitSuccess={handleFormSubmitSuccess}/>
       </div>
       <StatusDialog
         isVisible={dialogStatus.isVisible}

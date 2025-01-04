@@ -23,7 +23,7 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 			});
 
 			await axios.put(
-				"http://51.20.52.245:3007/api/userlogin/update-data",
+				"http://localhost:3007/api/userlogin/update-data",
 				{ [field]: value },
 				{
 					headers: {

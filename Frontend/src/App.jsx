@@ -6,7 +6,8 @@ import StartupProfileMain from './components/Profile/StartupProfile/StartupProfi
 import AdminMainProfile from './components/Admin_Profile_Abhishek/AdminMainProfile';
 import StartupListCategory from './components/Profile/PublicProfile/StartupListCategory';
 import StartupPublicProfile from './components/Profile/PublicProfile/StartupPublicProfile';
-import UserNotification from './components/UserForm/UserNotification';
+import UserNotification from './components/Userform/UserNotification';
+
 import AboutUs from './components/About/AboutUs';
 import ContactUs from './components/About/ContactUs';
 import Ecosystem from './components/About/Ecosystem';

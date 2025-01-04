@@ -27,7 +27,7 @@ const ShowcaseCard = ({
 	const deletePost=()=>{
 		setDialogStatus({ ...dialogStatus, isVisible: false })
 		console.log("Delete Clicked", id);
-		axios.delete(`http://51.20.52.245:3007/api/showcase/delete/${id}`, {
+		axios.delete(`http://localhost:3007/api/showcase/delete/${id}`, {
 				headers: {
 					Authorization: `${localStorage.getItem("token")}`,
 				},
