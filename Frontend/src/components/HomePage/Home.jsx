@@ -39,7 +39,7 @@ const HomePage = () => {
     } else {
 
       return (
-        <div className="flex justify-center gap-8 mt-6 ">
+        <div className="flex justify-center gap-8 mt-6 scale-50 sm:scale-75 md:scale-100">
           <div className="text-center bg-indigo-600 px-5 py-5 text-white shadow-xl rounded-md">
             <h3 className="text-lg font-semibold">Days</h3>
             <div className="text-2xl font-bold">{days}</div>
@@ -83,8 +83,8 @@ const HomePage = () => {
           ></div>
         </div>
 
-       <div className="text-center pt-24">
-            <p1 className="text-l font-bold  text-indigo-600">Launching Startup Bihar Portal in...</p1>
+       <div className="text-center pt-4 sm:pt-24 ">
+            <p1 className="text-sm sm:text-l font-bold  text-indigo-600">Launching Startup Bihar Portal in...</p1>
               <Countdown date={targetDate} renderer={renderer} />
           </div>
 
@@ -148,7 +148,6 @@ const HomePage = () => {
         <MovingPage />
       </div>
 
-      <ThirdPage />
       <FourthPage />
       <FifthPage />
       <SixthPage />

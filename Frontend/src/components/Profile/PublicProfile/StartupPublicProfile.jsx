@@ -17,6 +17,7 @@ const StartupPublicProfile = () => {
 
 	const [startup, setStartup] = useState([]);
 	const [showcases, setShowcases] = useState([]);
+	const [employees, setEmployees] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isContactVisible, setIsContactVisible] = useState(false);
 
@@ -30,32 +31,36 @@ const StartupPublicProfile = () => {
 		setSelectedCategory(category);
 	};
 
-
-	const fetchDetails = async () => {
+	const fetchData = async () => {
+		setIsLoading(true); // Start loading state
 		try {
-			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
-			);
+		  const [detailsResponse, employeesResponse, showcasesResponse] = await Promise.all([
+			axios.get(`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${id}`),
+			axios.get(`http://51.20.52.245:3007/api/userlogin/getEmployees?startupId=${id}`),
+			axios.get(`http://51.20.52.245:3007/api/showcase/get-showcase/${id}`)
+		  ]);
+	  
+		  // Set data from API calls
+		  setStartup(detailsResponse.data.startup);
+		  setShowcases(showcasesResponse.data.showcase || []);
+		  setEmployees(employeesResponse.data.employees || []);
 
-			setStartup(response.data.startup);
-			// Fetch showcase data
-			const showcaseResponse = await axios.get(
-				`http://localhost:3007/api/showcase/get-showcase/${id}`
-			);
-			setShowcases(showcaseResponse.data.showcase);
-
-			setIsLoading(false);
+		  console.log(detailsResponse.data.startup)
+		  console.log(showcasesResponse.data.showcase )
+		  console.log(employeesResponse.data.employees)
 		} catch (error) {
-			console.error("Failed to fetch data:", error);
-			setIsLoading(false);
+		  console.error("Error fetching data:", error);
+		} finally {
+		  setIsLoading(false); // End loading state
 		}
-	};
-	console.log(showcases.id);
+	  };
+	  
 
-
-	useEffect(() => {
-		fetchDetails();
-	}, []);
+	  useEffect(() => {
+		if (id) {
+		  fetchData();
+		}
+	  }, [id]); 
 
 
 	return (

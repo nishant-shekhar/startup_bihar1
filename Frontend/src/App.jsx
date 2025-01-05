@@ -11,6 +11,7 @@ import UserNotification from './components/Userform/UserNotification';
 import AboutUs from './components/About/AboutUs';
 import ContactUs from './components/About/ContactUs';
 import Ecosystem from './components/About/Ecosystem';
+import AllStartup from './components/HomePage/StartupList/AllStartupPage';
 
 
 const App = () => {
@@ -31,8 +32,9 @@ const App = () => {
 					<Route path="/" element={<HomePage />} />
 					<Route path="/AdminProfile" element={<AdminMainProfile />} />
 					<Route path="/StartupList" element={<StartupListCategory />} />
+					<Route path="/AllStartups" element={<AllStartup />} />
 					<Route
-						path="/StartupPublicProfile/:id"
+						path="/Startup/:id"
 						element={<StartupPublicProfile />}
 					/>
 					<Route path="/notif" element={<UserNotification />} />

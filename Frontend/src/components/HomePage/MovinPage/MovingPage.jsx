@@ -37,7 +37,7 @@ const MovingPage = () => {
     useEffect(() => {
         const fetchProfiles = async () => {
             try {
-                const response = await axios.get('http://localhost:3007/api/userlogin/top-startups');
+                const response = await axios.get('http://51.20.52.245:3007/api/userlogin/top-startups');
                 if (response.data && response.data.startups) {
                     const startups = response.data.startups.map((startup) => ({
                         user_id: startup.user_id, // Assuming default status
@@ -68,7 +68,7 @@ const MovingPage = () => {
         <div className='startups w-screen overflow-hidden'>
             <div className='flex m-4 justify-between'>
                 <h1 className='text-2xl font-semibold px-10 lg:max-w-7xl lg:px-10'>Top Startups</h1>
-                <Link to="/all-items" className="flex items-center px-10 lg:max-w-7xl lg:px-10">
+                <Link to="/AllStartups" className="flex items-center px-10 lg:max-w-7xl lg:px-10">
                     <span className="text-gray-700 font-semibold mr-2">See all</span>
                     <div className="flex items-center justify-center w-8 h-8 bg-indigo-500 rounded-full hover:bg-indigo-400 transition">
                         <FaArrowRight className="text-white text-sm" />

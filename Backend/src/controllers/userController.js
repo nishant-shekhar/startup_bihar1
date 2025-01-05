@@ -81,6 +81,7 @@ const getStartupDetails = async (req, res) => {
         website: true,
         twitter: true,
         instagram: true,
+        linkedin: true,
         mobile: true,
         logo: true,
         founder_dp: true,

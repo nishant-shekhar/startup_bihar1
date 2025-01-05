@@ -6,12 +6,12 @@ const ProfileCard = ({ user_id, status, statusColor, profileImage, companyName, 
 
     // Handle card click
     const handleCardClick = () => {
-        navigate(`/StartupPublicProfile/${user_id}`);
+        navigate(`/Startup/${user_id}`);
     };
 
 
     return (
-        <div className="bg-[#f7effd] rounded-lg p-6 w-60 h-80 flex flex-col"
+        <div className="bg-[#f7effd] rounded-lg p-6 w-60 h-80 flex flex-col "
         onClick={handleCardClick}>
             {/* Status Indicator 
             <div className="justify-start flex items-center space-x-2 mb-4">

@@ -41,7 +41,6 @@ const LeftBar = ({ changePanel }) => {
   // Role-based menu access configuration
   const roleBasedMenuAccess = {
 	"IT": [
-    "Notifications",
 	  "Startup Profile",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
@@ -52,11 +51,7 @@ const LeftBar = ({ changePanel }) => {
 	  "Acceleration Programme Module",
 	  "IPR Reimbursement Module",
 	  "Coworking Module (BHUB)",
-	  "Startup List",
-	  "Data Mining",
-	  "Mentors List",
 	  "Register New Startups",
-	  "Grievance Redressal System",
 	],
 	finance: [
     "Notifications",
