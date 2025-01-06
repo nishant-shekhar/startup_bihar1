@@ -15,7 +15,6 @@ const LeftBar = ({ changePanel }) => {
     }
   };
 
-  // Get user role from localStorage
   const userRole = localStorage.getItem("admin_role") || "admin";
 
   // Full menu items array
@@ -38,9 +37,10 @@ const LeftBar = ({ changePanel }) => {
     { label: "Grievance Redressal System", panel: "GrievanceRedressalSystem" },
   ];
 
-  // Role-based menu access configuration
-  const roleBasedMenuAccess = {
+ // Role-based menu access configuration
+ const roleBasedMenuAccess = {
 	"IT": [
+    "Notifications",
 	  "Startup Profile",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
@@ -51,7 +51,11 @@ const LeftBar = ({ changePanel }) => {
 	  "Acceleration Programme Module",
 	  "IPR Reimbursement Module",
 	  "Coworking Module (BHUB)",
+	  "Startup List",
+	  "Data Mining",
+	  "Mentors List",
 	  "Register New Startups",
+	  "Grievance Redressal System",
 	],
 	finance: [
     "Notifications",
@@ -76,8 +80,8 @@ const LeftBar = ({ changePanel }) => {
   );
 
   return (
-    <div className="w-full bg-gray-900 h-screen overflow-y-auto">
-      <div className="flex items-center pt-12 pl-8 gap-4">
+    <div className="w-full bg-gray-900 h-screen overflow-y-auto overflow-x-hidden">
+				<div className="flex items-center pt-12 pl-8 gap-4">
         <div>
           <img
             src="https://www.w3schools.com/howto/img_avatar.png"

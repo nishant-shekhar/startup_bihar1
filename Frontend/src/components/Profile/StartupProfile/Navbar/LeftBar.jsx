@@ -23,7 +23,6 @@ const formsItems = [
 
     { name: 'Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
 
-    { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
     { name: 'Reimbursement Form', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
 
     { name: 'Apply For Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },

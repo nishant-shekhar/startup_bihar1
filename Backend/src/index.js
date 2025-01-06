@@ -102,6 +102,11 @@ app.use('/api/activity', activityRoutes);
   //http://localhost:3000/api/matchingLoan/u1/:id
 
 // Start the server
+const path = require('path');
+
+// Serve static files for Let's Encrypt verification
+app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '../.well-known/acme-challenge')));
+
 const PORT = process.env.PORT || 3007;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

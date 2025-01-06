@@ -17,7 +17,6 @@ const StartupPublicProfile = () => {
 
 	const [startup, setStartup] = useState([]);
 	const [showcases, setShowcases] = useState([]);
-	const [employees, setEmployees] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isContactVisible, setIsContactVisible] = useState(false);
 
@@ -31,36 +30,33 @@ const StartupPublicProfile = () => {
 		setSelectedCategory(category);
 	};
 
-	const fetchData = async () => {
-		setIsLoading(true); // Start loading state
+
+	const fetchDetails = async () => {
 		try {
-		  const [detailsResponse, employeesResponse, showcasesResponse] = await Promise.all([
-			axios.get(`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${id}`),
-			axios.get(`http://51.20.52.245:3007/api/userlogin/getEmployees?startupId=${id}`),
-			axios.get(`http://51.20.52.245:3007/api/showcase/get-showcase/${id}`)
-		  ]);
-	  
-		  // Set data from API calls
-		  setStartup(detailsResponse.data.startup);
-		  setShowcases(showcasesResponse.data.showcase || []);
-		  setEmployees(employeesResponse.data.employees || []);
+			const response = await axios.get(
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
+			);
 
-		  console.log(detailsResponse.data.startup)
-		  console.log(showcasesResponse.data.showcase )
-		  console.log(employeesResponse.data.employees)
+			setStartup(response.data.startup);
+			console.log(startup)
+			// Fetch showcase data
+			const showcaseResponse = await axios.get(
+				`http://localhost:3007/api/showcase/get-showcase/${id}`
+			);
+			setShowcases(showcaseResponse.data.showcase);
+
+			setIsLoading(false);
 		} catch (error) {
-		  console.error("Error fetching data:", error);
-		} finally {
-		  setIsLoading(false); // End loading state
+			console.error("Failed to fetch data:", error);
+			setIsLoading(false);
 		}
-	  };
-	  
+	};
+	console.log(showcases.id);
 
-	  useEffect(() => {
-		if (id) {
-		  fetchData();
-		}
-	  }, [id]); 
+
+	useEffect(() => {
+		fetchDetails();
+	}, []);
 
 
 	return (
