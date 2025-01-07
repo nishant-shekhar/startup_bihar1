@@ -40,8 +40,6 @@ const StartupCardWide = ({ logo, fundingStatus, name, founder, founderLogo,start
             <p className="text-sm font-normal text-gray-800">{founder + ", Founder"}</p>
           </div>
           </div>
-
-
         </div>
       </div>
     </Link>

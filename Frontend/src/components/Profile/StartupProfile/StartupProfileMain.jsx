@@ -10,7 +10,6 @@ import Incubation from "../../UserForm/Incubation";
 import Acceleration from "../../UserForm/Acceleration";
 import Reimbursement from "../../UserForm/Reimbursement";
 import Coworking from "../../UserForm/Coworking";
-import UserProfile from "./Home";
 import HomeSection from "./HomeSection";
 import Grievance from "../../UserForm/Grievance";
 import SeedFund from "../../UserForm/SeedFund";
@@ -21,6 +20,7 @@ import PostSeedPartialReject from "./FieldsUpdate/PostSeedPartialReject";
 import SeedFundPartialReject from "./FieldsUpdate/SeedFundPartialReject";
 import StartupFormPartialReject from "./FieldsUpdate/StartupFormPartialReject";
 import UserNotification from "../../Userform/UserNotification";
+import SSU from "../../About/SSU";
 
 const COMPONENTS = {
   HomeSection,
@@ -37,6 +37,7 @@ const COMPONENTS = {
   Grievance,
   SecondTranchePartialReject,
   UserNotification,
+  SSU
 };
 const PARTIAL_REJECT_COMPONENTS = {
   SecondTranche: SecondTranchePartialReject,

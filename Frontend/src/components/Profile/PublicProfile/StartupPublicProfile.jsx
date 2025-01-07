@@ -34,14 +34,14 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
+				`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
 			console.log(startup)
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`http://localhost:3007/api/showcase/get-showcase/${id}`
+				`http://51.20.52.245:3007/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 

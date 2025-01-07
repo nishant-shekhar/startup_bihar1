@@ -171,9 +171,7 @@ Share your innovative ideas and secure funding to turn them into reality.
 						htmlFor="currentStage"
 						className="block  text-sm/6 font-medium text-black  mb-2 break-words w-full max-w-[65%]"
 					>
-						Current stage of your 
-						
-						   Startup
+						Current stage of your Startup
 					</label>
 					<br />
 					<select

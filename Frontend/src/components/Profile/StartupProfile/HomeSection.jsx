@@ -14,15 +14,19 @@ import {
 } from "react-icons/fa";
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 import { useRef } from "react";
-import UpdateMetrics from "./FieldsUpdate/updateMetrics";
+import UpdateMetrics from "./FieldsUpdate/UpdateMetrics";
 import UpdateEmployees from "./FieldsUpdate/updateEmployees";
 import UserNotification from "../../Userform/UserNotification";
+import EmployeeDetails from "./FieldsUpdate/EmployeeDetails";
+import { FaPlus } from "react-icons/fa6";
+import { IoPencil } from "react-icons/io5";
 
 const HomeSection = () => {
 	const [startup, setStartup] = useState([]);
 	const [selectedPlatform, setSelectedPlatform] = useState(false);
 	const [showUpdateMetrics, setShowUpdateMetrics] = useState(false);
 	const [showUpdateEmployees, setShowUpdateEmployees] = useState(false);
+	const [showEmployeeDetails, setShowEmployeeDetails] = useState(false);
 	const [statusPopup, setStatusPopup] = useState(false);
 	const [title, setTitle] = useState("");
 	const [buttonVisible, setButtonVisible] = useState(true);
@@ -64,146 +68,27 @@ const HomeSection = () => {
 	const [showDialog, setShowDialog] = useState(false);
 	const [dialogMessage, setDialogMessage] = useState("");
 	const [isContactVisible, setIsContactVisible] = useState(false);
+	const [employees, setEmployees] = useState([]);
 
-	const data = [
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1497493292307-31c376b6e479?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Food industry
-			dateandtime: "5PM 15th May 2024",
-			title: "TeamFusion",
-			subtitle: "Bringing teams closer with collaborative tools",
-			tag: "Technology",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Startup workspace
-			dateandtime: "11AM 20th June 2024",
-			title: "WorkSpaces",
-			subtitle: "Redefining office spaces for startups",
-			tag: "Design",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1519389950473-47ba0277781c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Innovative tech
-			dateandtime: "4PM 10th August 2024",
-			title: "InnoTech",
-			subtitle: "Innovations powering the future",
-			tag: "Technology",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1504384308090-c894fdcc538d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Entrepreneurs at work
-			dateandtime: "3PM 5th July 2024",
-			title: "HealthPioneers",
-			subtitle: "Next-gen solutions in healthcare",
-			tag: "Healthcare",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1504384308090-c894fdcc538d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Entrepreneurs at work
-			dateandtime: "2PM 30th April 2024",
-			title: "StartStrong",
-			subtitle: "Empowering budding entrepreneurs",
-			tag: "Business",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1557164346-4db5b0c3a1d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Renewable energy startup
-			dateandtime: "12PM 28th June 2024",
-			title: "GreenTech",
-			subtitle: "Advancing sustainable solutions",
-			tag: "Environment",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1521790945508-bf2a36314e85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // E-learning innovation
-			dateandtime: "10AM 12th May 2024",
-			title: "LearnNext",
-			subtitle: "Revolutionizing education with technology",
-			tag: "Education",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1599492000590-8e8ce215c7a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Fintech solutions
-			dateandtime: "9AM 25th April 2024",
-			title: "FinFuture",
-			subtitle: "Simplifying financial operations",
-			tag: "Finance",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1533750349088-cd871a92f312?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // AI-driven startups
-			dateandtime: "8AM 30th May 2024",
-			title: "AiGen",
-			subtitle: "AI solutions for every industry",
-			tag: "AI",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1497493292307-31c376b6e479?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Food industry
-			dateandtime: "6PM 5th August 2024",
-			title: "FoodVenture",
-			subtitle: "Culinary innovations for modern dining",
-			tag: "FoodTech",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1581093588401-a093a8d8b5f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Startup pitch meeting
-			dateandtime: "1PM 22nd June 2024",
-			title: "PitchHub",
-			subtitle: "Empowering startups to ace their pitches",
-			tag: "Business",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1542744173-8e7e53415bb0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Logistics and transportation
-			dateandtime: "11AM 10th July 2024",
-			title: "TransLogix",
-			subtitle: "Streamlined logistics solutions",
-			tag: "Logistics",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Fashion tech startup
-			dateandtime: "7PM 17th May 2024",
-			title: "StyleNow",
-			subtitle: "Bringing technology into fashion",
-			tag: "Fashion",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1568495248636-643ea19a3be6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Retail transformation
-			dateandtime: "5PM 15th April 2024",
-			title: "RetailX",
-			subtitle: "Innovative solutions for retail spaces",
-			tag: "Retail",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1590608897129-79b8f5f14616?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Transportation innovation
-			dateandtime: "8AM 19th August 2024",
-			title: "MoveSmart",
-			subtitle: "Smart solutions for urban transport",
-			tag: "Transport",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1586274459732-9e3d42db9626?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Software innovation
-			dateandtime: "3PM 12th May 2024",
-			title: "SoftSolutions",
-			subtitle: "Developing next-gen software",
-			tag: "Software",
-		},
-		{
-			imgurl:
-				"https://images.unsplash.com/photo-1517433456452-f9633a875f6f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700", // Clean energy startup
-			dateandtime: "10AM 26th April 2024",
-			title: "EcoCharge",
-			subtitle: "Revolutionizing renewable energy",
-			tag: "Energy",
-		},
-	];
+	
 
+	const fetchEmployeeDetails = async () => {
+		try {
+			
+			const response = await axios.get(
+				`http://51.20.52.245:3007/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`,
+			);
+
+
+			
+			setEmployees(employeesResponse.data.employees || []);
+
+			
+			console.log(employeesResponse.data.employees);
+		} catch (error) {
+			console.error("Failed to fetch startup details:", error);
+		}
+	};
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
@@ -211,22 +96,22 @@ const HomeSection = () => {
 			);
 
 			setStartup(response.data.startup);
+			console.log(startup)
+			// Fetch showcase data
 			const showcaseResponse = await axios.get(
 				`http://51.20.52.245:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
-			console.log(startup);
 		} catch (error) {
-			console.error("Failed to fetch startup details:", error);
+			console.error("Failed to fetch data:", error);
 		}
 	};
 
-	useEffect(() => {
+useEffect(() => {
 		fetchDetails();
-	}, [updateCount]);
-
-	
+		fetchEmployeeDetails();
+	}, []);
 
 	return (
 		// <div>
@@ -380,18 +265,13 @@ const HomeSection = () => {
 						</div>
 
 						{/* Stats & Links*/}
-						<div className="py-10 pr-10 w-3/4 ">
+						<div className="py-10 pr-4 w-3/4 ">
 							<div className="flex justify-between items-center  gap-3">
 								<div className="text-center">
 									<div className="text-xl font-semibold">
 										{startup.employeeCount || 0}
 									</div>
-									<div
-										className="text-gray-600 cursor-pointer"
-										onClick={() => setShowUpdateMetrics(true)}
-									>
-										Employees
-									</div>
+									<div className="text-gray-600">Employees</div>
 								</div>
 								<div className="text-center">
 									<div className="text-xl font-semibold">
@@ -411,6 +291,15 @@ const HomeSection = () => {
 									</div>
 									<div className="text-gray-600">Orders</div>
 								</div>
+								<div>
+									<button
+										type="button"
+										onClick={() => setShowUpdateMetrics(true)}
+									>
+										<IoPencil className="h-5 w-auto mt-2 pr-1" />
+									</button>
+								</div>
+
 								{showUpdateMetrics && (
 									<UpdateMetrics
 										startup={startup}
@@ -419,10 +308,14 @@ const HomeSection = () => {
 									/>
 								)}
 							</div>
-							<div className="flex gap-6 px-5 mt-3">
-								<button type="button" onClick={() => setSelectedPlatform(true)}>
-									<FaTwitter className="text-4xl cursor-pointer hover:text-blue-500" />
-								</button>
+							<div className="flex gap-6  mt-4">
+								<a
+									href={startup.twitter || "#"}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+								<FaTwitter className="text-4xl cursor-pointer hover:text-blue-500" />
+								</a>
 								<a
 									href={startup.facebook || "#"}
 									target="_blank"
@@ -451,54 +344,48 @@ const HomeSection = () => {
 								>
 									<FaGlobe className="text-4xl cursor-pointer hover:text-green-600" />
 								</a>
+								<div>
+									<button
+										type="button"
+										onClick={() => setSelectedPlatform(true)}
+									>
+										<IoPencil className="h-5 w-auto mt-2" />
+									</button>
+								</div>
 							</div>
-							<div className="flex -space-x-2 overflow-hidden mt-4 pl-3 "
-							onClick={() => setShowUpdateEmployees(true)}>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.25&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
-								<img
-									alt=""
-									src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-									className="inline-block size-10 rounded-full ring-2 ring-white"
-								/>
+							<div className="flex w-full">
+							<div
+								className=" -space-x-2 overflow-hidden mt-4 w-11/12"
+								onClick={() => setShowEmployeeDetails(true)}
+							>
+								{employees.map((employee, index) => (
+									<img
+										key={index}
+										alt={employee.employeeName}
+										src={employee.imgUrl}
+										className="inline-block size-10 rounded-full ring-2 ring-white"
+									/>
+								))}
+								
 							</div>
+							<div>
+								<button type="button" 
+								onClick={() => setShowUpdateEmployees(true)}><FaPlus className="h-6 w-auto pr-1 mt-6" />
+								</button>	
+							</div>
+							</div>
+
 							{selectedPlatform && (
 								<UpdateSocialMediaURL
 									startup={startup}
 									onPlatformSelect={handlePlatformSelect}
+									onUpdate={() => setUpdateCount(updateCount + 1)}
+								/>
+							)}
+							{showEmployeeDetails && (
+								<EmployeeDetails
+									startup={startup}
+									onClose={() => setShowEmployeeDetails(false)}
 									onUpdate={() => setUpdateCount(updateCount + 1)}
 								/>
 							)}
@@ -519,6 +406,7 @@ const HomeSection = () => {
 						<nav className="justify-start space-x-2">
 							{categories.map((category) => (
 								<button
+									type="button"
 									key={category}
 									onClick={() => handleCategoryClick(category)}
 									className={`py-1 px-4 transition-all duration-300 transform ${
@@ -573,7 +461,6 @@ const HomeSection = () => {
 										id={showcase.id}
 									/>
 								))}
-								
 							</div>
 						</>
 					)}
@@ -619,7 +506,7 @@ const HomeSection = () => {
 							>
 								&times;
 							</button>
-							<h2 className="text-2xl font-bold mb-4">Add New Event</h2>
+							<h2 className="text-2xl font-bold mb-4">Add New Showcase</h2>
 							<Formik
 								initialValues={{
 									title: "",

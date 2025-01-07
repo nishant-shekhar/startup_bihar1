@@ -42,7 +42,7 @@ const NavBarNew = () => {
 						className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${visible ? "translate-y-0" : "-translate-y-full"}`}
 					>
 						<nav
-							className={`flex items-center justify-between p-6 lg:px-8 ${sticky ? "bg-[#3f1063]" : "bg-[#3f1063]"}`}
+							className={`flex items-center justify-between p-6 lg:px-8 ${sticky ? "bg-[#b37cdd]" : "bg-[#ba82e6]"}`}
 							aria-label="Global"
 						>
 							<div className="flex lg:flex-1">

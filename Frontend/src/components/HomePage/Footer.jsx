@@ -23,6 +23,7 @@ const Footer = () => {
 								</span>
 							</a>
 						</div>
+						
 						<div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 items-end ">
 							<div>
 								<h2 className="mb-6 text-sm font-semibold text-gray-100 uppercase dark:text-white align-top">
@@ -39,11 +40,12 @@ const Footer = () => {
 									</li>
 									<li>
 										<a
-											href="#"
+											href="/DeveloperTeam"
 											className="hover:underline"
 										>
 											Developer's Team
 										</a>
+										
 									</li>
 								</ul>
 							</div>

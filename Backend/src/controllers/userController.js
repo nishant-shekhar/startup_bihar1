@@ -526,8 +526,11 @@ const addEmployee = async (req, res) => {
     if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
     const user_id = getUserIdFromToken(token);
+    
 
-    const { name, dp, qualification, designation, display, rank } = req.body;
+    const { name,  qualification, designation, display, rank } = req.body;
+    const dp = req.files.dp ? req.files.dp[0].location : null;
+
 
     if (!name || !qualification || !designation) {
       return res.status(400).json({ error: 'Name, qualification, and designation are required' });

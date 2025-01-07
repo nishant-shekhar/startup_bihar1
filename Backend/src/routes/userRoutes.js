@@ -30,7 +30,9 @@ router.get('/top-startups', getTopStartupDetails);
 
 router.put('/update-data',authenticateUser, updateMetrics);
 router.put('/update-user-field',authenticateUser, updateUserField);
-router.post('/addEmployees', authenticateUser,addEmployee); // Add an employee
+router.post('/addEmployees', authenticateUser,upload.fields([
+    { name: 'dp', maxCount: 1 }
+]),addEmployee); // Add an employee
 router.get('/getEmployees', getEmployeesByStartup); // Get employees by startup
 
 module.exports = router;
