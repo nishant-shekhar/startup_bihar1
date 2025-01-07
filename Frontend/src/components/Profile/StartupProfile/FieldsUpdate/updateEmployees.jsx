@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Formik, Field, Form } from "formik";
 import axios from "axios";
 import StatusDialog from "../../../UserForm/StatusDialog";
@@ -12,44 +12,61 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 		status: "",
 	});
 
-	const handleUpdate = async (field, value) => {
-		try {
-			setDialogStatus({
-				isVisible: true,
-				title: "Updating Metrics",
-				subtitle: "Wait while we update your metrics!",
-				buttonVisible: false,
-				status: "checking",
-			});
+	const fileInputRef = useRef(null);
 
-			await axios.put(
-				"http://51.20.52.245:3007/api/userlogin/update-data",
-				{ [field]: value },
-				{
-					headers: {
-						Authorization: `${localStorage.getItem("token")}`,
-					},
-				},
-			);
-
-			setDialogStatus({
-				isVisible: true,
-				title: "Metrics Updated",
-				subtitle: `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`,
-				buttonVisible: true,
-				status: "success",
-			});
-		} catch (error) {
-			console.error(`Error updating ${field}:`, error);
-			setDialogStatus({
-				isVisible: true,
-				title: "Metrics Update Failed",
-				subtitle: "Error updating metrics",
-				buttonVisible: true,
-				status: "failed",
-			});
+	const handleFileChange = (event, setFieldValue) => {
+		const file = event.target.files[0];
+		if (file) {
+		  setFieldValue("dp", file);
 		}
-	};
+	  };
+	  
+	  const handleUpdate = async (values) => {
+		try {
+		  setDialogStatus({
+			isVisible: true,
+			title: "Adding Employee",
+			subtitle: "Wait while we add the new employee!",
+			buttonVisible: false,
+			status: "checking",
+		  });
+	  
+		  const formData = new FormData();
+		  Object.entries(values).forEach(([key, value]) => {
+			formData.append(key, value);
+		  });
+	  
+		  console.log("FormData being sent:", Array.from(formData.entries())); // Debug log
+	  
+		  await axios.post(
+			`http://localhost:3007/api/userlogin/addEmployees`,
+			formData,
+			{
+			  headers: {
+				Authorization: `${localStorage.getItem("token")}`,
+				"Content-Type": "multipart/form-data",
+			  },
+			}
+		  );
+	  
+		  setDialogStatus({
+			isVisible: true,
+			title: "Employee Added",
+			subtitle: "Employee added successfully",
+			buttonVisible: true,
+			status: "success",
+		  });
+		} catch (error) {
+		  console.error("Error adding employee:", error);
+		  setDialogStatus({
+			isVisible: true,
+			title: "Employee Addition Failed",
+			subtitle: error.response?.data?.error || "Error adding employee",
+			buttonVisible: true,
+			status: "failed",
+		  });
+		}
+	  };
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center z-50">
@@ -58,30 +75,30 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 					type="button"
 					onClick={onClose}
 					className="absolute top-2 right-2 text-[#3B82F6] hover:text-blue-600"
-				>
-					✕
+					>
+							✕
 				</button>
 				<h2 className="text-2xl font-semibold mb-4 text-center">
 					Add Employees
 				</h2>
 				<Formik
 					initialValues={{
-						employeeCount: startup.employeeCount || "",
-						workOrders: startup.workOrders || "",
-						projects: startup.projects || "",
-						revenueLY: startup.revenueLY || "",
+						name: "",
+						designation: "",
+						qualification: "",
+						display: "",
+						rank: 0,
+						dp: null,
 					}}
 					onSubmit={async (values, { resetForm }) => {
-						for (const [field, value] of Object.entries(values)) {
-							if (value) {
-								await handleUpdate(field, value);
-							}
-						}
+						values.rank = parseInt(values.rank, 10);
+						console.log(values);
+						await handleUpdate(values);
 						resetForm();
 						onUpdate();
 					}}
 				>
-					{() => (
+						{({ setFieldValue }) => (
 						<Form>
 							<div className="mb-4">
 								<label className="block text-gray-700 mb-2">
@@ -89,30 +106,30 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 								</label>
 								<Field
 									type="text"
-									name="employeeName"
+									name="name"
 									placeholder="Enter Employee Name"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
 
 							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Designation</label>
+								<label className="block text-gray-700 mb-2">designation</label>
 								<Field
 									type="text"
 									name="designation"
-									placeholder="Enter Designation"
+									placeholder="Enter designation"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
 
 							<div className="mb-4">
 								<label className="block text-gray-700 mb-2">
-									Qualification
+									qualification
 								</label>
 								<Field
 									type="text"
 									name="qualification"
-									placeholder="Enter Qualification"
+									placeholder="Enter qualification"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
@@ -121,16 +138,35 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 								<label className="block text-gray-700 ">Show on Screen</label>
 								<Field
 									type="checkbox"
-									name="showOnScreen"
+									name="display"
 									className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+									onChange={(e) => setFieldValue('display', e.target.checked)}
 								/>
 							</div>
 
 							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Photo</label>
+								<label className="block text-gray-700 mb-2">Rank</label>
 								<Field
+									type="number"
+									as="select"
+									name="rank"
+									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+									onChange={(e) => setFieldValue('rank', parseInt(e.target.value, 10))}
+								>
+									<option value="">Select Rank</option>
+									<option value={0}>Founding Team</option>
+									<option value={1}>Top-Level Employees</option>
+									<option value={2}>Middle-Level Employees</option>
+									<option value={3}>Entry-Level Employees</option>
+								</Field>
+							</div>
+
+							<div className="mb-4">
+								<label className="block text-gray-700 mb-2">Photo</label>
+								<input
 									type="file"
-									name="photo"
+									ref={fileInputRef}
+									onChange={(event) => handleFileChange(event, setFieldValue)}
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
@@ -140,7 +176,7 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 									type="submit"
 									className="bg-[#3B82F6] text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition"
 								>
-									Update Details
+									Add Employee
 								</button>
 							</div>
 						</Form>

@@ -523,18 +523,16 @@ const updateUserField = async (req, res) => {
 };
 const addEmployee = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
 
     const user_id = getUserIdFromToken(token);
-    
 
-    const { name,  qualification, designation, display, rank } = req.body;
-    const dp = req.files.dp ? req.files.dp[0].location : null;
-
+    const { name, qualification, designation, display, rank } = req.body;
+    const dp = req.file ? req.file.buffer.toString("base64") : null; // Example for memory storage
 
     if (!name || !qualification || !designation) {
-      return res.status(400).json({ error: 'Name, qualification, and designation are required' });
+      return res.status(400).json({ error: "Name, qualification, and designation are required" });
     }
 
     const newEmployee = await prisma.employee.create({
@@ -544,18 +542,18 @@ const addEmployee = async (req, res) => {
         dp,
         qualification,
         designation,
-        display: display ?? true,
-        rank: rank ?? 0,
+        display: display === "true" || display === true,
+        rank: parseInt(rank, 10) || 0,
       },
     });
 
     res.status(201).json({
-      message: 'Employee added successfully',
+      message: "Employee added successfully",
       employee: newEmployee,
     });
   } catch (error) {
-    console.error('Detailed Error:', error.message, error.stack);
-    res.status(500).json({ error: 'An error occurred while adding the employee', details: error.message });
+    console.error("Detailed Error:", error.message, error.stack);
+    res.status(500).json({ error: "An error occurred while adding the employee", details: error.message });
   }
 };
 

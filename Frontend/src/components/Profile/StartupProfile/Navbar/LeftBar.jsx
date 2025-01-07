@@ -135,13 +135,10 @@ const LeftBar = ({ changePanel }) => {
   <button
     key={idx}
     onClick={() => {
-      if (item.name === "Home") {
-        // Redirect to the homepage
-        window.location.href = "/";
-      } else {
+     
         setSelectedItem(item.panel);
         changePanel(item.panel);
-      }
+      
     }}
     className={`flex items-center justify-between px-3 py-2 rounded-md ${
       selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'
