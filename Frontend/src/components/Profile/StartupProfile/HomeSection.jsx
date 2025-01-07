@@ -133,7 +133,7 @@ useEffect(() => {
 				<nav className="px-4 py-2 flex items-center justify-between">
 					<div className="flex items-center space-x-1">
 						<div className="text-purple-600 font-semibold">✦</div>
-						<a href="#" className="font-semibold">
+						<a href="/" className="font-semibold">
 							Startup Bihar
 						</a>
 					</div>

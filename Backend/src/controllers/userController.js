@@ -114,9 +114,9 @@ const getStartupDetails = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { user_id, password, registration_no, company_name, startup_since, about ,founder_name,mobile,email,topStartup} = req.body;
+    const { user_id, password, registration_no, company_name, startup_since, about ,founder_name,mobile,email,topStartup,category} = req.body;
 
-    if (!user_id || !password || !registration_no || !company_name) {
+    if (!user_id || !password || !registration_no || !company_name || category) {
       return res.status(400).json({ error: 'All fields are required: user_id, password, registration_no, and company_name' });
     }
 
@@ -141,7 +141,8 @@ const createUser = async (req, res) => {
         about,
         mobile,
         email,
-        topStartup: topStartup === undefined ? true : topStartup, // Default to true if not provided
+        category,
+        topStartup: topStartup === undefined ? false : topStartup, // Default to false if not provided
       },
     });
 

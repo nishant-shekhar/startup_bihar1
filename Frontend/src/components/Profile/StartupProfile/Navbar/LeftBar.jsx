@@ -121,40 +121,42 @@ const LeftBar = ({ changePanel }) => {
             ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 fixed md:static`}
           style={{ width: isOpen ? '60%' : '22%' }}
         >
-          <div className="flex items-center space-x-2 mb-8">
-            <img
-              alt="logo"
-              src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
-              className="h-8"
-            />
-          </div>
+         
       
           <Startupdetails
             founderimage="https://cdn.brandfetch.io/massart.edu/fallback/transparent/theme/dark/h/512/w/512/icon?t=1719560097892"
-            companyname="AgriTech Firm Pvt Ltd"
-            year="2000"
+            companyname=""
+            year=""
           />
       
           <div className="flex flex-col space-y-4 mb-8">
-            <span className="text-sm font-semibold">Menu</span>
-            {menuItems.map((item, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setSelectedItem(item.panel);
-                  changePanel(item.panel);
-                }}
-                className={`flex items-center justify-between px-3 py-2 rounded-md ${selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'}`}
-              >
-                <span className="flex items-center space-x-2">
-                  <i className={item.iconClass}></i>
-                  <span>{item.name}</span>
-                </span>
-                {item.notificationCount && (
-                  <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">{item.notificationCount}</span>
-                )}
-              </button>
-            ))}
+          <span className="text-sm font-semibold">Menu</span>
+{menuItems.map((item, idx) => (
+  <button
+    key={idx}
+    onClick={() => {
+      if (item.name === "Home") {
+        // Redirect to the homepage
+        window.location.href = "/";
+      } else {
+        setSelectedItem(item.panel);
+        changePanel(item.panel);
+      }
+    }}
+    className={`flex items-center justify-between px-3 py-2 rounded-md ${
+      selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'
+    }`}
+  >
+    <span className="flex items-center space-x-2">
+      <i className={item.iconClass}></i>
+      <span>{item.name}</span>
+    </span>
+    {item.notificationCount && (
+      <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">{item.notificationCount}</span>
+    )}
+  </button>
+))}
+
           </div>
       
           <div className="flex flex-col space-y-4 mb-8">

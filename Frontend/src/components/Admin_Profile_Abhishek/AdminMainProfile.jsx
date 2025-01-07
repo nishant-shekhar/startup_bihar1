@@ -39,11 +39,11 @@ const AdminMainProfile = () => {
 						</div>
 					</>
 				);
-			
+
 			case "StartupProfile":
 				return (
 					<CommonList
-					onSelect={handleSelect}
+						onSelect={handleSelect}
 						url="http://51.20.52.245:3007/api/StartupProfile/v2"
 						title="Startup Profile Application List"
 						type="StartupProfile"
@@ -142,7 +142,7 @@ const AdminMainProfile = () => {
 				return <GrievanceRedressalSystem />;
 
 			default:
-				return null ;
+				return null;
 		}
 	}
 
@@ -198,9 +198,10 @@ const AdminMainProfile = () => {
 			</div>
 
 			{/* Second Section - Main Content Area */}
+			{/* Second Section - Main Content Area */}
 			<div
 				className={
-					activePage === "AdminNotification"
+					activePage === "AdminNotification" || activePage === "RegisterStartup"
 						? "col-span-10"
 						: hasDetailsPanel
 							? "col-span-3"
@@ -209,6 +210,8 @@ const AdminMainProfile = () => {
 			>
 				{handlePageChange()}
 			</div>
+
+
 
 			{/* Third Section - Details Section (conditionally rendered) */}
 			{hasDetailsPanel && activePage !== "AdminNotification" && (

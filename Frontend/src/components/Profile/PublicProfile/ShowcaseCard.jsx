@@ -82,7 +82,7 @@ const ShowcaseCard = ({
 					</div>
 
 					<hr className="mt-3" />
-
+					{projectLink &&
 					<button
 						type="button"
 						className="bg-blue-600 py-2 w-3/6 px-1 rounded-md mt-3 text-white"
@@ -97,6 +97,7 @@ const ShowcaseCard = ({
 					>
 						Project Link
 					</button>
+}
 					{!delhidden && (
 						<button
 							className="bg-blue-600 py-2 px-4 rounded-md mt-3 text-white ml-3"
