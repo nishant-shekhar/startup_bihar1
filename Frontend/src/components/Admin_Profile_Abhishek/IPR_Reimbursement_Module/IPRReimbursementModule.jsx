@@ -30,6 +30,10 @@ const IPRReimbursementModule = ({ onProfileClick }) => {
 			}}
 		>
 			<h1 className="pl-5 pt-8 text-2xl pb-4">IPR Reimbursement Module</h1>
+			<p className="pt-5 pl-8 text-l text-indigo-600">
+  {sdata?.user?.company_name || "Company Name Unavailable"} | 
+  Startup ID: {sdata?.user?.user_id || "ID Unavailable"}
+</p>
 			{sdata.map((item, index) => (
 				<div
 					key={index}

@@ -150,7 +150,7 @@ const AdminMainProfile = () => {
 	const changePanel = (newPanel) => {
 		setActivePage(newPanel);
 		setDetailsView(false); // Reset to second section when changing main module
-		if (newPanel === "AdminNotification") {
+		if (newPanel === "AdminNotification"|| activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining") {
 			setHasDetailsPanel(false); // Disable third section for AdminNotification
 		} else {
 			setHasDetailsPanel(true); // Enable third section for other modules
@@ -201,7 +201,7 @@ const AdminMainProfile = () => {
 			{/* Second Section - Main Content Area */}
 			<div
 				className={
-					activePage === "AdminNotification" || activePage === "RegisterStartup"
+					activePage === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining"
 						? "col-span-10"
 						: hasDetailsPanel
 							? "col-span-3"

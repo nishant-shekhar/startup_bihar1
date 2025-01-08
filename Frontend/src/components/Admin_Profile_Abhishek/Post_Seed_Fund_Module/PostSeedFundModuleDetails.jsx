@@ -180,8 +180,10 @@ const PostSeedFundModuleDetails = ({ id }) => {
 			}}
 		>
 			<h1 className="pt-5 pl-8 text-2xl">Post Seed Fund Module Details</h1>
-			<p className="pt-5 pl-8 text-l text-indigo-600">{data.user.company_name} | Startup ID:  {data.user.user_id}</p>
-
+			<p className="pt-5 pl-8 text-l text-indigo-600">
+  {data?.user?.company_name || "Company Name Unavailable"} | 
+  Startup ID: {data?.user?.user_id || "ID Unavailable"}
+</p>
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">
 					<tbody>

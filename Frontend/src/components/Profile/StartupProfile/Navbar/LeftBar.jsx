@@ -24,7 +24,7 @@ const formsItems = [
   { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
 
 
-  { name: 'Reimbursement Form', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
+  { name: 'IPR Reimbursement Form', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
 
   { name: 'Apply For Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
   { name: 'Apply for Coworking', panel: 'Coworking', iconClass: 'fas fa-building' },

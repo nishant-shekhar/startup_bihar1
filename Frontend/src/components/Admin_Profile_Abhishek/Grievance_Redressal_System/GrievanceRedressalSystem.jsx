@@ -23,7 +23,7 @@ const GrievanceRedressalSystem = ({ onProfileClick }) => {
 
 	return (
 		<div
-			className="w-3/12 bg-slate-200 h-screen overflow-y-auto"
+			className="w-full bg-slate-200 h-screen overflow-y-auto"
 			style={{
 				msOverflowStyle: "none",
 				scrollbarWidth: "none",
