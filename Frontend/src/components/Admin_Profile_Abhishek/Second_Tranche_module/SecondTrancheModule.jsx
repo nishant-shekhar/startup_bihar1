@@ -20,7 +20,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://51.20.52.245:3007/api/second-tranche/v1/${id}`,
+					`http://localhost:3007/api/second-tranche/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -130,7 +130,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://51.20.52.245:3007/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -241,7 +241,9 @@ const SecondTrancheModuleDetails = ({ id }) => {
 				scrollbarWidth: "none",
 			}}
 		>
-			<h1 className="pt-5 pl-8 text-2xl">Startup Profile Details </h1>
+			<h1 className="pt-5 pl-8 text-2xl">Second Tranche Application Details </h1>
+			<p className="pt-5 pl-8 text-l text-indigo-600">{data.user.company_name} | Startup ID:  {data.user.user_id}</p>
+
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">
 					<tbody>

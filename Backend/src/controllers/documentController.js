@@ -170,6 +170,15 @@ const getDocumentById = async (req, res) => {
     // Fetch the document from the database
     const document = await prisma.document.findUnique({
       where: { id: id }, // Use the ID to query the database
+      include: {
+        user: {
+          select: {
+            user_id: true,          // Include specific fields from the User model
+            registration_no: true,
+            company_name: true,
+          },
+        },
+      },
     });
 
     if (!document) {
