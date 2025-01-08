@@ -3,9 +3,8 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import topImage from "/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Frontend/src/assets/top_right.png"
 import bottomImage from "/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Frontend/src/assets/bottom_left.png"
-import NavBarNew from "../../HomePage/NavBarNew";
-import PersonProfileCard from "../../HomePage/PersonProfileCard";
-
+import PersonProfileCard from "../HomePage/PersonProfileCard";
+import NavBarNew from "../HomePage/NavBarNew";
 
 
 const teamLead = [

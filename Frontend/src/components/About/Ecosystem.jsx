@@ -6,7 +6,9 @@ import FifthPage from "./images/PSC.png";
 
 import NavBarNew from "../HomePage/NavBarNew";
 import SixthPage from "./images/SSU.png";
-import Footer from "../HomePage/Footer";
+import Footer from "../HomePage/footer";
+import { Link } from "react-router-dom";
+
 
 const Ecosystem = () => {
 	return (
@@ -53,6 +55,12 @@ const Ecosystem = () => {
 					>
 						SSU
 					</ScrollLink>
+					<Link
+						to="/StartupCell"
+						className="bg-indigo-600 text-white px-5 py-2 md:px-7 hover:bg-indigo-700 hover:scale-105 transition-transform duration-1000 ease-in-out transform rounded-l-none rounded-r-2xl"
+					>
+						Startup Cell
+					</Link>
 				</div>
 
 				<div
@@ -122,7 +130,7 @@ const Ecosystem = () => {
 					</div>
 				</div>
 			</div>
-      <Footer />
+			<Footer />
 		</div>
 	);
 };

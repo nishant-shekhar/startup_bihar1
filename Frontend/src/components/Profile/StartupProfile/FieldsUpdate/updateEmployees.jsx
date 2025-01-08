@@ -39,7 +39,7 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 		  console.log("FormData being sent:", Array.from(formData.entries())); // Debug log
 	  
 		  await axios.post(
-			`http://localhost:3007/api/userlogin/addEmployees`,
+			`http://51.20.52.245:3007/api/userlogin/addEmployees`,
 			formData,
 			{
 			  headers: {
