@@ -104,7 +104,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
   const formik = useFormik({
     initialValues: {
       companyName: '',
-      registrationNumber: '',
+      registrationNumber: `${localStorage.getItem('registration_no')}`,
       dateOfIncorporation: '',
       businessEntityType: '',
       rocDistrict: '',
@@ -281,6 +281,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                       type="text"
                       onChange={formik.handleChange}
                       value={formik.values.registrationNumber}
+                      disabled
                       required
                     />
                   </div>
@@ -293,6 +294,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                       name="dateOfIncorporation"
                       placeholder='Enter your Date of Incorporation'
                       type="date"
+                      max={new Date().toISOString().split("T")[0]}
                       onChange={formik.handleChange}
                       value={formik.values.dateOfIncorporation}
                       required

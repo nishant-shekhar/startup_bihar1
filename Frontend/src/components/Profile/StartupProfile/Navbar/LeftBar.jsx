@@ -157,7 +157,6 @@ const LeftBar = ({ changePanel }) => {
           </div>
       
           <div className="flex flex-col space-y-4 mb-8">
-            <span className="text-sm font-semibold">Forms </span>
             {formsItems.map((item, idx) => (
               <button
                 key={idx}

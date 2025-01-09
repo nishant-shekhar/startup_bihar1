@@ -26,7 +26,7 @@ const AboutUs = () => {
 					</p>
 				</div>
 				<div className="w-5/12 mx-16 mt-2">
-					<img src="aboutus.jpg" alt="" />
+					<img src="startup_ilustration.png" alt="" />
 				</div>
 			</div>
 			<hr className="h-[1px] bg-black/30" />

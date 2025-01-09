@@ -100,7 +100,7 @@ model User {
   projects              Int?
 
   startup_since         String?
-  about                 String?
+  about                 String? @db.Text  
   moto                  String?
   logo                  String?
   coverPic              String?

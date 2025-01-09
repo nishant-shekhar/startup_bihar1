@@ -31,9 +31,13 @@ const MatchingLoan = ({ onProfileClick }) => {
 		>
 			<h1 className="pl-5 pt-8 text-2xl pb-4">Matching Loan</h1>
 			<p className="pt-5 pl-8 text-l text-indigo-600">
-  {sdata?.user?.company_name || "Company Name Unavailable"} | 
-  Startup ID: {sdata?.user?.user_id || "ID Unavailable"}
-</p>
+				{sdata?.user?.company_name || "Company Name Unavailable"} |
+				Startup ID: {sdata?.user?.user_id || "ID Unavailable"}
+			</p>
+			<p className="pl-8 text-sm font-light text-gray-600">
+				First Applied on: {sdata?.createdAt ? new Date(sdata.createdAt).toLocaleDateString() : "N/A"} |
+				Last Updated on: {sdata?.updatedAt ? new Date(sdata.updatedAt).toLocaleDateString() : "N/A"}
+			</p>
 			{sdata.map((item, index) => (
 				<div
 					key={index}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Upload = ({ label, onChange, name }) => {
+const Upload = ({ label, onChange, name, allowImages = false }) => {
   const [fileName, setFileName] = useState('No file chosen');
 
   const handleFileChange = (e) => {
@@ -12,6 +12,9 @@ const Upload = ({ label, onChange, name }) => {
       setFileName('No file chosen'); // Fallback if no file is chosen
     }
   };
+
+  // Determine the accepted file types based on the allowImages parameter
+  const acceptedTypes = allowImages ? ".png,.jpg,.jpeg" : ".pdf";
 
   return (
     <div className="col-span-full">
@@ -29,6 +32,7 @@ const Upload = ({ label, onChange, name }) => {
                 id={name} 
                 name={name} 
                 type="file" 
+                accept={acceptedTypes} // Dynamically set accepted file types
                 className="sr-only" 
                 onChange={handleFileChange} 
               /> 

@@ -1,19 +1,32 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LogOutDialogBox from '../Profile/StartupProfile/Navbar/LogoutDialog';
+
 
 const LeftBar = ({ changePanel }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("admin_name");
-      localStorage.removeItem("admin_designation");
-      localStorage.removeItem("admin_role");
-      navigate("/login");
-    }
-  };
+ 
+
+  const handleLogoutClick = () => {
+		setIsDialogVisible(true);
+	};
+
+
+	const handleCancel = () => {
+		setIsDialogVisible(false); 
+	};
+
+	
+	const handleClose = () => {
+		localStorage.removeItem("token");
+		localStorage.removeItem("user_id");
+		setIsDialogVisible(false); 
+		navigate("/login"); 
+	};
 
   const userRole = localStorage.getItem("admin_role") || "admin";
 
@@ -109,23 +122,40 @@ const LeftBar = ({ changePanel }) => {
 
       {/* Menu List */}
       <div className="space-y-4 mx-3 pt-4 text-white">
+        
         {filteredMenu.map((item, index) => (
+          
           <div
+            
             key={index}
-            className="block py-2 px-4 rounded-md hover:bg-gray-700 cursor-pointer"
-            onClick={() => changePanel(item.panel)}
+            onClick={() => {
+              setSelectedItem(item.panel);
+              changePanel(item.panel);
+            }}
+            className={`flex items-center justify-between px-3 py-2 rounded-md ${selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'}`}
           >
             {item.label}
           </div>
         ))}
 
         <button
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           className="flex items-center justify-between px-3 py-4 hover:bg-gray-500 rounded-md"
         >
           <i className="fas fa-sign-out-alt"></i>
           <span className="ml-2">Logout</span>
         </button>
+        <LogOutDialogBox   
+          isVisible={isDialogVisible}
+          title="Confirm Logout"
+          subtitle="Are you sure you want to log out?"
+          buttonVisible={true}
+          status="warning"
+          actionButton="Logout"
+          cancelButton="Cancel"
+          onClose={handleClose}
+          onCancel={handleCancel}
+        />
       </div>
     </div>
   );

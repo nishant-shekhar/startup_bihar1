@@ -34,6 +34,10 @@ const IPRReimbursementModule = ({ onProfileClick }) => {
   {sdata?.user?.company_name || "Company Name Unavailable"} | 
   Startup ID: {sdata?.user?.user_id || "ID Unavailable"}
 </p>
+<p className="pl-8 text-sm font-light text-gray-600">
+  First Applied on: {sdata?.createdAt ? new Date(sdata.createdAt).toLocaleDateString() : "N/A"} | 
+  Last Updated on: {sdata?.updatedAt ? new Date(sdata.updatedAt).toLocaleDateString() : "N/A"}
+</p>
 			{sdata.map((item, index) => (
 				<div
 					key={index}

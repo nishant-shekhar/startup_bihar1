@@ -41,7 +41,7 @@ const StartupForm = () => {
   // Formik setup
   const formik = useFormik({
     initialValues: {
-      registrationNo: '',
+      registrationNo: `${localStorage.getItem('registration_no')}`,
       founderName: '',
       founderAadharNumber: '',
       coFounderNames: '',
@@ -111,19 +111,32 @@ const StartupForm = () => {
   });
 
   const handleFileChangeForm = (file, fieldName) => {
-    if (file && file.size > 2 * 1024 * 1024) {
-      setErrorMessage('File size should be less than 2MB');
+    if (fieldName === 'logo') {
+      // Allow only images for the logo
+      const allowedImageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (!allowedImageTypes.includes(file.type)) {
+        setErrorMessage('Invalid file type. Only PNG, JPG, or JPEG files are allowed for the logo.');
+        return;
+      }
+    } else {
+      // For other fields, allow only PDFs
+      if (file.type !== 'application/pdf') {
+        setErrorMessage('Invalid file type. Only PDF files are allowed.');
+        return;
+      }
+    }
+  
+    // Check for file size (e.g., less than 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setErrorMessage('File size should be less than 2MB.');
       return;
     }
-   
-    if (file && file.type !== 'application/pdf') {
-      setErrorMessage('Invalid file type. Only PDF files are allowed');
-      return;
-    }
-
+  
+    // Set the field value
     formik.setFieldValue(fieldName, file);
     setErrorMessage('');
   };
+  
   return (
     <div className="h-screen overflow-y-auto">
        
@@ -196,6 +209,7 @@ const StartupForm = () => {
               type="text"
               onChange={formik.handleChange}
               value={formik.values.registrationNo}
+              disabled
               required
             />
           </div>
@@ -400,7 +414,7 @@ const StartupForm = () => {
               label="Upload Company Logo:"
               name="logo"
               onChange={(file) => handleFileChangeForm(file, 'logo')}
-              accept=".pdf"
+              allowImages={true} 
             />
           </div>
           <div className="mb-4 col-span-6 text-sm/6 font-medium text-gray-900">

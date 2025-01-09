@@ -128,7 +128,7 @@ const NavBarNew = () => {
 									duration={500}
 									className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
 								>
-									Our Team
+									Startup Team
 								</Link>
 								<Link
 									to="/ecosystem"
