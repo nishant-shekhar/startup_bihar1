@@ -61,6 +61,12 @@ const Ecosystem = () => {
 					>
 						Startup Cell
 					</Link>
+					<Link
+						to="/IncubationCell"
+						className="bg-indigo-600 text-white px-5 py-2 md:px-7 hover:bg-indigo-700 hover:scale-105 transition-transform duration-1000 ease-in-out transform rounded-l-none rounded-r-2xl"
+					>
+						Incubation Cell
+					</Link>
 				</div>
 
 				<div

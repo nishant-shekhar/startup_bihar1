@@ -13,7 +13,8 @@ import ContactUs from './components/About/ContactUs';
 import Ecosystem from './components/About/Ecosystem';
 import AllStartup from './components/HomePage/StartupList/AllStartupPage';
 import Team from './components/About/Team';
-import StartupIncubationCell from './components/HomePage/StartupCellList';
+import StartupIncubationCell from './components/About/StartupCellList';
+import IncubationNodalList from './components/About/IncubationList';
 
 
 const App = () => {
@@ -37,6 +38,7 @@ const App = () => {
 					<Route path="/AllStartups" element={<AllStartup />} />
 					<Route path="/DeveloperTeam" element={<Team />} />
 					<Route path="/StartupCell" element={<StartupIncubationCell />} />
+					<Route path="/IncubationCell" element={<IncubationNodalList />} />
 					<Route
 						path="/Startup/:id"
 						element={<StartupPublicProfile />}

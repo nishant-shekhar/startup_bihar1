@@ -46,7 +46,7 @@ const FifthPage = () => {
                                         Startups Funded
                                     </dt>
                                     <dd className="text-3xl font-bold leading-9 tracking-tight text-white">
-                                        {inView && <CountUp end={750} duration={5} />}+
+                                        {inView && <CountUp end={900} duration={5} />}+
                                     </dd>
                                 </div>
                                 <div className="flex flex-col-reverse">

@@ -171,7 +171,7 @@ const SixthPage = () => {
 								{/* Right Section: Image and Contact Details */}
 								<div className="flex-1 flex items-center justify-center relative">
 									<img
-										src="https://media.assettype.com/psuwatch%2F2024-12-19%2F51xhq5gr%2FBihar-Business-Concert-2024-PSU-Watch.jpg?w=1024&auto=format%2Ccompress&fit=max" // Placeholder image source
+										src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FWhatsApp%20Image%202025-01-10%20at%2015.50.22.jpeg?alt=media&token=554e04ba-2da5-4265-b2a8-315af9449c47" // Placeholder image source
 										alt="Contact Background"
 										className="object-cover  rounded-md w-full h-full md:w-80 lg:w-full "
 										style={{ maxHeight: "570px", maxWidth: "740px" }}

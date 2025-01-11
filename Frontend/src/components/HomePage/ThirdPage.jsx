@@ -74,7 +74,7 @@ const ThirdPage = () => {
                                     <div className="absolute inset-x-10 bottom-0 top-10 overflow-hidden rounded-t-[12cqw] border-x-8 border-t-8 border-gray-700 bg-gray-900 shadow-2xl transition-transform duration-300 hover:scale-105">
                                         <img
                                             className="size-full object-cover object-top"
-                                            src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FImage%20(6).png?alt=media&token=e487b1cb-f110-41e9-ab82-97077dca51c0"
+                                            src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FFB_IMG_1736488698591.jpg?alt=media&token=6a91c5af-675c-45b8-9311-d0546de3e75e"
                                             alt="Mobile friendly"
                                         />
                                     </div>
@@ -142,10 +142,10 @@ const ThirdPage = () => {
                             <div className="relative flex h-full flex-col overflow-hidden rounded-lg max-lg:rounded-b-[calc(2rem+1px)] lg:rounded-r-[calc(2rem+1px)]">
                                 <div className="px-8 pb-3 pt-8 sm:px-10 sm:pb-0 sm:pt-10">
                                     <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
-                                        750+ Startups funded
+                                        900+ Startups funded
                                     </p>
                                     <p className="mt-2 text-sm text-gray-600 max-lg:text-center">
-                                        Over 750 startups have been funded under the Bihar Startup
+                                        Over 900 startups have been funded under the Bihar Startup
                                         Policy, fostering innovation and entrepreneurship.
                                     </p>
                                 </div>

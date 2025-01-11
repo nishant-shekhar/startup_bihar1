@@ -55,29 +55,44 @@ const HomePage = () => {
 			<NavBarNew />
 
 			{/* 1st Page */}
-			<div className="isolate bg-white px-6 py-24 sm:py-3 lg:px-8 min-h-screen flex flex-col items-center">
+			<div className="isolate bg-white px-6 py-24 sm:py-3 lg:px-8 min-h-screen flex flex-col items-center relative">
+				{/* Background elements */}
 				<div
 					className="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[-20rem]"
 					aria-hidden="true"
 				>
-					<div
-						className="relative left-1/2 -z-10 aspect-[1155/678] w-[36.125rem] max-w-none -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-40rem)] sm:w-[72.1875rem]"
-						style={{
-							clipPath:
-								"polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-						}}
-					></div>
+					{/* Background content */}
 				</div>
 
-				<div className="text-center pt-32 pb-10 ">
-					<h1 className="text-4xl font-bold mb-4 text-[#303462]">
-						Countdown to Launch
-					</h1>
+				{/* Left-middle image */}
+				<div className="absolute left-0 top-1/4 transform -translate-x-1/4">
+					<img
+						src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fcm2.png?alt=media&token=28e3b9f0-8fb2-408f-9c42-247152996732"
+						alt="CM Image"
+						className="w-64 h-auto object-cover"
+						style={{ clipPath: 'inset(0 0 0 0)' }}
+					/>
+				</div>
+				{/* Right-middle image */}
+
+				<div className="absolute right-0 top-1/4 transform translate-x-1/4">
+					<img
+						src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fminister.png?alt=media&token=79349ee7-623b-4514-95e9-015e08f33b12"
+						alt="CM Image"
+						className="w-64 h-auto object-cover"
+						style={{ clipPath: 'inset(0 0 0 0)' }}
+					/>
+				</div>
+
+				
+				{/* Title and Countdown */}
+				<div className="text-center pt-32 pb-10">
+					<h1 className="text-4xl font-bold mb-4 text-[#303462]">Countdown to Launch</h1>
 					<Countdown date={targetDate} renderer={renderer} />
 				</div>
 
+				{/* Main content section */}
 				<motion.div
-					//className="text-center mx-auto max-w-2xl pt-24 mb-10 sm:pt-40 lg:pt-48"
 					className="text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16"
 					initial="hidden"
 					animate="visible"
@@ -117,8 +132,7 @@ const HomePage = () => {
 							Empowering Startups, Shaping Tomorrow Together
 						</h1>
 						<p className="mt-6 text-base sm:text-lg leading-6 lg:leading-8 text-gray-600 px-6 sm:px-0">
-							Driving innovation, growth, and entrepreneurial success by
-							supporting startups across diverse sectors in Bihar.
+							Driving innovation, growth, and entrepreneurial success by supporting startups across diverse sectors in Bihar.
 						</p>
 					</motion.div>
 
@@ -141,6 +155,7 @@ const HomePage = () => {
 					</motion.div>
 				</motion.div>
 
+				{/* Moving Page Component */}
 				<MovingPage />
 			</div>
 
