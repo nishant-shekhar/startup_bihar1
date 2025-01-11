@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import StatusDialog from "./StatusDialog"; // Import the new dialog component
 
 
-const StartupForm = () => {
+const StartupForm = ( {onFormSubmitSuccess} ) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [statusPopup, setStatusPopup] = useState(false);
@@ -14,6 +14,7 @@ const StartupForm = () => {
 	const [buttonVisible, setButtonVisible] = useState(true);
 	const [subtitle, setSubtitle] = useState("");
 	const [isSuccess, setIsSuccess] = useState(""); // Add success state
+  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
 
 
 
@@ -136,6 +137,12 @@ const StartupForm = () => {
     formik.setFieldValue(fieldName, file);
     setErrorMessage('');
   };
+
+  const goBacktoHome = () => {
+    setDialogStatus({ ...dialogStatus, isVisible: false })
+    console.log("navigate to home")
+    onFormSubmitSuccess();
+  }
   
   return (
     <div className="h-screen overflow-y-auto">
@@ -266,6 +273,9 @@ const StartupForm = () => {
               className="border rounded-md w-full py-2 px-3"
               id="coFounderAadharNumbers"
               name="coFounderAadharNumbers"
+              onInput={(e) => {
+                if (e.target.value.length > 12) e.target.value = e.target.value.slice(0, 12);
+              }}
               type="text"
               onChange={formik.handleChange}
               value={formik.values.coFounderAadharNumbers}
@@ -460,7 +470,7 @@ const StartupForm = () => {
 				buttonVisible={buttonVisible}
 				status={isSuccess} // Pass success state
 
-				onClose={() => setStatusPopup(false)}
+				onClose={() => goBacktoHome()}
 			/>
     </div>
   );

@@ -14,7 +14,7 @@ export const App = () => {
 	);
 };
 
-const PostSeed = () => {
+const PostSeed = ( {onFormSubmitSuccess} ) => {
 	const [successMessage, setSuccessMessage] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [statusPopup, setStatusPopup] = useState(false);
@@ -22,6 +22,7 @@ const PostSeed = () => {
 	const [buttonVisible, setButtonVisible] = useState(true);
 	const [subtitle, setSubtitle] = useState("");
 	const [isSuccess, setIsSuccess] = useState(""); // Add success state
+	const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
 
 
 	const validationSchema = Yup.object({
@@ -112,6 +113,13 @@ const PostSeed = () => {
 			}
 		},
 	});
+
+	const goBacktoHome = () => {
+		setDialogStatus({ ...dialogStatus, isVisible: false })
+		console.log("navigate to home")
+		onFormSubmitSuccess();
+	  }
+	
 
 	return (
 		<div className="h-screen overflow-y-auto">
@@ -366,7 +374,7 @@ const PostSeed = () => {
 				buttonVisible={buttonVisible}
 				status={isSuccess} // Pass success state
 
-				onClose={() => setStatusPopup(false)}
+				onClose={() => goBacktoHome()}
 			/>
 		</div>
 		
