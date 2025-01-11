@@ -9,6 +9,25 @@ const IncubationNodalList = () => {
     const data = [
         {
             id: 1,
+            centerName: "Chandragupt Institute of Management (CIMP) Patna",
+            district: "Patna",
+            email: ["director@cimp.ac.in", "ceo.startup@cimp.ac.in", "Startup@cimp.ac.in", "StartupHelpline@cimp.ac.in"],
+            contactNo: ["9334076225","9128912345"],
+            contactPerson: ["Mr. Kumod Kumar"],
+            designation: ["CAO, CIMP","CEO, CIMP BIIF"],
+            facilities: [
+                "Grooming by Skilled Trainers",
+                "2-month Orientation Programme",
+                "Incubation, and Mentorship (from Domain Experts)",
+                "Market Linkage",
+                "Co-working space",
+                "Resource Pool (Domain-specific)",
+                "Network Access & Funding Support",
+                "PGDM-IEV (AICTE-approved)"
+            ]
+        },
+        {
+            id: 2,
             centerName: "Indian Institute of Technology (IIT), Patna",
             district: "Patna",
             email: ["director@iitp.ac.in", "manager_ic@iitp.ac.in", "deepak_ic@iitp.ac.in"],
@@ -24,7 +43,7 @@ const IncubationNodalList = () => {
             ]
         },
         {
-            id: 2,
+            id: 3,
             centerName: "Birla Institute of Technology (BIT), Patna",
             district: "Patna",
             email: ["bitpatna@bitmesra.ac.in", "sskumar@bitmesra.ac.in"],
@@ -50,7 +69,7 @@ const IncubationNodalList = () => {
             ]
         },
         {
-            id: 3,
+            id: 4,
             centerName: "Bihar Agricultural University (BAU), SABOUR, Bhagalpur",
             district: "Bhagalpur",
             email: [
@@ -71,23 +90,7 @@ const IncubationNodalList = () => {
                 "Network access"
             ]
         },
-        {
-            id: 4,
-            centerName: "Chandragupta Institute of Management (CIMP) Patna",
-            district: "Patna",
-            email: ["director@cimp.ac.in", "kumod@cimp.ac.in"],
-            contactNo: "9334076225",
-            contactPerson: "Mr. Kumud Kumar",
-            designation: "CAO, CIMP BIIF",
-            facilities: [
-                "Pre-Incubation",
-                "Co-working space",
-                "2 months orientation programme",
-                "Grooming by skilled trainers",
-                "Mentorship from domain experts",
-                "Network access"
-            ]
-        },
+        
         {
             id: 5,
             centerName: "Central Institute of Petrochemicals Engineering & Technology (CIPET), Hajipur",
@@ -449,7 +452,15 @@ const IncubationNodalList = () => {
                         <div>{item.contactPerson}</div>
                     )}
                 </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{item.designation}</td>
+                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                    {Array.isArray(item.designation) ? (
+                        item.designation.map((designation, index) => (
+                            <div key={index}>- {designation}</div>
+                        ))
+                    ) : (
+                        <div>- {item.designation}</div>
+                    )}
+                </td>
                 <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
                     {item.facilities.map((facility, index) => (
                         <div key={index}>- {facility}</div>

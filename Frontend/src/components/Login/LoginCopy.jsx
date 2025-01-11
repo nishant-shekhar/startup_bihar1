@@ -25,7 +25,7 @@ const LoginCopy = () => {
     }
 
     try {
-      const loginUrl = isAdminLogin ? 'http://51.20.52.245:3007/api/adminlogin' : 'http://51.20.52.245:3007/api/userlogin';
+      const loginUrl = isAdminLogin ? 'http://51.20.148.118:3007/api/adminlogin' : 'http://51.20.148.118:3007/api/userlogin';
 
       const response = await fetch(loginUrl, {
         method: 'POST',

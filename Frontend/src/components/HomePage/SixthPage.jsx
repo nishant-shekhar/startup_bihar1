@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { FaPhoneVolume } from "react-icons/fa6";
-import { IoLocation } from "react-icons/io5";
+
 
 
 const SixthPage = () => {
@@ -56,7 +53,25 @@ const SixthPage = () => {
 								Contact us!
 							</h2>
 
-							<div className="flex rounded-lg bg-white/90 gap-6">
+							<div className="lg:flex lg:flex-row-reverse rounded-lg bg-white/90 gap-6">
+                            	{/* Right Section: Image and Contact Details */}
+								<div className="flex-1 flex items-center justify-center relative">
+									<img
+										src="https://media.assettype.com/psuwatch%2F2024-12-19%2F51xhq5gr%2FBihar-Business-Concert-2024-PSU-Watch.jpg?w=1024&auto=format%2Ccompress&fit=max" // Placeholder image source
+										alt="Contact Background"
+										className="object-cover  rounded-md w-full h-full  lg:w-full "
+										
+									/>
+
+									<div className="absolute bottom-10 left-0 text-[10px] md:text-lg  w-full text-black text-center bg-[#fffbda]  md:px-8 lg:px-12">
+                                        <p className="md:mt-2 font-medium flex flex-col md:flex-row md:justify-center">
+                                              Department of Industries, 2nd Floor, Vikas Bhawan, New Secretariat, Bailey road, Patna 800015
+                                        </p>
+                                        <p className="flex items-center justify-center font-medium  md:mt-0">
+                                        Phone: 18003456214
+                                        </p>
+                                    </div>
+								</div>
 								<div className="flex flex-col flex-1 p-6">
 									<h2 className="text-xl font-semibold text-indigo-600">
 										Say Hello!
@@ -153,7 +168,7 @@ const SixthPage = () => {
 											className="bg-indigo-600 text-white p-3 rounded-md w-full flex items-center justify-center gap-2 hover:bg-indigo-500"
 										>
 											{isSubmitted ? "Sent successfully!" : "Send"}
-											<FontAwesomeIcon icon={faPaperPlane} className="ml-2" />
+											
 										</button>
 
 										{/* Success/Error Message */}
@@ -168,26 +183,7 @@ const SixthPage = () => {
 									</form>
 								</div>
 
-								{/* Right Section: Image and Contact Details */}
-								<div className="flex-1 flex items-center justify-center relative">
-									<img
-										src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FWhatsApp%20Image%202025-01-10%20at%2015.50.22.jpeg?alt=media&token=554e04ba-2da5-4265-b2a8-315af9449c47" // Placeholder image source
-										alt="Contact Background"
-										className="object-cover  rounded-md w-full h-full md:w-80 lg:w-full "
-										style={{ maxHeight: "570px", maxWidth: "740px" }}
-									/>
-
-									<div className="absolute bottom-10 left-0 w-full text-black text-center bg-[#fff6c5] py-1 ">
-										<p className="mt-2 text-lg font-medium flex">
-											<IoLocation  className='ml-1 size-6'/>
-											Department of Industries, 2nd Floor, Vikas Bhawan, New
-											Secretariat, Bailey road, Patna 800015
-										</p>
-										<p className="flex items-center justify-center gap-2 text-lg font-medium">
-											<FaPhoneVolume /> Phone: 18003456214
-										</p>
-									</div>
-								</div>
+							
 							</div>
 						</div>
 					</div>

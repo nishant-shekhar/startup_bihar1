@@ -44,7 +44,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/StartupProfile/v2"
+						url="http://51.20.148.118:3007/api/StartupProfile/v2"
 						title="Startup Profile Application List"
 						type="StartupProfile"
 					/>
@@ -54,7 +54,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/seed-fund/v2"
+						url="http://51.20.148.118:3007/api/seed-fund/v2"
 						title="Seed Fund Application List"
 						type="seed-fund"
 					/>
@@ -64,7 +64,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/second-tranche/v2"
+						url="http://51.20.148.118:3007/api/second-tranche/v2"
 						title="Second Tranche Application List"
 						type="second-tranche"
 
@@ -75,7 +75,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/post-seed/v2"
+						url="http://51.20.148.118:3007/api/post-seed/v2"
 						title="Post Seed Application List"
 						type="post-seed"
 					/>
@@ -85,7 +85,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/Qreport/v2"
+						url="http://51.20.148.118:3007/api/Qreport/v2"
 						title="QPR List"
 						type="Qreport"
 					/>
@@ -95,7 +95,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/matchingLoan/v2"
+						url="http://51.20.148.118:3007/api/matchingLoan/v2"
 						title="Post Seed Application List"
 						type="matchingLoan"
 					/>
@@ -104,7 +104,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/incubation/v2"
+						url="http://51.20.148.118:3007/api/incubation/v2"
 						title="Incubation Application"
 						type="incubation"
 					/>
@@ -114,7 +114,7 @@ const AdminMainProfile = () => {
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="http://51.20.52.245:3007/api/acceleration/v2"
+						url="http://51.20.148.118:3007/api/acceleration/v2"
 						title="Post Seed Application List"
 						type="acceleration"
 					/>

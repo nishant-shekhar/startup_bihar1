@@ -69,7 +69,7 @@ const HomePage = () => {
 					<img
 						src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fcm2.png?alt=media&token=28e3b9f0-8fb2-408f-9c42-247152996732"
 						alt="CM Image"
-						className="w-64 h-auto object-cover"
+						className="w-32 md:w-48 lg:w-64 h-auto object-cover"
 						style={{ clipPath: 'inset(0 0 0 0)' }}
 					/>
 				</div>
@@ -79,7 +79,7 @@ const HomePage = () => {
 					<img
 						src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fminister.png?alt=media&token=79349ee7-623b-4514-95e9-015e08f33b12"
 						alt="CM Image"
-						className="w-64 h-auto object-cover"
+						className="w-32 md:w-48 lg:w-64 h-auto object-cover"
 						style={{ clipPath: 'inset(0 0 0 0)' }}
 					/>
 				</div>

@@ -37,7 +37,7 @@ const MovingPage = () => {
     useEffect(() => {
         const fetchProfiles = async () => {
             try {
-                const response = await axios.get('http://51.20.52.245:3007/api/userlogin/top-startups');
+                const response = await axios.get('http://51.20.148.118:3007/api/userlogin/top-startups');
                 if (response.data && response.data.startups) {
                     const startups = response.data.startups.map((startup) => ({
                         user_id: startup.user_id, // Assuming default status

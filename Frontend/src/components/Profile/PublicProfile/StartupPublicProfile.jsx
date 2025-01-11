@@ -34,7 +34,7 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${id}`,
+				`http://51.20.148.118:3007/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
@@ -42,7 +42,7 @@ const StartupPublicProfile = () => {
 			//console.log(startup.about)
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`http://51.20.52.245:3007/api/showcase/get-showcase/${id}`
+				`http://51.20.148.118:3007/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
@@ -240,9 +240,11 @@ const StartupPublicProfile = () => {
 					</nav>
 				</div>
 			</div>
+			<div>
 
 
-			<div className="mx-5 lg:mx-20 p-6 bg-white shadow rounded-md">
+
+			<div className="mx-5 lg:mx-20 p-6 bg-white shadow rounded-md mb-6 ">
 				{/* Showcase Content */}
 				{selectedCategory === "Showcase" && (
 					<>
@@ -253,7 +255,7 @@ const StartupPublicProfile = () => {
 						{isLoading ? (
 							<p className="text-center text-gray-500 mt-8">Loading...</p>
 						) : (
-							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10 ">
 								{[...showcases].reverse().map((showcase, index) => (
 									<ShowcaseCard
 										key={index}
@@ -278,7 +280,7 @@ const StartupPublicProfile = () => {
 							About Startup
 						</h1>
 						<hr className="mb-6 border-gray-500/30" />
-						<p
+						<p className="mb-10"
 							style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
 						>
 							{startup.about}
@@ -327,6 +329,8 @@ const StartupPublicProfile = () => {
 
 			</div>
 		</div>
+		</div>
+
 	);
 };
 

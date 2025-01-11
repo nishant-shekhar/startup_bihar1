@@ -1,5 +1,7 @@
 
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
 const cors = require('cors');
 
 const documentRoutes = require('./routes/documentRoutes');
@@ -107,7 +109,15 @@ const path = require('path');
 // Serve static files for Let's Encrypt verification
 app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '../.well-known/acme-challenge')));
 
-const PORT = process.env.PORT || 3007;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// SSL certificate paths
+const options = {
+  key: fs.readFileSync('/home/ubuntu/startupbihar.in.key'),   // Private key
+  cert: fs.readFileSync('/home/ubuntu/e00099344b0119a.crt'),  // SSL certificate
+  ca: fs.readFileSync('/home/ubuntu/gd_bundle-g2-g1.crt')     // CA bundle (optional)
+};
+
+// Start the HTTPS server
+https.createServer(options, app).listen(3007, () => {
+  console.log('HTTPS Server is running on port 3007');
 });
+

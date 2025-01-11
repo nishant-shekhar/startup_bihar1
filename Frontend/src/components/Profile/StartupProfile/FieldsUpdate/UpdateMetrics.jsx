@@ -23,7 +23,7 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 			});
 
 			await axios.put(
-				"http://51.20.52.245:3007/api/userlogin/update-data",
+				"http://51.20.148.118:3007/api/userlogin/update-data",
 				{ [field]: value },
 				{
 					headers: {
@@ -35,7 +35,7 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 			setDialogStatus({
 				isVisible: true,
 				title: "Metrics Updated",
-				subtitle: `${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully`,
+				subtitle: `Your revenue matrix updated successfully`,
 				buttonVisible: true,
 				status: "success",
 			});

@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import StatusDialog from "./StatusDialog"; // Import the new dialog component
 
 
-const SecondTranche = () => {
+const SecondTranche = ( {onFormSubmitSuccess} ) => {
   const [uploadedFiles, setUploadedFiles] = useState({
     utilizationCertificate: null,
     statusReport: null,
@@ -19,6 +19,7 @@ const SecondTranche = () => {
   const [buttonVisible, setButtonVisible] = useState(true);
   const [subtitle, setSubtitle] = useState("");
   const [isSuccess, setIsSuccess] = useState(""); // Add success state
+  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
 
   const requiredFiles = [
     'utilizationCertificate',
@@ -53,7 +54,7 @@ const SecondTranche = () => {
       });
 
       try {
-        const response = await fetch('http://51.20.52.245:3007/api/second-tranche', {
+        const response = await fetch('http://51.20.148.118:3007/api/second-tranche', {
           method: 'POST',
           headers: {
             Authorization: `${localStorage.getItem('token')}`, // Adjust according to your token storage
@@ -99,6 +100,12 @@ const SecondTranche = () => {
       formik.handleSubmit();
     }
   };
+
+  const goBacktoHome = () => {
+    setDialogStatus({ ...dialogStatus, isVisible: false })
+    console.log("navigate to home")
+    onFormSubmitSuccess();
+  }
 
   return (
     <div className="h-screen overflow-y-auto bg-gray-50 flex flex-col items-center">
@@ -226,8 +233,8 @@ const SecondTranche = () => {
         subtitle={subtitle}
         buttonVisible={buttonVisible}
         status={isSuccess} // Pass success state
-
-        onClose={() => setStatusPopup(false)}
+        onClose={() => goBacktoHome()}
+      
       />
     </div>
   );

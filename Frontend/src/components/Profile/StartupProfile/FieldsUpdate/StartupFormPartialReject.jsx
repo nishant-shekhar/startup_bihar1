@@ -17,7 +17,7 @@ const StartupFormPartialReject = ({ isVisible, comment,onClose }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://51.20.52.245:3007/api/StartupProfile/v3",
+          "http://51.20.148.118:3007/api/StartupProfile/v3",
           {
             headers: {
               "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const StartupFormPartialReject = ({ isVisible, comment,onClose }) => {
 
                 try {
                   const response = await axios.post(
-                    "http://51.20.52.245:3007/api/StartupProfile/upload-certificate",
+                    "http://51.20.148.118:3007/api/StartupProfile/upload-certificate",
                     formData,
                     {
                       headers: {

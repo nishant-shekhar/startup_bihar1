@@ -25,7 +25,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
     const fetchDetails = async () => {
       try {
         const response = await axios.get(
-          `http://51.20.52.245:3007/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
+          `http://51.20.148.118:3007/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
         );
 
         const { startup } = response.data;
@@ -58,7 +58,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
         setShowDialog(true);
         setDialogMessage("Uploading logo...");
 
-        const response = await axios.put('http://51.20.52.245:3007/api/userlogin/update-logo', formData, {
+        const response = await axios.put('http://51.20.148.118:3007/api/userlogin/update-logo', formData, {
           headers: {
             Authorization: `${localStorage.getItem('token')}`, // No 'Bearer' prefix as requested
             'Content-Type': 'multipart/form-data',
@@ -85,12 +85,12 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
 
   const handleUpdate = async (field, value) => {
     const urlMap = {
-      moto: 'http://51.20.52.245:3007/api/userlogin/update-moto',
-      twitter: 'http://51.20.52.245:3007/api/userlogin/update-twitter',
-      facebook: 'http://51.20.52.245:3007/api/userlogin/update-facebook',
-      instagram: 'http://51.20.52.245:3007/api/userlogin/update-instagram',
-      linkedin: 'http://51.20.52.245:3007/api/userlogin/update-linkedin',
-      website: 'http://51.20.52.245:3007/api/userlogin/update-website',
+      moto: 'http://51.20.148.118:3007/api/userlogin/update-moto',
+      twitter: 'http://51.20.148.118:3007/api/userlogin/update-twitter',
+      facebook: 'http://51.20.148.118:3007/api/userlogin/update-facebook',
+      instagram: 'http://51.20.148.118:3007/api/userlogin/update-instagram',
+      linkedin: 'http://51.20.148.118:3007/api/userlogin/update-linkedin',
+      website: 'http://51.20.148.118:3007/api/userlogin/update-website',
     };
 
     setShowDialog(true);

@@ -20,7 +20,7 @@ const SecondTranchePartialReject = ({ isVisible, comment,onClose }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://51.20.52.245:3007/api/second-tranche/v3",
+          "http://51.20.148.118:3007/api/second-tranche/v3",
           {
             headers: {
               "Content-Type": "application/json",
@@ -114,7 +114,7 @@ const SecondTranchePartialReject = ({ isVisible, comment,onClose }) => {
 
                 try {
                   const response = await axios.post(
-                    "http://51.20.52.245:3007/api/second-tranche",
+                    "http://51.20.148.118:3007/api/second-tranche",
                     formData,
                     {
                       headers: {

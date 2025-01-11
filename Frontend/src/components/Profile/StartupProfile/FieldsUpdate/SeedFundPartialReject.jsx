@@ -21,7 +21,7 @@ const SeedFundPartialReject = ({ isVisible, comment, onClose }) => {
             try {
                 const token = localStorage.getItem("token");
                 const response = await axios.get(
-                    "http://51.20.52.245:3007/api/seed-fund/v3",
+                    "http://51.20.148.118:3007/api/seed-fund/v3",
                     {
                         headers: {
                             "Content-Type": "application/json",
@@ -124,7 +124,7 @@ const SeedFundPartialReject = ({ isVisible, comment, onClose }) => {
 
                                 try {
                                     const response = await axios.post(
-                                        "http://51.20.52.245:3007/api/seed-fund/update-files",
+                                        "http://51.20.148.118:3007/api/seed-fund/update-files",
                                         formData,
                                         {
                                             headers: {

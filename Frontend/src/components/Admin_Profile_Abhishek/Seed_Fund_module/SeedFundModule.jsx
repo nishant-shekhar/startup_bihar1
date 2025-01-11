@@ -16,7 +16,7 @@ const SeedFundModule = ({ onSelect }) => {
 			try {
 				console.log(token);
 				const response = await axios.get(
-					"http://51.20.52.245:3007/api/seed-fund/v2",
+					"http://51.20.148.118:3007/api/seed-fund/v2",
 					{
 						headers: {
 							"Content-Type": "application/json",
