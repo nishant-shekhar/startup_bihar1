@@ -40,7 +40,7 @@ const RegisterStartup = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "https://localhost:3007/api/userlogin/register",
+        "https://startupbihar.in/api/userlogin/register",
         userData,
         {
           headers: {

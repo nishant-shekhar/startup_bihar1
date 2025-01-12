@@ -17,7 +17,7 @@ const AccelerationProgrammeModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`https://localhost:3007/api/acceleration/v1/${id}`,
+					`https://startupbihar.in/api/acceleration/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -46,7 +46,7 @@ const AccelerationProgrammeModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`https://localhost:3007/api/acceleration/u1/${id}`,
+				`https://startupbihar.in/api/acceleration/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -70,7 +70,7 @@ const AccelerationProgrammeModuleDetails = ({ id }) => {
 		handleDialog("Updating status to partial reject...");
 		try {
 			await axios.patch(
-				`https://localhost:3007/api/acceleration/u1/${id}`,
+				`https://startupbihar.in/api/acceleration/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -94,7 +94,7 @@ const AccelerationProgrammeModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`https://localhost:3007/api/acceleration/u1/${id}`,
+				`https://startupbihar.in/api/acceleration/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",

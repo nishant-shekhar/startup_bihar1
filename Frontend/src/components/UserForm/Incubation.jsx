@@ -25,7 +25,7 @@ const Incubation = () => {
       try {
         console.log("Submitting data:", values);
         const response = await axios.post(
-          "https://localhost:3007/api/incubation",
+          "https://startupbihar.in/api/incubation",
           values,
           {
             headers: {

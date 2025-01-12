@@ -18,7 +18,7 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "https://localhost:3007/api/post-seed/v3",
+          "https://startupbihar.in/api/post-seed/v3",
           {
             headers: {
               "Content-Type": "application/json",
@@ -105,7 +105,7 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
 
                 try {
                   const response = await axios.post(
-                    "https://localhost:3007/api/post-seed/update-files",
+                    "https://startupbihar.in/api/post-seed/update-files",
                     formData,
                     {
                       headers: {

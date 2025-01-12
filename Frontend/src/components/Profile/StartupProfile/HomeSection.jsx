@@ -76,7 +76,7 @@ const HomeSection = () => {
 		try {
 			
 			const response = await axios.get(
-				`https://localhost:3007/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`,
+				`https://startupbihar.in/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`,
 			);
 
 
@@ -92,14 +92,14 @@ const HomeSection = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`https://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
+				`https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`,
 			);
 
 			setStartup(response.data.startup);
 			console.log(startup)
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`https://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+				`https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
@@ -502,7 +502,7 @@ useEffect(() => {
 									}
 
 									axios
-										.post("https://localhost:3007/api/showcase/post", formData, {
+										.post("https://startupbihar.in/api/showcase/post", formData, {
 											headers: {
 												Authorization: token, // Include the token in the request headers
 											},

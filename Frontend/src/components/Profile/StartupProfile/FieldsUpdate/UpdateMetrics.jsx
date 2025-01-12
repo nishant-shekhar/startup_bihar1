@@ -23,7 +23,7 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 			});
 
 			await axios.put(
-				"https://localhost:3007/api/userlogin/update-data",
+				"https://startupbihar.in/api/userlogin/update-data",
 				{ [field]: value },
 				{
 					headers: {

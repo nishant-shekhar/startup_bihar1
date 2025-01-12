@@ -77,13 +77,13 @@ const StartupProfileMain = () => {
     try {
       let apiUrl = "";
       if (newPanel === "StartupForm") {
-        apiUrl = "https://localhost:3007/api/StartupProfile/user-document";
+        apiUrl = "https://startupbihar.in/api/StartupProfile/user-document";
       } else if (newPanel === "SeedFund") {
-        apiUrl = "https://localhost:3007/api/seed-fund/status";
+        apiUrl = "https://startupbihar.in/api/seed-fund/status";
       } else if (newPanel === "PostSeed") {
-        apiUrl = "https://localhost:3007/api/post-seed/status";
+        apiUrl = "https://startupbihar.in/api/post-seed/status";
       } else if (newPanel === "SecondTranche") {
-        apiUrl = "https://localhost:3007/api/second-tranche/status";
+        apiUrl = "https://startupbihar.in/api/second-tranche/status";
       }
 
       if (apiUrl) {

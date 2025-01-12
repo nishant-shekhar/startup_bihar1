@@ -9,7 +9,7 @@ const IncubationModule = ({ onProfileClick }) => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					"https://localhost:3007/api/startupProfile/list",
+					"https://startupbihar.in/api/startupProfile/list",
 				);
 				setSdata(response.data.documents);
 			} catch (error) {
