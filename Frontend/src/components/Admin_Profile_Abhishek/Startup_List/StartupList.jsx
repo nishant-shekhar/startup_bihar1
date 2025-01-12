@@ -9,7 +9,7 @@ const StartupList = ({ onProfileClick }) => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					"https://startupbihar.in:3007/api/startupProfile/list",
+					"https://localhost:3007/api/startupProfile/list",
 				);
 				setSdata(response.data.documents);
 			} catch (error) {

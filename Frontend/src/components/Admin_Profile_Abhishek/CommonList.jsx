@@ -63,7 +63,7 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 		try {
 			const promises = sdata.map(async (item) => {
 				const response = await axios.get(
-					`https://startupbihar.in:3007/api/${type}/v1/${item.id}`,
+					`https://localhost:3007/api/${type}/v1/${item.id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",

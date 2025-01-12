@@ -23,7 +23,7 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 			});
 
 			await axios.put(
-				"https://startupbihar.in:3007/api/userlogin/update-user-field",
+				"https://localhost:3007/api/userlogin/update-user-field",
 				{ [field]: value },
 				{
 					headers: {

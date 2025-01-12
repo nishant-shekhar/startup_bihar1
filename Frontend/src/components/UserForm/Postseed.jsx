@@ -77,7 +77,7 @@ const PostSeed = ( {onFormSubmitSuccess} ) => {
 
 			try {
 				const response = await axios.post(
-					"https://startupbihar.in:3007/api/post-seed",
+					"https://localhost:3007/api/post-seed",
 					formData,
 					{
 						headers: {

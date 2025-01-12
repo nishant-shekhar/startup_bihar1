@@ -137,7 +137,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
         }
       }
       try {
-        const response = await axios.post('https://startupbihar.in:3007/api/seed-fund', formData, {
+        const response = await axios.post('https://localhost:3007/api/seed-fund', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `${localStorage.getItem('token')}`,

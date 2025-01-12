@@ -74,7 +74,7 @@ const ActionHistory = () => {
 	const fetchUserNotifications = async () => {
 		try {
 			const response = await axios.get(
-				`https://startupbihar.in:3007/api/notifications/userNotification/${id}`,
+				`https://localhost:3007/api/notifications/userNotification/${id}`,
 				{
 					headers: {
 						"Content-Type": "application/json",
