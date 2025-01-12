@@ -34,7 +34,7 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.148.118:3007/api/userlogin/startup-details?user_id=${id}`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
@@ -42,7 +42,7 @@ const StartupPublicProfile = () => {
 			//console.log(startup.about)
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`http://51.20.148.118:3007/api/showcase/get-showcase/${id}`
+				`http://localhost:3007/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 

@@ -40,7 +40,7 @@ const RegisterStartup = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://51.20.148.118:3007/api/userlogin/register",
+        "http://localhost:3007/api/userlogin/register",
         userData,
         {
           headers: {

@@ -15,7 +15,7 @@ const QPRModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://51.20.148.118:3007/api/Qreport/v1/${id}`,
+					`http://localhost:3007/api/Qreport/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -44,7 +44,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://51.20.148.118:3007/api/Qreport/u1/${id}`,
+				`http://localhost:3007/api/Qreport/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -68,7 +68,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to partial reject...");
 		try {
 			await axios.patch(
-				`http://51.20.148.118:3007/api/Qreport/u1/${id}`,
+				`http://localhost:3007/api/Qreport/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -92,7 +92,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://51.20.148.118:3007/api/Qreport/u1/${id}`,
+				`http://localhost:3007/api/Qreport/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",

@@ -10,7 +10,7 @@ const EmployeeDetails = ({ onClose }) => {
 	const fetchData = async () => {
 		try {
 			const response = await axios.get(
-				`http://51.20.148.118:3007/api/userlogin/getEmployees?startupId=${id}`,
+				`http://localhost:3007/api/userlogin/getEmployees?startupId=${id}`,
 			);
 			setEmployees(response.data.employees);
 			console.log(response.data);

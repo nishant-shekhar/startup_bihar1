@@ -23,7 +23,7 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 			});
 
 			await axios.put(
-				"http://51.20.148.118:3007/api/userlogin/update-user-field",
+				"http://localhost:3007/api/userlogin/update-user-field",
 				{ [field]: value },
 				{
 					headers: {

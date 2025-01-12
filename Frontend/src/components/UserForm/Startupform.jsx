@@ -77,7 +77,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
       }
 
       try {
-        const response = await axios.post('http://51.20.148.118:3007/api/StartupProfile', formData, {
+        const response = await axios.post('http://localhost:3007/api/StartupProfile', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `${localStorage.getItem('token')}`,
