@@ -1,112 +1,25 @@
 const express = require('express');
-const cors = require('cors');
-
-const documentRoutes = require('./routes/documentRoutes');
-const userRoutes = require('./routes/userRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const seedFundRoutes = require('./routes/seedFundRoutes');
-const secondTrancheRoutes = require('./routes/secondTrancheRoutes')
-const postSeedFundRoutes = require('./routes/postSeedFundRoutes');
-const qReportRoutes = require('./routes/qReportRoutes')
-const accelerationRoutes = require('./routes/accelerationRoutes')
-const matchingLoanRoutes = require('./routes/matchingLoanRoutes')
-const incubationRoutes = require('./routes/incubationRoutes')
-const coWorkingApplicationRoutes = require('./routes/coWorkingApplicationRoutes')
-const iprReimbursementRoutes = require('./routes/iprReimbursementRoutes')
-const showcaseRoutes = require('./routes/showcaseRoutes')
-const notificationRoutes = require('./routes/notificationRoutes')
-const activityRoutes = require('./routes/activityRoutes')
-
-
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
 const app = express();
-app.use(cors());
+const hostname = '127.0.0.1'; // Your server ip address
+const port = 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const version = '1.0.0';
 
+app.get('/', (req, res) => {
+    // set response content    
+        res.send(`<html>
+                    <body>
+                        <h1 style="color:blue;text-align: center;margin-top: 100px;"> [Version ${version}]: This is AMAZING!!! Like & Subscribe!</h1>
+                        <div style="position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%)">
+                            <img src="https://picsum.photos/400/400?random=1">
+                        </div>
+                    </body>
+                   </html>`);
+ 
+  console.log(`[Version ${version}]: New request => http://${hostname}:${port}`+req.url);
 
-app.use('/api/userlogin', userRoutes);
-app.use('/api/adminlogin', adminRoutes);
+})
 
-// all the user side forms
-app.use('/api/StartupProfile', documentRoutes);
-app.use('/api/seed-fund', seedFundRoutes);
-app.use('/api/second-tranche', secondTrancheRoutes);
-app.use('/api/post-seed', postSeedFundRoutes);
-app.use('/api/Qreport', qReportRoutes);
-app.use('/api/acceleration', accelerationRoutes);
-app.use('/api/matchingLoan', matchingLoanRoutes);
-app.use('/api/incubation', incubationRoutes);
-app.use('/api/coworking', coWorkingApplicationRoutes);
-app.use('/api/iprReimbursement', iprReimbursementRoutes);
-app.use('/api/showcase', showcaseRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/activity', activityRoutes);
-
-
-
- //  get routes
-
-// http://localhost:3000/api/StartupProfile/v2   
-// http://localhost:3000/api/StartupProfile/v1/:id
-
-
-//http://localhost:3000/api/acceleration/v1:id
-//http://localhost:3000/api/acceleration/v2
-
-
-//http://localhost:3000/api/coworking/v1:id
-//http://localhost:3000/api/coworking/v2
-
-
-//http://localhost:3000/api/incubation/v1:id
-//http://localhost:3000/api/incubation/v2
-
-//http://localhost:3000/api/seed-fund/v1:id
-//http://localhost:3000/api/seed-fund/v2
-
-
-//http://localhost:3000/api/second-tranche/v1:id
-//http://localhost:3000/api/second-tranche/v2
-
-//http://localhost:3000/api/post-seed/v1:id
-//http://localhost:3000/api/post-seed/v2
-
-//http://localhost:3000/api/Qreport/v1:id
-//http://localhost:3000/api/Qreport/v2
-
-//http://localhost:3000/api/iprReimbursement/v1:id
-//http://localhost:3000/api/iprReimbursement/v2
-
-
-//http://localhost:3000/api/matchingLoan/v1:id
-//http://localhost:3000/api/matchingLoan/v2
-
-
-
-
-// update -----------------> accept/////// reject
-  //http://localhost:3000/api/StartupProfile/u1/:id
-  //http://localhost:3000/api/acceleration/u1/:id
-  //http://localhost:3000/api/coworking/u1/:id
-  //http://localhost:3000/api/incubation/u1/:id
-  //http://localhost:3000/api/seed-fund/u1/:id
-  //http://localhost:3000/api/second-tranche/u1/:id
-  //http://localhost:3000/api/post-seed/u1/:id
-  //http://localhost:3000/api/Qreport/u1/:id
-   //http://localhost:3000/api/iprReimbursement/u1/:id
-  //http://localhost:3000/api/matchingLoan/u1/:id
-
-// Start the server
-const path = require('path');
-
-// Serve static files for Let's Encrypt verification
-app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '../.well-known/acme-challenge')));
-
-const PORT = process.env.PORT || 3007;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(port, () => {
+    console.log(`[Version ${version}]: Server running at http://${hostname}:${port}/`);
+})
