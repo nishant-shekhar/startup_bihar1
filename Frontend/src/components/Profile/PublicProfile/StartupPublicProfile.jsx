@@ -11,6 +11,7 @@ import {
 	FaGlobe,
 } from "react-icons/fa";
 import ShowcaseCard from "./ShowcaseCard";
+import EmployeeDetails from "../StartupProfile/FieldsUpdate/EmployeeDetails";
 
 const StartupPublicProfile = () => {
 	const { id } = useParams(); // Fetch the dynamic id from the URL
@@ -19,7 +20,8 @@ const StartupPublicProfile = () => {
 	const [showcases, setShowcases] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isContactVisible, setIsContactVisible] = useState(false);
-
+	const [employees, setEmployees] = useState([]);
+	const [showEmployeeDetails, setShowEmployeeDetails] = useState(false);
 
 	const categories = ['Showcase', "About Startup"];
 
@@ -46,6 +48,8 @@ const StartupPublicProfile = () => {
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
+			const employeeResponse = await axios.get(`http://localhost:3007/api/userlogin/getEmployees?startupId=${id}`);
+			setEmployees(employeeResponse.data.employees);
 			setIsLoading(false);
 		} catch (error) {
 			console.error("Failed to fetch data:", error);
@@ -218,7 +222,28 @@ const StartupPublicProfile = () => {
 								<FaGlobe className="text-3xl cursor-pointer hover:text-green-600" />
 							</a>
 						</div>
+						
+							<div
+								className=" -space-x-2 overflow-hidden mt-4 flex justify-end"
+								onClick={() => setShowEmployeeDetails(true)}
+							>
+								{employees.map((employee, index) => (
+									<img
+										key={index}
+										alt={employee.employeeName}
+										src={employee.dp}
+										className="inline-block size-10 rounded-full ring-2 ring-white"
+									/>
+								))}
+							</div>					
 					</div>
+					{showEmployeeDetails && (
+								<EmployeeDetails
+									startup={startup}
+									onClose={() => setShowEmployeeDetails(false)}
+									onUpdate={() => setUpdateCount(updateCount + 1)}
+								/>
+							)}
 				</div>
 			</div>
 			<div className="mx-5 lg:mx-20 justify-start mt-10 mb-4">
@@ -240,11 +265,9 @@ const StartupPublicProfile = () => {
 					</nav>
 				</div>
 			</div>
-			<div>
 
 
-
-			<div className="mx-5 lg:mx-20 p-6 bg-white shadow rounded-md mb-6 ">
+			<div className="mx-5 lg:mx-20 p-6 bg-white shadow rounded-md">
 				{/* Showcase Content */}
 				{selectedCategory === "Showcase" && (
 					<>
@@ -255,7 +278,7 @@ const StartupPublicProfile = () => {
 						{isLoading ? (
 							<p className="text-center text-gray-500 mt-8">Loading...</p>
 						) : (
-							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10 ">
+							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 								{[...showcases].reverse().map((showcase, index) => (
 									<ShowcaseCard
 										key={index}
@@ -280,7 +303,7 @@ const StartupPublicProfile = () => {
 							About Startup
 						</h1>
 						<hr className="mb-6 border-gray-500/30" />
-						<p className="mb-10"
+						<p
 							style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
 						>
 							{startup.about}
@@ -329,8 +352,6 @@ const StartupPublicProfile = () => {
 
 			</div>
 		</div>
-		</div>
-
 	);
 };
 
