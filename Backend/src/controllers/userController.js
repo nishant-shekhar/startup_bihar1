@@ -563,24 +563,23 @@ const addEmployee = async (req, res) => {
 
 const getEmployeesByStartup = async (req, res) => {
   try {
-    const { startupId } = req.query; // Expecting startupId as a query parameter
+    const { startupId } = req.query;
 
-    // Validate that startupId is provided
-    if (!startupId) {
-      return res.status(400).json({ error: 'startupId is required to fetch employees' });
+    // Validate startupId
+    if (!startupId || typeof startupId !== 'string' || startupId.trim() === '') {
+      return res.status(400).json({ error: 'Invalid or missing startupId' });
     }
 
     // Fetch employees for the given startupId
     const employees = await prisma.employee.findMany({
       where: { startupId },
       orderBy: [
-        { rank: 'asc' }, // Order employees by rank
-        { createdAt: 'asc' }, // Secondary order by creation date
+        { rank: 'asc' },
       ],
     });
 
-    // If no employees found, return an empty array
-    if (!employees || employees.length === 0) {
+    // No employees found
+    if (!employees.length) {
       return res.status(404).json({ error: 'No employees found for the specified startupId' });
     }
 
@@ -589,10 +588,18 @@ const getEmployeesByStartup = async (req, res) => {
       employees,
     });
   } catch (error) {
-    console.error('Error retrieving employees:', error.message);
-    res.status(500).json({ error: 'An error occurred while retrieving employees' });
+    console.error('Error retrieving employees:', {
+      message: error.message,
+      stack: error.stack,
+      query: req.query,
+    });
+    res.status(500).json({
+      error: 'An error occurred while retrieving employees',
+      details: error.message,
+    });
   }
 };
+
 
 const deleteEmployee = async (req, res) => {
   try {

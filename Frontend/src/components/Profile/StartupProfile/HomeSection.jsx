@@ -69,13 +69,13 @@ const HomeSection = () => {
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
-            `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
           ),
           axios.get(
-            `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
           axios.get(
-            `https://startupbihar.in/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`
           ),
         ]);
 

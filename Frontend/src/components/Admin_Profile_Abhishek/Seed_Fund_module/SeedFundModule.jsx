@@ -16,7 +16,7 @@ const SeedFundModule = ({ onSelect }) => {
 			try {
 				console.log(token);
 				const response = await axios.get(
-					"https://startupbihar.in/api/seed-fund/v2",
+					"http://localhost:3007/api/seed-fund/v2",
 					{
 						headers: {
 							"Content-Type": "application/json",

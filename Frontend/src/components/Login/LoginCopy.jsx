@@ -25,7 +25,7 @@ const LoginCopy = () => {
     }
 
     try {
-      const loginUrl = isAdminLogin ? 'https://startupbihar.in/api/adminlogin' : 'https://startupbihar.in/api/userlogin';
+      const loginUrl = isAdminLogin ? 'http://localhost:3007/api/adminlogin' : 'http://localhost:3007/api/userlogin';
 
       const response = await fetch(loginUrl, {
         method: 'POST',
