@@ -3,40 +3,50 @@ import './ThirdPage.css';
 
 const ThirdPage = () => {
     const [activeTab, setActiveTab] = useState("notifications");
-
     const notifications = [
-        { text: 'New funding opportunities available!', date: 'Nov 5, 2024', author: 'Admin' },
-        { text: 'Startup workshop scheduled for next month.', date: 'Oct 28, 2024', author: 'Admin' },
-        { text: 'Policy updates for startups announced.', date: 'Oct 15, 2024', author: 'Admin' },
-        { text: 'Startup workshop scheduled for next month.', date: 'Oct 28, 2024', author: 'Admin' },
-        { text: 'Policy updates for startups announced.', date: 'Oct 15, 2024', author: 'Admin' },
-        { text: 'Mentorship program applications now open.', date: 'Sep 30, 2024', author: 'Admin' },
-        { text: 'Mentorship program applications now open.', date: 'Sep 30, 2024', author: 'Admin' },
-        { text: 'Mentorship program applications now open.', date: 'Sep 30, 2024', author: 'Admin' },
-        { text: 'Mentorship program applications now open.', date: 'Sep 30, 2024', author: 'Admin' },
-        { text: 'Mentorship program applications now open.', date: 'Sep 30, 2024', author: 'Admin' },
+        { text: 'New Startup Evaluation Test Result Held on 15th November 2024', date: 'Nov 15, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_15_November_2024_a92dabf022.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 07th October 2024', date: 'Oct 7, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_07_October_2024_fc53bad3e2.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 13th September 2024', date: 'Sep 13, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_13_September_2024_f71367d10c10.pdf' },
+        { text: 'Result of startup cell coordinator interview held on 24th August 2024', date: 'Aug 24, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/Startupcell_result_153bcc10c12.pdf' },
+        { text: 'Bihar Purchase Preference Policy updated, 2024', date: 'Aug 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/D__GazettePrinting_GazettePublished_749_2_2024_3016b57b6f.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 07th August 2024', date: 'Aug 7, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_07_Aug_2024_b736de13ac.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 27th June 2024', date: 'Jun 27, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_27_June_2024_ae4bd7c6c5.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 28th May 2024', date: 'May 28, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_28_May_2024_1bcf1d72b4.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 30th April 2024', date: 'Apr 30, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_30_April_2024_ad1366a266.pdf' },
+        { text: 'Startup Evaluation Test Result Held on 2nd April 2024', date: 'Apr 2, 2024', author: 'Admin', link: ' https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_02_April_2024_ff96796a48.pdf' },
     ];
+    
+    
 
     const appNotifications = [
-        { text: 'New app feature: real-time insights!', date: 'Nov 1, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-        { text: 'Mobile app update available now.', date: 'Oct 22, 2024', author: 'Admin' },
-    ];
+        { text: 'New Startup Evaluation Test Result Held on 15th November 2024', date: 'Nov 15, 2024', author: 'Admin', link: 'https://example.com/nov15-result' },
+        { text: 'Startup Evaluation Test Result Held on 07th October 2024', date: 'Oct 7, 2024', author: 'Admin', link: 'https://example.com/oct7-result' },
+        { text: 'Startup Evaluation Test Result Held on 13th September 2024', date: 'Sep 13, 2024', author: 'Admin', link: 'https://example.com/sep13-result' },
+        { text: 'Result of startup cell coordinator interview held on 24th August 2024', date: 'Aug 24, 2024', author: 'Admin', link: 'https://example.com/aug24-interview' },
+        { text: 'Bihar Purchase Preference Policy updated, 2024', date: 'Aug 2024', author: 'Admin', link: 'https://example.com/bpp-policy' },
+        { text: 'Startup Evaluation Test Result Held on 07th August 2024', date: 'Aug 7, 2024', author: 'Admin', link: 'https://example.com/aug7-result' },
+        { text: 'Startup Evaluation Test Result Held on 27th June 2024', date: 'Jun 27, 2024', author: 'Admin', link: 'https://example.com/jun27-result' },
+        { text: 'Startup Evaluation Test Result Held on 28th May 2024', date: 'May 28, 2024', author: 'Admin', link: 'https://example.com/may28-result' },
+        { text: 'Startup Evaluation Test Result Held on 30th April 2024', date: 'Apr 30, 2024', author: 'Admin', link: 'https://example.com/apr30-result' },
+        { text: 'Startup Evaluation Test Result Held on 2nd April 2024', date: 'Apr 2, 2024', author: 'Admin', link: 'https://example.com/apr2-result' },
+      ];
 
     const renderNotifications = (data) => {
         return data.map((notification, index) => (
             <div key={index} className="my-2 text-white">
-                <p className="text-sm">{notification.text}</p>
+                <a 
+                    href={notification.link || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-sm text-blue-500 hover:underline"
+                >
+                    {notification.text}
+                </a>
                 <p className="text-xs text-gray-400">{notification.date} by {notification.author}</p>
             </div>
         ));
     };
+    
 
 
     return (
@@ -97,7 +107,7 @@ const ThirdPage = () => {
                                 </div>
                                 <div
                                     className="relative  w-full grow max-lg:mx-auto max-lg:max-w-sm cursor-pointer"
-                                    onClick={() => window.open("https://www.startupindia.gov.in/srf/portal/SRF_2022_Result_page/Bihar.pdf", "_blank")}
+                                    onClick={() => window.open("https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FBihar%20Start%20Up%20Policy%202022%20-%20English.pdf?alt=media&token=aefa13ec-30a4-46f8-98a9-87b9cb5b8768", "_blank")}
                                     title="Click to view the PDF"
                                 >
                                     <div className="flex flex-1 items-center justify-center px-8 max-lg:pb-12 max-lg:pt-10 sm:px-10 lg:pb-2 hover:scale-105">

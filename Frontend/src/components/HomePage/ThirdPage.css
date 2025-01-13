@@ -19,3 +19,44 @@
         transform: translateY(-100%);
     }
 }
+.notifications-scroll {
+    position: relative;
+    overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    animation: scrollNotifications 16s linear infinite; /* Default scrolling animation */
+}
+
+.notifications-scroll.show-notifications,
+.notifications-scroll.show-app-notifications {
+    animation: scrollNotifications 16s linear infinite; /* Ensures consistent animation */
+}
+
+/* Pause animation on hover */
+.notifications-scroll:hover {
+    animation-play-state: paused; /* Stops scrolling animation on hover */
+}
+
+/* Keyframes for scrolling */
+@keyframes scrollNotifications {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+/* Default link style */
+.notifications-scroll a {
+    color: inherit; /* Keep the original color */
+    text-decoration: none;
+    transition: color 0.2s ease; /* Smooth color transition */
+}
+
+/* Change link color on hover */
+.notifications-scroll a:hover {
+    color: blue; /* Change to blue on hover */
+    text-decoration: underline; /* Optional: Add underline on hover */
+}

@@ -17,56 +17,56 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 	const handleFileChange = (event, setFieldValue) => {
 		const file = event.target.files[0];
 		if (file) {
-		  setFieldValue("dp", file);
+			setFieldValue("dp", file);
 		}
-	  };
-	  
-	  const handleUpdate = async (values) => {
+	};
+
+	const handleUpdate = async (values) => {
 		try {
-		  setDialogStatus({
-			isVisible: true,
-			title: "Adding Employee",
-			subtitle: "Wait while we add the new employee!",
-			buttonVisible: false,
-			status: "checking",
-		  });
-	  
-		  const formData = new FormData();
-		  Object.entries(values).forEach(([key, value]) => {
-			formData.append(key, value);
-		  });
-	  
-		  console.log("FormData being sent:", Array.from(formData.entries())); // Debug log
-	  
-		  await axios.post(
-			`https://startupbihar.in/api/userlogin/addEmployees`,
-			formData,
-			{
-			  headers: {
-				Authorization: `${localStorage.getItem("token")}`,
-				"Content-Type": "multipart/form-data",
-			  },
-			}
-		  );
-	  
-		  setDialogStatus({
-			isVisible: true,
-			title: "Employee Added",
-			subtitle: "Employee added successfully",
-			buttonVisible: true,
-			status: "success",
-		  });
+			setDialogStatus({
+				isVisible: true,
+				title: "Adding Employee",
+				subtitle: "Wait while we add the new employee!",
+				buttonVisible: false,
+				status: "checking",
+			});
+
+			const formData = new FormData();
+			Object.entries(values).forEach(([key, value]) => {
+				formData.append(key, value);
+			});
+
+			console.log("FormData being sent:", Array.from(formData.entries())); // Debug log
+
+			await axios.post(
+				`https://startupbihar.in/api/userlogin/addEmployees`,
+				formData,
+				{
+					headers: {
+						Authorization: `${localStorage.getItem("token")}`,
+						"Content-Type": "multipart/form-data",
+					},
+				}
+			);
+
+			setDialogStatus({
+				isVisible: true,
+				title: "Employee Added",
+				subtitle: "Employee added successfully",
+				buttonVisible: true,
+				status: "success",
+			});
 		} catch (error) {
-		  console.error("Error adding employee:", error);
-		  setDialogStatus({
-			isVisible: true,
-			title: "Employee Addition Failed",
-			subtitle: error.response?.data?.error || "Error adding employee",
-			buttonVisible: true,
-			status: "failed",
-		  });
+			console.error("Error adding employee:", error);
+			setDialogStatus({
+				isVisible: true,
+				title: "Employee Addition Failed",
+				subtitle: error.response?.data?.error || "Error adding employee",
+				buttonVisible: true,
+				status: "failed",
+			});
 		}
-	  };
+	};
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center z-50">
@@ -75,12 +75,13 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 					type="button"
 					onClick={onClose}
 					className="absolute top-2 right-2 text-[#3B82F6] hover:text-blue-600"
-					>
-							✕
+				>
+					✕
 				</button>
 				<h2 className="text-2xl font-semibold mb-4 text-center">
 					Add Employees
 				</h2>
+
 				<Formik
 					initialValues={{
 						name: "",
@@ -90,15 +91,32 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 						rank: 0,
 						dp: null,
 					}}
+					validate={(values) => {
+						const errors = {};
+
+						if (!values.name) {
+							errors.name = "Name is required";
+						}
+						if (!values.designation) {
+							errors.designation = "Designation is required";
+						}
+						if (!values.qualification) {
+							errors.qualification = "Qualification is required";
+						}
+						// Photo required
+						if (!values.dp) {
+							errors.dp = "Photo is required";
+						}
+						return errors;
+					}}
 					onSubmit={async (values, { resetForm }) => {
 						values.rank = parseInt(values.rank, 10);
-						console.log(values);
 						await handleUpdate(values);
 						resetForm();
 						onUpdate();
 					}}
 				>
-						{({ setFieldValue }) => (
+					{({ setFieldValue, errors, touched }) => (
 						<Form>
 							<div className="mb-4">
 								<label className="block text-gray-700 mb-2">
@@ -169,8 +187,10 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 									onChange={(event) => handleFileChange(event, setFieldValue)}
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
+								{errors.dp && touched.dp && (
+									<p className="text-red-600 text-sm mt-1">{errors.dp}</p>
+								)}
 							</div>
-
 							<div className="text-center">
 								<button
 									type="submit"
@@ -179,9 +199,11 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 									Add Employee
 								</button>
 							</div>
+
 						</Form>
 					)}
 				</Formik>
+
 			</div>
 			<div className="z-60">
 				<StatusDialog

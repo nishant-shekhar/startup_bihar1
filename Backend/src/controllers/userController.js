@@ -529,7 +529,11 @@ const addEmployee = async (req, res) => {
     const user_id = getUserIdFromToken(token);
 
     const { name, qualification, designation, display, rank } = req.body;
-    const dp = req.file ? req.file.buffer.toString("base64") : null; // Example for memory storage
+    const dp = req.files.dp ? req.files.dp[0].location : null;
+
+    if (!dp) {
+      return res.status(400).json({ error: "Photo is required" });
+    }
 
     if (!name || !qualification || !designation) {
       return res.status(400).json({ error: "Name, qualification, and designation are required" });
@@ -590,6 +594,52 @@ const getEmployeesByStartup = async (req, res) => {
   }
 };
 
+const deleteEmployee = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized: No token provided" });
+    }
+
+    const user_id = getUserIdFromToken(token);
+
+    // Get the employee ID from the request parameters
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Employee ID is required" });
+    }
+
+    // Ensure the employee exists and belongs to the authenticated user
+    const existingEmployee = await prisma.employee.findFirst({
+      where: {
+        id: id, // Pass as String
+        startupId: user_id,
+      },
+    });
+
+    if (!existingEmployee) {
+      return res.status(404).json({ error: "Employee not found or does not belong to you" });
+    }
+
+    // Delete the employee
+    await prisma.employee.delete({
+      where: {
+        id: id, // Pass as String
+      },
+    });
+
+    res.status(200).json({
+      message: "Employee deleted successfully",
+    });
+  } catch (error) {
+    console.error("Detailed Error:", error.message, error.stack);
+    res.status(500).json({ error: "An error occurred while deleting the employee", details: error.message });
+  }
+};
+
+
+
 
 module.exports = {
   userLogin,
@@ -610,5 +660,6 @@ module.exports = {
   updateMetrics,
   updateUserField,
   addEmployee,
-  getEmployeesByStartup
+  getEmployeesByStartup,
+  deleteEmployee
 };

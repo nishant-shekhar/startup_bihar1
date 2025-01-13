@@ -29,7 +29,7 @@ const StatusDialog = ({
 				: "bg-black hover:bg-gray-800";
 
 	return (
-		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+		<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[9999]">
 			<div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
 				<div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
 					<div className="sm:flex sm:items-start">
@@ -52,14 +52,14 @@ const StatusDialog = ({
 					</div>
 				</div>
 				<div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">{buttonVisible && (
-						<button
-							type="button"
-							className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${buttonColor}`}
-							onClick={onClose}
-						>
-							{actionButton || "Ok"}
-						</button>
-					)}
+					<button
+						type="button"
+						className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${buttonColor}`}
+						onClick={onClose}
+					>
+						{actionButton || "Ok"}
+					</button>
+				)}
 					{cancelButton && (
 						<button
 							type="button"
@@ -69,7 +69,7 @@ const StatusDialog = ({
 							{cancelButton || "Cancel"}
 						</button>
 					)}
-					
+
 				</div>
 			</div>
 		</div>

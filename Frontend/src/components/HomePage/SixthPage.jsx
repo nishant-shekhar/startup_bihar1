@@ -57,13 +57,13 @@ const SixthPage = () => {
                             	{/* Right Section: Image and Contact Details */}
 								<div className="flex-1 flex items-center justify-center relative">
 									<img
-										src="https://media.assettype.com/psuwatch%2F2024-12-19%2F51xhq5gr%2FBihar-Business-Concert-2024-PSU-Watch.jpg?w=1024&auto=format%2Ccompress&fit=max" // Placeholder image source
+										src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FWhatsApp%20Image%202025-01-10%20at%2015.50.22.jpeg?alt=media&token=554e04ba-2da5-4265-b2a8-315af9449c47" // Placeholder image source
 										alt="Contact Background"
 										className="object-cover  rounded-md w-full h-full  lg:w-full "
 										
 									/>
 
-									<div className="absolute bottom-10 left-0 text-[10px] md:text-lg  w-full text-black text-center bg-[#fffbda]  md:px-8 lg:px-12">
+									<div className="absolute bottom-10 left-0 text-[10px] md:text-lg text-center bg-white/60 shadow-lg shadow-[rgba(31,38,135,0.37)] backdrop-blur-md  md:px-8 lg:px-12">
                                         <p className="md:mt-2 font-medium flex flex-col md:flex-row md:justify-center">
                                               Department of Industries, 2nd Floor, Vikas Bhawan, New Secretariat, Bailey road, Patna 800015
                                         </p>
@@ -143,9 +143,13 @@ const SixthPage = () => {
 												>
 													<option value="">Choose topic</option>
 													<option>Startup</option>
-													<option>Partner</option>
-													<option>Office</option>
+													<option>Startup Cell</option>
+													<option>Incubation Center</option>
 													<option>Funding</option>
+													<option>Acceleration</option>
+													<option>Co-working Space</option>
+													<option>State Government</option>
+													<option>Central Government</option>
 												</select>
 											</div>
 										</div>

@@ -64,30 +64,42 @@ const HomePage = () => {
 					{/* Background content */}
 				</div>
 
-				{/* Left-middle image */}
-				<div className="absolute left-0 top-1/4 transform -translate-x-1/4">
-					<img
-						src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fcm2.png?alt=media&token=28e3b9f0-8fb2-408f-9c42-247152996732"
-						alt="CM Image"
-						className="w-32 md:w-48 lg:w-64 h-auto object-cover"
-						style={{ clipPath: 'inset(0 0 0 0)' }}
-					/>
-				</div>
-				{/* Right-middle image */}
+				{/* Left-middle image with name and designation */}
+<div className="absolute left-0 top-1/4 transform flex flex-col items-center">
+  <img
+    src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fcm2.png?alt=media&token=28e3b9f0-8fb2-408f-9c42-247152996732"
+    alt="CM Image"
+    className="w-32 md:w-48 lg:w-64 h-auto object-cover "
+    style={{ clipPath: 'inset(0 0 0 0)' }}
+  />
+  <h3 className="mt-2 text-lg md:text-xl font-semibold text-center">
+    Shri Nitish Kumar
+  </h3>
+  <p className="text-sm md:text-md text-gray-600 text-center">
+    Chief Minister, Bihar
+  </p>
+</div>
 
-				<div className="absolute right-0 top-1/4 transform translate-x-1/4">
-					<img
-						src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fminister.png?alt=media&token=79349ee7-623b-4514-95e9-015e08f33b12"
-						alt="CM Image"
-						className="w-32 md:w-48 lg:w-64 h-auto object-cover"
-						style={{ clipPath: 'inset(0 0 0 0)' }}
-					/>
-				</div>
+{/* Right-middle image with name and designation */}
+<div className="absolute right-0 top-1/4 transform flex flex-col items-center">
+  <img
+    src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fminister.png?alt=media&token=79349ee7-623b-4514-95e9-015e08f33b12"
+    alt="Minister Image"
+    className="w-32 md:w-48 lg:w-64 h-auto object-cover "
+    style={{ clipPath: 'inset(0 0 0 0)' }}
+  />
+  <h3 className="mt-2 text-lg md:text-xl font-semibold text-center">
+    Shri Nitish Mishra
+  </h3>
+  <p className="text-sm md:text-md text-gray-600 text-center">
+    Minister, Industry Dept, Bihar
+  </p>
+</div>
 
 				
 				{/* Title and Countdown */}
-				<div className="text-center pt-32 pb-10">
-					<h1 className="text-4xl font-bold mb-4 text-[#303462]">Countdown to Launch</h1>
+				<div className="text-center pt-6 sm:pt-40 md:pt-32 lg:pt-32 pb-4 md:pb-10">
+					<h1 className="text-xl sm:text-2xl lg:text-4xl font-bold mb-4 text-[#303462]">Countdown to Launch</h1>
 					<Countdown date={targetDate} renderer={renderer} />
 				</div>
 

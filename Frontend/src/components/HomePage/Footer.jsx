@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { HiOutlineMail } from "react-icons/hi";
+import { FaPhoneAlt } from "react-icons/fa";
 
 const Footer = () => {
 	return (
@@ -8,28 +10,36 @@ const Footer = () => {
 				<div className="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
 					<div className="md:flex md:justify-between">
 						<div className="mb-6 md:mb-0">
-							<a href="https://flowbite.com/" className="flex items-center">
+							<a className="flex items-center">
 								<img
 									src="Seal_of_Bihar.svg"
 									className="h-24 me-3"
-									alt="FlowBite Logo"
+									alt="startup Bihar"
 								/>
 								<span className="self-center text-sm whitespace-nowrap text-white dark:text-white pl-3 pt-1">
-									DEPARTMENT OF INDUSTRIES <br />
-									Government of Bihar <br />
-									Copyright owned by DoI Bihar,
-									<br /> All Rights Reserved <br /> Privacy and Policy | Terms
-									of use | Copyright Policy
+  								DEPARTMENT OF INDUSTRIES <br />
+  								Government of Bihar <br />
+  								Copyright owned by DoI Bihar,
+  								<br /> All Rights Reserved <br /> Privacy and Policy | Terms
+  								of use | Copyright Policy
+  								<div className="flex items-center gap-4 mt-4">
+    								<h2 className="text-sm py-4 font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
+      								<HiOutlineMail />
+      								help@startupbihar.com
+    								</h2>
+    								<h2 className="text-sm font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
+      								<FaPhoneAlt />
+      								+91 123 456 678
+    								</h2>
+  								</div>
 								</span>
 							</a>
 						</div>
 						
 						<div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 items-end ">
 							<div>
-								<h2 className="mb-6 text-sm font-semibold text-gray-100 uppercase dark:text-white align-top">
-									
-								</h2>
-								<ul className="text-gray-500 dark:text-gray-400 font-medium">
+								
+								<ul className="text-gray-300 dark:text-gray-400 font-medium">
 									<li className="mb-4">
 										<a
 											href="#"
@@ -50,10 +60,8 @@ const Footer = () => {
 								</ul>
 							</div>
 							<div>
-								<h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
-									Resources
-								</h2>
-								<ul className="text-gray-500 dark:text-gray-400 font-medium">
+								
+								<ul className="text-gray-300 dark:text-gray-400 font-medium">
 									<li className="mb-4">
 										<Link to="/about-us" className="hover:underline">
 											About Us
@@ -68,10 +76,8 @@ const Footer = () => {
 							</div>
 
 							<div>
-								<h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">
-									Legal
-								</h2>
-								<ul className="text-gray-500 dark:text-gray-400 font-medium">
+							
+								<ul className="text-gray-300 dark:text-gray-400 font-medium">
 									<li className="mb-4">
 										<a href="#" className="hover:underline">
 											Privacy Policy
@@ -91,6 +97,14 @@ const Footer = () => {
 						<span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
 							© DoI Bihar, All Rights Reserved.
 						</span>
+
+						<a 
+						href="/DeveloperTeam"
+						className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+							This Website is Developed and Maintain by NS Apps Innovations, a startup of bihar
+						</a>
+
+
 						<div className="flex mt-4 sm:justify-center sm:mt-0">
 							<a
 								href="https://www.facebook.com/startupbihar2022/"
