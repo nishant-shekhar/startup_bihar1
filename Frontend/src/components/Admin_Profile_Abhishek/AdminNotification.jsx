@@ -74,7 +74,7 @@ const AdminNotification = () => {
 	const fetchUserNotifications = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/notifications/userNotification/${id}`,
+				`https://startupbihar.in/api/notifications/userNotification/${id}`,
 				{
 					headers: {
 						"Content-Type": "application/json",

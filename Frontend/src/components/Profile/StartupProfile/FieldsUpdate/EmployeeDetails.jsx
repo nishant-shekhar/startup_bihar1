@@ -23,7 +23,7 @@ const EmployeeDetails = ({ onClose }) => {
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3007/api/userlogin/getEmployees?startupId=${userId}`
+        `https://startupbihar.in/api/userlogin/getEmployees?startupId=${userId}`
       );
       setEmployees(response.data.employees || []);
     } catch (error) {
@@ -66,7 +66,7 @@ const EmployeeDetails = ({ onClose }) => {
     try {
       // Example endpoint — adjust as needed
       await axios.delete(
-        `http://localhost:3007/api/userlogin/deleteEmployee/${selectedEmployee.id}`,
+        `https://startupbihar.in/api/userlogin/deleteEmployee/${selectedEmployee.id}`,
         {
           headers: {
             Authorization: localStorage.getItem("token"),
