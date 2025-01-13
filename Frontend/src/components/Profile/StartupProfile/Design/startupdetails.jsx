@@ -25,7 +25,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
     const fetchDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
+          `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
         );
 
         const { startup } = response.data;
@@ -58,7 +58,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
         setShowDialog(true);
         setDialogMessage("Uploading logo...");
 
-        const response = await axios.put('http://localhost:3007/api/userlogin/update-logo', formData, {
+        const response = await axios.put('https://startupbihar.in/api/userlogin/update-logo', formData, {
           headers: {
             Authorization: `${localStorage.getItem('token')}`, // No 'Bearer' prefix as requested
             'Content-Type': 'multipart/form-data',
@@ -85,12 +85,12 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
 
   const handleUpdate = async (field, value) => {
     const urlMap = {
-      moto: 'http://localhost:3007/api/userlogin/update-moto',
-      twitter: 'http://localhost:3007/api/userlogin/update-twitter',
-      facebook: 'http://localhost:3007/api/userlogin/update-facebook',
-      instagram: 'http://localhost:3007/api/userlogin/update-instagram',
-      linkedin: 'http://localhost:3007/api/userlogin/update-linkedin',
-      website: 'http://localhost:3007/api/userlogin/update-website',
+      moto: 'https://startupbihar.in/api/userlogin/update-moto',
+      twitter: 'https://startupbihar.in/api/userlogin/update-twitter',
+      facebook: 'https://startupbihar.in/api/userlogin/update-facebook',
+      instagram: 'https://startupbihar.in/api/userlogin/update-instagram',
+      linkedin: 'https://startupbihar.in/api/userlogin/update-linkedin',
+      website: 'https://startupbihar.in/api/userlogin/update-website',
     };
 
     setShowDialog(true);

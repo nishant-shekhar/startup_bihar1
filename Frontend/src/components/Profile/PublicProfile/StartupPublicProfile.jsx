@@ -36,7 +36,7 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
+				`https://startupbihar.in/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
@@ -44,11 +44,11 @@ const StartupPublicProfile = () => {
 			//console.log(startup.about)
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`http://localhost:3007/api/showcase/get-showcase/${id}`
+				`https://startupbihar.in/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
-			const employeeResponse = await axios.get(`http://localhost:3007/api/userlogin/getEmployees/${id}`);
+			const employeeResponse = await axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${id}`);
 			setEmployees(employeeResponse.data.employee); // Access `data.employee` based on your API response
 
 			console.log(employeeResponse.data)
