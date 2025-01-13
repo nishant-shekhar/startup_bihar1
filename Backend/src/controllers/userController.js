@@ -545,7 +545,7 @@ const addStaff = async (req, res) => {
 
     const newStaff = await prisma.staff.create({
       data: {
-        startupId: user_id,
+        user_id: user_id,
         name,
         dp,
         qualification,
