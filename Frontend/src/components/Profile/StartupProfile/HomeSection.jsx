@@ -69,23 +69,23 @@ const HomeSection = () => {
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
-            `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
           ),
           axios.get(
-            `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
-          axios.get(
-            `https://startupbihar.in/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`
-          ),
+          //axios.get(
+          //  `http://localhost:3007/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`
+          //),
         ]);
 
       setStartup(detailsResponse.data.startup);
       setShowcases(showcasesResponse.data.showcase || []);
-      setEmployees(employeesResponse.data.employees || []);
+     //setEmployees(employeesResponse.data.employees || []);
 
       console.log("Startup details:", detailsResponse.data.startup);
       console.log("Showcases:", showcasesResponse.data.showcase);
-      console.log("Employees:", employeesResponse.data.employees);
+      //console.log("Employees:", employeesResponse.data.employees);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }

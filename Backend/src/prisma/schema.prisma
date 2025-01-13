@@ -45,7 +45,10 @@ model Activity {
   timestamp   DateTime  @default(now())
 }
 
-model Employee {
+
+
+
+model Staff {
   id            String   @id @default(uuid()) @map("_id")
   startupId     String
   name          String
@@ -53,15 +56,13 @@ model Employee {
   qualification String
   designation   String
   display       Boolean  @default(true)
-  rank          Int      @default(0) // Rank for ordering employees
+  rank          Int      @default(0) // Rank for ordering staff
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   // Relation to the User (Startup)
   startup       User     @relation(fields: [startupId], references: [user_id])
 }
-
-
 
 model User {
   id                    String               @id @default(uuid()) @map("_id")
@@ -80,7 +81,7 @@ model User {
   coworkingApplication  CoWorkingApplication?
   incubationApplication IncubationApplication?
   iprReimbursement      IPRReimbursement?
-  employees             Employee[] 
+  staff                 Staff[]  // <--- one-to-many relation to Staff
 
   instagram             String?
   website               String?

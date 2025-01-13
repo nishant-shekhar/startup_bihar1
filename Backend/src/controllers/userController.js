@@ -521,13 +521,15 @@ const updateUserField = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while updating user fields' });
   }
 };
-const addEmployee = async (req, res) => {
+// 1) Add Staff
+const addStaff = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized: No token provided" });
+    }
 
     const user_id = getUserIdFromToken(token);
-
     const { name, qualification, designation, display, rank } = req.body;
     const dp = req.files.dp ? req.files.dp[0].location : null;
 
@@ -536,10 +538,12 @@ const addEmployee = async (req, res) => {
     }
 
     if (!name || !qualification || !designation) {
-      return res.status(400).json({ error: "Name, qualification, and designation are required" });
+      return res
+        .status(400)
+        .json({ error: "Name, qualification, and designation are required" });
     }
 
-    const newEmployee = await prisma.employee.create({
+    const newStaff = await prisma.staff.create({
       data: {
         startupId: user_id,
         name,
@@ -552,56 +556,56 @@ const addEmployee = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Employee added successfully",
-      employee: newEmployee,
+      message: "Staff added successfully",
+      staff: newStaff,
     });
   } catch (error) {
     console.error("Detailed Error:", error.message, error.stack);
-    res.status(500).json({ error: "An error occurred while adding the employee", details: error.message });
+    res
+      .status(500)
+      .json({ error: "An error occurred while adding the staff", details: error.message });
   }
 };
 
-const getEmployeesByStartup = async (req, res) => {
+// 2) Get Staff by Startup
+const getStaffByStartup = async (req, res) => {
   try {
     const { startupId } = req.query;
 
-    // Validate startupId
-    if (!startupId || typeof startupId !== 'string' || startupId.trim() === '') {
-      return res.status(400).json({ error: 'Invalid or missing startupId' });
+    if (!startupId || typeof startupId !== "string" || startupId.trim() === "") {
+      return res.status(400).json({ error: "Invalid or missing startupId" });
     }
 
-    // Fetch employees for the given startupId
-    const employees = await prisma.employee.findMany({
+    const staffMembers = await prisma.staff.findMany({
       where: { startupId },
-      orderBy: [
-        { rank: 'asc' },
-      ],
+      orderBy: [{ rank: "asc" }],
     });
 
-    // No employees found
-    if (!employees.length) {
-      return res.status(404).json({ error: 'No employees found for the specified startupId' });
+    if (!staffMembers.length) {
+      return res
+        .status(404)
+        .json({ error: "No staff found for the specified startupId" });
     }
 
     res.status(200).json({
-      message: 'Employees retrieved successfully',
-      employees,
+      message: "Staff retrieved successfully",
+      staff: staffMembers,
     });
   } catch (error) {
-    console.error('Error retrieving employees:', {
+    console.error("Error retrieving staff:", {
       message: error.message,
       stack: error.stack,
       query: req.query,
     });
     res.status(500).json({
-      error: 'An error occurred while retrieving employees',
+      error: "An error occurred while retrieving staff",
       details: error.message,
     });
   }
 };
 
-
-const deleteEmployee = async (req, res) => {
+// 3) Delete Staff
+const deleteStaff = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -609,39 +613,35 @@ const deleteEmployee = async (req, res) => {
     }
 
     const user_id = getUserIdFromToken(token);
-
-    // Get the employee ID from the request parameters
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Employee ID is required" });
+      return res.status(400).json({ error: "Staff ID is required" });
     }
 
-    // Ensure the employee exists and belongs to the authenticated user
-    const existingEmployee = await prisma.employee.findFirst({
+    const existingStaff = await prisma.staff.findFirst({
       where: {
-        id: id, // Pass as String
+        id: id,
         startupId: user_id,
       },
     });
 
-    if (!existingEmployee) {
-      return res.status(404).json({ error: "Employee not found or does not belong to you" });
+    if (!existingStaff) {
+      return res
+        .status(404)
+        .json({ error: "Staff not found or does not belong to you" });
     }
 
-    // Delete the employee
-    await prisma.employee.delete({
-      where: {
-        id: id, // Pass as String
-      },
+    await prisma.staff.delete({
+      where: { id: id },
     });
 
-    res.status(200).json({
-      message: "Employee deleted successfully",
-    });
+    res.status(200).json({ message: "Staff deleted successfully" });
   } catch (error) {
     console.error("Detailed Error:", error.message, error.stack);
-    res.status(500).json({ error: "An error occurred while deleting the employee", details: error.message });
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the staff", details: error.message });
   }
 };
 
@@ -666,7 +666,7 @@ module.exports = {
   getTopStartupDetails,
   updateMetrics,
   updateUserField,
-  addEmployee,
-  getEmployeesByStartup,
-  deleteEmployee
+  addStaff,
+  getStaffByStartup,
+  deleteStaff
 };

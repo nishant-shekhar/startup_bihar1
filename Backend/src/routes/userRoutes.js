@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp, updateMetrics, updateUserField, addEmployee, getEmployeesByStartup,deleteEmployee } = require('../controllers/userController');
+const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp, updateMetrics, updateUserField, addStaff, getStaffByStartup,deleteStaff } = require('../controllers/userController');
 const { authenticateUser } = require('../middlewares/authenticateUser');
 
 const router = express.Router();
@@ -32,8 +32,8 @@ router.put('/update-data',authenticateUser, updateMetrics);
 router.put('/update-user-field',authenticateUser, updateUserField);
 router.post('/addEmployees', authenticateUser,upload.fields([
     { name: 'dp', maxCount: 1 }
-]),addEmployee); // Add an employee
-router.get('/getEmployees', getEmployeesByStartup); // Get employees by startup
-router.delete("/deleteEmployee/:id", authenticateUser,deleteEmployee);
+]),addStaff); // Add an employee
+router.get('/getEmployees', getStaffByStartup); // Get employees by startup
+router.delete("/deleteEmployee/:id", authenticateUser,deleteStaff);
 
 module.exports = router;

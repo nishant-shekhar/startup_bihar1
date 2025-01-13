@@ -25,11 +25,11 @@ const Footer = () => {
   								<div className="flex items-center gap-4 mt-4">
     								<h2 className="text-sm py-4 font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
       								<HiOutlineMail />
-      								help@startupbihar.com
+      								startup-bihar@gov.in
     								</h2>
     								<h2 className="text-sm font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
       								<FaPhoneAlt />
-      								+91 123 456 678
+      								1800 345 6214
     								</h2>
   								</div>
 								</span>

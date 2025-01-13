@@ -1,7 +1,7 @@
 import React from "react";
 import { Link as ScrollLink } from "react-scroll";
-import ThirdPage from "./images/SMIC.png";
-import FourthPage from "./images/BSFT.png";
+import ThirdPage from "./images/SMIC.jpeg";
+import FourthPage from "./images/BSFT.jpeg";
 import FifthPage from "./images/PSC.png";
 
 import NavBarNew from "../HomePage/NavBarNew";
@@ -199,8 +199,8 @@ Second Tranche
 								Start-up Monitoring and Implementation Committee (SMIC)
 							</h1>
 							<p className="p-4 text-sm md:text-base">
-								SMIC shall be constituted under the Chairmanship of Principal
-								Secretary Department of Industries, Government of Bihar.
+								SMIC shall be constituted under the Chairmanship of
+								Secretary, Department of Industries, Government of Bihar.
 							</p>
 							<img src={ThirdPage} alt="" className="w-full rounded-lg" />
 						</div>
