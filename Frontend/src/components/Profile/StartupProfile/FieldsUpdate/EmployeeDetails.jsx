@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import StatusDialog from "../../../UserForm/StatusDialog";
 
-const EmployeeDetails = ({ onClose }) => {
-  const [employees, setEmployees] = useState([]);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+const EmployeeDetails = ({ onClose, deleteBtn }) => {
+  const [employee, setStaff] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
-  // Manages the status dialog (confirmation / success / error)
+  // Manage the status dialog (confirmation / success / error)
   const [dialogStatus, setDialogStatus] = useState({
     isVisible: false,
     title: "",
@@ -19,38 +19,37 @@ const EmployeeDetails = ({ onClose }) => {
 
   const userId = localStorage.getItem("user_id");
 
-  // Fetch employees from API
-  const fetchEmployees = async () => {
+  // Fetch employee from API
+  const fetchStaff = async () => {
     try {
-      const response = await axios.get(
-        `https://startupbihar.in/api/userlogin/getEmployees?startupId=${userId}`
-      );
-      setEmployees(response.data.employees || []);
+      const response = await axios.get(`http://localhost:3007/api/userlogin/getEmployees/${userId}`);
+
+      setStaff(response.data.employee || []);
     } catch (error) {
-      console.log(`error :${error}`);
+      console.log(`Error fetching employee: ${error}`);
     }
   };
 
   useEffect(() => {
-    fetchEmployees();
+    fetchStaff();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Opens the larger popup with more details
-  const handleEmployeeClick = (employee) => {
-    setSelectedEmployee(employee);
+  const handleStaffClick = (staffMember) => {
+    setSelectedStaff(staffMember);
   };
 
-  // Closes the bigger popup
+  // Closes the popup
   const handleClosePopup = () => {
-    setSelectedEmployee(null);
+    setSelectedStaff(null);
   };
 
   // Opens the confirmation dialog for deletion
-  const handleDeleteEmployee = () => {
+  const handleDeleteStaff = () => {
     setDialogStatus({
       title: "Delete Employee",
-      subtitle: "Are you sure you want to delete this employee?",
+      subtitle: "Are you sure you want to delete this employee member?",
       isVisible: true,
       buttonVisible: true,
       status: "delete",
@@ -59,14 +58,13 @@ const EmployeeDetails = ({ onClose }) => {
     });
   };
 
-  // Actually deletes the employee on dialog confirm
-  const confirmDeleteEmployee = async () => {
-    if (!selectedEmployee) return;
+  // Deletes the employee on dialog confirm
+  const confirmDeleteStaff = async () => {
+    if (!selectedStaff) return;
 
     try {
-      // Example endpoint — adjust as needed
       await axios.delete(
-        `https://startupbihar.in/api/userlogin/deleteEmployee/${selectedEmployee.id}`,
+        `http://localhost:3007/api/userlogin/deleteEmployee/${selectedStaff.id}`,
         {
           headers: {
             Authorization: localStorage.getItem("token"),
@@ -78,15 +76,15 @@ const EmployeeDetails = ({ onClose }) => {
       setDialogStatus({
         isVisible: true,
         title: "Deleting Employee",
-        subtitle: "Employee has been successfully deleted.",
+        subtitle: "Employee member has been successfully deleted.",
         buttonVisible: true,
         status: "success",
       });
 
-      // Remove from local state & close popup
-      const updated = employees.filter((e) => e.id !== selectedEmployee.id);
-      setEmployees(updated);
-      setSelectedEmployee(null);
+      // Update state & close popup
+      const updated = employee.filter((s) => s.id !== selectedStaff.id);
+      setStaff(updated);
+      setSelectedStaff(null);
     } catch (error) {
       console.error("Failed to delete employee:", error);
       setDialogStatus({
@@ -99,7 +97,7 @@ const EmployeeDetails = ({ onClose }) => {
     }
   };
 
-  // Closes the status dialog (either after confirm or after success)
+  // Closes the status dialog (after confirm or success)
   const handleCloseDialog = () => {
     setDialogStatus({ ...dialogStatus, isVisible: false });
   };
@@ -110,7 +108,7 @@ const EmployeeDetails = ({ onClose }) => {
       <div className="absolute inset-0 bg-black opacity-30" />
 
       {/* Main container */}
-      <div className="relative bg-white bg-opacity-75 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 rounded-lg shadow-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto my-8">
+      <div className="relative h-3/4 bg-white bg-opacity-75 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 rounded-lg shadow-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto my-8">
         {/* Close "X" to close the entire EmployeeDetails popup */}
         <button
           type="button"
@@ -121,34 +119,34 @@ const EmployeeDetails = ({ onClose }) => {
         </button>
 
         <h2 className="text-2xl font-semibold mb-4 text-center">
-          Employee Details
+          Employee List
         </h2>
 
         {/* Grid of employee "cards" */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {employees.map((employee, index) => (
+          {employee.map((staffMember, index) => (
             <div
               key={index}
               className="rounded-md shadow cursor-pointer hover:shadow-lg transition p-4 bg-white flex flex-col items-center text-center"
-              onClick={() => handleEmployeeClick(employee)}
+              onClick={() => handleStaffClick(staffMember)}
             >
               <img
-                src={employee.dp}
-                alt={employee.name}
+                src={staffMember.dp}
+                alt={staffMember.name}
                 className="w-16 h-16 object-cover rounded-full border mb-2"
               />
               <h3 className="text-md font-semibold line-clamp-1">
-                {employee.name}
+                {staffMember.name}
               </h3>
               <p className="text-sm text-gray-600 line-clamp-1">
-                {employee.designation}
+                {staffMember.designation}
               </p>
             </div>
           ))}
         </div>
 
         {/* Popup for the selected employee (similar to Showcase design) */}
-        {selectedEmployee && (
+        {selectedStaff && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             {/* Overlay behind the popup */}
             <div className="absolute inset-0 bg-black opacity-40" />
@@ -165,29 +163,30 @@ const EmployeeDetails = ({ onClose }) => {
               {/* Large (square-ish) photo with rounded corners */}
               <div className="mx-auto mb-4 h-40 w-full overflow-hidden rounded-lg">
                 <img
-                  src={selectedEmployee.dp}
-                  alt={selectedEmployee.name}
+                  src={selectedStaff.dp}
+                  alt={selectedStaff.name}
                   className="w-full h-full object-cover"
                 />
               </div>
 
               <h3 className="text-xl font-semibold mb-1 text-center">
-                {selectedEmployee.name}
+                {selectedStaff.name}
               </h3>
               <p className="text-center text-gray-600 mb-1">
-                {selectedEmployee.designation}
+                {selectedStaff.designation}
               </p>
               <p className="text-center text-gray-600 mb-4">
-                {selectedEmployee.qualification}
+                {selectedStaff.qualification}
               </p>
 
               {/* Delete Employee button */}
-              <button
+              {deleteBtn && <button
                 className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 block mx-auto"
-                onClick={handleDeleteEmployee}
+                onClick={handleDeleteStaff}
               >
                 Delete Employee
               </button>
+              }
             </div>
           </div>
         )}
@@ -207,7 +206,7 @@ const EmployeeDetails = ({ onClose }) => {
         // "Yes" triggers the actual deletion
         onCancel={() => {
           handleCloseDialog();
-          confirmDeleteEmployee();
+          confirmDeleteStaff();
         }}
       />
     </div>

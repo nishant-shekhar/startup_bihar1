@@ -569,38 +569,46 @@ const addStaff = async (req, res) => {
 
 // 2) Get Staff by Startup
 const getStaffByStartup = async (req, res) => {
+  let  {user_id}  = req.params; // Retrieve id from the request parameters
+
   try {
-    const { startupId } = req.query;
 
-    if (!startupId || typeof startupId !== "string" || startupId.trim() === "") {
-      return res.status(400).json({ error: "Invalid or missing startupId" });
+    // Ensure that a user_id is provided
+    if (!user_id) {
+      return res.status(400).json({ error: 'user_id is required to fetch employee' });
     }
 
-    const staffMembers = await prisma.staff.findMany({
-      where: { startupId },
-      orderBy: [{ rank: "asc" }],
+    console.log('Fetching details for user_id:', user_id);
+
+    // Find the user by user_id and select only basic fields
+    const employee = await prisma.staff.findMany({
+      where: { user_id },
+      select: {
+        id: true,
+        name: true,
+        dp: true,
+        qualification: true,
+        designation: true,
+        display: true,
+        rank: true,
+        createdAt: true,
+        
+      }
     });
 
-    if (!staffMembers.length) {
-      return res
-        .status(404)
-        .json({ error: "No staff found for the specified startupId" });
+    // If the user is not found, return an error
+    if (!employee) {
+      console.log(`No employee found for user_id: ${user_id}`);
+      return res.status(404).json({ error: 'employee not found' });
     }
 
-    res.status(200).json({
-      message: "Staff retrieved successfully",
-      staff: staffMembers,
-    });
+    console.log('employee details:', employee);
+
+    // Respond with the basic details
+    res.status(200).json({ employee });
   } catch (error) {
-    console.error("Error retrieving staff:", {
-      message: error.message,
-      stack: error.stack,
-      query: req.query,
-    });
-    res.status(500).json({
-      error: "An error occurred while retrieving staff",
-      details: error.message,
-    });
+    console.error('Error fetching employee details:', error);
+    res.status(500).json({ error: 'An error occurred while fetching employee details', details: error.message });
   }
 };
 
@@ -622,7 +630,7 @@ const deleteStaff = async (req, res) => {
     const existingStaff = await prisma.staff.findFirst({
       where: {
         id: id,
-        startupId: user_id,
+        user_id: user_id,
       },
     });
 

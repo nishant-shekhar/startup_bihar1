@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import StatusDialog from "../../UserForm/StatusDialog"; 
+import StatusDialog from "../../UserForm/StatusDialog";
 import UpdateSocialMediaURL from "./FieldsUpdate/UpdateUserField";
 import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 import UpdateMetrics from "./FieldsUpdate/UpdateMetrics";
@@ -69,23 +69,24 @@ const HomeSection = () => {
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
-            `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
           ),
           axios.get(
-            `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
-          //axios.get(
-          //  `https://startupbihar.in/api/userlogin/getEmployees?startupId=${localStorage.getItem("user_id")}`
-          //),
+         axios.get(`http://localhost:3007/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
+
         ]);
+
 
       setStartup(detailsResponse.data.startup);
       setShowcases(showcasesResponse.data.showcase || []);
-     //setEmployees(employeesResponse.data.employees || []);
+      setEmployees(employeesResponse.data.employee || []);
 
-      console.log("Startup details:", detailsResponse.data.startup);
-      console.log("Showcases:", showcasesResponse.data.showcase);
-      //console.log("Employees:", employeesResponse.data.employees);
+      //console.log("Startup details:", detailsResponse.data.startup);
+      //console.log("Showcases:", showcasesResponse.data.showcase);
+      console.log(employeesResponse.data.employee);
+      console.log(employees)
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
@@ -110,10 +111,10 @@ const HomeSection = () => {
 
         {/* ---------------------- COVER IMAGE ---------------------- */}
         <img
-				src={startup.founder_dp || "https://firebasestorage.googleapis.com/v0/b/iimv-ae907.appspot.com/o/Website%2Fcover_pic.png?alt=media&token=2f48030e-daa7-4e20-80c5-218bd6a93a25"}
-				className="w-full h-52 object-cover"
-				alt="Cover Pic"
-			/>
+          src={startup.founder_dp || "https://firebasestorage.googleapis.com/v0/b/iimv-ae907.appspot.com/o/Website%2Fcover_pic.png?alt=media&token=2f48030e-daa7-4e20-80c5-218bd6a93a25"}
+          className="w-full h-52 object-cover"
+          alt="Cover Pic"
+        />
 
         {/* ---------------------- PROFILE SECTION ---------------------- */}
         <div className="px-4">
@@ -246,17 +247,21 @@ const HomeSection = () => {
               {/* Employee Avatars */}
               <div className="flex w-full">
                 <div
-                  className="-space-x-2 overflow-hidden mt-4 w-11/12 flex"
+                  className=" -space-x-2 overflow-hidden mt-4 flex justify-end"
                   onClick={() => setShowEmployeeDetails(true)}
                 >
-                  {employees.map((employee, index) => (
-                    <img
-                      key={index}
-                      alt={employee.employeeName}
-                      src={employee.dp}
-                      className="inline-block size-10 rounded-full ring-2 ring-white"
-                    />
-                  ))}
+                  {employees && employees.length > 0 ? (
+                    employees.map((employee, index) => (
+                      <img
+                        key={index}
+                        alt={employee.name}
+                        src={employee.dp}
+                        className="inline-block size-10 rounded-full ring-2 ring-white"
+                      />
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No employees found</p>
+                  )}
                 </div>
                 <div>
                   <button
@@ -272,7 +277,7 @@ const HomeSection = () => {
               {selectedPlatform && (
                 <UpdateSocialMediaURL
                   startup={startup}
-                  onPlatformSelect={setSelectedPlatform} 
+                  onPlatformSelect={setSelectedPlatform}
                   onUpdate={() => setUpdateCount(updateCount + 1)}
                 />
               )}
@@ -283,6 +288,7 @@ const HomeSection = () => {
                   startup={startup}
                   onClose={() => setShowEmployeeDetails(false)}
                   onUpdate={() => setUpdateCount(updateCount + 1)}
+                  deleteBtn={true}
                 />
               )}
 
@@ -308,11 +314,10 @@ const HomeSection = () => {
                   type="button"
                   key={category}
                   onClick={() => handleCategoryClick(category)}
-                  className={`py-1 px-4 transition-all duration-300 transform ${
-                    selectedCategory === category
+                  className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
                       ? "bg-gray-200 text-[#0E0C22] font-semibold rounded-full scale-105"
                       : "text-[#151334] font-medium hover:text-opacity-70 hover:bg-gray-100 hover:text-[#0E0C22] rounded-full"
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -391,7 +396,7 @@ const HomeSection = () => {
           )}
         </div>
 
-       
+
 
         {/* ---------------------- SHOWCASE POPUP (our new component) ---------------------- */}
         <ShowcasePopup
@@ -408,7 +413,7 @@ const HomeSection = () => {
           fileInputRef={fileInputRef}
           handleFileChange={handleFileChange}
         />
- 
+
         {/* ---------------------- CONTACT POPUP ---------------------- */}
         {isContactVisible && (
           <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -457,15 +462,15 @@ const HomeSection = () => {
           </div>
         )}
       </div>
-	  {/* ---------------------- STATUS DIALOG ---------------------- */}
- <StatusDialog
-          isVisible={statusPopup}
-          title={title}
-          subtitle={subtitle}
-          buttonVisible={buttonVisible}
-          status={isSuccess} 
-          onClose={() => setStatusPopup(false)}
-        />
+      {/* ---------------------- STATUS DIALOG ---------------------- */}
+      <StatusDialog
+        isVisible={statusPopup}
+        title={title}
+        subtitle={subtitle}
+        buttonVisible={buttonVisible}
+        status={isSuccess}
+        onClose={() => setStatusPopup(false)}
+      />
     </div>
   );
 };

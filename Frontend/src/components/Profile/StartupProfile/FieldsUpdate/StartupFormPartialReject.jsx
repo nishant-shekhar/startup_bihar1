@@ -17,7 +17,7 @@ const StartupFormPartialReject = ({ isVisible, comment,onClose }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "https://startupbihar.in/api/StartupProfile/v3",
+          "http://localhost:3007/api/StartupProfile/v3",
           {
             headers: {
               "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const StartupFormPartialReject = ({ isVisible, comment,onClose }) => {
 
                 try {
                   const response = await axios.post(
-                    "https://startupbihar.in/api/StartupProfile/upload-certificate",
+                    "http://localhost:3007/api/StartupProfile/upload-certificate",
                     formData,
                     {
                       headers: {

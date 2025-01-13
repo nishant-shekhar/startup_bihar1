@@ -36,7 +36,7 @@ const StartupPublicProfile = () => {
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
-				`https://startupbihar.in/api/userlogin/startup-details?user_id=${id}`,
+				`http://localhost:3007/api/userlogin/startup-details?user_id=${id}`,
 			);
 
 			setStartup(response.data.startup);
@@ -44,13 +44,14 @@ const StartupPublicProfile = () => {
 			//console.log(startup.about)
 			// Fetch showcase data
 			const showcaseResponse = await axios.get(
-				`https://startupbihar.in/api/showcase/get-showcase/${id}`
+				`http://localhost:3007/api/showcase/get-showcase/${id}`
 			);
 			setShowcases(showcaseResponse.data.showcase);
 
-			const employeeResponse = await axios.get(`https://startupbihar.in/api/userlogin/getEmployees?startupId=${id}`);
-			//setEmployees(employeeResponse.data.employees);
-			console.log(employeeResponse.data.employees)
+			const employeeResponse = await axios.get(`http://localhost:3007/api/userlogin/getEmployees/${id}`);
+			setEmployees(employeeResponse.data.employee); // Access `data.employee` based on your API response
+
+			console.log(employeeResponse.data)
 			setIsLoading(false);
 		} catch (error) {
 			console.error("Failed to fetch data:", error);
@@ -223,28 +224,31 @@ const StartupPublicProfile = () => {
 								<FaGlobe className="text-3xl cursor-pointer hover:text-green-600" />
 							</a>
 						</div>
-						
-							<div
-								className=" -space-x-2 overflow-hidden mt-4 flex justify-end"
-								onClick={() => setShowEmployeeDetails(true)}
-							>
-								{employees.map((employee, index) => (
+
+						<div
+							className=" -space-x-2 overflow-hidden mt-4 flex justify-end"
+							onClick={() => setShowEmployeeDetails(true)}
+						>
+							{employees && employees.length > 0 ? (
+								employees.map((employee, index) => (
 									<img
 										key={index}
-										alt={employee.employeeName}
+										alt={employee.name}
 										src={employee.dp}
 										className="inline-block size-10 rounded-full ring-2 ring-white"
 									/>
-								))}
-							</div>					
+								))
+							) : (
+								<p className="text-sm text-gray-500">No employees found</p>
+							)}
+						</div>
 					</div>
 					{showEmployeeDetails && (
-								<EmployeeDetails
-									startup={startup}
-									onClose={() => setShowEmployeeDetails(false)}
-									onUpdate={() => setUpdateCount(updateCount + 1)}
-								/>
-							)}
+						<EmployeeDetails
+							onClose={() => setShowEmployeeDetails(false)}
+							deleteBtn={false}
+						/>
+					)}
 				</div>
 			</div>
 			<div className="mx-5 lg:mx-20 justify-start mt-10 mb-4">

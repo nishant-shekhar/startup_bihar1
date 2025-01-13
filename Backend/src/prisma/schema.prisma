@@ -46,24 +46,6 @@ model Activity {
 }
 
 
-
-
-model Staff {
-  id            String   @id @default(uuid()) @map("_id")
-  startupId     String
-  name          String
-  dp            String?  // Optional URL for profile picture
-  qualification String
-  designation   String
-  display       Boolean  @default(true)
-  rank          Int      @default(0) // Rank for ordering staff
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relation to the User (Startup)
-  startup       User     @relation(fields: [startupId], references: [user_id])
-}
-
 model User {
   id                    String               @id @default(uuid()) @map("_id")
   user_id               String               @unique
@@ -108,6 +90,18 @@ model User {
   founder_name          String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
+}
+model Staff {
+  id            String   @id @default(uuid()) @map("_id")
+  user_id       String
+  name          String
+  dp            String?  // Optional URL for profile picture
+  qualification String
+  designation   String
+  display       Boolean  @default(true)
+  rank          Int      @default(0) // Rank for ordering staff
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Showcase{

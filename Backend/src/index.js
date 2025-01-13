@@ -18,6 +18,7 @@ const iprReimbursementRoutes = require('./routes/iprReimbursementRoutes');
 const showcaseRoutes = require('./routes/showcaseRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 
 // Prisma or other setup
 const { PrismaClient } = require('@prisma/client');
@@ -47,6 +48,7 @@ app.use('/api/iprReimbursement', iprReimbursementRoutes);
 app.use('/api/showcase', showcaseRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/staff', staffRoutes);
 
 // (3) Serve your built frontend (dist folder)
 app.use(express.static(path.join(__dirname, 'dist')));

@@ -26,7 +26,7 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 			setDialogStatus({
 				isVisible: true,
 				title: "Adding Employee",
-				subtitle: "Wait while we add the new employee!",
+				subtitle: "Wait while we add the new employee member!",
 				buttonVisible: false,
 				status: "checking",
 			});
@@ -39,7 +39,7 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 			console.log("FormData being sent:", Array.from(formData.entries())); // Debug log
 
 			await axios.post(
-				`https://startupbihar.in/api/userlogin/addEmployees`,
+				`http://localhost:3007/api/userlogin/addEmployees`, // Update API endpoint
 				formData,
 				{
 					headers: {
@@ -52,7 +52,7 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 			setDialogStatus({
 				isVisible: true,
 				title: "Employee Added",
-				subtitle: "Employee added successfully",
+				subtitle: "Employee member added successfully",
 				buttonVisible: true,
 				status: "success",
 			});
@@ -79,7 +79,7 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 					✕
 				</button>
 				<h2 className="text-2xl font-semibold mb-4 text-center">
-					Add Employees
+					Add Employee
 				</h2>
 
 				<Formik
@@ -131,34 +131,34 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 							</div>
 
 							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">designation</label>
+								<label className="block text-gray-700 mb-2">Designation</label>
 								<Field
 									type="text"
 									name="designation"
-									placeholder="Enter designation"
+									placeholder="Enter Designation"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
 
 							<div className="mb-4">
 								<label className="block text-gray-700 mb-2">
-									qualification
+									Qualification
 								</label>
 								<Field
 									type="text"
 									name="qualification"
-									placeholder="Enter qualification"
+									placeholder="Enter Qualification"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
 								/>
 							</div>
 
-							<div className="mb-4 flex items-center gap-2 ">
+							<div className="mb-4 flex items-center gap-2">
 								<label className="block text-gray-700 ">Show on Screen</label>
 								<Field
 									type="checkbox"
 									name="display"
 									className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-									onChange={(e) => setFieldValue('display', e.target.checked)}
+									onChange={(e) => setFieldValue("display", e.target.checked)}
 								/>
 							</div>
 
@@ -169,13 +169,15 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 									as="select"
 									name="rank"
 									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-									onChange={(e) => setFieldValue('rank', parseInt(e.target.value, 10))}
+									onChange={(e) =>
+										setFieldValue("rank", parseInt(e.target.value, 10))
+									}
 								>
 									<option value="">Select Rank</option>
 									<option value={0}>Founding Team</option>
-									<option value={1}>Top-Level Employees</option>
-									<option value={2}>Middle-Level Employees</option>
-									<option value={3}>Entry-Level Employees</option>
+									<option value={1}>Top-Level Employee</option>
+									<option value={2}>Middle-Level Employee</option>
+									<option value={3}>Entry-Level Employee</option>
 								</Field>
 							</div>
 
@@ -199,11 +201,9 @@ const UpdateEmployees = ({ startup, onClose, onUpdate }) => {
 									Add Employee
 								</button>
 							</div>
-
 						</Form>
 					)}
 				</Formik>
-
 			</div>
 			<div className="z-60">
 				<StatusDialog

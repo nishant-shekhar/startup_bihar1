@@ -33,7 +33,7 @@ router.put('/update-user-field',authenticateUser, updateUserField);
 router.post('/addEmployees', authenticateUser,upload.fields([
     { name: 'dp', maxCount: 1 }
 ]),addStaff); // Add an employee
-router.get('/getEmployees', getStaffByStartup); // Get employees by startup
+router.get('/getEmployees/:user_id', getStaffByStartup); // Get employees by startup
 router.delete("/deleteEmployee/:id", authenticateUser,deleteStaff);
 
 module.exports = router;
