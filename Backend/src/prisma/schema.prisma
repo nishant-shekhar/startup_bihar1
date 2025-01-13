@@ -81,7 +81,6 @@ model User {
   coworkingApplication  CoWorkingApplication?
   incubationApplication IncubationApplication?
   iprReimbursement      IPRReimbursement?
-  staff                 Staff[]  // <--- one-to-many relation to Staff
 
   instagram             String?
   website               String?
