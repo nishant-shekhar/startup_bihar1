@@ -164,17 +164,19 @@ const ThirdPage = () => {
                                         {/* Tab headers */}
                                         <div className="flex bg-gray-800/40 ring-1 ring-white/5 z-10">
                                             <div
-                                                className={`flex-1 text-center py-2 cursor-pointer ${activeTab === "notifications" ? "bg-indigo-600 text-white" : "bg-gray-700 text-gray-300"}`}
+                                                className={`flex-1 text-center py-2 cursor-pointer ${activeTab === "notifications" ? "bg-violet-900 text-white" : "bg-gray-600 text-gray-300"}`}
                                                 onClick={() => setActiveTab("notifications")}
                                             >
                                                 Notifications
                                             </div>
+                                            {/* 
                                             <div
                                                 className={`flex-1 text-center py-2 cursor-pointer ${activeTab === "appNotifications" ? "bg-indigo-600 text-white" : "bg-gray-700 text-gray-300"}`}
                                                 onClick={() => setActiveTab("appNotifications")}
                                             >
                                                 App Notifications
                                             </div>
+                                            */}
                                         </div>
 
                                         {/* Scrollable Section */}

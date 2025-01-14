@@ -53,19 +53,13 @@ const NavBarNew = () => {
 									className="-m-1.5 p-1.5 cursor-pointer"
 								>
 									<span className="sr-only">Your Company</span>
-									<div className='flex'>
 
-									<img
-										className="h-12 w-auto"
-										src="logo_industry.png"
-										alt="Company Logo"
-									/>
+									
 									<img
 										className="h-12 w-auto"
 										src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
 										alt="Company Logo"
 									/>
-																		</div>
 
 								</Link>
 							</div>

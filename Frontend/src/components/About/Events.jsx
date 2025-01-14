@@ -42,22 +42,17 @@ const EventCard = ({ imgurl, dateandtime, title, tag, subtitle, projectLink }) =
 
 const Events = () => {
   return (
-    <div>
-      <NavBarNew />
-      <div className="text-center mt-32">
-        <h1 className="text-4xl font-bold text-gray-800">Past Events</h1>
-        <p className="text-lg text-gray-600 mt-2">
-          Discover the latest happenings and events tailored just for you. Stay tuned for exciting updates!
-        </p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-10 py-5 relative h-screen overflow-y-auto bg-white" style={{
-        backgroundImage: `url(${topImage}), url(${bottomImage})`,
-        backgroundPosition: 'top right, bottom left',
-        backgroundRepeat: 'no-repeat, no-repeat',
-        backgroundAttachment: 'fixed, fixed', // This makes the images fixed
-      }}>
+<div className="h-screen ">
 
-        {EventsData.map((event) => (
+<div>
+  <NavBarNew />
+  <div className="text-center px-4">
+    <p className="text-xl md:text-md font-bold text-[#303462] data-aos=fade-up pt-32">Startup Bihar</p>
+    <h2 className="pt-2 text-3xl md:text-4xl lg:text-5xl font-bold text-[#303462]">Leadership Team</h2>
+
+  </div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-10 py-6  mb-2">
+  {EventsData.map((event) => (
           <EventCard
             key={event.id}
             imgurl={event.imgurl}
@@ -68,9 +63,17 @@ const Events = () => {
             projectLink={event.projectLink}
           />
         ))}
-      </div>
-      <Footer />
-    </div>
+  </div>
+  <div className="text-center mb-8 px-4">
+
+  </div>
+
+  
+  <Footer />
+</div>
+</div>
+
+    
   );
 };
 

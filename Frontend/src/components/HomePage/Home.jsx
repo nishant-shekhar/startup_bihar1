@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react"; // Import useState
 import { motion } from "framer-motion";
 import NavBarNew from "./NavBarNew";
 import ThirdPage from "./ThirdPage";
@@ -11,6 +11,8 @@ import Footer from "./footer";
 import CountdownTimer from "./CountdownTimer";
 
 const HomePage = () => {
+	const [isCountdownComplete, setCountdownComplete] = useState(false);
+
 	const fadeIn = {
 		hidden: { opacity: 0, y: 20 },
 		visible: {
@@ -31,11 +33,12 @@ const HomePage = () => {
 
 	// coundown code here
 
-	const targetDate = new Date("2025-01-16T11:00:00").getTime();
+	const targetDate = new Date("2025-01-16T12:00:00").getTime();
 
 	const renderer = ({ days, hours, minutes, seconds, completed }) => {
 		if (completed) {
-			return <h2>Hello</h2>;
+			setCountdownComplete(true); // Update state when countdown finishes
+			return null; // Stop rendering countdown timer
 		}
 
 		return (
@@ -65,47 +68,86 @@ const HomePage = () => {
 				</div>
 
 				{/* Left-middle image with name and designation */}
-<div className="absolute left-0 top-1/4 transform flex flex-col items-center">
-  <img
-    src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fcm2.png?alt=media&token=28e3b9f0-8fb2-408f-9c42-247152996732"
-    alt="CM Image"
-    className="w-32 md:w-48 lg:w-64 h-auto object-cover "
-    style={{ clipPath: 'inset(0 0 0 0)' }}
-  />
-  <h3 className="mt-2 text-lg md:text-xl font-semibold text-center">
-    Shri Nitish Kumar
-  </h3>
-  <p className="text-sm md:text-md text-gray-600 text-center">
-    Chief Minister, Bihar
-  </p>
-</div>
+				<div className="absolute left-0 top-40 sm:top-64 transform flex flex-col items-center scale-75">
+					<div className="items-center">
 
-{/* Right-middle image with name and designation */}
-<div className="absolute right-0 top-1/4 transform flex flex-col items-center">
-  <img
-    src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fminister.png?alt=media&token=79349ee7-623b-4514-95e9-015e08f33b12"
-    alt="Minister Image"
-    className="w-32 md:w-48 lg:w-64 h-auto object-cover "
-    style={{ clipPath: 'inset(0 0 0 0)' }}
-  />
-  <h3 className="mt-2 text-lg md:text-xl font-semibold text-center">
-    Shri Nitish Mishra
-  </h3>
-  <p className="text-sm md:text-md text-gray-600 text-center">
-    Minister, Industry Dept, Bihar
-  </p>
-</div>
+						<img
+							src="cm2.png"
+							alt="CM Image"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">Shri Nitish Kumar
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">Chief Minister, Bihar
+						</p>
+					</div>
 
-				
-				{/* Title and Countdown */}
-				<div className="text-center pt-6 sm:pt-40 md:pt-32 lg:pt-32 pb-4 md:pb-10">
-					<h1 className="text-xl sm:text-2xl lg:text-4xl font-bold mb-4 text-[#303462]">Countdown to Launch</h1>
-					<Countdown date={targetDate} renderer={renderer} />
+					<div className="items-center mt-2">
+
+						<img
+							src="minister.png"
+							alt="minister Image"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
+							style={{ clipPath: 'inset(0 0 0 0)' }}
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Shri Nitish Mishra
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Minister, Industry Dept, Bihar
+						</p>
+					</div>
 				</div>
 
+				{/* Right-middle image with name and designation */}
+
+				<div className="absolute right-0 top-40 sm:top-64 transform flex flex-col items-center scale-75">
+					<div className="items-center">
+
+						<img
+							src="5.png"
+							alt="bihar"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
+							style={{ clipPath: 'inset(0 0 0 0)' }}
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Govt. of Bihar
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Bihar, India
+						</p>
+					</div>
+
+					<div className="items-center mt-2">
+						<img
+							src="4.png"
+							alt="industry Image"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
+							style={{ clipPath: 'inset(0 0 0 0)' }}
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Dept. of Industries
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Govt. of Bihar
+						</p>
+					</div>
+				</div>
+
+
+				{/* Title and Countdown */}
+				{!isCountdownComplete && (
+					<div className="text-center pt-6 sm:pt-40 md:pt-32 lg:pt-32 pb-4 md:pb-10">
+						<h1 className="text-xl sm:text-2xl lg:text-4xl font-bold mb-4 text-[#303462]">
+							Countdown to Launch
+						</h1>
+						<Countdown date={targetDate} renderer={renderer} />
+					</div>
+				)}
 				{/* Main content section */}
 				<motion.div
-					className="text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16"
+					className={`text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16 ${isCountdownComplete ? "mt-48 sm:mt-40 lg:mt-56" : ""
+						}`}
 					initial="hidden"
 					animate="visible"
 					variants={fadeIn}
@@ -116,9 +158,8 @@ const HomePage = () => {
 					>
 						Startup Bihar
 					</h1>
-
-					{/* pasting countdown code here */}
 				</motion.div>
+
 
 				<motion.div
 					className="mx-auto max-w-2xl pb-18 pt-10 sm:pb-16 sm:pt-10 lg:pb-20 lg:pt-16"
