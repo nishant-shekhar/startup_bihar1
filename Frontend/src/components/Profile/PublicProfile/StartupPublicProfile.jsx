@@ -247,6 +247,7 @@ const StartupPublicProfile = () => {
 						<EmployeeDetails
 							onClose={() => setShowEmployeeDetails(false)}
 							deleteBtn={false}
+							userId={id}
 						/>
 					)}
 				</div>

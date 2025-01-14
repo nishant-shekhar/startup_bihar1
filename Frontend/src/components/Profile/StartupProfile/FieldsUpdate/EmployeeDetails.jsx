@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import StatusDialog from "../../../UserForm/StatusDialog";
 
-const EmployeeDetails = ({ onClose, deleteBtn }) => {
+const EmployeeDetails = ({userId, onClose, deleteBtn }) => {
   const [employee, setStaff] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState(null);
 
@@ -17,7 +17,6 @@ const EmployeeDetails = ({ onClose, deleteBtn }) => {
     actionButton: "",
   });
 
-  const userId = localStorage.getItem("user_id");
 
   // Fetch employee from API
   const fetchStaff = async () => {

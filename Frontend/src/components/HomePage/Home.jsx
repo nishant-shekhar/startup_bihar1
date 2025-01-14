@@ -33,7 +33,7 @@ const HomePage = () => {
 
 	// coundown code here
 
-	const targetDate = new Date("2025-01-16T12:00:00").getTime();
+	const targetDate = new Date("2025-01-14T12:00:00").getTime();
 
 	const renderer = ({ days, hours, minutes, seconds, completed }) => {
 		if (completed) {

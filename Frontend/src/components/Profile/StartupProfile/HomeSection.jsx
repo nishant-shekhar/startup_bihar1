@@ -289,6 +289,7 @@ const HomeSection = () => {
                   onClose={() => setShowEmployeeDetails(false)}
                   onUpdate={() => setUpdateCount(updateCount + 1)}
                   deleteBtn={true}
+                  userId={localStorage.getItem("user_id")}
                 />
               )}
 
