@@ -48,7 +48,7 @@ const Events = () => {
   <NavBarNew />
   <div className="text-center px-4">
     <p className="text-xl md:text-md font-bold text-[#303462] data-aos=fade-up pt-32">Startup Bihar</p>
-    <h2 className="pt-2 text-3xl md:text-4xl lg:text-5xl font-bold text-[#303462]">Leadership Team</h2>
+    <h2 className="pt-2 text-3xl md:text-4xl lg:text-5xl font-bold text-[#303462]">Past Events</h2>
 
   </div>
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-10 py-6  mb-2">

@@ -14,7 +14,7 @@ const ContactUs = () => {
 			name: 'Smt Bandana Preyashi, IAS',
 			email: 'secy.ind-bih@nic.in',
 			phone: '0612-2215211',
-			image: 'https://bsidc.in/images/Bandana-Preyashi.jpg',
+			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FSmt.-Bandana-Preyashi.jpg?alt=media&token=22c33254-d76a-47de-8019-acc5659af19c',
 			position: 'Secretary, Industries Department of Industries, GoB',
 			tag: 'Secretary Industry'
 		},
