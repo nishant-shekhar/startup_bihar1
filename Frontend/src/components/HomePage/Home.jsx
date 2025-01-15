@@ -68,21 +68,9 @@ const HomePage = () => {
 				</div>
 
 				{/* mobile content */}
-				<div className="grid grid-cols-4 gap-2 scale-75  sm:hidden">
-					<div className="col-span-1 flex flex-col items-center justify-center h-full ">
-						<img
-							src="cm2.png"
-							alt="CM Image"
-							className="w-24 h-auto object-cover "
-						/>
-						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-							Shri Nitish Kumar
-						</h3>
-						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-							Hon'ble Chief Minister, Bihar
-						</p>
-					</div>
-					<div className="col-span-1 flex flex-col items-center justify-center h-full ">
+				<div className="grid grid-cols-4 gap-2 scale-75 sm:mt-24 md:hidden">
+					
+					<div className="col-span-1 flex flex-col items-center  h-full ">
 						<img
 							src="minister.png"
 							alt="minister Image"
@@ -93,6 +81,19 @@ const HomePage = () => {
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
 						Hon'ble Minister, Industry Dept, Bihar
+						</p>
+					</div>
+					<div className="col-span-1 flex flex-col items-center  h-full ">
+						<img
+							src="cm2.png"
+							alt="CM Image"
+							className="w-24 h-auto object-cover "
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Shri Nitish Kumar
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Hon'ble Chief Minister, Bihar
 						</p>
 					</div>
 					<div className="col-span-1 flex flex-col items-center h-full  ">
@@ -108,7 +109,7 @@ const HomePage = () => {
 						Bihar, India
 						</p>
 					</div>
-					<div className="col-span-1 flex flex-col items-center justify-center h-full ">
+					<div className="col-span-1 flex flex-col items-center  h-full  ">
 						<img
 							src="4.png"
 							alt="industry Image"
@@ -127,7 +128,7 @@ const HomePage = () => {
 
 
 				{/* Left-middle image with name and designation */}
-				<div className="absolute left-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden sm:flex">
+				<div className="absolute left-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden md:flex">
 					<div className="flex flex-col items-center justify-center h-full">
 						<img
 							src="cm2.png"
@@ -158,7 +159,7 @@ const HomePage = () => {
 				</div>
 
 				{/* Right-middle image with name and designation */}
-				<div className="absolute right-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden sm:flex">
+				<div className="absolute right-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden md:flex">
 					<div className="flex flex-col items-center justify-center h-full">
 						<img
 							src="5.png"
@@ -203,7 +204,7 @@ const HomePage = () => {
 				)}
 				{/* Main content section */}
 				<motion.div
-					className={`text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16 ${isCountdownComplete ? "mt-10 sm:mt-40 lg:mt-56" : ""
+					className={`text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16 ${isCountdownComplete ? "mt-10 sm:mt-20 md:mt-40 lg:mt-56" : ""
 						}`}
 					initial="hidden"
 					animate="visible"
