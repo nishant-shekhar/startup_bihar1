@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp, updateMetrics, updateUserField, addStaff, getStaffByStartup,deleteStaff } = require('../controllers/userController');
+const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp, updateMetrics, updateUserField, addStaff, getStaffByStartup,deleteStaff ,getStartupsByCategory} = require('../controllers/userController');
 const { authenticateUser } = require('../middlewares/authenticateUser');
 
 const router = express.Router();
@@ -35,5 +35,6 @@ router.post('/addEmployees', authenticateUser,upload.fields([
 ]),addStaff); // Add an employee
 router.get('/getEmployees/:user_id', getStaffByStartup); // Get employees by startup
 router.delete("/deleteEmployee/:id", authenticateUser,deleteStaff);
+router.get("/startups/by-category/:user_id", getStartupsByCategory);
 
 module.exports = router;

@@ -16,6 +16,7 @@ import Team from './components/About/Team';
 import StartupIncubationCell from './components/About/StartupCellList';
 import IncubationNodalList from './components/About/IncubationList';
 import Events from './components/About/Events';
+import Mentors from './components/About/Mentors';
 
 
 const App = () => {
@@ -40,6 +41,7 @@ const App = () => {
 					<Route path="/DeveloperTeam" element={<Team />} />
 					<Route path="/StartupCell" element={<StartupIncubationCell />} />
 					<Route path="/IncubationCell" element={<IncubationNodalList />} />
+					<Route path="/Mentors" element={<Mentors />} />
 					<Route path="/Events" element={<Events />} />
 					<Route
 						path="/Startup/:id"

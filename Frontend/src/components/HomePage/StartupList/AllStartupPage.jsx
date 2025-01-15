@@ -1,77 +1,138 @@
-import React, { useState } from 'react';
-import CardList from './CardList';
-import SearchBox from './SearchBox';
-import NavBarNew from '../NavBarNew';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
+import CardList from "./CardList";
+import SearchBox from "./SearchBox";
+import NavBarNew from "../NavBarNew";
 
 const AllStartup = () => {
+  // Define your categories
+  const categories = [
+    "All",
+    "Finance",
+    "Technology",
+    "Food",
+    "Art & Entertainment",
+    "Logistics",
+    "Education",
+    "Health",
+    "E-commerce",
+    "Environment",
+  ];
 
-    const categories = ['All', 'Tech', 'Health', 'Finance', 'Education', 'Food', 'Revenue Wise', 'Project Wise'];
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [startups, setStartups] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(""); // track what's typed in search
+  const [isLoading, setIsLoading] = useState(false);
 
-    const [selectedCategory, setSelectedCategory] = useState('All');
+  // Handle category click
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+  };
 
-    // Handle category click
-    const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
-    };
+  // Handle search input change
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
 
+  // Fetch startups from API based on category
+  const fetchStartups = async (category) => {
+    setIsLoading(true);
+    try {
+      let url;
 
-    return (
-        <div className="grid grid-cols-1">
-            <NavBarNew />
+      if (category === "All") {
+        // EITHER use a dedicated "all" endpoint
+        // url = "http://localhost:3007/api/userlogin/startups/all";
+        
+        // OR pass "All" to the same endpoint if your backend handles it:
+        url = `http://localhost:3007/api/userlogin/startups/by-category/${category}`;
+      } else {
+        // For a specific category
+        url = `http://localhost:3007/api/userlogin/startups/by-category/${category}`;
+      }
 
+      const response = await axios.get(url);
+      // The backend should respond with { startups: [...] }
+      setStartups(response.data.startups || []);
+    } catch (error) {
+      console.error("Failed to fetch startups:", error);
+      setStartups([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-            <div className="isolate bg-white px-6 py-24 sm:py-3 lg:px-8 min-h-screen flex flex-col items-center">
-               
-                <div className="py-24 sm:py-24">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                        <div className="mx-auto max-w-3xl lg:text-center">
-                            <h2 className="text-base font-semibold leading-7 text-indigo-600">
-                                Innovators of Bihar: Our Startup Showcase
-                            </h2>
-                            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                                Spotlighting Bihar's Pioneering Startups
-                            </p>
-                        </div>
+  // Whenever `selectedCategory` changes, refetch data
+  useEffect(() => {
+    fetchStartups(selectedCategory);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
 
+  // Filter by search term on the client side
+  const filteredStartups = startups.filter((startup) => {
+    // Convert fields to lowercase for case-insensitive search
+    const companyName = startup.company_name?.toLowerCase() || "";
+    const category = startup.category?.toLowerCase() || "";
+    const search = searchTerm.toLowerCase();
+    // Filter by company_name or category
+    return companyName.includes(search) || category.includes(search);
+  });
 
-                        <div className="flex flex-col items-center mt-10">
-                            {/* Tabs Section */}
-                            <div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
-                                <nav className="flex justify-center space-x-2">
-                                    {categories.map((category) => (
-                                        <button
-                                            key={category}
-                                            onClick={() => handleCategoryClick(category)}
-                                            className={`py-1 px-4 transition-all duration-300
-                                                ${selectedCategory === category
-                                                    ? 'bg-[#F8F7F3] text-[#0E0C22] rounded-full'  // Selected styles
-                                                    : 'text-[#151334] font-medium hover:text-opacity-50 hover:bg-transparent rounded-full'  // Unselected styles with hover effect
-                                                }`}
-                                        >
-                                            {category}
-                                        </button>
+  return (
+    <div className="grid grid-cols-1">
+      <NavBarNew />
 
-                                    ))}
-                                </nav>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <SearchBox />
-
-                    {/* CardList Section */}
-                    <div className="mt-6 w-full">
-                        <CardList category={selectedCategory} />
-                    </div>
-                </div>
-
-
+      <div className="isolate bg-white px-6 py-24 sm:py-3 lg:px-8 min-h-screen flex flex-col items-center">
+        <div className="py-24 sm:py-24">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-3xl lg:text-center">
+              <h2 className="text-base font-semibold leading-7 text-indigo-600">
+                Innovators of Bihar: Our Startup Showcase
+              </h2>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                Spotlighting Bihar's Pioneering Startups
+              </p>
             </div>
 
-        </div >
-    );
+            {/* Category Tabs Section */}
+            <div className="flex flex-col items-center mt-10">
+              <div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
+                <nav className="flex justify-center space-x-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => handleCategoryClick(category)}
+                      className={`py-1 px-4 transition-all duration-300
+                        ${
+                          selectedCategory === category
+                            ? "bg-[#F8F7F3] text-[#0E0C22] rounded-full"
+                            : "text-[#151334] font-medium hover:text-opacity-50 hover:bg-transparent rounded-full"
+                        }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <SearchBox onSearch={handleSearch} />
+
+          {/* CardList Section */}
+          <div className="mt-6 w-full">
+            {isLoading ? (
+              <div className="text-center text-gray-500">Loading...</div>
+            ) : (
+              <CardList startups={filteredStartups} />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default AllStartup;

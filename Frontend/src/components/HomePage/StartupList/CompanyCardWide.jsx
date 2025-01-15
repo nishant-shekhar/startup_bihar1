@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 
 
 
-const CompanyCardWide = ({ logo, fundingStatus, name, founder, founderLogo,startupSince, Category, tagline }) => {
+const CompanyCardWide = ({ user_id,logo, fundingStatus, name, founder, founderLogo,startupSince, Category, tagline }) => {
   const dotColor = fundingStatus === 'Seed Funded' ? 'bg-green-500' : 'bg-red-500';
 
   return (
-    <Link to="/Profile">
+    <Link to={`/Startup/${user_id}`}>
       <div className="grid grid-cols-7 items-center bg-[#FAFAFA] p-2 rounded-lg border-2 border-[#F5F5F5] w-full max-w-sm transform transition-transform duration-300 hover:scale-105 focus:scale-105 cursor-pointer">
         {/* Image Section */}
         <div className="col-span-2 flex justify-center items-center">
@@ -29,7 +29,7 @@ const CompanyCardWide = ({ logo, fundingStatus, name, founder, founderLogo,start
           </div>
           <div className="flex mt-4 items-center ">
           <img
-            src={founderLogo} // founder's image
+            src={founderLogo||"startup.png"} // founder's image
             alt={name}
             className="h-9 w-9 rounded-full" // 80px * 80px image
           />

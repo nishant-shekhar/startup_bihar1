@@ -227,6 +227,43 @@ const NavBarNew = () => {
 								>
 									Contact Us
 								</ScrollLink>
+								
+								<Link
+									to="/about-us"
+									smooth={true}
+									offset={-50}
+									duration={500}
+									className="text-sm font-semibold leading-6 text-gray-700 py-2 hover:text-gray-500 active:text-gray-600"
+								>
+									About Us
+								</Link>
+								<Link
+									to="/contact-us"
+									smooth={true}
+									offset={-50}
+									duration={500}
+									className="text-sm font-semibold leading-6 text-gray-700 py-2 hover:text-gray-500 active:text-gray-600"
+								>
+									Startup Team
+								</Link>
+								<Link
+									to="/Events"
+									smooth={true}
+									offset={-50}
+									duration={500}
+									className="text-sm font-semibold leading-6 text-gray-700 py-2 hover:text-gray-500 active:text-gray-600"
+								>
+									Events
+								</Link>
+								<Link
+									to="/ecosystem"
+									smooth={true}
+									offset={-50}
+									duration={500}
+									className="text-sm font-semibold leading-6 text-gray-700 py-2 hover:text-gray-500 active:text-gray-600"
+								>
+									Startup Ecosystem
+								</Link>
 							</div>
 						)}
 					</header>

@@ -69,7 +69,7 @@ const HomePage = () => {
 
 				{/* Left-middle image with name and designation */}
 				<div className="absolute left-0 top-40 sm:top-64 transform flex flex-col items-center scale-75">
-					<div className="items-center">
+					<div className="flex flex-col items-center justify-center h-full">
 
 						<img
 							src="cm2.png"
@@ -82,27 +82,26 @@ const HomePage = () => {
 						</p>
 					</div>
 
-					<div className="items-center mt-2">
+					<div className="flex flex-col items-center justify-center mt-2  h-full">
+	<img
+		src="minister.png"
+		alt="minister Image"
+		className="w-24 md:w-36 lg:w-48 h-auto object-cover"
+	/>
+	<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+		Shri Nitish Mishra
+	</h3>
+	<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+		Hon'ble Minister, Industry Dept, Bihar
+	</p>
+</div>
 
-						<img
-							src="minister.png"
-							alt="minister Image"
-							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
-							style={{ clipPath: 'inset(0 0 0 0)' }}
-						/>
-						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-							Shri Nitish Mishra
-						</h3>
-						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-						Hon'ble Minister, Industry Dept, Bihar
-						</p>
-					</div>
 				</div>
 
 				{/* Right-middle image with name and designation */}
 
 				<div className="absolute right-0 top-40 sm:top-64 transform flex flex-col items-center scale-75">
-					<div className="items-center">
+					<div className="flex flex-col items-center justify-center  h-full">
 
 						<img
 							src="5.png"
@@ -118,7 +117,7 @@ const HomePage = () => {
 						</p>
 					</div>
 
-					<div className="items-center mt-2">
+					<div className="flex flex-col items-center justify-center mt-2  h-full">
 						<img
 							src="4.png"
 							alt="industry Image"

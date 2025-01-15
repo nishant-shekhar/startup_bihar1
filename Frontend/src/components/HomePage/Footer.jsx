@@ -17,37 +17,35 @@ const Footer = () => {
 									alt="startup Bihar"
 								/>
 								<span className="self-center text-sm whitespace-nowrap text-white dark:text-white pl-3 pt-1">
-  								DEPARTMENT OF INDUSTRIES <br />
-  								Government of Bihar <br />
-  								Copyright owned by DoI Bihar,
-  								<br /> All Rights Reserved <br /> Privacy and Policy | Terms
-  								of use | Copyright Policy
-  								<div className="flex items-center gap-4 mt-4">
-    								<h2 className="text-sm py-4 font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
-      								<HiOutlineMail />
-      								startup-bihar@gov.in
-    								</h2>
-    								<h2 className="text-sm font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
-      								<FaPhoneAlt />
-      								1800 345 6214
-    								</h2>
-  								</div>
+									DEPARTMENT OF INDUSTRIES <br />
+									Government of Bihar <br />
+									Copyright owned by DoI Bihar,
+									<br /> All Rights Reserved <br /> Privacy and Policy | Terms
+									of use | Copyright Policy
+									<div className="flex items-center gap-4 mt-4">
+										<h2 className="text-sm py-4 font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
+											<HiOutlineMail />
+											startup-bihar@gov.in
+										</h2>
+										<h2 className="text-sm font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
+											<FaPhoneAlt />
+											1800 345 6214
+										</h2>
+									</div>
 								</span>
 							</a>
 						</div>
-						
+
 						<div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 items-end ">
 							<div>
-								
+
 								<ul className="text-gray-300 dark:text-gray-400 font-medium">
-									<li className="mb-4">
-										<a
-											href="#"
-											className="hover:underline "
-										>
-											Meet the Team
-										</a>
+								<li className="mb-4">
+										<Link to="/contact-us" className="hover:underline">
+											Contact Us
+										</Link>
 									</li>
+									
 									<li>
 										<a
 											href="/DeveloperTeam"
@@ -55,40 +53,56 @@ const Footer = () => {
 										>
 											Developer's Team
 										</a>
-										
+
 									</li>
 								</ul>
 							</div>
 							<div>
-								
+
 								<ul className="text-gray-300 dark:text-gray-400 font-medium">
 									<li className="mb-4">
 										<Link to="/about-us" className="hover:underline">
 											About Us
 										</Link>
 									</li>
-									<li>
-										<Link to="/contact-us" className="hover:underline">
-											Contact Us
-										</Link>
+									<li className="">
+										<a
+											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FCopyright%20Policy.pdf?alt=media&token=0ba2d4c6-36a3-436d-a58f-2654ff621050"
+											className="hover:underline"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											Copyright
+										</a>
 									</li>
 								</ul>
 							</div>
 
 							<div>
-							
+
 								<ul className="text-gray-300 dark:text-gray-400 font-medium">
 									<li className="mb-4">
-										<a href="#" className="hover:underline">
+										<a
+											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPRIVACY%20POLICY.pdf?alt=media&token=5feaa5fd-2e0d-4a01-bc44-09ab8ad9b0cd"
+											className="hover:underline"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
 											Privacy Policy
 										</a>
 									</li>
 									<li>
-										<a href="#" className="hover:underline">
-											Terms &amp; Conditions
+										<a
+											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FTERMS%20OF%20USE_DRAFT.pdf?alt=media&token=5831df8f-0a32-4480-88c1-59e88fa76537"
+											className="hover:underline"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											Terms of Use
 										</a>
 									</li>
 								</ul>
+
 							</div>
 						</div>
 					</div>
@@ -98,10 +112,10 @@ const Footer = () => {
 							© DoI Bihar, All Rights Reserved.
 						</span>
 
-						<a 
-						href="/DeveloperTeam"
-						className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
-							This Website is Developed and Maintain by NS Apps Innovations, a startup of bihar
+						<a
+							href="/DeveloperTeam"
+							className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+							This Website is Developed and Maintained by NS Apps Innovations, a product of Startup Bihar
 						</a>
 
 

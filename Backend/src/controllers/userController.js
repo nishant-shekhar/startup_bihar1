@@ -471,6 +471,60 @@ const getTopStartupDetails = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while fetching startup details', details: error.message });
   }
 };
+const getStartupsByCategory = async (req, res) => {
+  try {
+    let { category } = req.params; // Retrieve id from the request parameters
+    console.log(category)
+    // If category is "All", return all startups
+    if (category === "All") {
+      const allStartups = await prisma.user.findMany({
+        select: {
+          user_id: true,
+          company_name: true,
+          moto: true,
+          logo: true,
+          founder_dp: true,
+          founder_name: true,
+          startup_since: true,
+          category: true,
+        },
+      });
+      return res.status(200).json({ startups: allStartups });
+    }
+
+    // Otherwise, filter by category
+    const categoryStartups = await prisma.user.findMany({
+      where: { category },
+      select: {
+        user_id: true,
+        company_name: true,
+        moto: true,
+        logo: true,
+        founder_dp: true,
+        founder_name: true,
+        startup_since: true,
+        category: true,
+      },
+    });
+
+    if (!categoryStartups.length) {
+      return res
+        .status(404)
+        .json({ error: `No startups found for category: ${category}` });
+    }
+
+    res.status(200).json({ startups: categoryStartups });
+  } catch (error) {
+    console.error("Error fetching category startups:", error.message);
+    res.status(500).json({
+      error: "An error occurred while fetching startups by category",
+      details: error.message,
+    });
+  }
+};
+
+
+
 const updateMetrics = async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -711,5 +765,6 @@ module.exports = {
   updateUserField,
   addStaff,
   getStaffByStartup,
-  deleteStaff
+  deleteStaff,
+  getStartupsByCategory
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link as ScrollLink } from "react-scroll";
 import ThirdPage from "./images/SMIC.jpeg";
 import FourthPage from "./images/BSFT.jpeg";
@@ -11,11 +11,27 @@ import { Link } from "react-router-dom";
 
 
 const Ecosystem = () => {
+
+	const [opacity, setOpacity] = useState(1);
+	const handleScroll = () => {
+		const scrollTop = window.scrollY; 
+		const newOpacity = Math.max(1 - scrollTop / 300, 0); 
+		setOpacity(newOpacity);
+	  };
+	
+	  useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+	
+		return () => {
+		  window.removeEventListener("scroll", handleScroll);
+		};
+	  }, []);
+
 	return (
 		<div className="grid grid-cols-1">
 			<NavBarNew />
 			<div>
-				<div className="fixed left-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4">
+				<div className="fixed left-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4 " style={{ opacity }}>
 				<a
   				href="https://iciitp.com/zerolab/"
   				target="_blank"
@@ -75,9 +91,15 @@ const Ecosystem = () => {
 					>
 						Incubation Cell
 					</Link>
+					<Link
+						to="/Mentors"
+						className="bg-indigo-600 text-white px-5 py-2 md:px-7 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-l-none rounded-full"
+					>
+						Mentors
+					</Link>
 				</div>
 
-				<div className="fixed right-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4">
+				<div className="fixed right-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4" style={{ opacity }}>
 				
 				<a
   href="https://bhub.org.in/"
@@ -199,8 +221,8 @@ Second Tranche
 								Start-up Monitoring and Implementation Committee (SMIC)
 							</h1>
 							<p className="p-4 text-sm md:text-base">
-								SMIC shall be constituted under the Chairmanship of
-								Secretary, Department of Industries, Government of Bihar.
+								SMIC shall be constituted under the Chairmanship of Principal
+								Secretary Department of Industries, Government of Bihar.
 							</p>
 							<img src={ThirdPage} alt="" className="w-full rounded-lg" />
 						</div>
