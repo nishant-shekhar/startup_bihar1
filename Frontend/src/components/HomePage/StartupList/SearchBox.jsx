@@ -12,7 +12,7 @@ const SearchBox = ({ onSearch }) => {
       <input
         type="text"
         placeholder="Search Startups"
-        className="flex-grow outline-none bg-transparent placeholder-gray-400"
+        className="flex-grow outline-none bg-transparent placeholder-gray-400 text-sm sm:text-base"
         onChange={handleInputChange}
       />
     </div>

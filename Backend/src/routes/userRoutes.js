@@ -35,6 +35,6 @@ router.post('/addEmployees', authenticateUser,upload.fields([
 ]),addStaff); // Add an employee
 router.get('/getEmployees/:user_id', getStaffByStartup); // Get employees by startup
 router.delete("/deleteEmployee/:id", authenticateUser,deleteStaff);
-router.get("/startups/by-category/:user_id", getStartupsByCategory);
+router.get("/startups/by-category/:category", getStartupsByCategory);
 
 module.exports = router;

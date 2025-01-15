@@ -1,3 +1,4 @@
+
 import React from "react";
 import CompanyCardWide from "./CompanyCardWide";
 
@@ -7,6 +8,7 @@ const CardList = ({ startups }) => {
       <div className="text-center text-gray-500">No startups found.</div>
     );
   }
+
   const startupMottos = [
     "Innovating for a better tomorrow.",
     "Empowering ideas, transforming industries.",
@@ -29,12 +31,14 @@ const CardList = ({ startups }) => {
     "Dream it, build it, grow it.",
     "Innovation at the heart of everything we do."
 ];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 px-6">
+    // Use px-4 for mobile, px-6 for larger screens
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 px-4 sm:px-6">
       {startups.map((startup, index) => (
         <CompanyCardWide
           key={index}
-          logo={startup.logo||"https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPink%20Marble%20Background%20Reminder%20Instagram%20Post%20(1).png?alt=media&token=dd704bc5-5cc1-48f4-a80a-a8ec12fa9512" }
+          logo={startup.logo || "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPink%20Marble%20Background%20Reminder%20Instagram%20Post%20(1).png?alt=media&token=dd704bc5-5cc1-48f4-a80a-a8ec12fa9512"}
           fundingStatus={startup.fundingStatus || "Not Funded"}
           name={startup.company_name}
           founder={startup.founder_name}

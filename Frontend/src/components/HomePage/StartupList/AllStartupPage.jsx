@@ -14,7 +14,7 @@ const AllStartup = () => {
     "Food",
     "Art & Entertainment",
     "Logistics",
-    "Education",
+    "Edu-tech",
     "Health",
     "E-commerce",
     "Environment",
@@ -80,41 +80,41 @@ const AllStartup = () => {
   });
 
   return (
-    <div className="grid grid-cols-1">
+    <div className="grid grid-cols-1 overflow-x-hidden">
       <NavBarNew />
 
-      <div className="isolate bg-white px-6 py-24 sm:py-3 lg:px-8 min-h-screen flex flex-col items-center">
-        <div className="py-24 sm:py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl lg:text-center">
-              <h2 className="text-base font-semibold leading-7 text-indigo-600">
-                Innovators of Bihar: Our Startup Showcase
-              </h2>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                Spotlighting Bihar's Pioneering Startups
-              </p>
-            </div>
+      {/* Outer container with responsive padding and vertical spacing */}
+      <div className="isolate bg-white px-4 sm:px-6 py-12 sm:py-24 lg:px-8 min-h-screen flex flex-col items-center">
+        <div className="max-w-7xl w-full">
+          {/* Title Section */}
+          <div className="mx-auto max-w-3xl text-center mt-20 sm:mt-4">
+            <h2 className="text-base font-semibold leading-7 text-indigo-600">
+              Innovators of Bihar: Our Startup Showcase
+            </h2>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Spotlighting Bihar&apos;s Pioneering Startups
+            </p>
+          </div>
 
-            {/* Category Tabs Section */}
-            <div className="flex flex-col items-center mt-10">
-              <div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
-                <nav className="flex justify-center space-x-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => handleCategoryClick(category)}
-                      className={`py-1 px-4 transition-all duration-300
-                        ${
-                          selectedCategory === category
-                            ? "bg-[#F8F7F3] text-[#0E0C22] rounded-full"
-                            : "text-[#151334] font-medium hover:text-opacity-50 hover:bg-transparent rounded-full"
-                        }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </nav>
-              </div>
+          {/* Category Tabs Section */}
+          <div className="flex flex-col items-center mt-10">
+            <div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
+              <nav className="flex justify-center space-x-2 flex-wrap">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryClick(category)}
+                    className={`py-1 px-4 mt-2 sm:mt-0 transition-all duration-300
+                      ${
+                        selectedCategory === category
+                          ? "bg-[#F8F7F3] text-[#0E0C22] rounded-full"
+                          : "text-[#151334] font-medium hover:text-opacity-50 hover:bg-transparent rounded-full"
+                      }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </nav>
             </div>
           </div>
 
