@@ -67,47 +67,104 @@ const HomePage = () => {
 					{/* Background content */}
 				</div>
 
-				{/* Left-middle image with name and designation */}
-				<div className="absolute left-0 top-40 sm:top-64 transform flex flex-col items-center scale-75">
-					<div className="flex flex-col items-center justify-center h-full">
-
+				{/* mobile content */}
+				<div className="grid grid-cols-4 gap-2 scale-75  sm:hidden">
+					<div className="col-span-1 flex flex-col items-center justify-center h-full ">
 						<img
 							src="cm2.png"
 							alt="CM Image"
-							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
+							className="w-24 h-auto object-cover "
 						/>
-						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">Shri Nitish Kumar
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Shri Nitish Kumar
 						</h3>
-						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">Hon'ble Chief Minister, Bihar
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Hon'ble Chief Minister, Bihar
 						</p>
 					</div>
-
-					<div className="flex flex-col items-center justify-center mt-2  h-full">
-	<img
-		src="minister.png"
-		alt="minister Image"
-		className="w-24 md:w-36 lg:w-48 h-auto object-cover"
-	/>
-	<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-		Shri Nitish Mishra
-	</h3>
-	<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-		Hon'ble Minister, Industry Dept, Bihar
-	</p>
-</div>
-
-				</div>
-
-				{/* Right-middle image with name and designation */}
-
-				<div className="absolute right-0 top-40 sm:top-64 transform flex flex-col items-center scale-75">
-					<div className="flex flex-col items-center justify-center  h-full">
-
+					<div className="col-span-1 flex flex-col items-center justify-center h-full ">
+						<img
+							src="minister.png"
+							alt="minister Image"
+							className="w-24 h-auto object-cover "
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+						Shri Nitish Mishra
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+						Hon'ble Minister, Industry Dept, Bihar
+						</p>
+					</div>
+					<div className="col-span-1 flex flex-col items-center h-full  ">
 						<img
 							src="5.png"
 							alt="bihar"
-							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
-							style={{ clipPath: 'inset(0 0 0 0)' }}
+							className="w-24 h-auto object-cover "
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+						Government of Bihar 
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+						Bihar, India
+						</p>
+					</div>
+					<div className="col-span-1 flex flex-col items-center justify-center h-full ">
+						<img
+							src="4.png"
+							alt="industry Image"
+							className="w-24 h-auto object-cover "
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+						Dept. of Industries
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Hon'ble Chief Minister, Bihar
+						</p>
+					</div>
+					
+
+				</div>
+
+
+				{/* Left-middle image with name and designation */}
+				<div className="absolute left-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden sm:flex">
+					<div className="flex flex-col items-center justify-center h-full">
+						<img
+							src="cm2.png"
+							alt="CM Image"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover"
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Shri Nitish Kumar
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Hon'ble Chief Minister, Bihar
+						</p>
+					</div>
+
+					<div className="flex flex-col items-center justify-center mt-2 h-full">
+						<img
+							src="minister.png"
+							alt="minister Image"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover"
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+							Shri Nitish Mishra
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+							Hon'ble Minister, Industry Dept, Bihar
+						</p>
+					</div>
+				</div>
+
+				{/* Right-middle image with name and designation */}
+				<div className="absolute right-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden sm:flex">
+					<div className="flex flex-col items-center justify-center h-full">
+						<img
+							src="5.png"
+							alt="bihar"
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover"
+							style={{ clipPath: "inset(0 0 0 0)" }}
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
 							Govt. of Bihar
@@ -117,12 +174,12 @@ const HomePage = () => {
 						</p>
 					</div>
 
-					<div className="flex flex-col items-center justify-center mt-2  h-full">
+					<div className="flex flex-col items-center justify-center mt-2 h-full">
 						<img
 							src="4.png"
 							alt="industry Image"
-							className="w-24 md:w-36 lg:w-48 h-auto object-cover "
-							style={{ clipPath: 'inset(0 0 0 0)' }}
+							className="w-24 md:w-36 lg:w-48 h-auto object-cover"
+							style={{ clipPath: "inset(0 0 0 0)" }}
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
 							Dept. of Industries
@@ -132,6 +189,7 @@ const HomePage = () => {
 						</p>
 					</div>
 				</div>
+
 
 
 				{/* Title and Countdown */}
@@ -145,7 +203,7 @@ const HomePage = () => {
 				)}
 				{/* Main content section */}
 				<motion.div
-					className={`text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16 ${isCountdownComplete ? "mt-48 sm:mt-40 lg:mt-56" : ""
+					className={`text-center mx-auto max-w-2xl pt-4 mb-12 sm:pt-16 lg:pt-16 ${isCountdownComplete ? "mt-10 sm:mt-40 lg:mt-56" : ""
 						}`}
 					initial="hidden"
 					animate="visible"
@@ -193,13 +251,13 @@ const HomePage = () => {
 						variants={fadeIn}
 					>
 						<a
-							href="#"
+							href="/AllStartups"
 							className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 						>
-							Get started
+							Explore Startups
 						</a>
 						<a
-							href="#"
+							href="/ecosystem"
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>
 							Learn more <span aria-hidden="true">→</span>

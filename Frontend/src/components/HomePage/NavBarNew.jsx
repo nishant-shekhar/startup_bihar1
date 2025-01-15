@@ -168,7 +168,7 @@ const NavBarNew = () => {
 							{/* Mobile Menu Button */}
 							<button
 								onClick={toggleMenu}
-								className="lg:hidden flex items-center"
+								className="lg:hidden flex items-center text-white"
 							>
 								{mobileMenu ? "Close" : "Menu"}
 							</button>

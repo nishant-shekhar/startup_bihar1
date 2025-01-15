@@ -345,13 +345,13 @@ const StartupPublicProfile = () => {
 								{startup.website || "#"}
 							</a>
 							<br />
-							Address:
+							{/*Address:
 							<a
 								href={startup.website || "#"}
 								className="text-blue-600 underline"
 							>
 								{" "}
-							</a>
+							</a>*/}
 						</div>
 					</div>
 				)}

@@ -446,9 +446,10 @@ const HomeSection = () => {
                   {startup.website || "#"}
                 </a>
               </p>
-              <p>
-                <strong>Address:</strong> {/* Insert address logic if available */}
+             {/*  <p>
+                <strong>Address:</strong> {/* Insert address logic if available
               </p>
+               */}
             </div>
           </div>
         )}

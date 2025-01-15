@@ -40,12 +40,12 @@ const Footer = () => {
 							<div>
 
 								<ul className="text-gray-300 dark:text-gray-400 font-medium">
-								<li className="mb-4">
+									<li className="mb-4">
 										<Link to="/contact-us" className="hover:underline">
 											Contact Us
 										</Link>
 									</li>
-									
+
 									<li>
 										<a
 											href="/DeveloperTeam"
@@ -113,10 +113,11 @@ const Footer = () => {
 						</span>
 
 						<a
-							href="/DeveloperTeam"
-							className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
-							This Website is Developed and Maintained by NS Apps Innovations, a product of Startup Bihar
-						</a>
+	href="/DeveloperTeam"
+	className="text-sm text-gray-400 sm:text-center dark:text-gray-400"
+>
+	This website is developed and maintained by <span className="font-bold">NS Apps Innovations</span>, a product of Startup Bihar.
+</a>
 
 
 						<div className="flex mt-4 sm:justify-center sm:mt-0">
