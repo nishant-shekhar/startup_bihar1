@@ -14,7 +14,7 @@ const ContactUs = () => {
 			name: 'Smt Bandana Preyashi, IAS',
 			email: 'secy.ind-bih@nic.in',
 			phone: '0612-2215211',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FSmt.-Bandana-Preyashi.jpg?alt=media&token=22c33254-d76a-47de-8019-acc5659af19c',
+			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fsecy_industry.jpeg?alt=media&token=68ad4faf-27a5-4c37-abde-c06bcef42baf',
 			position: 'Secretary, Department of Industries, GoB',
 			tag: 'Secretary Industry'
 		},
@@ -39,7 +39,7 @@ const ContactUs = () => {
 		{
 			id: 3,
 			name: 'Jyoti Kumari',
-			email: 'jyoti@example.com',
+			email: 'startup-bihar@gov.in',
 			phone: '9031863179',
 			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fjyoti%20mam.jpeg?alt=media&token=16a2240b-1708-43eb-965e-a433c21c2bb2',
 			position: 'Assistant Director',

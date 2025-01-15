@@ -78,7 +78,7 @@ const HomePage = () => {
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">Shri Nitish Kumar
 						</h3>
-						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">Chief Minister, Bihar
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">Hon'ble Chief Minister, Bihar
 						</p>
 					</div>
 
@@ -94,7 +94,7 @@ const HomePage = () => {
 							Shri Nitish Mishra
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-							Minister, Industry Dept, Bihar
+						Hon'ble Minister, Industry Dept, Bihar
 						</p>
 					</div>
 				</div>

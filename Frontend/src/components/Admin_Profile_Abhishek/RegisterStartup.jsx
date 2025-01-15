@@ -17,19 +17,28 @@ const RegisterStartup = () => {
       const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
       // Map the Excel data with necessary fields
-      const formattedData = sheetData.map((row) => ({
-        user_id: row["User ID"],
-        password: row["Password"], // Use the password from the Excel file
-        registration_no: row["Registration No"] || "",
-        company_name: row["Startup Name"] || "",
-        startup_since: row["Startup Since"] || "2022",
-        about: row["About"] || "",
-        founder_name: row["Founder Name"] || "",
-        email: row["Email Id"] || "",
-        mobile: String(row["Mobile"] || ""),
-        category: row["Category"] || "General",
-        topStartup: row["Top Startup"] === "Yes",
-      }));
+
+      const formattedData = sheetData.map((row) => {
+        if (!row["User ID"] || !row["Password"] || !row["Registration No"] || !row["Startup Name"]) {
+          console.error("Invalid row data:", row); // Log invalid rows for debugging
+        }
+      
+        return {
+          user_id: row["User ID"],
+          password: row["Password"],
+          registration_no: row["Registration No"] || "",
+          company_name: row["Startup Name"] || "",
+          startup_since: row["Startup Since"] || "2022",
+          about: row["About"] || "",
+          founder_name: row["Founder Name"] || "",
+          email: row["Email Id"] || "",
+          mobile: String(row["Mobile"] || ""),
+          category: row["Category"] || "General",
+          topStartup: row["Top Startup"] === "Yes",
+        };
+      }).filter((row) => row.user_id && row.password && row.registration_no && row.company_name); // Filter valid rows only
+      
+ 
 
       setData(formattedData);
     };

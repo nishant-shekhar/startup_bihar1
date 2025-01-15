@@ -6,7 +6,8 @@ import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin, FaGlobe } from 'react-i
 const Startupdetails = ({ founderimage, companyname, year }) => {
   const [foundername, setFounderName] = useState('');
   const [company_name, setCompanyName] = useState('');
-  const [moto, setMoto] = useState('Transforming the industry in the startup space');
+  const [startup_since, setStartupSince] = useState('');
+  const [moto, setMoto] = useState('Update your moto here');
   const [links, setLinks] = useState({
     twitter: '',
     facebook: '',
@@ -14,6 +15,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
     linkedin: '',
     website: '',
   });
+ 
   const [isEditingMoto, setIsEditingMoto] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [showDialog, setShowDialog] = useState(false);
@@ -40,6 +42,8 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
           website: startup.website || '',
         });
         setFounderImageUrl(startup.logo || founderimage);
+        setStartupSince(startup.startup_since)
+        console.log(startup)
       } catch (error) {
         console.error('Failed to fetch startup details:', error);
       }
@@ -150,7 +154,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
                       <p className="text-sm md:text-base">{foundername || 'Elon Musk'}, Founder</p>
                       <div className="flex justify-center space-x-2 text-xs md:text-sm mt-1">
                         <span>• Startup</span>
-                        <span>• Since {year || 'Year'}</span>
+                        <span>• Since {startup_since || 'Year'}</span>
                       </div>
                    </div>
                   </div>
@@ -162,7 +166,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
                           type="text"
                           value={moto}
                           onChange={(e) => {
-                            if (e.target.value.length <= 80) {
+                            if (e.target.value.length <= 60) {
                               handleChange('moto', e.target.value);
                             }
                           }}

@@ -91,7 +91,8 @@ const getStartupDetails = async (req, res) => {
         revenueLY:true,
         employeeCount:true,
         workOrders:true,
-        projects:true
+        projects:true,
+        startup_since:true
 
       }
     });
@@ -114,54 +115,88 @@ const getStartupDetails = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { user_id, password, registration_no, company_name, startup_since, about ,founder_name,mobile,email,topStartup,category} = req.body;
-
-    if (!user_id || !password || !registration_no || !company_name || category) {
-      return res.status(400).json({ error: 'All fields are required: user_id, password, registration_no, and company_name' });
+    const {
+      user_id,
+      password,
+      registration_no,
+      company_name,
+      startup_since,
+      about,
+      founder_name,
+      mobile,
+      email,
+      category,
+      topStartup,
+    } = req.body;
+    //console.log(req.body)
+    // Validate required fields
+    if (!user_id || !password || !registration_no || !company_name) {
+      console.error("Validation Error: Missing required fields");
+      return res.status(400).json({
+        error: "All fields are required: user_id, password, registration_no, and company_name",
+      });
     }
 
+    // Check if user_id or registration_no already exists
     const existingUser = await prisma.user.findFirst({
-      where: { OR: [{ user_id }, { registration_no }] }
+      where: { OR: [{ user_id }, { registration_no }] },
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: 'User with this user_id or registration_no already exists' });
+      console.error("Duplicate Error: User with this user_id or registration_no already exists", {
+        user_id,
+        registration_no,
+      });
+      return res.status(400).json({
+        error: "User with this user_id or registration_no already exists",
+      });
     }
 
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Convert `startup_since` to string if it's a number
+    const formattedStartupSince = startup_since ? String(startup_since) : null;
+
+    // Create the user in the database
     const newUser = await prisma.user.create({
       data: {
         user_id,
         password: hashedPassword,
         registration_no,
         company_name,
-        startup_since,
-        founder_name,
-        about,
-        mobile,
-        email,
-        category,
-        topStartup: topStartup === undefined ? false : topStartup, // Default to false if not provided
+        startup_since: formattedStartupSince, // Ensure it's a string
+        about: about || "",
+        founder_name: founder_name || "",
+        mobile: mobile || "",
+        email: email || "",
+        category: category || "General",
+        topStartup: topStartup === true || topStartup === "true" || false, // Default to false if not provided
       },
     });
 
+    // Return success response
     res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       user: {
         user_id: newUser.user_id,
         registration_no: newUser.registration_no,
         company_name: newUser.company_name,
         startup_since: newUser.startup_since,
         about: newUser.about,
-        about: newUser.founder_name
+        founder_name: newUser.founder_name,
+        mobile: newUser.mobile,
+        email: newUser.email,
+        category: newUser.category,
+        topStartup: newUser.topStartup,
       },
     });
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ error: 'An error occurred while creating the user' });
+    console.error("Error creating user:", error.message, error.stack);
+    res.status(500).json({ error: "An error occurred while creating the user" });
   }
 };
+
 // Utility function to verify JWT and get user_id
 const getUserIdFromToken = (token) => {
   try {
