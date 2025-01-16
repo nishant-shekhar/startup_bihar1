@@ -70,19 +70,7 @@ const HomePage = () => {
 				{/* mobile content */}
 				<div className="grid grid-cols-4 gap-2 scale-75 sm:mt-24 md:hidden">
 					
-					<div className="col-span-1 flex flex-col items-center  h-full ">
-						<img
-							src="minister.png"
-							alt="minister Image"
-							className="w-24 h-auto object-cover "
-						/>
-						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-						Shri Nitish Mishra
-						</h3>
-						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-						Hon'ble Minister, Industry Dept, Bihar
-						</p>
-					</div>
+					
 					<div className="col-span-1 flex flex-col items-center  h-full ">
 						<img
 							src="cm2.png"
@@ -116,10 +104,23 @@ const HomePage = () => {
 							className="w-24 h-auto object-cover "
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-						Dept. of Industries
+						Department of Industries
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-							Hon'ble Chief Minister, Bihar
+							Govt. of Bihar
+						</p>
+					</div>
+					<div className="col-span-1 flex flex-col items-center  h-full ">
+						<img
+							src="minister.png"
+							alt="minister Image"
+							className="w-24 h-auto object-cover "
+						/>
+						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
+						Shri Nitish Mishra
+						</h3>
+						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
+						Hon'ble Minister, Industry Dept, Bihar
 						</p>
 					</div>
 					
