@@ -5,7 +5,7 @@ const EventsData = [
   {
     id: 0,
     imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FDSC_3473%20(1).jpg?alt=media&token=ead61695-0dff-46fc-9597-ad937d14894f",
-    dateandtime: "Friday, May 03, 2024",
+    dateandtime: "Thursday, Jan 16, 2025",
     title: "🚀 Celebrating National Startup Day 🚀",
     tag: "Technology",
     subtitle: "On the occassion of National Startup Day, We are happy to launch the new version of Startup Bihar Portal!",
