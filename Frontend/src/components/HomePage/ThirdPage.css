@@ -25,12 +25,12 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    animation: scrollNotifications 16s linear infinite; /* Default scrolling animation */
+    animation: scrollNotifications 32s linear infinite; /* Default scrolling animation */
 }
 
 .notifications-scroll.show-notifications,
 .notifications-scroll.show-app-notifications {
-    animation: scrollNotifications 16s linear infinite; /* Ensures consistent animation */
+    animation: scrollNotifications 32s linear infinite; /* Ensures consistent animation */
 }
 
 /* Pause animation on hover */
@@ -57,6 +57,6 @@
 
 /* Change link color on hover */
 .notifications-scroll a:hover {
-    color: blue; /* Change to blue on hover */
+    color: yellow; /* Change to blue on hover */
     text-decoration: underline; /* Optional: Add underline on hover */
 }

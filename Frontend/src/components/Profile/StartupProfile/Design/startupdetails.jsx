@@ -43,7 +43,6 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
         });
         setFounderImageUrl(startup.logo || founderimage);
         setStartupSince(startup.startup_since)
-        console.log(startup)
       } catch (error) {
         console.error('Failed to fetch startup details:', error);
       }

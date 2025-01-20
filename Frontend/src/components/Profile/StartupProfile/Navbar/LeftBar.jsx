@@ -60,8 +60,8 @@ const LeftBar = ({ changePanel }) => {
   };
 
   const toggleSidebar = () => setIsOpen(!isOpen);
-
-  useEffect(() => {
+  
+  useEffect(() => {     
     const handleClickOutside = (event) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setIsOpen(false);

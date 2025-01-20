@@ -85,8 +85,8 @@ const HomeSection = () => {
 
       //console.log("Startup details:", detailsResponse.data.startup);
       //console.log("Showcases:", showcasesResponse.data.showcase);
-      console.log(employeesResponse.data.employee);
-      console.log(employees)
+      //console.log(employeesResponse.data.employee);
+      //console.log(employees)
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
