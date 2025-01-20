@@ -211,6 +211,7 @@ const HomeSection = () => {
                     <IoPencil className="h-5 w-auto mt-2 pr-1" />
                   </button>
                 </div>
+
                 {showUpdateMetrics && (
                   <UpdateMetrics
                     startup={startup}
@@ -218,6 +219,7 @@ const HomeSection = () => {
                     onUpdate={() => setUpdateCount(updateCount + 1)}
                   />
                 )}
+                
               </div>
 
               {/* Social Links */}

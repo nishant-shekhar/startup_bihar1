@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `matchingLoanAmount` INTEGER NULL DEFAULT 0,
+    ADD COLUMN `postSeedAmount` INTEGER NULL DEFAULT 0,
+    ADD COLUMN `secondTrancheAmount` INTEGER NULL DEFAULT 0,
+    ADD COLUMN `seedFundAmount` INTEGER NULL DEFAULT 0;

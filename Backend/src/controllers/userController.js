@@ -86,13 +86,16 @@ const getStartupDetails = async (req, res) => {
         logo: true,
         founder_dp: true,
         founder_name: true,
-        coverPic:true,
-        category:true,
-        revenueLY:true,
-        employeeCount:true,
-        workOrders:true,
-        projects:true,
-        startup_since:true
+        coverPic: true,
+        category: true,
+        revenueLY: true,
+        employeeCount: true,
+        workOrders: true,
+        projects: true,
+        startup_since: true,
+        seedFundAmount:true,
+        secondTrancheAmount:true,
+        postSeedAmount:true
 
       }
     });
@@ -127,6 +130,10 @@ const createUser = async (req, res) => {
       email,
       category,
       topStartup,
+      seedFundAmount,
+      secondTrancheAmount,
+      postSeedAmount,
+      matchingLoanAmount,
     } = req.body;
     //console.log(req.body)
     // Validate required fields
@@ -172,6 +179,10 @@ const createUser = async (req, res) => {
         email: email || "",
         category: category || "General",
         topStartup: topStartup === true || topStartup === "true" || false, // Default to false if not provided
+        seedFundAmount,
+        secondTrancheAmount,
+        postSeedAmount,
+        matchingLoanAmount,
       },
     });
 
@@ -451,8 +462,8 @@ const getTopStartupDetails = async (req, res) => {
         logo: true,
         founder_dp: true,
         founder_name: true,
-        startup_since:true,
-        category:true
+        startup_since: true,
+        category: true
       },
     });
 
@@ -658,7 +669,7 @@ const addStaff = async (req, res) => {
 
 // 2) Get Staff by Startup
 const getStaffByStartup = async (req, res) => {
-  let  {user_id}  = req.params; // Retrieve id from the request parameters
+  let { user_id } = req.params; // Retrieve id from the request parameters
 
   try {
 
@@ -681,7 +692,7 @@ const getStaffByStartup = async (req, res) => {
         display: true,
         rank: true,
         createdAt: true,
-        
+
       }
     });
 
@@ -748,7 +759,7 @@ const deleteStaff = async (req, res) => {
 module.exports = {
   userLogin,
   createUser,
-  
+
   getStartupDetails,
 
   updateAbout,

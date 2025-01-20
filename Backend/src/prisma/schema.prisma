@@ -81,6 +81,11 @@ model User {
   workOrders            Int?
   projects              Int?
 
+  seedFundAmount        Int? @default(0) // New field
+  secondTrancheAmount   Int? @default(0) // New field
+  postSeedAmount        Int? @default(0) // New field
+  matchingLoanAmount    Int? @default(0) // New field
+
   startup_since         String?
   about                 String? @db.Text  
   moto                  String?

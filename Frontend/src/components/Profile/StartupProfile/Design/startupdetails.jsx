@@ -33,7 +33,7 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
         const { startup } = response.data;
         setFounderName(startup.founder_name);
         setCompanyName(startup.company_name);
-        setMoto(startup.moto || 'Transforming the industry in the startup space');
+        setMoto(startup.moto || 'Update Your Startup Moto Here');
         setLinks({
           twitter: startup.twitter || '',
           facebook: startup.facebook || '',

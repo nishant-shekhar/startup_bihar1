@@ -3,33 +3,40 @@ import { Link, useNavigate } from 'react-router-dom';
 import Startupdetails from '../Design/startupdetails';
 import './LeftBar.css';
 import menu from '../../../../assets/menu.png';
-import axios from 'axios';
 import LogOutDailogBox from './LogoutDialog';
 
+// Import the icons you need from react-icons
+import {
+  FaLightbulb,
+  FaHandshake,
+  FaRocket,
+  FaFileAlt,
+  FaQuestionCircle,
+  FaDoorOpen,
+  FaHome,
+  FaUser,
+  FaMoneyBill,
 
+} from 'react-icons/fa';
+
+// Define your menu items, but use React Icon components directly
 const menuItems = [
-  { name: 'Home', panel: 'HomeSection', iconClass: 'fas fa-chart-bar' },
-  { name: 'SSU', panel: 'SSU', iconClass: 'fas fa-chart-bar' },
-
+  { name: 'Home', panel: 'HomeSection', icon: <FaHome /> },
+  { name: 'SSU', panel: 'SSU', icon: <FaUser /> },
 ];
+
+// Define your forms items, again using React Icon components
 const formsItems = [
-
-  { name: 'Startup Details Form', panel: 'StartupForm', iconClass: 'fas fa-lightbulb' },
-  { name: 'Seed Fund Form', panel: 'SeedFund', iconClass: 'fas fa-lightbulb' },
-  { name: 'Second Tranche Form', panel: 'SecondTranche', iconClass: 'fas fa-lightbulb' },
-
-  { name: 'Post Seed Fund Form', panel: 'PostSeed', iconClass: 'fas fa-lightbulb' },
-  { name: 'QPR Form', panel: 'Qpr', iconClass: 'fas fa-file-alt' },
-
-  { name: 'Matching Loan', panel: 'Matchingloan', iconClass: 'fas fa-handshake' },
-
-
-  { name: 'IPR Reimbursement Form', panel: 'Reimbursement', iconClass: 'fas fa-dollar-sign' },
-
-  { name: 'Apply For Incubation', panel: 'Incubation', iconClass: 'fas fa-seedling' },
-  { name: 'Apply for Coworking', panel: 'Coworking', iconClass: 'fas fa-building' },
-  { name: 'Acceleration Programme', panel: 'Acceleration', iconClass: 'fas fa-rocket' },
+  { name: 'Startup Details Form', panel: 'StartupForm', icon: <FaFileAlt /> },
+  { name: 'Seed Fund Form', panel: 'SeedFund', icon: <FaFileAlt /> },
+  { name: 'Second Tranche Form', panel: 'SecondTranche', icon: <FaFileAlt /> },
+  { name: 'Post Seed Fund Form', panel: 'PostSeed', icon: <FaFileAlt /> },
+  { name: 'QPR Form', panel: 'Qpr', icon: <FaFileAlt /> },
+  { name: 'Matching Loan', panel: 'Matchingloan', icon: <FaHandshake /> },
+  { name: 'IPR Reimbursement Form', panel: 'Reimbursement', icon: <FaMoneyBill /> },
+  { name: 'Acceleration Programme', panel: 'Acceleration', icon: <FaRocket /> },
 ];
+
 const LeftBar = ({ changePanel }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -41,17 +48,15 @@ const LeftBar = ({ changePanel }) => {
     setIsDialogVisible(true);
   };
 
-
   const handleCancel = () => {
     setIsDialogVisible(false);
   };
 
-
   const handleClose = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user_id");
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_id');
     setIsDialogVisible(false);
-    navigate("/login");
+    navigate('/login');
   };
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -66,48 +71,9 @@ const LeftBar = ({ changePanel }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  /*const checkDocumentStatus = async (url) => {
-      const token = localStorage.getItem('token');
-      try {
-          const response = await axios.get(url, {
-              headers: { Authorization: token },
-          });
-          const { document } = response.data;
-  
-          if (document.documentStatus === null) {
-              // If document status is null, open the 'StartupForm' panel
-              changePanel('StartupForm');
-          } else {
-              // Set the message based on the document status
-              const statusMessages = {
-                  created: "Document Status: Initiated - Your document is under review.",
-                  accepted: "Document Status: Accepted - Your document has been approved.",
-                  rejected: "Document Status: Rejected - Your document has been rejected.",
-              };
-  
-              const statusMessage = statusMessages[document.documentStatus];
-              
-              if (statusMessage) {
-                  // Open the "Accepted" panel with the valid status message
-                  changePanel("Accepted", {
-                      statusText: statusMessage
-                  });
-              } else {
-                  // If document status is not one of the specified statuses, open 'StartupForm' panel
-                  changePanel('StartupForm');
-              }
-          }
-      } catch (error) {
-          console.error('Error fetching document status:', error);
-  
-          // If there’s an error, open the "StartupForm" panel
-          changePanel('StartupForm');
-      }
-  };*/
-
-
   return (
     <>
+      {/* Button to toggle sidebar (mobile view) */}
       <button
         onClick={toggleSidebar}
         className="absolute top-4 left-4 z-50 md:hidden p-2 bg-gray-200 rounded"
@@ -115,49 +81,52 @@ const LeftBar = ({ changePanel }) => {
         <img src={menu} alt="menu icon" className="h-6 w-6" />
       </button>
 
+      {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`bg-[#1c2437] text-[#f5f7f6] h-screen overflow-y-scroll overflow-x-hidden flex flex-col justify-between p-4 
-            ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 transition-transform duration-300 fixed md:static`}
+        className={`bg-[#1c2437] text-[#f5f7f6] h-screen overflow-y-scroll overflow-x-hidden flex flex-col justify-between p-4
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0 transition-transform duration-300 fixed md:static`}
         style={{ width: isOpen ? '60%' : '22%' }}
       >
-
-
         <Startupdetails
           founderimage="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPink%20Marble%20Background%20Reminder%20Instagram%20Post%20(1).png?alt=media&token=dd704bc5-5cc1-48f4-a80a-a8ec12fa9512"
           companyname=""
           year=""
         />
 
+        {/* Menu section */}
         <div className="flex flex-col space-y-4 mb-4">
           <span className="text-sm font-semibold">Menu</span>
           {menuItems.map((item, idx) => (
             <button
               key={idx}
               onClick={() => {
-
                 setSelectedItem(item.panel);
                 changePanel(item.panel);
-
               }}
-              className={`flex items-center justify-between px-3 py-2 rounded-md ${selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'
-                }`}
+              className={`flex items-center justify-between px-3 py-2 rounded-md ${
+                selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'
+              }`}
             >
-              
               <span className="flex items-center space-x-2">
-                <i className={item.iconClass}></i>
+                {/* Render the React Icon */}
+                <span className="text-xl">{item.icon}</span>
                 <span>{item.name}</span>
               </span>
-              
+
+              {/* Optional: If there's any notificationCount, show it */}
               {item.notificationCount && (
-                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">{item.notificationCount}</span>
+                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">
+                  {item.notificationCount}
+                </span>
               )}
             </button>
           ))}
-
         </div>
         <hr className="border-t border-gray-600 mb-2" />
 
+        {/* Forms section */}
         <div className="flex flex-col space-y-4 mb-8">
           {formsItems.map((item, idx) => (
             <button
@@ -166,14 +135,19 @@ const LeftBar = ({ changePanel }) => {
                 setSelectedItem(item.panel);
                 changePanel(item.panel);
               }}
-              className={`flex items-center justify-between px-3 py-2 rounded-md ${selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'}`}
+              className={`flex items-center justify-between px-3 py-2 rounded-md ${
+                selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'
+              }`}
             >
               <span className="flex items-center space-x-2">
-                <i className={item.iconClass}></i>
+                {/* Render the React Icon */}
+                <span className="text-xl">{item.icon}</span>
                 <span>{item.name}</span>
               </span>
               {item.notificationCount && (
-                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">{item.notificationCount}</span>
+                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">
+                  {item.notificationCount}
+                </span>
               )}
             </button>
           ))}
@@ -181,10 +155,14 @@ const LeftBar = ({ changePanel }) => {
 
         <hr className="border-t border-gray-600 my-2" />
 
+        {/* Help & Logout */}
         <div>
-          <Link to="/contact-us" className="flex items-center justify-between px-3 py-4 rounded-md hover:bg-gray-500">
+          <Link
+            to="/contact-us"
+            className="flex items-center justify-between px-3 py-4 rounded-md hover:bg-gray-500"
+          >
             <span className="flex items-center space-x-2">
-              <i className="fas fa-question-circle"></i>
+              <FaQuestionCircle className="text-xl" />
               <span>Help</span>
             </span>
           </Link>
@@ -192,13 +170,14 @@ const LeftBar = ({ changePanel }) => {
             onClick={handleLogoutClick}
             className="flex items-center justify-between px-3 py-4 hover:bg-gray-500 rounded-md"
           >
-            <i className="fas fa-sign-out-alt"></i>
+            {/* React icon for Logout */}
+            <FaDoorOpen className="text-xl" />
             <span className="ml-2">Logout</span>
           </button>
         </div>
       </div>
 
-      {/* Dialog Box should be rendered outside of sidebar, ensuring it takes full screen */}
+      {/* Logout Dialog Box */}
       <LogOutDailogBox
         isVisible={isDialogVisible}
         title="Confirm Logout"
@@ -211,7 +190,6 @@ const LeftBar = ({ changePanel }) => {
         onCancel={handleCancel}
       />
     </>
-
   );
 };
 
