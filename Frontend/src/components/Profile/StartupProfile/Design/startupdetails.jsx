@@ -3,10 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin, FaGlobe } from 'react-icons/fa';
 
-const Startupdetails = ({ founderimage, companyname, year }) => {
-  const [foundername, setFounderName] = useState('');
-  const [company_name, setCompanyName] = useState('');
-  const [startup_since, setStartupSince] = useState('');
+const Startupdetails = ({ startup }) => {
   const [moto, setMoto] = useState('Update your moto here');
   const [links, setLinks] = useState({
     twitter: '',
@@ -15,41 +12,26 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
     linkedin: '',
     website: '',
   });
- 
   const [isEditingMoto, setIsEditingMoto] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [showDialog, setShowDialog] = useState(false);
-  const [founderImageUrl, setFounderImageUrl] = useState(founderimage);
+  const [founderImageUrl, setFounderImageUrl] = useState("https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPink%20Marble%20Background%20Reminder%20Instagram%20Post%20(1).png?alt=media&token=dd704bc5-5cc1-48f4-a80a-a8ec12fa9512");
 
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        const response = await axios.get(
-          `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
-        );
-
-        const { startup } = response.data;
-        setFounderName(startup.founder_name);
-        setCompanyName(startup.company_name);
-        setMoto(startup.moto || 'Update Your Startup Moto Here');
-        setLinks({
-          twitter: startup.twitter || '',
-          facebook: startup.facebook || '',
-          instagram: startup.instagram || '',
-          linkedin: startup.linkedin || '',
-          website: startup.website || '',
-        });
-        setFounderImageUrl(startup.logo || founderimage);
-        setStartupSince(startup.startup_since)
-      } catch (error) {
-        console.error('Failed to fetch startup details:', error);
-      }
-    };
-
-    fetchDetails();
-  }, [founderimage]);
+    if (startup) {
+      setMoto(startup.moto || 'Update Your Startup Moto Here');
+      setLinks({
+        twitter: startup.twitter || '',
+        facebook: startup.facebook || '',
+        instagram: startup.instagram || '',
+        linkedin: startup.linkedin || '',
+        website: startup.website || '',
+      });
+      setFounderImageUrl(startup.logo || "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPink%20Marble%20Background%20Reminder%20Instagram%20Post%20(1).png?alt=media&token=dd704bc5-5cc1-48f4-a80a-a8ec12fa9512");
+    }
+  }, [startup]);
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
@@ -59,30 +41,23 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
 
       try {
         setShowDialog(true);
-        setDialogMessage("Uploading logo...");
+        setDialogMessage('Uploading logo...');
 
         const response = await axios.put('https://startupbihar.in/api/userlogin/update-logo', formData, {
           headers: {
-            Authorization: `${localStorage.getItem('token')}`, // No 'Bearer' prefix as requested
+            Authorization: `${localStorage.getItem('token')}`,
             'Content-Type': 'multipart/form-data',
           },
         });
 
-        setDialogMessage("Logo updated successfully");
-        setFounderImageUrl(URL.createObjectURL(file)); // Update preview with selected file
-
+        setDialogMessage('Logo updated successfully');
+        setFounderImageUrl(URL.createObjectURL(file));
       } catch (error) {
         console.error('Failed to upload logo:', error);
-        setDialogMessage("Failed to update logo");
+        setDialogMessage('Failed to update logo');
       } finally {
         setTimeout(() => setShowDialog(false), 2000);
       }
-    }
-  };
-
-  const openFileSelector = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
     }
   };
 
@@ -128,93 +103,71 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
 
   return (
     <div className="mb-4 p-4 max-w-full md:max-w-3xl mx-auto">
-      <div className="mb-4 p-4 max-w-full md:max-w-3xl mx-auto">
-             <div className="flex flex-col items-center w-full space-y-4">
+      <div className="flex flex-col items-center w-full space-y-4">
+        <div className="flex flex-col items-center">
+          <img
+            alt="Founder"
+            src={founderImageUrl}
+            className="w-20 h-20 rounded-full object-cover border-2 border-gray-400 cursor-pointer transition-transform duration-300 hover:scale-105"
+            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+        </div>
 
-                <div className="flex flex-col items-center">
-                    <img
-                    alt="Founder"
-                    src={founderImageUrl || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAWlBMVEXv8fNod4f19vhkdIRcbX52g5KPmqX29/iYoq3l6OuCj5vd4eTr7fBfcIFaa33M0dbBx82SnKe7wchtfIt8iZejq7TU2N2Ik6CwuL/Gy9Gqsrqbpa/P1NmhqrNz0egRAAADBklEQVR4nO3c63KqMBRAYUiwwUvEete27/+ax1tVAqhwEtnprO+XM62Oyw2CGTFJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJe6Mb5vqL7jjsws/wgln/dddzBZZjocuxj2HaiWNg1JL/oO3GVBA9PUzvvdF80q7AgPQ/zot1DlOnThyFBIIYWvFtrMK3mFdj30aWzFFWZjr+/qE4mFXh+YwrehsDMK34bCzmIoVEad1nC6PbD8QpXMNwOdDvKi2xMUX2jm2h7/onU2WHcZo/RCld8WN3TWZR1CeKH6LK1tTGftE2UXqpmzPGXbLwnKLkzcT8X6s/UQRReqWWX9LWs9RNGF5qOysmFb74miC9XCDUzt6k8VJtXC9jsihW9Tu5Uuq/vhvlKokuGjc1bRhWZVLdw5MWq8mU6zfNL4wKILk/W0spW6dyvOZ61p4wKd7EIzcoZot+UQVVxeA62bEmUXJuPyIV8PnDsVtxXtpikKL1S7++1U6/IZzV1g8xSFFx4i9HWMdjksNZQCGxOlFyZq8jW1VmubpZV90PngUZ8ovvDYuNt//Wy/1ZPAhsQICo+rUMa4T70msP7tJorCun8vKofKhilGWlg7wfopxlnYMMHaKUZZ2DjBuinGWPgwsDLFCAufBLqJ8RU+DXQ21OgKXwgsTzG2wpcCj1O8nsJGVvjgMNE0xbgKX5zgeYqXxKgKX57geYrnDTWmwhYTvJtiRIUtA3/fbuIpbB14mWI0hR0Cz1OMpbBT4CkxiaOwY+BpQ42isNVhwk283hJc2HmC5Va5hf8xwTgK/UxQcKGvQLGF3gKlFvoLFFroMVBmoc9AkYWeDhNyC1Xh9aJLeYV+Jyiw0Os+KLHQe6C0Qv+BwgoDBMoqDBEoqtCECJRUOPz2e5gQV2jnYa7qllOYBvr5CEGFgVBIIYXPmJ/ghZueZ+hexOWd+w3q9ycuwg5R2377DsapDflbX7rTFah+TbajQSij/aT/wNNF26FUvoELAAAAAAAAAAAAAAAAAAAAAAAAAAAA4G/4B9L3P1vg3y4/AAAAAElFTkSuQmCC'}
-                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-400 cursor-pointer transition-transform duration-300 hover:scale-105"
-                    onClick={openFileSelector}
-                    />
-                    <input
-                     type="file"
-                     ref={fileInputRef}
-                     style={{ display: 'none' }}
-                    accept="image/*"
-                     onChange={handleFileChange}
-                    />
-                   </div>
+        <div className="text-center">
+          <h1 className="text-xl md:text-2xl font-bold">{startup.company_name || 'Loading...'}</h1>
+          <p className="text-sm md:text-base">{startup.founder_name || 'Founder'}, Founder</p>
+          <div className="flex justify-center space-x-2 text-xs md:text-sm mt-1">
+            <span>• Startup</span>
+            <span>• Since {startup.startup_since || 'Year'}</span>
+          </div>
+        </div>
+      </div>
 
-
-                    <div className="text-center">
-                      <h1 className="text-xl md:text-2xl font-bold">{company_name || 'Loading...'}</h1>
-                      <p className="text-sm md:text-base">{foundername || 'Elon Musk'}, Founder</p>
-                      <div className="flex justify-center space-x-2 text-xs md:text-sm mt-1">
-                        <span>• Startup</span>
-                        <span>• Since {startup_since || 'Year'}</span>
-                      </div>
-                   </div>
-                  </div>
-
- 
-                    <div className="mt-4 text-center">
-                     {isEditingMoto ? (
-                        <input
-                          type="text"
-                          value={moto}
-                          onChange={(e) => {
-                            if (e.target.value.length <= 60) {
-                              handleChange('moto', e.target.value);
-                            }
-                          }}
-                          onBlur={() => {
-                            handleUpdate('moto', moto);
-                            setIsEditingMoto(false);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleUpdate('moto', moto);
-                             setIsEditingMoto(false);
-                            }
-                          }}
-                          className="border p-2 rounded w-full md:w-auto text-black"
-                        />
-                      ) : (
-                        <p onClick={() => setIsEditingMoto(true)} className="cursor-pointer text-lg italic">
-                          {moto || 'Click to add moto'}
-                        </p>
-                      )}
-                    </div>
-                        </div>
-
-
-     
+      <div className="mt-4 text-center">
+        {isEditingMoto ? (
+          <input
+            type="text"
+            value={moto}
+            onChange={(e) => {
+              if (e.target.value.length <= 60) {
+                handleChange('moto', e.target.value);
+              }
+            }}
+            onBlur={() => {
+              handleUpdate('moto', moto);
+              setIsEditingMoto(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleUpdate('moto', moto);
+                setIsEditingMoto(false);
+              }
+            }}
+            className="border p-2 rounded w-full md:w-auto text-black"
+          />
+        ) : (
+          <p onClick={() => setIsEditingMoto(true)} className="cursor-pointer text-lg italic">
+            {moto || 'Click to add moto'}
+          </p>
+        )}
+      </div>
 
       <div className="mt-6 flex space-x-4 justify-center">
         {Object.entries(links).map(([platform, link]) => (
-          <div key={platform} className="relative group">
+          <a key={platform} href={link} target="_blank" rel="noopener noreferrer">
             {platform === 'twitter' && <FaTwitter className="text-xl cursor-pointer hover:text-blue-500" />}
             {platform === 'facebook' && <FaFacebook className="text-xl cursor-pointer hover:text-blue-700" />}
             {platform === 'instagram' && <FaInstagram className="text-xl cursor-pointer hover:text-pink-500" />}
             {platform === 'linkedin' && <FaLinkedin className="text-xl cursor-pointer hover:text-blue-600" />}
             {platform === 'website' && <FaGlobe className="text-xl cursor-pointer hover:text-green-600" />}
-
-            {/* <input
-              type="text"
-              value={link}
-              onChange={(e) => handleChange(platform, e.target.value)}
-              onBlur={() => handleUpdate(platform, link)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleUpdate(platform, link);
-                }
-              }}
-              placeholder={link || `Add ${platform.charAt(0).toUpperCase() + platform.slice(1)} Link`}
-              className="absolute top-10 left-0 w-48 p-2 bg-gray-600 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-black"
-            /> */}
-          </div>
+          </a>
         ))}
       </div>
 
@@ -229,12 +182,9 @@ const Startupdetails = ({ founderimage, companyname, year }) => {
   );
 };
 
-
-
 Startupdetails.propTypes = {
   founderimage: PropTypes.string,
-  companyname: PropTypes.string,
-  year: PropTypes.string,
+  startup: PropTypes.object.isRequired,
 };
 
 export default Startupdetails;

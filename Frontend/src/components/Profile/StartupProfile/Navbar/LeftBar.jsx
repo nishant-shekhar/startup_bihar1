@@ -4,8 +4,7 @@ import Startupdetails from '../Design/startupdetails';
 import './LeftBar.css';
 import menu from '../../../../assets/menu.png';
 import LogOutDailogBox from './LogoutDialog';
-
-// Import the icons you need from react-icons
+import axios from 'axios';
 import {
   FaLightbulb,
   FaHandshake,
@@ -16,25 +15,12 @@ import {
   FaHome,
   FaUser,
   FaMoneyBill,
-
+  FaCheckCircle,
 } from 'react-icons/fa';
 
-// Define your menu items, but use React Icon components directly
 const menuItems = [
   { name: 'Home', panel: 'HomeSection', icon: <FaHome /> },
   { name: 'SSU', panel: 'SSU', icon: <FaUser /> },
-];
-
-// Define your forms items, again using React Icon components
-const formsItems = [
-  { name: 'Startup Details Form', panel: 'StartupForm', icon: <FaFileAlt /> },
-  { name: 'Seed Fund Form', panel: 'SeedFund', icon: <FaFileAlt /> },
-  { name: 'Second Tranche Form', panel: 'SecondTranche', icon: <FaFileAlt /> },
-  { name: 'Post Seed Fund Form', panel: 'PostSeed', icon: <FaFileAlt /> },
-  { name: 'QPR Form', panel: 'Qpr', icon: <FaFileAlt /> },
-  { name: 'Matching Loan', panel: 'Matchingloan', icon: <FaHandshake /> },
-  { name: 'IPR Reimbursement Form', panel: 'Reimbursement', icon: <FaMoneyBill /> },
-  { name: 'Acceleration Programme', panel: 'Acceleration', icon: <FaRocket /> },
 ];
 
 const LeftBar = ({ changePanel }) => {
@@ -44,24 +30,56 @@ const LeftBar = ({ changePanel }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
 
-  const handleLogoutClick = () => {
-    setIsDialogVisible(true);
+  // State for storing startup details
+  const [startup, setStartup] = useState({});
+
+  // Manage formsItems state
+  const [formsItems, setFormsItems] = useState([
+    { name: 'Startup Details Form', panel: 'StartupForm', icon: <FaFileAlt />, open: true },
+    { name: 'Seed Fund Form', panel: 'SeedFund', icon: <FaFileAlt />, open: true },
+    { name: 'Second Tranche Form', panel: 'SecondTranche', icon: <FaFileAlt />, open: true },
+    { name: 'Post Seed Fund Form', panel: 'PostSeed', icon: <FaFileAlt />, open: true },
+    { name: 'QPR Form', panel: 'Qpr', icon: <FaFileAlt />, open: true },
+    { name: 'Matching Loan', panel: 'Matchingloan', icon: <FaHandshake />, open: true },
+    { name: 'IPR Reimbursement Form', panel: 'Reimbursement', icon: <FaMoneyBill />, open: true },
+    { name: 'Acceleration Programme', panel: 'Acceleration', icon: <FaRocket />, open: true },
+  ]);
+
+  // Fetch the startup details
+  const fetchDetails = async () => {
+    try {
+      const response = await axios.get(
+        `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
+      );
+      setStartup(response.data.startup);
+
+      const { seedFundAmount, secondTrancheAmount, postSeedAmount } = response.data.startup;
+
+      setFormsItems((prevItems) =>
+        prevItems.map((item) => {
+          if (item.panel === 'SeedFund' && seedFundAmount !== 0) {
+            return { ...item, open: false, icon: <FaCheckCircle className="text-green-600" /> };
+          }
+          if (item.panel === 'SecondTranche' && secondTrancheAmount !== 0) {
+            return { ...item, open: false, icon: <FaCheckCircle className="text-green-600" /> };
+          }
+          if (item.panel === 'PostSeed' && postSeedAmount !== 0) {
+            return { ...item, open: false, icon: <FaCheckCircle className="text-green-600" /> };
+          }
+          return item;
+        })
+      );
+      
+    } catch (error) {
+      console.error('Failed to fetch startup details:', error);
+    }
   };
 
-  const handleCancel = () => {
-    setIsDialogVisible(false);
-  };
+  // Load details on component mount
+  useEffect(() => {
+    fetchDetails();
 
-  const handleClose = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user_id');
-    setIsDialogVisible(false);
-    navigate('/login');
-  };
-
-  const toggleSidebar = () => setIsOpen(!isOpen);
-  
-  useEffect(() => {     
+    // Close sidebar if clicked outside
     const handleClickOutside = (event) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -70,6 +88,23 @@ const LeftBar = ({ changePanel }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Dialog handling
+  const handleLogoutClick = () => {
+    setIsDialogVisible(true);
+  };
+  const handleCancel = () => {
+    setIsDialogVisible(false);
+  };
+  const handleClose = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_id');
+    setIsDialogVisible(false);
+    navigate('/login');
+  };
+
+  // Sidebar toggle
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
     <>
@@ -89,11 +124,7 @@ const LeftBar = ({ changePanel }) => {
           md:translate-x-0 transition-transform duration-300 fixed md:static`}
         style={{ width: isOpen ? '60%' : '22%' }}
       >
-        <Startupdetails
-          founderimage="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPink%20Marble%20Background%20Reminder%20Instagram%20Post%20(1).png?alt=media&token=dd704bc5-5cc1-48f4-a80a-a8ec12fa9512"
-          companyname=""
-          year=""
-        />
+        <Startupdetails startup={startup} />
 
         {/* Menu section */}
         <div className="flex flex-col space-y-4 mb-4">
@@ -110,17 +141,9 @@ const LeftBar = ({ changePanel }) => {
               }`}
             >
               <span className="flex items-center space-x-2">
-                {/* Render the React Icon */}
                 <span className="text-xl">{item.icon}</span>
                 <span>{item.name}</span>
               </span>
-
-              {/* Optional: If there's any notificationCount, show it */}
-              {item.notificationCount && (
-                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">
-                  {item.notificationCount}
-                </span>
-              )}
             </button>
           ))}
         </div>
@@ -132,23 +155,19 @@ const LeftBar = ({ changePanel }) => {
             <button
               key={idx}
               onClick={() => {
-                setSelectedItem(item.panel);
-                changePanel(item.panel);
+                if (item.open) {
+                  setSelectedItem(item.panel);
+                  changePanel(item.panel);
+                }
               }}
               className={`flex items-center justify-between px-3 py-2 rounded-md ${
                 selectedItem === item.panel ? 'bg-gray-500' : 'hover:bg-gray-500'
               }`}
             >
               <span className="flex items-center space-x-2">
-                {/* Render the React Icon */}
                 <span className="text-xl">{item.icon}</span>
                 <span>{item.name}</span>
               </span>
-              {item.notificationCount && (
-                <span className="bg-red-500 text-xs font-bold px-2 py-1 rounded-full">
-                  {item.notificationCount}
-                </span>
-              )}
             </button>
           ))}
         </div>
@@ -170,7 +189,6 @@ const LeftBar = ({ changePanel }) => {
             onClick={handleLogoutClick}
             className="flex items-center justify-between px-3 py-4 hover:bg-gray-500 rounded-md"
           >
-            {/* React icon for Logout */}
             <FaDoorOpen className="text-xl" />
             <span className="ml-2">Logout</span>
           </button>
