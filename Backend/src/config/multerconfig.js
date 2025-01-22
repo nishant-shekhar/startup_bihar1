@@ -25,7 +25,7 @@ const upload = multer({
       cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
   }),
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10 MB
+  limits: { fileSize: 20 * 1024 * 1024 }, // Limit file size to 20 MB
   fileFilter: (req, file, cb) => {
     // Accept PDFs and common image types
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
