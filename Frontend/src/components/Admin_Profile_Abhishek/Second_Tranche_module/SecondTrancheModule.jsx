@@ -91,13 +91,13 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			}, {});
 
 			const docLinks = selectedOptions.map(option => {
-				const docName = option === "utilizationCertificate" ? "C.A certified utilization certificate" :
+				const docName = option === "utilizationCertificate" ? "C.A certificate" :
 								option === "statusReport" ? "Status Report" :
-								option === "expenditurePlan" ? "Self declared second tranche expenditure plan in the letter head of entity" :
-								option === "bankStatement" ? "Bank statement (Highlight the fund received and expenditure made)" :
+								option === "expenditurePlan" ? "Expenditure plan" :
+								option === "bankStatement" ? "Bank statement" :
 								option === "expenditureInvoice" ? "Expenditure Invoice" :
-								option === "geoTaggedPhotos" ? "Geo-tagged photos of your offices/units" : option;
-				return `${data[option]}:${docName}`;
+								option === "geoTaggedPhotos" ? "Geo-tagged photos" : option;
+				return `${data[option]}^${docName}`;
 			}).join(", ");
 
 			await axios.patch(

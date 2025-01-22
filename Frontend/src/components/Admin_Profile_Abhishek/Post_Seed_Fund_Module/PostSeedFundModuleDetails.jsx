@@ -13,7 +13,8 @@ const PostSeedFundModuleDetails = ({ id }) => {
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
 	const [selectedOptions, setSelectedOptions] = useState([]);
-
+	const adminRole = localStorage.getItem("admin_role") || "admin";
+	const adminId = localStorage.getItem("admin_id") || "admin";
 	const fetchData = async () => {
 		if (id) {
 			try {
@@ -62,6 +63,9 @@ const PostSeedFundModuleDetails = ({ id }) => {
 			handleDialog("Application is rejected.");
 			setIsCommentVisible(false);
 			await fetchData();
+
+			// Post notification
+			await postNotification("Your Post seed Fund application has been rejected.", `Reason: ${comment}`);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -74,6 +78,16 @@ const PostSeedFundModuleDetails = ({ id }) => {
 				acc[field] = null;
 				return acc;
 			}, {});
+
+			const docLinks = selectedOptions.map(option => {
+				const docName = option === "projectReport" ? "Project Report" :
+					option === "gstReturn" ? "GST Return" :
+						option === "auditedBalanceSheet" ? "Audited Balance Sheet" : option;
+				return `${data[option]}^${docName}`;
+
+			}).join(", ");
+
+
 			await axios.patch(
 				`https://startupbihar.in/api/post-seed/u1/${id}`,
 				{
@@ -91,6 +105,9 @@ const PostSeedFundModuleDetails = ({ id }) => {
 			handleDialog("Application is partially rejected.");
 			setIsCommentVisible(false);
 			await fetchData();
+
+			// Post notification
+			await postNotification("Your Post Seed Fund application has been partially rejected.", docLinks, `Reason: ${comment}`);
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -114,11 +131,55 @@ const PostSeedFundModuleDetails = ({ id }) => {
 			);
 			handleDialog("Application is accepted.");
 			await fetchData();
+
+			// Post notification
+			await postNotification("Your Post Seed Fund application has been accepted.");
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
 	};
+	const postNotification = async (notificationMessage, docLink = null, subtitle = "Post Seed Fund Application") => {
+		try {
+			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
+				console.error("Missing required fields to post a notification.");
+				return;
+			}
+			console.log(data?.user?.user_id)
+			console.log(data?.user_id)
 
+			const notificationData = {
+				user_id: data.userId, // Ensure `userId` is present
+				admin_id: adminId, // Replace with actual admin ID
+				admin_role: adminRole, // Replace with actual admin role
+				notification: notificationMessage,
+				subtitle: subtitle,
+				related_to: `Application ID: ${id}`, // Ensure `id` is defined
+			};
+
+			if (docLink) {
+				notificationData.docLink = docLink;
+			}
+
+			const response = await axios.post(
+				"https://startupbihar.in/api/notifications/",
+				notificationData,
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`, // Validate `token` existence
+					}
+				},
+			);
+
+			if (response.status === 201) {
+				console.log("Notification posted successfully.");
+			} else {
+				console.error("Unexpected response:", response);
+			}
+		} catch (error) {
+			console.error("Error posting notification:", error.response?.data || error.message);
+		}
+	};
 	const getStatusColor = () => {
 		if (data.documentStatus === "Accepted") return "text-green-500";
 		if (data.documentStatus === "Rejected") return "text-red-500";
@@ -181,13 +242,13 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		>
 			<h1 className="pt-5 pl-8 text-2xl">Post Seed Fund Module Details</h1>
 			<p className="pt-5 pl-8 text-l text-indigo-600">
-  {data?.user?.company_name || "Company Name Unavailable"} | 
-  Startup ID: {data?.user?.user_id || "ID Unavailable"}
-</p>
-<p className="pl-8 text-sm font-light text-gray-600">
-  First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} | 
-  Last Updated on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
-</p>
+				{data?.user?.company_name || "Company Name Unavailable"} |
+				Startup ID: {data?.user?.user_id || "ID Unavailable"}
+			</p>
+			<p className="pl-8 text-sm font-light text-gray-600">
+				First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} |
+				Last Updated on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
+			</p>
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">
 					<tbody>
