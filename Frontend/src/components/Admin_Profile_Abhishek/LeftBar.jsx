@@ -63,19 +63,41 @@ const LeftBar = ({ changePanel }) => {
 	  "Acceleration Programme Module",
 	  "IPR Reimbursement Module",
 	  "Data Mining",
-	  "Mentors List",
 	  "Register New Startups",
 	],
-	finance: [
-    "Notifications",
+	"finance-wing": [
+    "Startup Profile",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
+	  "Post Seed Fund Module",
 	  "QPR Module",
 	  "Matching Loan",
-	  "Post Seed Fund Module",
+	  "Incubation Module",
+	  "Acceleration Programme Module",
 	],
+  "incubation-wing":[ 
+    "Startup Profile",
+	  "Seed Fund Module",
+	  "Second Tranche Module",
+	  "Post Seed Fund Module",
+	  "QPR Module",
+	  "Matching Loan",
+	  "Incubation Module",
+	  "Acceleration Programme Module",
+  ],
+  "startup_nodal":[ 
+    "Startup Profile",
+	  "Seed Fund Module",
+	  "Second Tranche Module",
+	  "Post Seed Fund Module",
+	  "QPR Module",
+	  "Matching Loan",
+	  "Incubation Module",
+	  "Acceleration Programme Module",
+  ],
 	guest: ["Notifications" , "Startup Profile", "Startup List"],
   };
+
   
 
   // Get allowed menu items for the user's role

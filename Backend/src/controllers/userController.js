@@ -93,9 +93,14 @@ const getStartupDetails = async (req, res) => {
         workOrders: true,
         projects: true,
         startup_since: true,
-        seedFundAmount:true,
-        secondTrancheAmount:true,
-        postSeedAmount:true
+        seedFundAmount: true,
+        secondTrancheAmount: true,
+        postSeedAmount: true,
+        address:true,
+        dateOfIncorporation:true,
+        cin:true,
+        districtRoc:true,
+
 
       }
     });
@@ -134,6 +139,10 @@ const createUser = async (req, res) => {
       secondTrancheAmount,
       postSeedAmount,
       matchingLoanAmount,
+      dateOfIncorporation,
+      address,
+      districtRoc,
+      cin,
     } = req.body;
     //console.log(req.body)
     // Validate required fields
@@ -183,6 +192,10 @@ const createUser = async (req, res) => {
         secondTrancheAmount,
         postSeedAmount,
         matchingLoanAmount,
+        dateOfIncorporation,
+        address,
+        districtRoc,
+        cin,
       },
     });
 
@@ -218,124 +231,14 @@ const getUserIdFromToken = (token) => {
   }
 };
 
-// Update Twitter
-const updateTwitter = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
-    const user_id = getUserIdFromToken(token);
-    const { twitter } = req.body;
-    if (!twitter) {
-      return res.status(400).json({ error: 'Correct Field required' });
-    }
 
-    const updatedUser = await prisma.user.update({
-      where: { user_id },
-      data: { twitter },
-    });
 
-    res.status(200).json({ message: 'Twitter updated successfully', twitter: updatedUser.twitter });
-  } catch (error) {
-    console.error('Error updating Twitter:', error);
-    res.status(500).json({ error: 'An error occurred while updating Twitter' });
-  }
-};
 
-// Update Facebook
-const updateFacebook = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
-    const user_id = getUserIdFromToken(token);
-    const { facebook } = req.body;
-    if (!facebook) {
-      return res.status(400).json({ error: 'Correct Field required' });
-    }
 
-    const updatedUser = await prisma.user.update({
-      where: { user_id },
-      data: { facebook },
-    });
 
-    res.status(200).json({ message: 'Facebook updated successfully', facebook: updatedUser.facebook });
-  } catch (error) {
-    console.error('Error updating Facebook:', error);
-    res.status(500).json({ error: 'An error occurred while updating Facebook' });
-  }
-};
 
-// Update Instagram
-const updateInstagram = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
-
-    const user_id = getUserIdFromToken(token);
-    const { instagram } = req.body;
-    if (!instagram) {
-      return res.status(400).json({ error: 'Correct Field required' });
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { user_id },
-      data: { instagram },
-    });
-
-    res.status(200).json({ message: 'Instagram updated successfully', instagram: updatedUser.instagram });
-  } catch (error) {
-    console.error('Error updating Instagram:', error);
-    res.status(500).json({ error: 'An error occurred while updating Instagram' });
-  }
-};
-// Update Linkedin
-const updateLinkedin = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
-
-    const user_id = getUserIdFromToken(token);
-    const { linkedin } = req.body;
-    if (!linkedin) {
-      return res.status(400).json({ error: 'Correct Field required' });
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { user_id },
-      data: { linkedin },
-    });
-
-    res.status(200).json({ message: 'Instagram updated successfully', linkedin: updatedUser.linkedin });
-  } catch (error) {
-    console.error('Error updating Instagram:', error);
-    res.status(500).json({ error: 'An error occurred while updating LinkedIn' });
-  }
-};
-
-// Update Website
-const updateWebsite = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
-
-    const user_id = getUserIdFromToken(token);
-    const { website } = req.body;
-    if (!website) {
-      return res.status(400).json({ error: 'Correct Field required' });
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { user_id },
-      data: { website },
-    });
-
-    res.status(200).json({ message: 'Website updated successfully', website: updatedUser.website });
-  } catch (error) {
-    console.error('Error updating Website:', error);
-    res.status(500).json({ error: 'An error occurred while updating Website' });
-  }
-};
 
 // Update logo
 const updateLogo = async (req, res) => {
@@ -425,29 +328,7 @@ const updateMoto = async (req, res) => {
   }
 };
 
-// Update About
-const updateAbout = async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
-    const user_id = getUserIdFromToken(token);
-    const { about } = req.body;
-    if (!about) {
-      return res.status(400).json({ error: 'Correct Field required' });
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { user_id },
-      data: { about },
-    });
-
-    res.status(200).json({ message: 'About updated successfully', about: updatedUser.about });
-  } catch (error) {
-    console.error('Error updating About:', error);
-    res.status(500).json({ error: 'An error occurred while updating About' });
-  }
-};
 
 // Fetch all top startups
 const getTopStartupDetails = async (req, res) => {
@@ -753,6 +634,64 @@ const deleteStaff = async (req, res) => {
   }
 };
 
+// Fetch basic details of a startup by user_id or registration_no
+const getPublicStartupDetails = async (req, res) => {
+  try {
+    const { user_id } = req.query; // Expecting user_id as a query parameter
+
+    // Ensure that a user_id is provided
+    if (!user_id) {
+      return res.status(400).json({ error: 'user_id is required to fetch startup details' });
+    }
+
+    console.log('Fetching details for user_id:', user_id);
+
+    // Find the user by user_id and select only basic fields
+    const startup = await prisma.user.findUnique({
+      where: { user_id },
+      select: {
+        user_id: true,
+        company_name: true,
+        registration_no: true,
+        registration_year: true,
+        about: true,
+        moto: true,
+        facebook: true,
+        website: true,
+        twitter: true,
+        instagram: true,
+        linkedin: true,
+        mobile: true,
+        logo: true,
+        founder_dp: true,
+        founder_name: true,
+        coverPic: true,
+        category: true,
+
+        employeeCount: true,
+        workOrders: true,
+        projects: true,
+        startup_since: true,
+
+
+      }
+    });
+
+    // If the user is not found, return an error
+    if (!startup) {
+      console.log(`No startup found for user_id: ${user_id}`);
+      return res.status(404).json({ error: 'Startup not found' });
+    }
+
+    console.log('Startup details:', startup);
+
+    // Respond with the basic details
+    res.status(200).json({ startup });
+  } catch (error) {
+    console.error('Error fetching startup details:', error);
+    res.status(500).json({ error: 'An error occurred while fetching startup details', details: error.message });
+  }
+};
 
 
 
@@ -762,11 +701,6 @@ module.exports = {
 
   getStartupDetails,
 
-  updateAbout,
-  updateFacebook,
-  updateInstagram,
-  updateWebsite,
-  updateTwitter,
   updateMoto,
   updateLogo,
   updateCoverDp,
@@ -777,5 +711,6 @@ module.exports = {
   addStaff,
   getStaffByStartup,
   deleteStaff,
-  getStartupsByCategory
+  getStartupsByCategory,
+  getPublicStartupDetails
 };

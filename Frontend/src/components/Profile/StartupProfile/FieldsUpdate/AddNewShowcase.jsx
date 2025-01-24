@@ -118,7 +118,7 @@ const ShowcasePopup = ({
             }
 
             axios
-              .post("https://startupbihar.in/api/showcase/post", formData, {
+              .post("http://localhost:3007/api/showcase/post", formData, {
                 headers: {
                   Authorization: token, // Include the token in the request headers
                 },

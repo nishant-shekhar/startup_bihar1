@@ -69,12 +69,17 @@ const HomeSection = () => {
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
-            `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`, {
+              headers: {
+                Authorization: localStorage.getItem("token"),
+              },
+            }
+
           ),
           axios.get(
-            `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
-         axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
+         axios.get(`http://localhost:3007/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
 
         ]);
 
@@ -85,8 +90,8 @@ const HomeSection = () => {
 
       //console.log("Startup details:", detailsResponse.data.startup);
       //console.log("Showcases:", showcasesResponse.data.showcase);
-      //console.log(employeesResponse.data.employee);
-      //console.log(employees)
+      console.log(employeesResponse.data.employee);
+      console.log(employees)
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
@@ -211,7 +216,6 @@ const HomeSection = () => {
                     <IoPencil className="h-5 w-auto mt-2 pr-1" />
                   </button>
                 </div>
-
                 {showUpdateMetrics && (
                   <UpdateMetrics
                     startup={startup}
@@ -219,7 +223,6 @@ const HomeSection = () => {
                     onUpdate={() => setUpdateCount(updateCount + 1)}
                   />
                 )}
-                
               </div>
 
               {/* Social Links */}
@@ -448,10 +451,9 @@ const HomeSection = () => {
                   {startup.website || "#"}
                 </a>
               </p>
-             {/*  <p>
-                <strong>Address:</strong> {/* Insert address logic if available
+              <p>
+                <strong>Address:</strong> {/* Insert address logic if available */}
               </p>
-               */}
             </div>
           </div>
         )}

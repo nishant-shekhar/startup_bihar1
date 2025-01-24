@@ -6,17 +6,11 @@ const prisma = new PrismaClient();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-// Apply for Incubation Center
 const applyForIncubation = async (req, res) => {
   try {
-    // Extract JWT token from the request header
     const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
-    }
+    if (!token) return res.status(401).json({ error: 'Unauthorized: No token provided' });
 
-    // Verify and extract user details from JWT
     let userId;
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
@@ -25,41 +19,29 @@ const applyForIncubation = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
 
-    // Extract form data
-    const { incubationCenter, status } = req.body;
-
-    if (!incubationCenter || !status) {
-      return res.status(400).json({ error: 'Please provide all required fields' });
+    const { preference1, preference2, preference3 } = req.body;
+    if (!preference1 || !preference2 || !preference3) {
+      return res.status(400).json({ error: 'Please provide all preferences' });
     }
 
-
-    // Create an incubation application
-   
-
     const data = {
-      incubationCenter: req.body.incubationCenter,
-      status: req.body.status,
-
-      documentStatus : "created"
+      preference1,
+      preference2,
+      preference3,
+      documentStatus: "created",
+      userId,
     };
-     // Upsert: Create or update the acceleration program application
-     const application = await prisma.incubationApplication.upsert({
-      where: { userId }, // Check if there's already an application for this user
-      update: {
-        ...data
-      },
-      create: {
-        ...data,
-        userId, // Associate the program application with the authenticated user
-      },
-    });
 
+    const application = await prisma.incubationApplication.upsert({
+      where: { userId },
+      update: { ...data },
+      create: { ...data },
+    });
 
     return res.status(200).json({
       message: 'Incubation application submitted successfully',
-      application
+      application,
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'An error occurred while processing the request' });

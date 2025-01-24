@@ -19,7 +19,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`https://startupbihar.in/api/post-seed/v1/${id}`,
+					`http://localhost:3007/api/post-seed/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -48,7 +48,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`https://startupbihar.in/api/post-seed/u1/${id}`,
+				`http://localhost:3007/api/post-seed/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -89,7 +89,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 
 
 			await axios.patch(
-				`https://startupbihar.in/api/post-seed/u1/${id}`,
+				`http://localhost:3007/api/post-seed/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -117,7 +117,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`https://startupbihar.in/api/post-seed/u1/${id}`,
+				`http://localhost:3007/api/post-seed/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -161,7 +161,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 			}
 
 			const response = await axios.post(
-				"https://startupbihar.in/api/notifications/",
+				"http://localhost:3007/api/notifications/",
 				notificationData,
 				{
 					headers: {
@@ -257,7 +257,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 							<tr>
 								<td className="py-4 px-4 border">Application Status</td>
 								<td className={`py-4 px-4 border ${getStatusColor()}`}>
-									{`${data.documentStatus} | ${getComment()}`}
+									{`${data.documentStatus} | Comment: ${getComment()}`}
 								</td>
 							</tr>
 						)}

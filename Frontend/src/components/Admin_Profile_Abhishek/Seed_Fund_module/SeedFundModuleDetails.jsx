@@ -35,7 +35,7 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`https://startupbihar.in/api/seed-fund/v1/${id}`,
+					`http://localhost:3007/api/seed-fund/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -65,7 +65,7 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`https://startupbihar.in/api/seed-fund/u1/${id}`,
+				`http://localhost:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -107,7 +107,7 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 			}).join(", ");
 
 			await axios.patch(
-				`https://startupbihar.in/api/seed-fund/u1/${id}`,
+				`http://localhost:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -134,7 +134,7 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`https://startupbihar.in/api/seed-fund/u1/${id}`,
+				`http://localhost:3007/api/seed-fund/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -176,7 +176,7 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 			}
 	
 			const response = await axios.post(
-				"https://startupbihar.in/api/notifications/",
+				"http://localhost:3007/api/notifications/",
 				notificationData,
 				{
 					headers: {

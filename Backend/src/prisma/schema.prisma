@@ -93,6 +93,12 @@ model User {
   coverPic              String?
   founder_dp            String?
   founder_name          String?
+
+  dateOfIncorporation   String?
+  address               String?
+  districtRoc           String?
+  cin                   String?
+  
   createdAt             DateTime @default(now())
   updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
 }
@@ -299,17 +305,19 @@ model MatchingLoan {
 }
 
 model IncubationApplication {
-  id                String   @id @default(uuid()) @map("_id") 
-  userId            String   @unique// Relates to the User model
-  incubationCenter  String   // Dropdown value for the selected Incubation Center
-  status            String   // Status of the application
- 
-  user              User     @relation(fields: [userId], references: [user_id])
-  documentStatus         String
-  comment                String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
+  id           String   @id @default(uuid()) @map("_id")
+  userId       String   @unique // Relates to the User model
+  preference1  String
+  preference2  String
+  preference3  String
+  assignCenter String?
+  user         User     @relation(fields: [userId], references: [user_id])
+  documentStatus String
+  comment      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
+
 
 
 model CoWorkingApplication {

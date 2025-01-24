@@ -1,5 +1,13 @@
 const contacts = [
-    
+  {
+    id: 0,
+    name: 'Jyoti Kumari',
+    email: 'startup-bihar@gov.in',
+    phone: '9031863179',
+    image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fjyoti%20mam.jpeg?alt=media&token=16a2240b-1708-43eb-965e-a433c21c2bb2',
+    position: 'Assistant Director',
+    tag: 'Nodal Officer'
+  },
     
     { 
       id: 1, 

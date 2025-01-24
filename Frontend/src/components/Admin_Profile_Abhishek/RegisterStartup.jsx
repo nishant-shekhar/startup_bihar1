@@ -105,7 +105,10 @@ const RegisterStartup = () => {
             founder_name: row["Founder Name"] || "",
             email: row["Email Id"] || "",
             mobile: String(row["Mobile"] || ""),
-
+            districtRoc: row["District ROC"] || "",
+            dateOfIncorporation: row["Date of Incorporation"] || "",
+            address: row["Address"] || "",
+            cin: row["CIN"] || "",
             // Final category: mapped if possible, otherwise original
             category: mappedCategory,
 
@@ -131,7 +134,7 @@ const RegisterStartup = () => {
 
       // Send exactly what's in 'userData' to the server
       const response = await axios.post(
-        "https://startupbihar.in/api/userlogin/register",
+        "http://localhost:3007/api/userlogin/register",
         userData,
         {
           headers: {
@@ -170,7 +173,17 @@ const RegisterStartup = () => {
       "Email Id": row.email,
       Mobile: row.mobile,
       Category: row.category, // Use the final category already stored
+
+      "District ROC": row.districtRoc, 
+      "Date of Incorporation": row.dateOfIncorporation, 
+      "Address": row.address, 
+      "CIN": row.cin, 
+    
+  
+
       "Top Startup": row.topStartup ? "Yes" : "No",
+
+   
 
       "First Instalment Released": row.seedFundAmount,
       "2nd/Last Instalment Released": row.secondTrancheAmount,
@@ -211,6 +224,13 @@ const RegisterStartup = () => {
                   <th className="border px-4 py-2">Mobile</th>
                   <th className="border px-4 py-2">Email Id</th>
                   <th className="border px-4 py-2">Category</th>
+
+                  <th className="border px-4 py-2">District ROC</th>
+                  <th className="border px-4 py-2">Date of Incorporation</th>
+                  <th className="border px-4 py-2">Address</th>
+                  <th className="border px-4 py-2">CIN</th>
+              
+
                   <th className="border px-4 py-2">Top Startup</th>
                   <th className="border px-4 py-2">First Instalment</th>
                   <th className="border px-4 py-2">2nd/Last Instalment</th>
@@ -233,6 +253,11 @@ const RegisterStartup = () => {
                     <td className="border px-4 py-2">{row.mobile}</td>
                     <td className="border px-4 py-2">{row.email}</td>
                     <td className="border px-4 py-2">{row.category}</td>
+                    <th className="border px-4 py-2">{row.districtRoc}</th>
+                  <th className="border px-4 py-2">{row.dateOfIncorporation}</th>
+                  <th className="border px-4 py-2">{row.address}</th>
+                  <th className="border px-4 py-2">{row.cin}</th>
+              
                     <td className="border px-4 py-2">
                       {row.topStartup ? "Yes" : "No"}
                     </td>

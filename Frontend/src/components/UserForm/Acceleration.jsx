@@ -62,7 +62,7 @@ const Acceleration = () => {
       try {
         console.log("Submitting data:", values);
         const response = await axios.post(
-          "https://startupbihar.in/api/acceleration",
+          "http://localhost:3007/api/acceleration",
           values,
           {
             headers: {

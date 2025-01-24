@@ -43,13 +43,13 @@ const AllStartup = () => {
 
       if (category === "All") {
         // EITHER use a dedicated "all" endpoint
-        // url = "https://startupbihar.in/api/userlogin/startups/all";
+        // url = "http://localhost:3007/api/userlogin/startups/all";
         
         // OR pass "All" to the same endpoint if your backend handles it:
-        url = `https://startupbihar.in/api/userlogin/startups/by-category/${category}`;
+        url = `http://localhost:3007/api/userlogin/startups/by-category/${category}`;
       } else {
         // For a specific category
-        url = `https://startupbihar.in/api/userlogin/startups/by-category/${category}`;
+        url = `http://localhost:3007/api/userlogin/startups/by-category/${category}`;
       }
 
       const response = await axios.get(url);

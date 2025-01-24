@@ -43,15 +43,22 @@ const LeftBar = ({ changePanel }) => {
     { name: 'Matching Loan', panel: 'Matchingloan', icon: <FaHandshake />, open: true },
     { name: 'IPR Reimbursement Form', panel: 'Reimbursement', icon: <FaMoneyBill />, open: true },
     { name: 'Acceleration Programme', panel: 'Acceleration', icon: <FaRocket />, open: true },
+    { name: 'Apply For Incubation', panel: 'Incubation',icon: <FaFileAlt />, open: true  },
+    { name: 'Apply for Coworking', panel: 'Coworking', icon: <FaFileAlt />, open: true },
   ]);
 
   // Fetch the startup details
   const fetchDetails = async () => {
     try {
       const response = await axios.get(
-        `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`
+        `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        }
       );
       setStartup(response.data.startup);
+      console.log(response.data)
 
       const { seedFundAmount, secondTrancheAmount, postSeedAmount } = response.data.startup;
 
@@ -71,7 +78,12 @@ const LeftBar = ({ changePanel }) => {
       );
       
     } catch (error) {
-      console.error('Failed to fetch startup details:', error);
+      if (error.response && error.response.status === 403) {
+        // Invalid token: handle logout
+        handleClose();
+      } else {
+        console.error("Failed to fetch startup details:", error);
+      }
     }
   };
 

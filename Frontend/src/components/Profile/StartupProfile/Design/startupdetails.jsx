@@ -43,7 +43,7 @@ const Startupdetails = ({ startup }) => {
         setShowDialog(true);
         setDialogMessage('Uploading logo...');
 
-        const response = await axios.put('https://startupbihar.in/api/userlogin/update-logo', formData, {
+        const response = await axios.put('http://localhost:3007/api/userlogin/update-logo', formData, {
           headers: {
             Authorization: `${localStorage.getItem('token')}`,
             'Content-Type': 'multipart/form-data',
@@ -63,12 +63,7 @@ const Startupdetails = ({ startup }) => {
 
   const handleUpdate = async (field, value) => {
     const urlMap = {
-      moto: 'https://startupbihar.in/api/userlogin/update-moto',
-      twitter: 'https://startupbihar.in/api/userlogin/update-twitter',
-      facebook: 'https://startupbihar.in/api/userlogin/update-facebook',
-      instagram: 'https://startupbihar.in/api/userlogin/update-instagram',
-      linkedin: 'https://startupbihar.in/api/userlogin/update-linkedin',
-      website: 'https://startupbihar.in/api/userlogin/update-website',
+      moto: 'http://localhost:3007/api/userlogin/update-moto',
     };
 
     setShowDialog(true);
@@ -161,15 +156,24 @@ const Startupdetails = ({ startup }) => {
 
       <div className="mt-6 flex space-x-4 justify-center">
         {Object.entries(links).map(([platform, link]) => (
-          <a key={platform} href={link} target="_blank" rel="noopener noreferrer">
-            {platform === 'twitter' && <FaTwitter className="text-xl cursor-pointer hover:text-blue-500" />}
-            {platform === 'facebook' && <FaFacebook className="text-xl cursor-pointer hover:text-blue-700" />}
-            {platform === 'instagram' && <FaInstagram className="text-xl cursor-pointer hover:text-pink-500" />}
-            {platform === 'linkedin' && <FaLinkedin className="text-xl cursor-pointer hover:text-blue-600" />}
-            {platform === 'website' && <FaGlobe className="text-xl cursor-pointer hover:text-green-600" />}
-          </a>
+          <div key={platform} className="relative group">
+            <a href={link} target="_blank" rel="noopener noreferrer">
+              {platform === 'twitter' && <FaTwitter className="text-xl cursor-pointer hover:text-blue-500" />}
+              {platform === 'facebook' && <FaFacebook className="text-xl cursor-pointer hover:text-blue-700" />}
+              {platform === 'instagram' && <FaInstagram className="text-xl cursor-pointer hover:text-pink-500" />}
+              {platform === 'linkedin' && <FaLinkedin className="text-xl cursor-pointer hover:text-blue-600" />}
+              {platform === 'website' && <FaGlobe className="text-xl cursor-pointer hover:text-green-600" />}
+            </a>
+            {/* Tooltip */}
+            {link && (
+              <span className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {link}
+              </span>
+            )}
+          </div>
         ))}
       </div>
+
 
       {showDialog && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">

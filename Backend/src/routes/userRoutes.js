@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const { userLogin, createUser, updateAbout, updateFacebook, updateInstagram, updateMoto, updateTwitter, updateWebsite, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp, updateMetrics, updateUserField, addStaff, getStaffByStartup,deleteStaff ,getStartupsByCategory} = require('../controllers/userController');
+const { userLogin, createUser, updateMoto, getStartupDetails, updateLogo, updateFounderDp, getTopStartupDetails, updateCoverDp, updateMetrics, updateUserField, addStaff, getStaffByStartup,deleteStaff ,getStartupsByCategory, getPublicStartupDetails} = require('../controllers/userController');
 const { authenticateUser } = require('../middlewares/authenticateUser');
 
 const router = express.Router();
@@ -12,12 +12,8 @@ const upload = require('../config/multerconfig');
 router.post('/', userLogin);
 router.post('/register', createUser);
 
-router.put('/update-twitter', updateTwitter);
-router.put('/update-facebook', updateFacebook);
-router.put('/update-instagram', updateInstagram);
-router.put('/update-website', updateWebsite);
+
 router.put('/update-moto', updateMoto);
-router.put('/update-about', updateAbout);
 router.put('/update-cover-pic', updateCoverDp);
 router.put('/update-logo', authenticateUser, upload.fields([
     { name: 'logo', maxCount: 1 }
@@ -25,11 +21,13 @@ router.put('/update-logo', authenticateUser, upload.fields([
 router.put('/update-founder_dp', authenticateUser, upload.fields([
     { name: 'founder_dp', maxCount: 1 }
 ]), updateFounderDp);
-router.get('/startup-details', getStartupDetails);
+router.get('/startup-details',authenticateUser, getStartupDetails);
+router.get('/public-startup-details', getPublicStartupDetails);
 router.get('/top-startups', getTopStartupDetails);
 
 router.put('/update-data',authenticateUser, updateMetrics);
 router.put('/update-user-field',authenticateUser, updateUserField);
+
 router.post('/addEmployees', authenticateUser,upload.fields([
     { name: 'dp', maxCount: 1 }
 ]),addStaff); // Add an employee
