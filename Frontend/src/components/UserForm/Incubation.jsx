@@ -29,7 +29,7 @@ const Incubation = ({onFormSubmitSuccess}) => {
     onSubmit: async (values, { resetForm }) => {
       try {
         const response = await axios.post(
-          "http://localhost:3007/api/incubation",
+          "https://startupbihar.in/api/incubation",
           values,
           {
             headers: {

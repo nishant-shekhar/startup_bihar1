@@ -69,7 +69,7 @@ const HomeSection = () => {
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
-            `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`, {
+            `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`, {
               headers: {
                 Authorization: localStorage.getItem("token"),
               },
@@ -77,9 +77,9 @@ const HomeSection = () => {
 
           ),
           axios.get(
-            `http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+            `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
-         axios.get(`http://localhost:3007/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
+         axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
 
         ]);
 

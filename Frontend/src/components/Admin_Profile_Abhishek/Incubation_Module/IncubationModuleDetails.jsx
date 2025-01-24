@@ -44,7 +44,7 @@ const IncubationModuleDetails = ({ id }) => {
     if (id) {
       try {
         const response = await axios.get(
-          `http://localhost:3007/api/incubation/v1/${id}`,
+          `https://startupbihar.in/api/incubation/v1/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -79,7 +79,7 @@ const IncubationModuleDetails = ({ id }) => {
 
     try {
       await axios.patch(
-        `http://localhost:3007/api/incubation/u1/${id}`,
+        `https://startupbihar.in/api/incubation/u1/${id}`,
         {
           documentStatus: "Accepted",
           comment: `Assigned to ${selectedCenter}`,
@@ -108,7 +108,7 @@ const IncubationModuleDetails = ({ id }) => {
 
     try {
       await axios.patch(
-        `http://localhost:3007/api/incubation/u1/${id}`,
+        `https://startupbihar.in/api/incubation/u1/${id}`,
         {
           documentStatus: "Rejected",
           comment: `Rejected: ${comment}`,

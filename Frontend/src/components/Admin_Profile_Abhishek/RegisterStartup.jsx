@@ -134,7 +134,7 @@ const RegisterStartup = () => {
 
       // Send exactly what's in 'userData' to the server
       const response = await axios.post(
-        "http://localhost:3007/api/userlogin/register",
+        "https://startupbihar.in/api/userlogin/register",
         userData,
         {
           headers: {
