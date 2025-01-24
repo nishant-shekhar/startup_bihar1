@@ -48,6 +48,52 @@ const applyForIncubation = async (req, res) => {
   }
 };
 
+const getIncubationStatus = async (req, res) => {
+  try {
+    // Extract the token from headers
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+    }
+
+    // Decode the token to get the user ID
+    let userId;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userId = decoded.user_id;
+    } catch (err) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+
+    // Query for documents linked to this user ID
+    const document = await prisma.incubationApplication.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        documentStatus: true,
+        comment: true,
+        // add other fields as necessary
+      },
+    });
+
+   if (!document) {
+      // If document not found, return a response with documentStatus: null
+      return res.status(200).json({
+        message: 'No incubation application status found for this user',
+        document: { documentStatus: null, comment: null },
+      });
+    }
+
+    // Send the document and its status in response
+    return res.status(200).json({
+      message: 'incubation application Status retrieved successfully',
+      document,
+    });
+  } catch (error) {
+    console.error('Error retrieving user incubation application status:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the incubation applicationstatus' });
+  }
+};
 const getAllIncubationWithUserDetails = async (req, res) => {
   try {
     const documents = await prisma.incubationApplication.findMany({
@@ -87,6 +133,15 @@ const getIncubationnById = async (req, res) => {
     // Fetch the document from the database
     const document = await prisma.incubationApplication.findUnique({
       where: { id: id }, // Use the ID to query the database
+      include: {
+        user: {
+          select: {
+            user_id: true,          // Include specific fields from the User model
+            registration_no: true,
+            company_name: true,
+          },
+        },
+      },
     });
 
     if (!document) {
@@ -105,10 +160,10 @@ const getIncubationnById = async (req, res) => {
 
 const updateincubationStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus,comment } = req.body;
+  const { documentStatus,comment ,assignCenter} = req.body;
 
-  if (!documentStatus) {
-    return res.status(400).json({ error: 'Document status is required' });
+  if (!documentStatus && !assignCenter) {
+    return res.status(400).json({ error: 'Document status and assigned center are required' });
   }
 
   try {
@@ -122,7 +177,7 @@ const updateincubationStatus = async (req, res) => {
 
     const updatedDocument = await prisma.incubationApplication.update({
       where: { id },
-      data: { documentStatus,comment },
+      data: { documentStatus,comment ,assignCenter},
     });
 
     res.status(200).json({
@@ -143,5 +198,7 @@ module.exports = {
   applyForIncubation,
   getAllIncubationWithUserDetails,
   getIncubationnById,
-  updateincubationStatus
+  updateincubationStatus,
+  getIncubationStatus
+  
 };
