@@ -58,7 +58,19 @@ const RegisterStartup = () => {
   
   
   };
-
+  const excelDateToJSDate = (serial) => {
+    const utcDays = Math.floor(serial - 25569); // Excel epoch starts from 1900
+    const utcValue = utcDays * 86400; // Convert days to seconds
+    const dateInfo = new Date(utcValue * 1000); // Convert seconds to milliseconds
+  
+    // Extract day, month, and year, then format as dd-mm-yyyy
+    const day = String(dateInfo.getUTCDate()).padStart(2, "0");
+    const month = String(dateInfo.getUTCMonth() + 1).padStart(2, "0"); // Months are zero-indexed
+    const year = dateInfo.getUTCFullYear();
+  
+    return `${day}-${month}-${year}`; // Format as dd-mm-yyyy
+  };
+  
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -71,56 +83,53 @@ const RegisterStartup = () => {
 
       // Map the Excel data to the required fields
       const formattedData = sheetData
-        .map((row) => {
-          // Basic validation
-          if (
-            !row["User ID"] ||
-            !row["Password"] ||
-            !row["Registration No"] ||
-            !row["Startup Name"]
-          ) {
-            console.error("Invalid row data:", row); // Log invalid rows for debugging
-            return null; // Skip invalid rows
-          }
-
-          // Map category if found; otherwise, keep the original category
-          const originalCategory = row["Category"]?.trim() || "";
-          const mappedCategory = categoryMapping[originalCategory]
-            ? categoryMapping[originalCategory]
-            : originalCategory;
-
-          // Parse integer values (default to 0 if empty or invalid)
-          const seedFundAmount = parseInt(row["First Instalment Released"], 10) || 0;
-          const secondTrancheAmount = parseInt(row["2nd/Last Instalment Released"], 10) || 0;
-          const postSeedAmount = parseInt(row["Post Seed Fund"], 10) || 0;
-          const matchingLoanAmount = parseInt(row["Matching Loan (In Lakhs)"], 10) || 0;
-
-          return {
-            user_id: row["User ID"],
-            password: row["Password"],
-            registration_no: row["Registration No"],
-            company_name: row["Startup Name"],
-            startup_since: row["Startup Since"] || "2022",
-            about: row["About"] || "",
-            founder_name: row["Founder Name"] || "",
-            email: row["Email Id"] || "",
-            mobile: String(row["Mobile"] || ""),
-            districtRoc: row["District ROC"] || "",
-            dateOfIncorporation: row["Date of Incorporation"] || "",
-            address: row["Address"] || "",
-            cin: row["CIN"] || "",
-            // Final category: mapped if possible, otherwise original
-            category: mappedCategory,
-
-            topStartup: row["Top Startup"] === "Yes",
-
-            seedFundAmount,
-            secondTrancheAmount,
-            postSeedAmount,
-            matchingLoanAmount,
-          };
-        })
-        .filter(Boolean); // Remove any null entries
+      .map((row) => {
+        if (
+          !row["User ID"] ||
+          !row["Password"] ||
+          !row["Registration No"] ||
+          !row["Startup Name"]
+        ) {
+          console.error("Invalid row data:", row); // Log invalid rows for debugging
+          return null; // Skip invalid rows
+        }
+    
+        const originalCategory = row["Category"]?.trim() || "";
+        const mappedCategory = categoryMapping[originalCategory]
+          ? categoryMapping[originalCategory]
+          : originalCategory;
+    
+        const seedFundAmount = parseInt(row["First Instalment Released"], 10) || 0;
+        const secondTrancheAmount = parseInt(row["2nd/Last Instalment Released"], 10) || 0;
+        const postSeedAmount = parseInt(row["Post Seed Fund"], 10) || 0;
+        const matchingLoanAmount = parseInt(row["Matching Loan (In Lakhs)"], 10) || 0;
+    
+        return {
+          user_id: row["User ID"],
+          password: row["Password"],
+          registration_no: row["Registration No"],
+          company_name: row["Startup Name"],
+          startup_since: row["Startup Since"] || "2022",
+          about: row["About"] || "",
+          founder_name: row["Founder Name"] || "",
+          email: row["Email Id"] || "",
+          mobile: String(row["Mobile"] || ""),
+          districtRoc: row["District ROC"] || "",
+          // Check if dateOfIncorporation is an integer (Excel serial date) and convert it
+          dateOfIncorporation: Number.isInteger(row["Date of Incorporation"])
+            ? excelDateToJSDate(row["Date of Incorporation"])
+            : row["Date of Incorporation"] || "",
+          address: row["Address"] || "",
+          cin: row["CIN"] || "",
+          category: mappedCategory,
+          topStartup: row["Top Startup"] === "Yes",
+          seedFundAmount,
+          secondTrancheAmount,
+          postSeedAmount,
+          matchingLoanAmount,
+        };
+      })
+      .filter(Boolean); // Remove any null entries
 
       setData(formattedData);
     };

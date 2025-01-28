@@ -16,6 +16,7 @@ import {
   FaUser,
   FaMoneyBill,
   FaCheckCircle,
+  FaChair,
 } from 'react-icons/fa';
 
 const menuItems = [
@@ -46,7 +47,15 @@ const LeftBar = ({ changePanel }) => {
     { name: 'Apply For Incubation', panel: 'Incubation',icon: <FaFileAlt />, open: true  },
     { name: 'Apply for Coworking', panel: 'Coworking', icon: <FaFileAlt />, open: true },
   ]);
-
+// Manage formsItems state
+const [seatItems, setSeatItems] = useState([
+  { seatNo: '1', booked: true, icon: <FaChair />},
+  { seatNo: '2', booked: false, icon: <FaChair />},
+  { seatNo: '3', booked: true, icon: <FaChair />},
+  { seatNo: '4', booked: false, icon: <FaChair />},
+  { seatNo: '5', booked: false, icon: <FaChair />},
+  
+]);
   // Fetch the startup details
   const fetchDetails = async () => {
     try {
