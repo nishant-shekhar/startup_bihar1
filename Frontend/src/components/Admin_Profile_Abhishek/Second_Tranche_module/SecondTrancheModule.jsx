@@ -318,7 +318,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 												</div>
 												<div className="ml-4 shrink-0">
 													<a
-														href={`/${data.utilizationCertificate}`}
+														href={data.utilizationCertificate}
 														download
 														className="font-medium text-indigo-600 hover:text-indigo-900"
 													>
@@ -374,7 +374,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 												</div>
 												<div className="ml-4 shrink-0">
 													<a
-														href={`/${data.statusReport}`}
+														href={data.statusReport}
 														download
 														className="font-medium text-indigo-600 hover:text-indigo-900"
 													>
@@ -433,7 +433,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 												</div>
 												<div className="ml-4 shrink-0">
 													<a
-														href={`/${data.expenditurePlan}`}
+														href={data.expenditurePlan}
 														download
 														className="font-medium text-indigo-600 hover:text-indigo-900"
 													>
@@ -492,7 +492,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 												</div>
 												<div className="ml-4 shrink-0">
 													<a
-														href={`/${data.bankStatement}`}
+														href={data.bankStatement}
 														download
 														className="font-medium text-indigo-600 hover:text-indigo-900"
 													>
@@ -550,7 +550,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 												</div>
 												<div className="ml-4 shrink-0">
 													<a
-														href={`/${data.expenditureInvoice}`}
+														href={data.expenditureInvoice}
 														download
 														className="font-medium text-indigo-600 hover:text-indigo-900"
 													>
@@ -608,7 +608,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 												</div>
 												<div className="ml-4 shrink-0">
 													<a
-														href={`/${data.geoTaggedPhotos}`}
+														href={data.geoTaggedPhotos}
 														download
 														className="font-medium text-indigo-600 hover:text-indigo-900"
 													>

@@ -154,107 +154,107 @@ const SecondTranche = ({ onFormSubmitSuccess }) => {
 
       <div className="w-full max-w-5xl rounded-md mt-10 space-x-10 border">
 
-      {/* Left Form */}
-<form onSubmit={handleSubmit} className="rounded-lg grid grid-cols-1 md:grid-cols-12 gap-4 p-4 md:p-5">
-  {/* Download Links */}
-  <div className="grid grid-cols-1 md:grid-cols-12 col-span-12 text-sm space-y-2 md:space-y-0">
-    <a
-      href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FUtilization%20Report.pdf?alt=media&token=3db07ea6-3113-4ac3-bf4c-a3d9e79e02d0"
-      download
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-indigo-500 underline hover:text-indigo-800 col-span-6"
-    >
-      Download Utilization Certificate Format
-    </a>
-    <a
-      href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FStatus%20Report..pdf?alt=media&token=3d387a8c-edce-453a-9bf4-efaa2dcb513f"
-      target="_blank"
-      rel="noopener noreferrer"
-      download
-      className="text-indigo-500 underline hover:text-indigo-800 col-span-6"
-    >
-      Download Status Report Format
-    </a>
-  </div>
+        {/* Left Form */}
+        <form onSubmit={handleSubmit} className="rounded-lg grid grid-cols-1 md:grid-cols-12 gap-4 p-4 md:p-5">
+          {/* Download Links */}
+          <div className="grid grid-cols-1 md:grid-cols-12 col-span-12 text-sm space-y-2 md:space-y-0">
+            <a
+              href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FUtilization%20Report.pdf?alt=media&token=3db07ea6-3113-4ac3-bf4c-a3d9e79e02d0"
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-500 underline hover:text-indigo-800 col-span-6"
+            >
+              Download Utilization Certificate Format
+            </a>
+            <a
+              href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FStatus%20Report..pdf?alt=media&token=3d387a8c-edce-453a-9bf4-efaa2dcb513f"
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+              className="text-indigo-500 underline hover:text-indigo-800 col-span-6"
+            >
+              Download Status Report Format
+            </a>
+          </div>
 
-  {/* Utilization Cert Field */}
-  <div className="mb-6 col-span-12 md:col-span-6">
-    <Upload
-      label="C.A certified utilization certificate"
-      name="utilizationCertificate"
-      onChange={(file) => handleFileChange(file, 'utilizationCertificate')}
-      className="w-full"
-    />
-  </div>
+          {/* Utilization Cert Field */}
+          <div className="mb-6 col-span-12 md:col-span-6">
+            <Upload
+              label="C.A certified utilization certificate"
+              name="utilizationCertificate"
+              onChange={(file) => handleFileChange(file, 'utilizationCertificate')}
+              className="w-full"
+            />
+          </div>
 
-  {/* Status Report Field */}
-  <div className="mb-6 col-span-12 md:col-span-6">
-    <Upload
-      label="Status Report"
-      name="statusReport"
-      onChange={(file) => handleFileChange(file, 'statusReport')}
-      className="w-full"
-    />
-  </div>
+          {/* Status Report Field */}
+          <div className="mb-6 col-span-12 md:col-span-6">
+            <Upload
+              label="Status Report"
+              name="statusReport"
+              onChange={(file) => handleFileChange(file, 'statusReport')}
+              className="w-full"
+            />
+          </div>
 
-  {/* Expenditure Plan Field */}
-  <div className="mb-6 col-span-12 md:col-span-6">
-    <Upload
-      label="Upload the second tranche plan on the entity's letterhead."
-      name="expenditurePlan"
-      onChange={(file) => handleFileChange(file, 'expenditurePlan')}
-      className="w-full"
-    />
-  </div>
+          {/* Expenditure Plan Field */}
+          <div className="mb-6 col-span-12 md:col-span-6">
+            <Upload
+              label="Upload the second tranche plan on the entity's letterhead."
+              name="expenditurePlan"
+              onChange={(file) => handleFileChange(file, 'expenditurePlan')}
+              className="w-full"
+            />
+          </div>
 
-  {/* Bank Statement Field */}
-  <div className="mb-6 col-span-12 md:col-span-6">
-    <Upload
-      label="Bank statement (Highlight the fund received and expenditure made)"
-      name="bankStatement"
-      onChange={(file) => handleFileChange(file, 'bankStatement')}
-      className="w-full"
-    />
-  </div>
+          {/* Bank Statement Field */}
+          <div className="mb-6 col-span-12 md:col-span-6">
+            <Upload
+              label="Bank statement (Highlight the fund received and expenditure made)"
+              name="bankStatement"
+              onChange={(file) => handleFileChange(file, 'bankStatement')}
+              className="w-full"
+            />
+          </div>
 
-  {/* Expenditure Invoice Field */}
-  <div className="mb-6 col-span-12 md:col-span-6">
-    <Upload
-      label="Upload Expenditure Invoice"
-      name="expenditureInvoice"
-      onChange={(file) => handleFileChange(file, 'expenditureInvoice')}
-      className="w-full"
-    />
-  </div>
+          {/* Expenditure Invoice Field */}
+          <div className="mb-6 col-span-12 md:col-span-6">
+            <Upload
+              label="Upload Expenditure Invoice"
+              name="expenditureInvoice"
+              onChange={(file) => handleFileChange(file, 'expenditureInvoice')}
+              className="w-full"
+            />
+          </div>
 
-  {/* Geo-tagged Photos Field */}
-  <div className="mb-6 col-span-12 md:col-span-6">
-    <Upload
-      label="Upload geo-tagged photos of your offices/ units"
-      name="geoTaggedPhotos"
-      onChange={(file) => handleFileChange(file, 'geoTaggedPhotos')}
-      className="w-full"
-    />
-  </div>
+          {/* Geo-tagged Photos Field */}
+          <div className="mb-6 col-span-12 md:col-span-6">
+            <Upload
+              label="Upload geo-tagged photos of your offices/ units"
+              name="geoTaggedPhotos"
+              onChange={(file) => handleFileChange(file, 'geoTaggedPhotos')}
+              className="w-full"
+            />
+          </div>
 
-  {/* Buttons */}
-  <div className="mt-6 col-span-12 flex flex-col md:flex-row items-center justify-end gap-x-4 gap-y-2">
-    <button
-      type="button"
-      className="w-full md:w-auto text-sm font-semibold text-gray-900 border border-gray-400 rounded-md px-4 py-2"
-    >
-      Cancel
-    </button>
-    <button
-      type="submit"
-      className="w-full md:w-auto rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-      onSubmit={handleSubmit}
-    >
-      Submit
-    </button>
-  </div>
-</form>
+          {/* Buttons */}
+          <div className="mt-6 col-span-12 flex flex-col md:flex-row items-center justify-end gap-x-4 gap-y-2">
+            <button
+              type="button"
+              className="w-full md:w-auto text-sm font-semibold text-gray-900 border border-gray-400 rounded-md px-4 py-2"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="w-full md:w-auto rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              onSubmit={handleSubmit}
+            >
+              Submit
+            </button>
+          </div>
+        </form>
 
       </div>
       {/* Submit Button */}
