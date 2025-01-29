@@ -36,7 +36,7 @@ const MatchingLoan = ({ onProfileClick }) => {
 			</p>
 			<p className="pl-8 text-sm font-light text-gray-600">
 				First Applied on: {sdata?.createdAt ? new Date(sdata.createdAt).toLocaleDateString() : "N/A"} |
-				Last Updated on: {sdata?.updatedAt ? new Date(sdata.updatedAt).toLocaleDateString() : "N/A"}
+				Last Action on: {sdata?.updatedAt ? new Date(sdata.updatedAt).toLocaleDateString() : "N/A"}
 			</p>
 			{sdata.map((item, index) => (
 				<div

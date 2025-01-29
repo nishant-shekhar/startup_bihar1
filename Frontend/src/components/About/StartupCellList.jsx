@@ -209,15 +209,7 @@ const StartupIncubationCell = () => {
             contactNumber: 7979098267,
             coordinator: "Navin Kumar",
         },
-        {
-            id: 21,
-            college: "Motihari College Of Engineering, Motihari",
-            district: "E Champaran",
-            facultyIncharge: "Ravi Kumar, 7979098267, ravi_cbp23@cimp.ac.in",
-            email: "ravi_cbp23@cimp.ac.in",
-            contactNumber: "7979098267",
-            coordinator: "Navin Kumar, 8521662223",
-        },
+        
         {
             id: 22,
             college: "Government Engineering College Munger",

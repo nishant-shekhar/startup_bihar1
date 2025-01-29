@@ -148,13 +148,65 @@ const QPRModuleDetails = ({ id }) => {
 			style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
 		>
 			<h1 className="pt-5 pl-8 text-2xl">QPR Module Details</h1>
-			<p className="pt-5 pl-8 text-l text-indigo-600">
-  {data?.user?.company_name || "Company Name Unavailable"} | 
-  Startup ID: {data?.user?.user_id || "ID Unavailable"}
-</p>
+			<div className="overflow-x-auto p-4">
+  <div className="grid grid-cols-12 gap-4">
+    {/* Left Table */}
+    <table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
+      <tbody>
+        <tr className="border-b">
+          <td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
+          <td className="px-4 py-2 text-gray-900">
+            <a
+              href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:underline"
+            >
+              {data?.user?.company_name || "N/A"}
+            </a>
+          </td>
+        </tr>
+        <tr className="border-b">
+          <td className="px-4 py-2 font-medium text-gray-600">Registration No.</td>
+          <td className="px-4 py-2 text-gray-900">{data?.user?.registration_no || "N/A"}</td>
+        </tr>
+        <tr className="border-b">
+          <td className="px-4 py-2 font-medium text-gray-600">Email</td>
+          <td className="px-4 py-2 text-indigo-600">{data?.user?.email || "N/A"}</td>
+        </tr>
+        <tr>
+          <td className="px-4 py-2 font-medium text-gray-600">CIN</td>
+          <td className="px-4 py-2 text-gray-900">{data?.user?.cin || "N/A"}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    {/* Right Table */}
+    <table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
+      <tbody>
+        <tr className="border-b">
+          <td className="px-4 py-2 font-medium text-gray-600">Startup ID</td>
+          <td className="px-4 py-2 text-gray-900">{data?.user?.user_id || "N/A"}</td>
+        </tr>
+        <tr className="border-b">
+          <td className="px-4 py-2 font-medium text-gray-600">Founder</td>
+          <td className="px-4 py-2 text-gray-900">{data?.user?.founder_name || "N/A"}</td>
+        </tr>
+        <tr className="border-b">
+          <td className="px-4 py-2 font-medium text-gray-600">Mobile</td>
+          <td className="px-4 py-2 text-gray-900">{data?.user?.mobile || "N/A"}</td>
+        </tr>
+        <tr>
+          <td className="px-4 py-2 font-medium text-gray-600">District RoC</td>
+          <td className="px-4 py-2 text-gray-900">{data?.user?.districtRoc || "N/A"}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 <p className="pl-8 text-sm font-light text-gray-600">
   First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} | 
-  Last Updated on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
+  Last Action on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
 </p>
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">

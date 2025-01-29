@@ -135,6 +135,12 @@ const getSecondById = async (req, res) => {
 					user_id: true,          // Include specific fields from the User model
 					registration_no: true,
 					company_name: true,
+					founder_name: true,
+					dateOfIncorporation: true,
+					districtRoc:true,
+					cin:true,
+					mobile:true,
+					email:true,
 				  },
 				},
 			  },

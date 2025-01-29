@@ -59,47 +59,91 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 
 	// Handle Excel Download
 	const handleDownloadExcel = async () => {
-		setIsExporting(true); // Set exporting state
+		setIsExporting(true);
 		try {
-			const promises = sdata.map(async (item) => {
-				const response = await axios.get(
-					`https://startupbihar.in/api/${type}/v1/${item.id}`,
-					{
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `${token}`,
-						},
-					},
-				);
-				return response.data; // Return the detailed data
-			});
-
-			const detailedData = await Promise.all(promises);
-
-			if (detailedData.length === 0) {
-				alert("No data available to download.");
-				return;
+		  const promises = sdata.map(async (item) => {
+			const response = await axios.get(
+			  `https://startupbihar.in/api/${type}/v1/${item.id}`,
+			  {
+				headers: {
+				  "Content-Type": "application/json",
+				  Authorization: `${token}`,
+				},
+			  }
+			);
+			return response.data;
+		  });
+	  
+		  const detailedData = await Promise.all(promises);
+	  
+		  if (detailedData.length === 0) {
+			alert("No data available to download.");
+			return;
+		  }
+	  
+		  // Function to convert camelCase keys to normal text
+		  const formatKey = (key) => {
+			return key
+			  .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before capital letters
+			  .replace(/_/g, " ") // Replace underscores with spaces
+			  .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
+		  };
+	  
+		  // Function to format values properly
+		  const formatValue = (value) => {
+			if (typeof value === "boolean") return value ? "Yes" : "No";
+			if (typeof value === "string") {
+			  return value
+				.replace(/created/i, "Applied") // Replace 'created' with 'Applied'
+				.replace(/accepted/i, "Approved") // Replace 'Accepted' with 'Approved'
+				.replace(/rejected/i, "Rejected"); // Replace 'Rejected'
 			}
-
-			// Generate Excel-compatible data
-			const excelData = detailedData.map((item) => ({
-				ID: item.id,
-				...item, // Include all keys dynamically
-			}));
-
-			const worksheet = XLSX.utils.json_to_sheet(excelData);
-			const workbook = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(workbook, worksheet, "Startups");
-
-			// Download Excel
-			XLSX.writeFile(workbook, `${type}_details.xlsx`);
+			return value;
+		  };
+	  
+		  const excelData = detailedData.map((item) => {
+			let createdAtFormatted = formatValue(item.createdAt) || "N/A";
+			let updatedAtFormatted =
+			  item.createdAt === item.updatedAt ? "No Action Yet" : formatValue(item.updatedAt);
+	  
+			let formattedData = {
+				"Registration No": item.user?.registration_no || "N/A",
+			  "User ID": item.user?.user_id || "N/A",
+			  "Company Name": item.user?.company_name || "N/A",
+			  "Founder Name": item.user?.founder_name || "N/A",
+			  "Date of Incorporation": item.user?.dateOfIncorporation || "N/A",
+			  "District RoC": item.user?.districtRoc || "N/A",
+			  "CIN": item.user?.cin || "N/A",
+			  "Mobile": item.user?.mobile || "N/A",
+			  "Email": item.user?.email || "N/A",
+			  "Created At": createdAtFormatted,
+			  "Updated At": updatedAtFormatted,
+			};
+	  
+			// Dynamically add other fields with formatted keys and values
+			Object.keys(item).forEach((key) => {
+			  if (!["id", "ID", "user", "createdAt", "updatedAt"].includes(key)) {
+				formattedData[formatKey(key)] = formatValue(item[key]) || "N/A";
+			  }
+			});
+	  
+			return formattedData;
+		  });
+	  
+		  const worksheet = XLSX.utils.json_to_sheet(excelData);
+		  const workbook = XLSX.utils.book_new();
+		  XLSX.utils.book_append_sheet(workbook, worksheet, "Startups");
+	  
+		  XLSX.writeFile(workbook, `${type}_details.xlsx`);
 		} catch (error) {
-			console.error("Error downloading Excel:", error);
+		  console.error("Error downloading Excel:", error);
 		} finally {
-			setIsExporting(false); // Reset exporting state
+		  setIsExporting(false);
 		}
-	};
-
+	  };
+	   
+	  
+	  
 	// Filter data based on the search term and selected category
 	const filteredData = sdata.filter((item) => {
 		const matchesSearchTerm = item?.user?.user_id
