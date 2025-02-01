@@ -131,7 +131,7 @@ const Startupdetails = ({ startup }) => {
             type="text"
             value={moto}
             onChange={(e) => {
-              if (e.target.value.length <= 60) {
+              if (e.target.value.length <= 50) {
                 handleChange('moto', e.target.value);
               }
             }}

@@ -137,9 +137,15 @@ const HomeSection = () => {
             <div className="flex pl-8 max-w-screen-lg w-screen ml-5 justify-between py-8">
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-semibold">
-                    {startup.company_name}
-                  </h1>
+                <h1 className="text-2xl font-semibold hover:underline cursor-pointer  hover:text-blue-600">
+  <a 
+    href={`https://startupbihar.in/startup/${localStorage.getItem("user_id")}`} 
+    target="_blank" 
+    rel="noopener noreferrer"
+  >
+    {startup.company_name}
+  </a>
+</h1>
                   <span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center">
                     <svg
                       className="w-3 h-3 mr-1"

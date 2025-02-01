@@ -50,6 +50,12 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 			});
 		}
 	};
+	const formatURL = (url) => {
+		if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+		  return `https://${url}`;
+		}
+		return url;
+	  };
 
 	return (
 		<div className="fixed inset-0 flex items-center justify-center z-50">
@@ -99,6 +105,10 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 											name="twitter"
 											placeholder="Enter Twitter URL"
 											className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+											onBlur={(e) => {
+												const formattedURL = formatURL(e.target.value);
+												e.target.value = formattedURL;
+											  }}
 										/>
 									</div>
 
@@ -109,6 +119,10 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 											name="facebook"
 											placeholder="Enter Facebook URL"
 											className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+											onBlur={(e) => {
+												const formattedURL = formatURL(e.target.value);
+												e.target.value = formattedURL;
+											  }}
 										/>
 									</div>
 
@@ -119,6 +133,10 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 											name="instagram"
 											placeholder="Enter Instagram URL"
 											className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+											onBlur={(e) => {
+												const formattedURL = formatURL(e.target.value);
+												e.target.value = formattedURL;
+											  }}
 										/>
 									</div>
 
@@ -129,6 +147,10 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 											name="linkedin"
 											placeholder="Enter LinkedIn URL"
 											className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+											onBlur={(e) => {
+												const formattedURL = formatURL(e.target.value);
+												e.target.value = formattedURL;
+											  }}
 										/>
 									</div>
 
@@ -139,6 +161,10 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 											name="website"
 											placeholder="Enter Website URL"
 											className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+											onBlur={(e) => {
+												const formattedURL = formatURL(e.target.value);
+												e.target.value = formattedURL;
+											  }}
 										/>
 									</div>
 								</div>
@@ -153,7 +179,7 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 											name="moto"
 											placeholder="Enter Moto"
 											className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-											maxLength={80}
+											maxLength={50}
 										/>
 									</div>
 

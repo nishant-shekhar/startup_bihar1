@@ -146,7 +146,9 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 					},
 				},
 			);
-			handleDialog("Application is accepted.");
+			console.log("local");
+
+			handleDialog("Application is accepted!");
 			await fetchData(); // Update the data after status change
 			// Post notification
 			await postNotification("Your Seed Fund application has been accepted.");

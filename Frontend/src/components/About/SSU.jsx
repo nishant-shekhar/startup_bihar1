@@ -6,6 +6,8 @@ import ContactCard from './ContactCard';
 import topImage from '/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Frontend/src/assets/top_right.png';
 import bottomImage from '/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Frontend/src/assets/bottom_left.png';
 
+
+
 const SSU = () => {
 	return (
 		<div

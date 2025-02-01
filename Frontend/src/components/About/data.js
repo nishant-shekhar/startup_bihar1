@@ -27,15 +27,7 @@ const contacts = [
       position: 'Consultant (Startup)', 
       tag: 'StartUp Wing' 
     },
-    { 
-      id: 3, 
-      name: 'Lovely Singh', 
-      email: 'startup-bihar@gov.in',
-      phone: '9262993982', 
-      image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FWhatsApp%20Image%202025-01-10%20at%2018.33.34.jpeg?alt=media&token=8f86c2bf-24ad-4f7f-a947-c5fb02e7390f', 
-      position: 'Coordinator Incubation', 
-      tag: 'Incubation Wing' 
-    },
+  
     { 
       id: 4, 
       name: 'Megha Bhadani', 
@@ -76,7 +68,7 @@ const contacts = [
       id: 8, 
       name: 'Mukesh Kumar', 
       email: 'startup-bihar@gov.in',
-      phone: '8709032306', 
+      phone: '6287797919', 
       image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fmukesh%20ji.jpeg?alt=media&token=5f39811c-3085-42a5-94de-7be57a9cba32', 
       position: 'Jr. Consultant (IT)', 
       tag: 'IT Wing' 

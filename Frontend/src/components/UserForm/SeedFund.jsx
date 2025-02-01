@@ -43,6 +43,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
     branchAddress: Yup.string().required("Branch Address is required."),
     panNumber: Yup.string().required("PAN Number is required."),
     gstNumber: Yup.string().required("GST Number is required."),
+    cinNumber: Yup.string().required("CIN Number is required."),
   
     // File fields with size checks
     companyCertificate: Yup.mixed()
@@ -120,6 +121,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
       cancelChequeOrPassbook: null,
       panNumber: '',
       gstNumber: '',
+      cinNumber: '',
       inc33: null,
       inc34: null,
       partnershipAgreement: null,
@@ -389,7 +391,20 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                       required
                     />
                   </div>
-
+                  <div className="w-full col-span-6 my-4">
+                    <label className="block mb-2 text-sm font-medium text-gray-900" htmlFor="cinNumber">
+                      CIN Number:
+                    </label>
+                    <input
+                      className="border rounded w-full py-2 px-3"
+                      id="cinNumber"
+                      name="cinNumber"
+                      type="text"
+                      onChange={formik.handleChange}
+                      value={formik.values.cinNumber}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
             </div>

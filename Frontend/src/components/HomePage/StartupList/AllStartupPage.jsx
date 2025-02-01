@@ -49,7 +49,7 @@ const AllStartup = () => {
         url = `https://startupbihar.in/api/userlogin/startups/by-category/${category}`;
       } else {
         // For a specific category
-        url = `http://localhost:3007/api/userlogin/startups/by-category/${category}`;
+        url = `https://startupbihar.in/api/userlogin/startups/by-category/${category}`;
       }
 
       const response = await axios.get(url);

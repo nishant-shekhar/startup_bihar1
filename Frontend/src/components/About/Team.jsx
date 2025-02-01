@@ -11,7 +11,7 @@ const teamLead = [
     {
         name: "Nishant Sekhar",
         role: "Founder, NS Apps Innovations",
-        image: "https://media.licdn.com/dms/image/v2/D4D03AQEWDeEsCSPEaw/profile-displayphoto-shrink_400_400/B4DZQ_e9AkGkAg-/0/1736231868058?e=1741824000&v=beta&t=s0e1Sl7AMAu8eCBaylCvSmd4S7ezQ7EaGBCX-B2LPzs",
+        image: "https://media.licdn.com/dms/image/v2/D4D03AQFUD3EMJW-SMQ/profile-displayphoto-shrink_800_800/B4DZR_Z.U3HkAg-/0/1737304303571?e=1743638400&v=beta&t=aelt0OVRghDVsVc87Jr_jT6U_UumWK59U16-DP0ZnDY",
         show: true,
         linkedin: "https://www.linkedin.com/in/nishantshekhar28/",
         technologies: "React, Node.js, Prisma, AWS",
@@ -22,7 +22,7 @@ const teamhead = [
     {
         name: "Amit Kumar Verma",
         role: "Frontend Developer",
-        image: "https://media.licdn.com/dms/image/v2/D5603AQEQGLMJ70Mg_Q/profile-displayphoto-shrink_800_800/B56ZPO1gr0HQAg-/0/1734341954796?e=1741824000&v=beta&t=nXqRIg-S85wLhpPQVK5y0XhvTFWKx66ycRJwvFnEvZ4",
+        image: "https://media.licdn.com/dms/image/v2/D5603AQHQTREGjm6ZAA/profile-displayphoto-shrink_800_800/B56ZSmkK1qHQAc-/0/1737961290080?e=1743638400&v=beta&t=O5TVqp4NyTesLiLhHc6gLbryEYfAILbI5w589Lkmip0",
         show: true,
         linkedin: "https://www.linkedin.com/in/amit-kumar-verma-50b236266/",
         technologies: "React.js, Tailwind CSS",
@@ -45,7 +45,7 @@ const teamhead = [
     {
         name: "Aditya Kumar",
         role: "React Developer",
-        image: "https://media.licdn.com/dms/image/v2/D5603AQE0DlA1EqMcaw/profile-displayphoto-shrink_800_800/B56ZOcLfQGGoAc-/0/1733492078563?e=1741824000&v=beta&t=ow6hI37XEa84cKEGf5WVRDkYGasrUduCJ5RS4oAJXy8",
+        image: "https://media.licdn.com/dms/image/v2/D4E03AQGnU48IpbDc5A/profile-displayphoto-shrink_800_800/B4EZSroiAxHoAg-/0/1738046317285?e=1743638400&v=beta&t=uMhHI7ZUI2pzRiIHNj3EGP17AxqLieHmoCaLur-9Oc0",
         linkedin: "https://www.linkedin.com/in/aditya-kumar-780709320/",
         technologies: "React.js, Tailwind CSS",
     },

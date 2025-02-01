@@ -30,7 +30,8 @@ const submitSeedFund = async (req, res) => {
       branchName,
       branchAddress,
       panNumber,
-      gstNumber
+      gstNumber,
+      cinNumber
     } = req.body;
 
     // Extract the S3 URLs from the file upload response
@@ -61,6 +62,7 @@ const submitSeedFund = async (req, res) => {
         cancelChequeOrPassbook,
         panNumber,
         gstNumber,
+        cinNumber,
         inc33,
         inc34,
         partnershipAgreement,
@@ -89,6 +91,7 @@ const submitSeedFund = async (req, res) => {
         dpr,
         panNumber,
         gstNumber,
+        cinNumber,
         documentStatus: "created",
         userId
       }
@@ -265,68 +268,94 @@ const getSeedByToken = async (req, res) => {
     }
   };
 
-const updateSeedStatus = async (req, res) => {
-  const { id } = req.params;
-  const { 
-    documentStatus, 
-    comment, 
-    cancelChequeOrPassbook ,
-    companyCertificate     ,
-    inc33                  ,
-    inc34                  ,
-    partnershipAgreement   ,
-    dpr
-  } = req.body;
-
+  const updateSeedStatus = async (req, res) => {
+    const { id } = req.params;
+    const { 
+      documentStatus, 
+      comment, 
+      cancelChequeOrPassbook,
+      companyCertificate,
+      inc33,
+      inc34,
+      partnershipAgreement,
+      dpr
+    } = req.body;
   
-	// Check if documentStatus is provided
-	if (!documentStatus) {
-		return res.status(400).json({ error: "Document status is required" });
-	}
-
-	try {
-		// Find the document
-		const document = await prisma.seedFund.findUnique({
-			where: { id },
-		});
-
-		if (!document) {
-			return res.status(404).json({ error: "Document not found" });
-		}
-
-		// Build the data object dynamically
-		const updateData = {
-			documentStatus,
-			comment,
-			...(cancelChequeOrPassbook !== undefined && { cancelChequeOrPassbook }),
-			...(companyCertificate !== undefined && { companyCertificate }),
-			...(inc33 !== undefined && { inc33 }),
-			...(inc34 !== undefined && { inc34 }),
-			...(partnershipAgreement !== undefined && { partnershipAgreement }),
-			...(dpr !== undefined && { dpr }),
-		};
-
-		// Update the document
-		const updatedDocument = await prisma.seedFund.update({
-			where: { id },
-			data: updateData,
-		});
-
-		// Send a successful response
-		res.status(200).json({
-			message: "Document status updated successfully",
-			document: updatedDocument,
-		});
-	} catch (error) {
-		console.error(error);
-
-		// Send an error response
-		res.status(500).json({
-			error: "Failed to update document status",
-			details: error.message,
-		});
-	}
-};
+    if (!documentStatus) {
+      return res.status(400).json({ error: "Document status is required" });
+    }
+  
+    try {
+      // Find the document in the SeedFund model
+      const document = await prisma.seedFund.findUnique({
+        where: { id },
+      });
+  
+      if (!document) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+  
+      // Prepare update data dynamically
+      const updateData = {
+        documentStatus,
+        comment,
+        ...(cancelChequeOrPassbook !== undefined && { cancelChequeOrPassbook }),
+        ...(companyCertificate !== undefined && { companyCertificate }),
+        ...(inc33 !== undefined && { inc33 }),
+        ...(inc34 !== undefined && { inc34 }),
+        ...(partnershipAgreement !== undefined && { partnershipAgreement }),
+        ...(dpr !== undefined && { dpr }),
+      };
+  
+      // Update the document status
+      const updatedDocument = await prisma.seedFund.update({
+        where: { id },
+        data: updateData,
+      });
+  
+      // If document is accepted, update the User model
+      if (documentStatus === "Accepted") {
+        const { userId, companyName, companyAddress, cinNumber, dateOfIncorporation , rocDistrict} = document;
+  
+        if (!userId) {
+          return res.status(400).json({ error: "User ID not found in SeedFund entry" });
+        }
+  
+        // Format the date to "DD-MM-YYYY"
+        const formattedDate = new Date(dateOfIncorporation).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+        console.log(rocDistrict)
+        // Update the User model
+        await prisma.user.update({
+          where: { user_id: userId },
+          data: {
+            cin: cinNumber,
+            address: companyAddress,
+            company_name: companyName,
+            dateOfIncorporation: formattedDate,
+            districtRoc: rocDistrict,
+          },
+        });
+      }
+  
+      // Send response
+      res.status(200).json({
+        message: "Document status updated successfully",
+        document: updatedDocument,
+      });
+  
+    } catch (error) {
+      console.error("Error updating document status:", error);
+      res.status(500).json({
+        error: "Failed to update document status",
+        details: error.message,
+      });
+    }
+  };
+  
 
 const getSeedFundStatus = async (req, res) => {
   try {
