@@ -378,6 +378,10 @@ const SeedfundModuleDetails = ({ id ,startupName}) => {
 							<td className="py-4 px-4 border">{data.gstNumber}</td>
 						</tr>
 						<tr>
+							<td className="py-4 px-4 border">CIN Number</td>
+							<td className="py-4 px-4 border">{data.cinNumber}</td>
+						</tr>
+						<tr>
 							<td className="py-4 px-4 border">Cancelled Cheque or Passbook</td>
 							<td className="border-b border-l border-t border-r w-[35vw]">
 								<FileViewPanel

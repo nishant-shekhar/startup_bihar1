@@ -175,6 +175,7 @@ const getDocumentById = async (req, res) => {
           select: {
             user_id: true,          // Include specific fields from the User model
             registration_no: true,
+            logo:true,          // Include specific fields from the User model
             company_name: true,
             founder_name: true,
             dateOfIncorporation: true,

@@ -9,10 +9,12 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 	const [searchTerm, setSearchTerm] = useState(""); // State to manage search input
 	const [isLoading, setIsLoading] = useState(true); // State for loading status
 	const [isExporting, setIsExporting] = useState(false); // State for export status
+	const [selectedId, setSelectedId] = useState(null);
 
 	const token = localStorage.getItem("token");
 
 	const handleClick = (id) => {
+		setSelectedId(id); // Save the selected ID
 		onSelect(id);
 	};
 
@@ -61,89 +63,89 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 	const handleDownloadExcel = async () => {
 		setIsExporting(true);
 		try {
-		  const promises = sdata.map(async (item) => {
-			const response = await axios.get(
-			  `https://startupbihar.in/api/${type}/v1/${item.id}`,
-			  {
-				headers: {
-				  "Content-Type": "application/json",
-				  Authorization: `${token}`,
-				},
-			  }
-			);
-			return response.data;
-		  });
-	  
-		  const detailedData = await Promise.all(promises);
-	  
-		  if (detailedData.length === 0) {
-			alert("No data available to download.");
-			return;
-		  }
-	  
-		  // Function to convert camelCase keys to normal text
-		  const formatKey = (key) => {
-			return key
-			  .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before capital letters
-			  .replace(/_/g, " ") // Replace underscores with spaces
-			  .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
-		  };
-	  
-		  // Function to format values properly
-		  const formatValue = (value) => {
-			if (typeof value === "boolean") return value ? "Yes" : "No";
-			if (typeof value === "string") {
-			  return value
-				.replace(/created/i, "Applied") // Replace 'created' with 'Applied'
-				.replace(/accepted/i, "Approved") // Replace 'Accepted' with 'Approved'
-				.replace(/rejected/i, "Rejected"); // Replace 'Rejected'
-			}
-			return value;
-		  };
-	  
-		  const excelData = detailedData.map((item) => {
-			let createdAtFormatted = formatValue(item.createdAt) || "N/A";
-			let updatedAtFormatted =
-			  item.createdAt === item.updatedAt ? "No Action Yet" : formatValue(item.updatedAt);
-	  
-			let formattedData = {
-				"Registration No": item.user?.registration_no || "N/A",
-			  "User ID": item.user?.user_id || "N/A",
-			  "Company Name": item.user?.company_name || "N/A",
-			  "Founder Name": item.user?.founder_name || "N/A",
-			  "Date of Incorporation": item.user?.dateOfIncorporation || "N/A",
-			  "District RoC": item.user?.districtRoc || "N/A",
-			  "CIN": item.user?.cin || "N/A",
-			  "Mobile": item.user?.mobile || "N/A",
-			  "Email": item.user?.email || "N/A",
-			  "Created At": createdAtFormatted,
-			  "Updated At": updatedAtFormatted,
-			};
-	  
-			// Dynamically add other fields with formatted keys and values
-			Object.keys(item).forEach((key) => {
-			  if (!["id", "ID", "user", "createdAt", "updatedAt"].includes(key)) {
-				formattedData[formatKey(key)] = formatValue(item[key]) || "N/A";
-			  }
+			const promises = sdata.map(async (item) => {
+				const response = await axios.get(
+					`http://localhost:3007/api/${type}/v1/${item.id}`,
+					{
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `${token}`,
+						},
+					}
+				);
+				return response.data;
 			});
-	  
-			return formattedData;
-		  });
-	  
-		  const worksheet = XLSX.utils.json_to_sheet(excelData);
-		  const workbook = XLSX.utils.book_new();
-		  XLSX.utils.book_append_sheet(workbook, worksheet, "Startups");
-	  
-		  XLSX.writeFile(workbook, `${type}_details.xlsx`);
+
+			const detailedData = await Promise.all(promises);
+
+			if (detailedData.length === 0) {
+				alert("No data available to download.");
+				return;
+			}
+
+			// Function to convert camelCase keys to normal text
+			const formatKey = (key) => {
+				return key
+					.replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before capital letters
+					.replace(/_/g, " ") // Replace underscores with spaces
+					.replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
+			};
+
+			// Function to format values properly
+			const formatValue = (value) => {
+				if (typeof value === "boolean") return value ? "Yes" : "No";
+				if (typeof value === "string") {
+					return value
+						.replace(/created/i, "Applied") // Replace 'created' with 'Applied'
+						.replace(/accepted/i, "Approved") // Replace 'Accepted' with 'Approved'
+						.replace(/rejected/i, "Rejected"); // Replace 'Rejected'
+				}
+				return value;
+			};
+
+			const excelData = detailedData.map((item) => {
+				let createdAtFormatted = formatValue(item.createdAt) || "N/A";
+				let updatedAtFormatted =
+					item.createdAt === item.updatedAt ? "No Action Yet" : formatValue(item.updatedAt);
+
+				let formattedData = {
+					"Registration No": item.user?.registration_no || "N/A",
+					"User ID": item.user?.user_id || "N/A",
+					"Company Name": item.user?.company_name || "N/A",
+					"Founder Name": item.user?.founder_name || "N/A",
+					"Date of Incorporation": item.user?.dateOfIncorporation || "N/A",
+					"District RoC": item.user?.districtRoc || "N/A",
+					"CIN": item.user?.cin || "N/A",
+					"Mobile": item.user?.mobile || "N/A",
+					"Email": item.user?.email || "N/A",
+					"Created At": createdAtFormatted,
+					"Updated At": updatedAtFormatted,
+				};
+
+				// Dynamically add other fields with formatted keys and values
+				Object.keys(item).forEach((key) => {
+					if (!["id", "ID", "user", "createdAt", "updatedAt"].includes(key)) {
+						formattedData[formatKey(key)] = formatValue(item[key]) || "N/A";
+					}
+				});
+
+				return formattedData;
+			});
+
+			const worksheet = XLSX.utils.json_to_sheet(excelData);
+			const workbook = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(workbook, worksheet, "Startups");
+
+			XLSX.writeFile(workbook, `${type}_details.xlsx`);
 		} catch (error) {
-		  console.error("Error downloading Excel:", error);
+			console.error("Error downloading Excel:", error);
 		} finally {
-		  setIsExporting(false);
+			setIsExporting(false);
 		}
-	  };
-	   
-	  
-	  
+	};
+
+
+
 	// Filter data based on the search term and selected category
 	const filteredData = sdata.filter((item) => {
 		const matchesSearchTerm = item?.user?.user_id
@@ -171,9 +173,8 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 				<h1 className="text-2xl">{title}</h1>
 				<RiFileExcel2Line
 					onClick={handleDownloadExcel}
-					className={`text-blue-500 text-3xl cursor-pointer hover:text-blue-700 ${
-						isExporting ? "opacity-50 cursor-not-allowed" : ""
-					}`}
+					className={`text-blue-500 text-3xl cursor-pointer hover:text-blue-700 ${isExporting ? "opacity-50 cursor-not-allowed" : ""
+						}`}
 					title={isExporting ? "Exporting..." : "Download Excel"}
 					disabled={isExporting}
 				/>
@@ -185,17 +186,15 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 						<button
 							key={category}
 							onClick={() => handleCategoryClick(category)}
-							className={`py-1 px-4 transition-all duration-300 transform ${
-								selectedCategory === category
-									? `bg-gray-100 text-[#0E0C22] text-sm font-semibold rounded-full scale-105 ${
-											category === "Accepted"
-												? "bg-green-200"
-												: category === "Rejected"
-													? "bg-red-200"
-													: ""
-										}` // Selected styles with conditional color
+							className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
+									? `bg-gray-100 text-[#0E0C22] text-sm font-semibold rounded-full scale-105 ${category === "Accepted"
+										? "bg-green-200"
+										: category === "Rejected"
+											? "bg-red-200"
+											: ""
+									}` // Selected styles with conditional color
 									: "text-[#151334] text-sm font-medium hover:text-opacity-70 hover:bg-gray-100 hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
-							}`}
+								}`}
 						>
 							{category}
 						</button>
@@ -229,47 +228,46 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 					{filteredData.map((item) => (
 						<div
 							key={item.id}
-							className="mx-5 bg-white rounded-lg mt-3 hover:shadow-lg cursor-pointer"
+							className={`mx-5 bg-white rounded-lg mt-3 hover:shadow-lg cursor-pointer ${selectedId === item.id ? "bg-indigo-300" : ""
+								}`}
 							onClick={() => handleClick(item.id)}
 						>
 							<div className="flex items-center py-5 px-5">
 								<div>
-									<img
-										src="startup.png"
-										alt="Startup"
-										className="w-12 h-12 rounded-full"
-										onError={(e) => {
-											e.target.onerror = null;
-											e.target.src =
-												"https://img.freepik.com/premium-vector/startup-logo-business-project-business-concept-identity-symbol_136321-649.jpg";
-										}}
-									/>
+								<img
+  src={item?.user?.logo || "startup.png"}
+  alt="Startup"
+  className="w-12 h-12 rounded-full"
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src =
+      "https://img.freepik.com/premium-vector/startup-logo-business-project-business-concept-identity-symbol_136321-649.jpg";
+  }}
+/>
 								</div>
 								<div className="px-3 flex-grow">
 									<h1 className="">{item?.user?.user_id?.toUpperCase()}</h1>
 									<h1 className="">Reg no: {item?.user?.registration_no}</h1>
 								</div>
 								<div
-									className={`flex-none rounded-full p-1 ${
-										item.documentStatus === "Accepted"
+									className={`flex-none rounded-full p-1 ${item.documentStatus === "Accepted"
 											? "bg-emerald-500/20"
 											: item.documentStatus === "Rejected"
-											? "bg-red-500/20"
-											: item.documentStatus === "Partially Rejected"
-											? "bg-yellow-500/20"
-											: ""
-									}`}
+												? "bg-red-500/20"
+												: item.documentStatus === "Partially Rejected"
+													? "bg-yellow-500/20"
+													: ""
+										}`}
 								>
 									<div
-										className={`size-1.5 rounded-full ${
-											item.documentStatus === "Accepted"
+										className={`size-1.5 rounded-full ${item.documentStatus === "Accepted"
 												? "bg-emerald-500"
 												: item.documentStatus === "Rejected"
-												? "bg-red-500"
-												: item.documentStatus === "Partially Rejected"
-												? "bg-yellow-500"
-												: ""
-										}`}
+													? "bg-red-500"
+													: item.documentStatus === "Partially Rejected"
+														? "bg-yellow-500"
+														: ""
+											}`}
 									></div>
 								</div>
 							</div>

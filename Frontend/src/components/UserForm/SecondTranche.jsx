@@ -148,6 +148,7 @@ const SecondTranche = ({ onFormSubmitSuccess }) => {
           <p className="text-lg max-w-xl relative top-10">
             Share your innovative ideas and secure funding to turn them into reality.
           </p>
+          <p className="text-xs max-w-xl relative top-10"> Please ensure the total combined file size of all documents remains under 16 MB, as exceeding this limit may result in an error. </p>
         </div>
       </div>
 
@@ -243,6 +244,7 @@ const SecondTranche = ({ onFormSubmitSuccess }) => {
             <button
               type="button"
               className="w-full md:w-auto text-sm font-semibold text-gray-900 border border-gray-400 rounded-md px-4 py-2"
+              onClick={goBacktoHome}
             >
               Cancel
             </button>

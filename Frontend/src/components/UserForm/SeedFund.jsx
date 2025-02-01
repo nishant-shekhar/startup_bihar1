@@ -42,7 +42,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
     branchName: Yup.string().required("Branch Name is required."),
     branchAddress: Yup.string().required("Branch Address is required."),
     panNumber: Yup.string().required("PAN Number is required."),
-    gstNumber: Yup.string().required("GST Number is required."),
     cinNumber: Yup.string().required("CIN Number is required."),
   
     // File fields with size checks
@@ -388,7 +387,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                       type="text"
                       onChange={formik.handleChange}
                       value={formik.values.gstNumber}
-                      required
                     />
                   </div>
                   <div className="w-full col-span-6 my-4">
@@ -428,7 +426,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                           onChange={(file) => handleFileChange(file, 'companyCertificate')}
                         />
                       </label>
-                      <p className="mt-2 text-xs text-gray-600 py-2">Upload a file (up to 10MB)</p>
                     </div>
                   </div>
 
@@ -445,7 +442,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                         />
 
                       </label>
-                      <p className="mt-2 text-xs text-gray-600 py-2">Upload a file (up to 10MB)</p>
 
                     </div>
                   </div>
@@ -465,7 +461,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                           onChange={(file) => handleFileChange(file, 'cancelChequeOrPassbook')}
                         />
                       </label>
-                      <p className="mt-2 text-xs text-gray-600 py-2">Upload a file (up to 10MB)</p>
 
                     </div>
                   </div>
@@ -490,7 +485,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                               onChange={(file) => handleFileChange(file, 'partnershipAgreement')}
                             />
                           </label>
-                          <p className="mt-2 text-xs text-gray-600 py-2">Upload a file (up to 10MB)</p>
                         </div>
                       </div>
                     </div>
@@ -518,7 +512,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                             onChange={(file) => handleFileChange(file, 'inc33')}
                           />
                         </label>
-                        <p className="mt-2 text-xs text-gray-600 py-2">Upload a file (up to 10MB)</p>
                       </div>
                     </div>
 
@@ -536,7 +529,6 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                             onChange={(file) => handleFileChange(file, 'inc34')}
                           />
                         </label>
-                        <p className="mt-2 text-xs text-gray-600 py-2">Upload a file (up to 10MB)</p>
                       </div>
                     </div>
 
@@ -637,13 +629,15 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
 
               <div className="mb-6 grid gap-3 sm:grid-cols-12">
                 <div className="col-span-6">
-                  <button
-                    type="cancel"
-                    className="w-full py-2 px-4 border text-black hover:bg-indigo-500 hover:text-white rounded"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Canceling...' : 'Cancel Form'}
-                  </button>
+                <button
+  type="button"
+  className="w-full py-2 px-4 border text-black hover:bg-indigo-500 hover:text-white rounded"
+  disabled={isSubmitting}
+  onClick={goBacktoHome}
+>
+  {isSubmitting ? 'Canceling...' : 'Cancel Form'}
+</button>
+
                 </div>
                 <div className="col-span-6">
                   <button

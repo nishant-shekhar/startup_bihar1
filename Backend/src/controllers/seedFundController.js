@@ -204,7 +204,8 @@ const getseedById = async (req, res) => {
       include: {
         user: {
           select: {
-            user_id: true,          // Include specific fields from the User model
+            user_id: true,
+            logo:true,          // Include specific fields from the User model
             registration_no: true,
             company_name: true,
             founder_name: true,

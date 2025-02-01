@@ -444,11 +444,12 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
 
           <div className='col-span-6'>
           <button
-            type="submit"
-            className="w-full py-2 px-4 text-black border hover:bg-indigo-500 hover:text-white rounded"
-          >
-            Cancel Form
-          </button>
+  type="button"
+  className="w-full py-2 px-4 border text-black hover:bg-indigo-500 hover:text-white rounded"
+  onClick={goBacktoHome}
+>
+  Cancel Form
+</button>
           </div>
 
           <div className='col-span-6'>

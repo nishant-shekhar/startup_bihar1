@@ -162,6 +162,7 @@ const getpostById = async (req, res) => {
         user: {
           select: {
             user_id: true,          // Include specific fields from the User model
+            logo:true,
             registration_no: true,
             company_name: true,
             founder_name: true,

@@ -33,20 +33,22 @@ const LeftBar = ({ changePanel }) => {
 
   // State for storing startup details
   const [startup, setStartup] = useState({});
+ {/*{ name: 'Apply for Coworking', panel: 'Coworking', icon: <FaFileAlt />, open: true },*/}
 
+      {/* { name: 'QPR Form', panel: 'Qpr', icon: <FaFileAlt />, open: true },*/}
   // Manage formsItems state
   const [formsItems, setFormsItems] = useState([
     { name: 'Startup Details Form', panel: 'StartupForm', icon: <FaFileAlt />, open: true },
     { name: 'Seed Fund Form', panel: 'SeedFund', icon: <FaFileAlt />, open: true },
     { name: 'Second Tranche Form', panel: 'SecondTranche', icon: <FaFileAlt />, open: true },
     { name: 'Post Seed Fund Form', panel: 'PostSeed', icon: <FaFileAlt />, open: true },
-    { name: 'QPR Form', panel: 'Qpr', icon: <FaFileAlt />, open: true },
     { name: 'Matching Loan', panel: 'Matchingloan', icon: <FaHandshake />, open: true },
     { name: 'IPR Reimbursement Form', panel: 'Reimbursement', icon: <FaMoneyBill />, open: true },
     { name: 'Acceleration Programme', panel: 'Acceleration', icon: <FaRocket />, open: true },
     { name: 'Apply For Incubation', panel: 'Incubation',icon: <FaFileAlt />, open: true  },
-    { name: 'Apply for Coworking', panel: 'Coworking', icon: <FaFileAlt />, open: true },
   ]);
+   
+
 // Manage formsItems state
 const [seatItems, setSeatItems] = useState([
   { seatNo: '1', booked: true, icon: <FaChair />},

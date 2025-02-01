@@ -14,12 +14,15 @@ import { IoPencil } from "react-icons/io5";
 
 // <-- Import the new popup component
 import ShowcasePopup from "./FieldsUpdate/AddNewShowcase";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const HomeSection = () => {
   const [startup, setStartup] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [showcases, setShowcases] = useState([]);
 
+    const [dialogMessageSimple, setDialogMessageSimple] = useState('');
+  
   // Popups & Dialogs
   const [isContactVisible, setIsContactVisible] = useState(false);
   const [statusPopup, setStatusPopup] = useState(false);
@@ -31,6 +34,7 @@ const HomeSection = () => {
   const [selectedCategory, setSelectedCategory] = useState("Showcase");
   const [showDialog, setShowDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
+  const [showDialogSimple, setShowDialogSimple] = useState(false);
 
   // UI states
   const [selectedPlatform, setSelectedPlatform] = useState(false);
@@ -44,7 +48,7 @@ const HomeSection = () => {
   const fileInputRef = useRef(null);
 
   // For the category tabs
-  const categories = ["Showcase", "Notifications", "Action History"];
+  const categories = ["Showcase", "Notifications"];
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
@@ -66,6 +70,8 @@ const HomeSection = () => {
   // Fetch data on mount or when updateCount changes
   const fetchDetails = async () => {
     try {
+      setShowDialogSimple(true);
+      setDialogMessageSimple("Loading Profile...");
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
@@ -83,6 +89,7 @@ const HomeSection = () => {
 
         ]);
 
+        setShowDialogSimple(false);
 
       setStartup(detailsResponse.data.startup);
       setShowcases(showcasesResponse.data.showcase || []);
@@ -104,13 +111,21 @@ const HomeSection = () => {
   return (
     <div className="h-screen overflow-y-auto">
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-100">
-        {/* ---------------------- NAVIGATION ---------------------- */}
-        <nav className="px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center space-x-1">
-            <div className="text-purple-600 font-semibold">✦</div>
-            <a href="/" className="font-semibold">
-              Startup Bihar
-            </a>
+       {/* ---------------------- NAVIGATION ---------------------- */}
+       <nav className="px-4 py-2">
+          <div className=" items-center space-x-1">
+            
+            <div className="flex items-center justify-between space-x-2">
+              <div className="flex">
+                <h1 className="text-purple-600 font-semibold">✦</h1>
+                <a href="/" className="font-semibold">
+                Startup Bihar
+                </a>
+              </div>
+              <div>
+                <button className="bg-purple-600 rounded-md px-2 py-1 text-white text-sm " onClick={() => setUpdateCount(updateCount + 1)}>Refresh Profile</button>
+              </div>
+            </div>
           </div>
         </nav>
 
@@ -177,13 +192,13 @@ const HomeSection = () => {
                     Contact
                   </button>
                   <a
-                    href={startup.website || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-2 border border-gray-300 rounded-lg"
-                  >
-                    Visit Website
-                  </a>
+  href={`https://startupbihar.in/Startup/${localStorage.getItem("user_id")}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-6 py-2 border border-gray-300 rounded-lg"
+>
+  View Public Profile
+</a>
                 </div>
               </div>
             </div>
@@ -483,6 +498,13 @@ const HomeSection = () => {
         status={isSuccess}
         onClose={() => setStatusPopup(false)}
       />
+      {showDialogSimple && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70">
+          <div className="bg-white p-6 rounded shadow-lg max-w-xs text-center">
+            <p className="text-black font-semibold text-lg">{dialogMessageSimple}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

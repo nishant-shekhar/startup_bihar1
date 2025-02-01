@@ -36,6 +36,14 @@ const Startupdetails = ({ startup }) => {
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Check if file size exceeds 1 MB (1 MB = 1,048,576 bytes)
+      if (file.size > 1048576) {
+        setShowDialog(true);
+        setDialogMessage('File size exceeds the 1 MB limit');
+        setTimeout(() => setShowDialog(false), 2000);
+        return; // Stop processing if file is too large
+      }
+
       const formData = new FormData();
       formData.append('logo', file);
 
@@ -51,6 +59,7 @@ const Startupdetails = ({ startup }) => {
         });
 
         setDialogMessage('Logo updated successfully');
+        // Update the image source using URL.createObjectURL for immediate preview
         setFounderImageUrl(URL.createObjectURL(file));
       } catch (error) {
         console.error('Failed to upload logo:', error);
@@ -60,6 +69,7 @@ const Startupdetails = ({ startup }) => {
       }
     }
   };
+
 
   const handleUpdate = async (field, value) => {
     const urlMap = {
