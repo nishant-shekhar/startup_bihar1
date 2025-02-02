@@ -25,7 +25,7 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
     "Private Limited Company/One Person Company (OPC)", "Partnership Firm",
     "Limited Liability Partnership (LLP)"
   ];
-   const validationSchema = Yup.object().shape({
+  const validationSchema = Yup.object().shape({
     // Basic fields
     companyName: Yup.string().required("Company Name is required."),
     registrationNumber: Yup.string().required("Registration Number is required."),
@@ -43,29 +43,29 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
     branchAddress: Yup.string().required("Branch Address is required."),
     panNumber: Yup.string().required("PAN Number is required."),
     cinNumber: Yup.string().required("CIN Number is required."),
-  
+
     // File fields with size checks
     companyCertificate: Yup.mixed()
       .required("Company Certificate is required.")
       .test("fileSize", "File size too large, max size is 5MB", (value) => {
         return !value || (value && value.size <= 5 * 1024 * 1024);
       }),
-  
+
     cancelChequeOrPassbook: Yup.mixed()
       .required("Cancel Cheque or Passbook is required.")
       .test("fileSize", "File size too large, max size is 5MB", (value) => {
         return !value || (value && value.size <= 5 * 1024 * 1024);
       }),
-  
+
     dpr: Yup.mixed()
       .required("Detailed Project Report is required.")
       .test("fileSize", "File size too large, max size is 5MB", (value) => {
         return !value || (value && value.size <= 5 * 1024 * 1024);
       }),
-  
+
     // Entity type triggers the conditional uploads
     businessEntityType: Yup.string().required("Business Entity Type is required."),
-  
+
     // Conditionally required for Private Limited Company/OPC
     /*inc33: Yup.mixed().when("businessEntityType", {
       is: (val) => val === "Private Limited Company/One Person Company (OPC)",
@@ -356,6 +356,9 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
                       placeholder='Enter your PIN code'
                       name="pincode"
                       type="number"
+                      onInput={(e) => {
+                        if (e.target.value.length > 6) e.target.value = e.target.value.slice(0, 6);
+                      }}
                       onChange={formik.handleChange}
                       value={formik.values.pincode}
                       required
@@ -409,139 +412,14 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
 
             {/* Second layout (Second part of the form) */}
             <div className="min-h-[100px] sm:col-span-6 flex flex-col space-y-2">
-              <div className="flex-1 rounded-md bg-white items-center relative border px-5">
-                <h1 className="text-black font-bold flex justify-center items-center border-b">Upload Documents</h1>
-
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Box 1 */}
-                  <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
-                    <div className="text-center py-2 scale-75">
-                      <label
-                        htmlFor="companyCertificate"
-                        className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                      >
-                        <Upload
-                          label="Company Certificate/ Registration Cerificate"
-                          name="companyCertificate"
-                          onChange={(file) => handleFileChange(file, 'companyCertificate')}
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
-                    <div className="text-center py-2 scale-75">
-                      <label
-                        htmlFor="dpr"
-                        className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                      >
-                        <Upload
-                          label="Detailed Project Report"
-                          name="dpr"
-                          onChange={(file) => handleFileChange(file, 'dpr')}
-                        />
-
-                      </label>
-
-                    </div>
-                  </div>
-
-
-
-                  <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
-                    <div className="text-center py-2 scale-75">
-                      <label
-                        htmlFor="cancelChequeOrPassbook"
-                        className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                      >
-
-                        <Upload
-                          label="Upload Cancel Cheque (PDF)"
-                          name="cancelChequeOrPassbook"
-                          onChange={(file) => handleFileChange(file, 'cancelChequeOrPassbook')}
-                        />
-                      </label>
-
-                    </div>
-                  </div>
-
-
-                </div>
-                {/* Additional conditional boxes based on business entity */}
-                {(formik.values.businessEntityType === "Limited Liability Partnership (LLP)"
-                  || formik.values.businessEntityType === "Partnership Firm") && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-                      <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
-                        <div className="text-center py-2 scale-75">
-                          <label
-                            htmlFor="partnershipAgreement"
-                            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                          >
-
-                            <Upload
-                              label="Partnership Agreement"
-                              name="partnershipAgreement"
-                              onChange={(file) => handleFileChange(file, 'partnershipAgreement')}
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                {/* Additional conditional boxes based on business entity */}
-                {formik.values.businessEntityType === "Private Limited Company/One Person Company (OPC)" && (
-
-                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-
-
-                    {/* // rest of the two boxex are here */}
-                    {/* Box 2 */}
-                    <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
-                      <div className="text-center py-2 scale-75">
-                        <label
-                          htmlFor="inc33"
-                          className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                        >
-
-                          <Upload
-                            label="INC33 (MOA)"
-                            name="inc33"
-                            onChange={(file) => handleFileChange(file, 'inc33')}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Box 3 */}
-                    <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
-                      <div className="text-center py-2 scale-75">
-                        <label
-                          htmlFor="inc34"
-                          className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                        >
-
-                          <Upload
-                            label="INC34 (AOA)"
-                            name="inc34"
-                            onChange={(file) => handleFileChange(file, 'inc34')}
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-              </div>
+              
 
               <div className="min-h-[100px] grid sm:col-span-12 md:col-span-6 space-y-2">
-                <div className="flex-1 rounded-md bg-white flex flex-col items-center relative border px-5">
+                <div className="flex-1 rounded-md  flex flex-col items-center relative border px-2">
                   <h1 className="text-black font-bold flex justify-center items-center border-b pt-4">Bank Detail</h1>
 
                   {/* Wrap the input boxes in a flex container to arrange them horizontally */}
-                  <div className="mb-4 pt-4 grid grid-cols-12 gap-4">
+                  <div className="w-full px-4 mb-4 pt-4 grid grid-cols-12 gap-4 ">
                     <div className="w-full col-span-6">
                       <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="bankName">Bank Name:</label>
                       <input
@@ -625,18 +503,129 @@ const SeedFund = ({ onFormSubmitSuccess }) => {
 
                 </div>
               </div>
+              <div className="flex-1 rounded-md bg-white items-center relative border px-5">
+  <h1 className="text-black font-bold flex justify-center items-center border-b">
+    Upload Documents
+  </h1>
+
+  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {/* Box 1 */}
+    <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
+      <div className="text-center py-2 scale-90">
+        <label
+          htmlFor="companyCertificate"
+          className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+        >
+          <Upload
+            label="Company/ Registration Certificate"
+            name="companyCertificate"
+            onChange={(file) => handleFileChange(file, 'companyCertificate')}
+          />
+        </label>
+      </div>
+    </div>
+
+    <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
+      <div className="text-center py-2 scale-90">
+        <label
+          htmlFor="dpr"
+          className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+        >
+          <Upload
+            label="Detailed Project Report"
+            name="dpr"
+            onChange={(file) => handleFileChange(file, 'dpr')}
+          />
+        </label>
+      </div>
+    </div>
+
+    <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
+      <div className="text-center py-2 scale-90">
+        <label
+          htmlFor="cancelChequeOrPassbook"
+          className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+        >
+          <Upload
+            label="Upload Cancel Cheque (PDF)"
+            name="cancelChequeOrPassbook"
+            onChange={(file) => handleFileChange(file, 'cancelChequeOrPassbook')}
+          />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  {/* Additional conditional boxes based on business entity */}
+  {(formik.values.businessEntityType === "Limited Liability Partnership (LLP)" ||
+    formik.values.businessEntityType === "Partnership Firm") && (
+    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
+        <div className="text-center py-2 scale-90">
+          <label
+            htmlFor="partnershipAgreement"
+            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+          >
+            <Upload
+              label="Partnership Agreement"
+              name="partnershipAgreement"
+              onChange={(file) => handleFileChange(file, 'partnershipAgreement')}
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Additional conditional boxes based on business entity */}
+  {formik.values.businessEntityType === "Private Limited Company/One Person Company (OPC)" && (
+    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Box 2 */}
+      <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
+        <div className="text-center py-2 scale-90">
+          <label
+            htmlFor="inc33"
+            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+          >
+            <Upload
+              label="INC33 (MOA)"
+              name="inc33"
+              onChange={(file) => handleFileChange(file, 'inc33')}
+            />
+          </label>
+        </div>
+      </div>
+
+      {/* Box 3 */}
+      <div className="flex items-center justify-center border border-dashed rounded-lg h-40">
+        <div className="text-center py-2 scale-90">
+          <label
+            htmlFor="inc34"
+            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
+          >
+            <Upload
+              label="INC34 (AOA)"
+              name="inc34"
+              onChange={(file) => handleFileChange(file, 'inc34')}
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
 
               <div className="mb-6 grid gap-3 sm:grid-cols-12">
                 <div className="col-span-6">
-                <button
-  type="button"
-  className="w-full py-2 px-4 border text-black hover:bg-indigo-500 hover:text-white rounded"
-  disabled={isSubmitting}
-  onClick={goBacktoHome}
->
-  {isSubmitting ? 'Canceling...' : 'Cancel Form'}
-</button>
+                  <button
+                    type="button"
+                    className="w-full py-2 px-4 border text-black hover:bg-indigo-500 hover:text-white rounded"
+                    disabled={isSubmitting}
+                    onClick={goBacktoHome}
+                  >
+                    {isSubmitting ? 'Canceling...' : 'Cancel Form'}
+                  </button>
 
                 </div>
                 <div className="col-span-6">

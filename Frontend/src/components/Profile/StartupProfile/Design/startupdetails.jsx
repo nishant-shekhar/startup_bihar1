@@ -164,15 +164,18 @@ const Startupdetails = ({ startup }) => {
       {showCropper && (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 z-50">
           <div className="relative w-80 h-80 bg-white p-4">
-            <Cropper
-              image={selectedFile}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}  // Square crop
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={(croppedArea, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
-            />
+          <Cropper
+  image={selectedFile}
+  crop={crop}
+  zoom={zoom}
+  aspect={1}              // square crop dimensions
+  cropShape="round"       // this makes the crop overlay circular
+  onCropChange={setCrop}
+  onZoomChange={setZoom}
+  onCropComplete={(croppedArea, croppedAreaPixels) =>
+    setCroppedAreaPixels(croppedAreaPixels)
+  }
+/>
           </div>
           {/* Zoom slider */}
           <div className="w-80 my-4">
