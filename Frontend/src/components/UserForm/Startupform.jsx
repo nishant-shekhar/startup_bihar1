@@ -145,7 +145,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
   }
   
   return (
-    <div className="h-screen overflow-y-auto">
+    <div className="h-screen overflow-y-auto ">
        
 
        <div className="relative w-full h-[250px]">
@@ -192,8 +192,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
       
 
 
-      <h2 className="text-center text-2xl font-bold mb-6 mt-8">Startup Profile Form
-      </h2>
+     
       {/* Success Alert */}
       {successMessage && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 mx-6">
@@ -203,7 +202,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
       {/* Error Messages */}
       {errorMessage && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-6">{errorMessage}</div>}
 
-  <form onSubmit={formik.handleSubmit} className="gap-6 mx-6 space-x-2 border rounded-md px-5 py-5 ">
+  <form onSubmit={formik.handleSubmit} className="gap-6 mx-6 space-x-2 border rounded-md px-5 py-5 mt-6 mb-20">
         {/* Left Column */}
         <div>
         <div className="grid sm:grid-cols-12 gap-4">
@@ -236,7 +235,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
 
         {/* second */}
         <div className="grid grid-cols-12 gap-4" >
-          <div className="mb-4 col-span-6">
+          <div className="mb-4 col-span-12 sm:col-span-6">
             <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="founderAadharNumber">Founder Aadhaar Number:</label>
             <input
               className="border rounded-md w-full py-2 px-3"
@@ -252,8 +251,8 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
             />
           </div>
 
-          <div className="mb-4 col-span-6">
-            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="coFounderNames">Co-Founder Names (comma-separated):</label>
+          <div className="mb-4 col-span-12 sm:col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="coFounderNames">Co-Founder Names :</label>
             <input
               className="border rounded-md w-full py-2 px-3"
               id="coFounderNames"
@@ -267,8 +266,8 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
 
   
         <div className='grid grid-cols-12 gap-4'>
-          <div className="mb-4 col-span-6">
-            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="coFounderAadharNumbers">Co-Founder Aadhaar Numbers (comma-separated):</label>
+          <div className="mb-4 col-span-12 sm:col-span-6">
+            <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="coFounderAadharNumbers">Co-Founder Aadhaar Numbers :</label>
             <input
               className="border rounded-md w-full py-2 px-3"
               id="coFounderAadharNumbers"
@@ -281,7 +280,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
               value={formik.values.coFounderAadharNumbers}
             />
           </div>
-          <div className="mb-4 col-span-6">
+          <div className="mb-4 col-span-12 sm:col-span-6">
             <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="sector">Sector:</label>
             <input
               className="border rounded-md w-full py-2 px-3"
@@ -296,7 +295,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
           </div>
           
           <div className='grid grid-cols-12 gap-4'>
-          <div className="mb-4 col-span-6">
+          <div className="mb-4 col-span-12 sm:col-span-6">
             <label className="block mb-2 text-sm/6 font-medium text-gray-900" htmlFor="businessConcept">Business Concept:</label>
             <textarea
               className="border rounded-md w-full py-2 px-3"
@@ -306,6 +305,20 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
               value={formik.values.businessConcept}
               required
             />
+          </div>
+          <div className="mb-4 col-span-12 sm:col-span-6">
+            <label className="mb-2 text-sm/6 font-medium text-gray-900" htmlFor="appliedIPR">Applied for IPR:</label>
+            <select
+              className="border rounded w-full py-2 px-3 mt-2"
+              id="appliedIPR"
+              name="appliedIPR"
+              onChange={formik.handleChange}
+              value={formik.values.appliedIPR}
+              required
+            >
+              <option  value={false}>No</option>
+              <option value={true}>Yes</option>
+            </select>
           </div>
           </div>
 
@@ -377,7 +390,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
           </div>
         
            <div className='grid grid-cols-12 gap-4'>
-          <div className="mb-4 col-span-6">
+          <div className="mb-4 col-span-12 sm:col-span-6">
             <label className="text-sm/6 font-medium text-gray-900" htmlFor="category">Category:</label>
             <input
               className="border rounded-md w-full py-2 px-3"
@@ -389,7 +402,7 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
               required
             />
           </div>
-          <div className="mb-4 col-span-6">
+          <div className="mb-4 col-span-12 sm:col-span-6">
             <label className="mb-2 text-sm/6 font-medium text-gray-900" htmlFor="dpiitRecognitionNo">DPIIT Recognition No:</label>
             <input
               className="border rounded w-full py-2 px-3"
@@ -402,24 +415,11 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
           </div>
            </div>   
 
-          <div className="mb-4">
-            <label className="mb-2 text-sm/6 font-medium text-gray-900" htmlFor="appliedIPR">Applied for IPR:</label>
-            <select
-              className="border rounded w-full py-2 px-3"
-              id="appliedIPR"
-              name="appliedIPR"
-              onChange={formik.handleChange}
-              value={formik.values.appliedIPR}
-              required
-            >
-              <option value={false}>No</option>
-              <option value={true}>Yes</option>
-            </select>
-          </div>
+         
   
 
           <div className="grid grid-cols-12 gap-4">
-          <div className="mb-4 col-span-6 text-sm/6 font-medium text-gray-900">
+          <div className="mb-4 col-span-12 sm:col-span-6 text-sm/6 font-medium text-gray-900">
             <Upload
               label="Upload Company Logo:"
               name="logo"
@@ -427,9 +427,9 @@ const StartupForm = ( {onFormSubmitSuccess} ) => {
               allowImages={true} 
             />
           </div>
-          <div className="mb-4 col-span-6 text-sm/6 font-medium text-gray-900">
+          <div className="mb-4 col-span-12 sm:col-span-6 text-sm/6 font-medium text-gray-900">
             <Upload
-              label="Upload Certificate:"
+              label="Upload Startup Certificate:"
               name="certificate"
               onChange={(file) => handleFileChangeForm(file, 'certificate')}
               accept=".pdf"

@@ -8,7 +8,7 @@ import NavBarNew from "../NavBarNew";
 const AllStartup = () => {
   // Define your categories
   const categories = [
-    "All",
+    "Smart Innovations",
     "Finance",
     "Technology",
     "Food",
@@ -16,11 +16,12 @@ const AllStartup = () => {
     "Logistics",
     "Edu-tech",
     "Health",
-    "E-commerce",
+    "E-comm",
     "Environment",
+
   ];
 
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Smart Innovations");
   const [startups, setStartups] = useState([]);
   const [searchTerm, setSearchTerm] = useState(""); // track what's typed in search
   const [isLoading, setIsLoading] = useState(false);

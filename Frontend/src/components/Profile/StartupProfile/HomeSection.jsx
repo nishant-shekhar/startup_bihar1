@@ -142,7 +142,7 @@ const HomeSection = () => {
             {/* Profile Image */}
             <div className="rounded-3xl overflow-hidden w-5/12">
               <img
-                src={startup.logo || "default-logo.png"}
+                src={startup.logo || "https://dummyimage.com/100x100/000/fff.png&text=Logo"}
                 alt="Profile"
                 className="mt-3 mx-2 object-cover rounded-3xl border-8 border-gray-200/30"
               />

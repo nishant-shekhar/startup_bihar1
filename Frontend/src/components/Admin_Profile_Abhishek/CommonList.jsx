@@ -228,7 +228,7 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
 					{filteredData.map((item) => (
 						<div
 							key={item.id}
-							className={`mx-5 bg-white rounded-lg mt-3 hover:shadow-lg cursor-pointer ${selectedId === item.id ? "bg-indigo-300" : ""
+							className={`mx-5 bg-white rounded-lg mt-3 hover:shadow-lg cursor-pointer ${selectedId === item.id ? "bg-slate-300" : ""
 								}`}
 							onClick={() => handleClick(item.id)}
 						>

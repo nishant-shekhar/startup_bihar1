@@ -667,6 +667,7 @@ const getPublicStartupDetails = async (req, res) => {
         founder_name: true,
         coverPic: true,
         category: true,
+        address:true,
 
         employeeCount: true,
         workOrders: true,

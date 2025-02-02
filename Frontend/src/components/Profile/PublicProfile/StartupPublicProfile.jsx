@@ -32,7 +32,11 @@ const StartupPublicProfile = () => {
 		setSelectedCategory(category);
 	};
 
-
+	const getWebsiteUrl = (url) => {
+		if (!url) return "#";
+		return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
+	  };
+	  
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
@@ -109,8 +113,8 @@ const StartupPublicProfile = () => {
 				<div className="sm:col-span-4 md:col-span-3 lg:col-span-2 flex items-center justify-center lg:justify-start h-[120px] sm:h-[150px] lg:h-[180px]">
 					<div className="w-[120px] sm:w-[150px] lg:w-[180px] aspect-w-1 aspect-h-1 overflow-hidden flex items-center justify-center">
 						<img
-							src={startup.logo || "default-logo.png"}
-							alt="Profile"
+							src={startup.logo || "https://dummyimage.com/100x100/000/fff.png&text=Logo"}
+							alt="Logo"
 							className="object-cover w-full h-full rounded-lg"
 						/>
 					</div>
@@ -158,13 +162,13 @@ const StartupPublicProfile = () => {
 							Contact
 						</button>
 						<a
-							href={startup.website || "#"}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="px-6 py-2 border border-gray-300 rounded-lg"
-						>
-							Visit Website
-						</a>
+  href={getWebsiteUrl(startup.website)}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-6 py-2 border border-gray-300 rounded-lg"
+>
+  Visit Website
+</a>
 					</div>
 				</div>
 
@@ -174,18 +178,19 @@ const StartupPublicProfile = () => {
 					{/* Add content here if needed to ensure the height expands properly */}
 					<div className="">
 						<div className="flex justify-center lg:justify-end items-center gap-4 sm:my-4">
-							<div className="text-center">
-								<div className="text-xl font-semibold">{startup.employeeCount}</div>
-								<div className="text-gray-600">Employees</div>
-							</div>
-							<div className="text-center">
-								<div className="text-xl font-semibold">{startup.workOrders}</div>
-								<div className="text-gray-600">Work Order</div>
-							</div>
-							<div className="text-center">
-								<div className="text-xl font-semibold">{startup.projects}</div>
-								<div className="text-gray-600">Projects</div>
-							</div>
+						<div className="text-center">
+  <div className="text-xl font-semibold">{startup.employeeCount || '—'}</div>
+  <div className="text-gray-600">Employees</div>
+</div>
+<div className="text-center">
+  <div className="text-xl font-semibold">{startup.workOrders || '—'}</div>
+  <div className="text-gray-600">Work Orders</div>
+</div>
+<div className="text-center">
+  <div className="text-xl font-semibold">{startup.projects || '—'}</div>
+  <div className="text-gray-600">Projects</div>
+</div>
+
 						</div>
 						<div className="flex justify-center lg:justify-end  gap-6 mt-3 lg:mt-6">
 							<a
@@ -203,7 +208,7 @@ const StartupPublicProfile = () => {
 								<FaFacebook className="text-3xl cursor-pointer hover:text-blue-700" />
 							</a>
 							<a
-								href={startup.Instagram || "#"}
+								href={startup.instagram|| "#"}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
@@ -217,7 +222,7 @@ const StartupPublicProfile = () => {
 								<FaLinkedin className="text-3xl cursor-pointer hover:text-blue-600" />
 							</a>
 							<a
-								href={startup.website || "#"}
+								href={getWebsiteUrl(startup.website)|| "#"}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
@@ -261,7 +266,7 @@ const StartupPublicProfile = () => {
 								key={category}
 								onClick={() => handleCategoryClick(category)}
 								className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
-									? "bg-[#bac2cd] text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
+									? "bg-slate-200 text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
 									: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-[#F8F7F3] hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
 									}`}
 							>
@@ -328,7 +333,7 @@ const StartupPublicProfile = () => {
 								&times;
 							</button>
 							<h1 className="text-2xl font-bold">{startup.company_name}</h1>
-							<h1 className="mb-3">{startup.about}</h1>
+							<h1 className="mb-3">{startup.moto}</h1>
 							<h2 className="text-xl font-semibold ">Contact :</h2>
 							Phone :
 							<a href={`tel:${startup.mobile}`} className="text-blue-600 ">
@@ -345,13 +350,13 @@ const StartupPublicProfile = () => {
 								{startup.website || "#"}
 							</a>
 							<br />
-							{/*Address:
+							Address:
 							<a
-								href={startup.website || "#"}
+								href={startup.address || "#"}
 								className="text-blue-600 underline"
 							>
 								{" "}
-							</a>*/}
+							</a>
 						</div>
 					</div>
 				)}
