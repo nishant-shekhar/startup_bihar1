@@ -83,21 +83,17 @@ const getAllIprnWithUserDetails = async (req, res) => {
     const documents = await prisma.iPRReimbursement.findMany({
       select: {
         id:true,
-        user: {
-          select: {
-            user_id: true,             // Fields from the User model
-            registration_no: true,
-            company_name: true,
-            document: {
-              select: {                // Fields from the Document model
-                coFounderNames: true,
-                logoPath: true,
-                category: true,
-                founderName: true,
-              },
-            },
-          },
-        },
+        documentStatus:true,
+        updatedAt:true,
+				user: {
+					select: {
+						user_id: true, // Fields from the User model
+						registration_no: true,
+						company_name: true,
+						logo:true,
+						
+					},
+				},
       },
     });
 

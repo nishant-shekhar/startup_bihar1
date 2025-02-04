@@ -35,8 +35,8 @@ const StartupPublicProfile = () => {
 	const getWebsiteUrl = (url) => {
 		if (!url) return "#";
 		return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-	  };
-	  
+	};
+
 	const fetchDetails = async () => {
 		try {
 			const response = await axios.get(
@@ -96,9 +96,6 @@ const StartupPublicProfile = () => {
 				</div>
 
 				<div className="flex items-center space-x-4">
-
-
-
 				</div>
 			</nav>
 
@@ -122,11 +119,10 @@ const StartupPublicProfile = () => {
 
 				{/* Green Container */}
 				<div className="sm:col-span-8 md:col-span-9 lg:col-span-6 h-[150px] sm:h-[150px] lg:h-[180px] flex flex-col justify-center sm:justify-start items-center sm:items-start  p-4">
-					<div className="flex items-center gap-2 text-center sm:text-left">
-						<h1 className="text-2xl font-semibold">
-							{startup.company_name}
-						</h1>
-						<span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center">
+					
+					<div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1">
+						{/* On mobile, this badge appears first; on sm and above, it appears second */}
+						<span className="order-1 sm:order-2 px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center mt-4 sm:mt-0">
 							<svg
 								className="w-3 h-3 mr-1"
 								fill="none"
@@ -143,9 +139,16 @@ const StartupPublicProfile = () => {
 							</svg>
 							Top Startup
 						</span>
+						{/* On mobile, this appears second; on sm and above, it appears first */}
+						<h1 className="order-2 sm:order-1 text-2xl font-semibold ">
+							{startup.company_name}
+						</h1>
 					</div>
 
-					<div className="text-lg mt-1 text-center sm:text-left">
+
+
+
+					<div className="text-gray-800 sm:text-lg mt-1 text-center sm:text-left text-base ">
 						{startup.moto}
 					</div>
 
@@ -162,13 +165,13 @@ const StartupPublicProfile = () => {
 							Contact
 						</button>
 						<a
-  href={getWebsiteUrl(startup.website)}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="px-6 py-2 border border-gray-300 rounded-lg"
->
-  Visit Website
-</a>
+							href={getWebsiteUrl(startup.website)}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="px-6 py-2 border border-gray-300 rounded-lg"
+						>
+							Visit Website
+						</a>
 					</div>
 				</div>
 
@@ -176,23 +179,23 @@ const StartupPublicProfile = () => {
 				{/* Purple Container */}
 				<div className="sm:col-span-12 lg:col-span-4  ">
 					{/* Add content here if needed to ensure the height expands properly */}
-					<div className="">
+					<div className="mt-4 sm:mt-0">
 						<div className="flex justify-center lg:justify-end items-center gap-4 sm:my-4">
-						<div className="text-center">
-  <div className="text-xl font-semibold">{startup.employeeCount || '—'}</div>
-  <div className="text-gray-600">Employees</div>
-</div>
-<div className="text-center">
-  <div className="text-xl font-semibold">{startup.workOrders || '—'}</div>
-  <div className="text-gray-600">Work Orders</div>
-</div>
-<div className="text-center">
-  <div className="text-xl font-semibold">{startup.projects || '—'}</div>
-  <div className="text-gray-600">Projects</div>
-</div>
+							<div className="text-center border-r px-3">
+								<div className="text-xl font-semibold">{startup.employeeCount || '—'}</div>
+								<div className="text-gray-600">Employees</div>
+							</div>
+							<div className="text-center border-r px-3">
+								<div className="text-xl font-semibold">{startup.workOrders || '—'}</div>
+								<div className="text-gray-600">Work Orders</div>
+							</div>
+							<div className="text-center ">
+								<div className="text-xl font-semibold">{startup.projects || '—'}</div>
+								<div className="text-gray-600">Projects</div>
+							</div>
 
 						</div>
-						<div className="flex justify-center lg:justify-end  gap-6 mt-3 lg:mt-6">
+						<div className="flex justify-center lg:justify-end  gap-6 mt-3 lg:mt-6 py-2">
 							<a
 								href={startup.twitter || "#"}
 								target="_blank"
@@ -208,7 +211,7 @@ const StartupPublicProfile = () => {
 								<FaFacebook className="text-3xl cursor-pointer hover:text-blue-700" />
 							</a>
 							<a
-								href={startup.instagram|| "#"}
+								href={startup.instagram || "#"}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
@@ -222,7 +225,7 @@ const StartupPublicProfile = () => {
 								<FaLinkedin className="text-3xl cursor-pointer hover:text-blue-600" />
 							</a>
 							<a
-								href={getWebsiteUrl(startup.website)|| "#"}
+								href={getWebsiteUrl(startup.website) || "#"}
 								target="_blank"
 								rel="noopener noreferrer"
 							>
@@ -231,7 +234,7 @@ const StartupPublicProfile = () => {
 						</div>
 
 						<div
-							className=" -space-x-2 overflow-hidden mt-4 flex justify-end"
+							className="mt-4 flex sm:justify-end justify-center -space-x-2 overflow-hidden flex-wrap"
 							onClick={() => setShowEmployeeDetails(true)}
 						>
 							{employees && employees.length > 0 ? (
@@ -247,6 +250,7 @@ const StartupPublicProfile = () => {
 								<p className="text-sm text-gray-500">No employees found</p>
 							)}
 						</div>
+
 					</div>
 					{showEmployeeDetails && (
 						<EmployeeDetails
@@ -333,7 +337,7 @@ const StartupPublicProfile = () => {
 								&times;
 							</button>
 							<h1 className="text-2xl font-bold">{startup.company_name}</h1>
-							<h1 className="mb-3">{startup.moto}</h1>
+							<h1 className="mb-3 ">{startup.moto}</h1>
 							<h2 className="text-xl font-semibold ">Contact :</h2>
 							Phone :
 							<a href={`tel:${startup.mobile}`} className="text-blue-600 ">

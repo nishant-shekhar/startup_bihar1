@@ -337,12 +337,7 @@ const StartupProfileDetails = ({ id }) => {
 								</td>
 							</tr>
 						)}
-						<tr>
-							<td className="py-4 px-4 border-b border-l border-t">ID</td>
-							<td className="py-4 px-4 border-b border-l border-t border-r w-[35vw]">
-								{data.id}
-							</td>
-						</tr>
+						
 						<tr>
 							<td className="py-4 px-4 border-b border-l border-t">
 								Registration No
