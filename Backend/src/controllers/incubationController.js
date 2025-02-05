@@ -99,6 +99,7 @@ const getAllIncubationWithUserDetails = async (req, res) => {
     const documents = await prisma.incubationApplication.findMany({
       select: {
         id:true,
+        documentStatus:true,
         updatedAt:true,
 				user: {
 					select: {

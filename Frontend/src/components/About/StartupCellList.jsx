@@ -24,7 +24,7 @@ const StartupIncubationCell = () => {
                 "Anant Kumar, TPO and Startup Cell Incharge, Contact No-9448752350, Email-id: anant6295@gmail.com",
             email: "anant6295@gmail.com",
             contactNumber: "9448752350",
-            coordinator: "Manish Bibhu",
+            coordinator: "Manish Bibhu , 8294373207",
         },
         {
             id: 3,
@@ -54,7 +54,7 @@ const StartupIncubationCell = () => {
                 "Ravi Kumar, Assistant Professor, CSE, Contact No-8789634010, Email-id: rrsdce@gmail.com",
             email: "startup@rrsdcebgs.ac.in",
             contactNumber: "8789634010",
-            coordinator: "Juli Kumari, 9123460389",
+            coordinator: "Prince Kumar , 6203050994",
         },
         {
             id: 6,
@@ -63,7 +63,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Dr. Sandeep Raj, 9386199102, sraj.ece@iiitbh.ac.in",
             email: "sraj.ece@iiitbh.ac.in",
             contactNumber: "9386199102",
-            coordinator: "Vikash Kumar Ray",
+            coordinator: "Ankit Kumar , 9430496495",
         },
         {
             id: 7,
@@ -81,7 +81,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Prabhakar, aavidasin@gmail.com, 7970965314",
             email: "aavidasin@gmail.com",
             contactNumber: "7970965314",
-            coordinator: "Sakshi Gaurav",
+            coordinator: "Sakshi Gaurav , 6207602483",
         },
         {
             id: 9,
@@ -119,7 +119,7 @@ const StartupIncubationCell = () => {
                 "Rahul Kumar Ranjan, principalgecjamui@gmail.com, 7050740663",
             email: "principalgecjamui@gmail.com;gecjamuistartupcell@gmail.com",
             contactNumber: "7050740663",
-            coordinator: "Mithun Kumar Singh",
+            coordinator: "Mithun Kumar Singh , 7004841629",
         },
         {
             id: 13,
@@ -207,7 +207,7 @@ const StartupIncubationCell = () => {
                 "Ravi Kumar,7979098267,ravi_cbp23@cimp.ac.in",
             email: "ravi_cbp23@cimp.ac.in",
             contactNumber: 7979098267,
-            coordinator: "Navin Kumar",
+            coordinator: "Navin Kumar, 8521662223",
         },
         
         {
@@ -262,7 +262,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Dr Md Safiullah, 8969767406, safiullah@cnlu.ac.in",
             email: "safiullah@cnlu.ac.in",
             contactNumber: "8969767406",
-            coordinator: "Mushir Reyaz",
+            coordinator: "Mushir Reyaz, 9386919916",
         },
         {
             id: 28,
@@ -271,7 +271,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Ritu Narayan, lnmipat@gmail.com, 9304026344",
             email: "lnmipat@gmail.com",
             contactNumber: "9304026344",
-            coordinator: "Jyotish Shankar",
+            coordinator: "Jyotish Shankar, 8862963221",
         },
         {
             id: 29,
@@ -289,7 +289,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Vikash Kumar Singh, principalscesasaram@gmail.com, 7903766692",
             email: "principalscesasaram@gmail.com",
             contactNumber: "7903766692",
-            coordinator: "N/A",
+            coordinator: "Nitish Kumar Dubey , 7254958045",
         },
         {
             id: 31,
@@ -316,7 +316,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Dr. Ram Datt",
             email: "ramdatt@rpcau.ac.in; aiic.pusa@rpcau.ac.in",
             contactNumber: "6287797119",
-            coordinator: "Rajshekhar Singh, 8936823946",
+            coordinator: "Dhriti Dutt Roy, 8252224301",
         },
         {
             id: 34,
@@ -343,7 +343,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Brij Mohan Kumar, startup@gecsheohar.ac.in, 9782436752",
             email: "startup@gecsheohar.ac.in",
             contactNumber: "9782436752",
-            coordinator: "Shreya Shah",
+            coordinator: "Shreya Shah, 9431851110",
         },
         {
             id: 37,
@@ -397,7 +397,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Md Aslam Parwez",
             email: "jagjiwancollegeara@gmail.com",
             contactNumber: "8294000059",
-            coordinator: "Divyendu Shekhar Singh",
+            coordinator: "Divyendu Shekhar Singh , 9006939299",
         },
         {
             id: 43,
@@ -406,7 +406,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Chandrasekhar Prabhakar",
             email: "prcoa2010@gmail.com",
             contactNumber: "8002062841",
-            coordinator: "Vishnu Singh",
+            coordinator: "Vishnu Singh, 7992329191",
         },
         {
             id: 44,
@@ -415,7 +415,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "N/A",
             email: "ngppat13@gmail.com",
             contactNumber: "N/A",
-            coordinator: "N/A",
+            coordinator: "Sanjay Kumar Seth ,8434501903",
         },
         {
             id: 45,
@@ -424,7 +424,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "N/A",
             email: "info@sxcpatna.edu.in; deanacademics@sxcpatna.edu.in",
             contactNumber: "N/A",
-            coordinator: "N/A",
+            coordinator: "Vikash Kumar Singh , 8709264773",
         },
         {
             id: 46,
@@ -433,9 +433,11 @@ const StartupIncubationCell = () => {
             facultyIncharge: "N/A",
             email: "lnmipat@gmail.com",
             contactNumber: "N/A",
-            coordinator: "N/A",
+            coordinator: "Kunal Singh ,8002884215",
         },
     ];
+
+
 
     return (
 		<div className="grid grid-cols-1">

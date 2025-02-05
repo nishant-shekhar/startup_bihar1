@@ -9,6 +9,7 @@ import SixthPage from "./SixthPage";
 import Countdown from "react-countdown";
 import Footer from "./footer";
 import CountdownTimer from "./CountdownTimer";
+import CountUp from 'react-countup';
 
 const HomePage = () => {
 	const [isCountdownComplete, setCountdownComplete] = useState(false);
@@ -69,8 +70,8 @@ const HomePage = () => {
 
 				{/* mobile content */}
 				<div className="grid grid-cols-4 gap-2 scale-75 sm:mt-24 md:hidden">
-					
-					
+
+
 					<div className="col-span-1 flex flex-col items-center  h-full ">
 						<img
 							src="cm2.png"
@@ -91,10 +92,10 @@ const HomePage = () => {
 							className="w-24 h-auto object-cover "
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-						Government of Bihar 
+							Government of Bihar
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-						Bihar, India
+							Bihar, India
 						</p>
 					</div>
 					<div className="col-span-1 flex flex-col items-center  h-full  ">
@@ -104,7 +105,7 @@ const HomePage = () => {
 							className="w-24 h-auto object-cover "
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-						Department of Industries
+							Department of Industries
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
 							Govt. of Bihar
@@ -117,13 +118,13 @@ const HomePage = () => {
 							className="w-24 h-auto object-cover "
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-						Shri Nitish Mishra
+							Shri Nitish Mishra
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-						Hon'ble Minister, Industry Dept, Bihar
+							Hon'ble Minister, Industry Dept, Bihar
 						</p>
 					</div>
-					
+
 
 				</div>
 
@@ -259,13 +260,17 @@ const HomePage = () => {
 							Explore Startups
 						</a>
 						<a
-							href="/ecosystem"
+							href="https://startup.bihar.gov.in/"
+							target="blank"
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>
-							Learn more <span aria-hidden="true">→</span>
+							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
 				</motion.div>
+
+				
+
 
 				{/* Moving Page Component */}
 				<MovingPage />
@@ -274,6 +279,7 @@ const HomePage = () => {
 			<ThirdPage />
 			<FourthPage />
 			<FifthPage />
+
 			<SixthPage />
 			<Footer />
 		</div>
