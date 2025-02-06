@@ -57,10 +57,8 @@ model User {
   seedFund              SeedFund?            // One-to-one relation
   secondTranche         SecondTranche?       // One-to-one relation
   postSeedFund          PostSeedFund?        // One-to-one relation
-  qReport               QReport?             // One-to-one relation
   accelerationProgram   AccelerationProgram? // One-to-one relation
   matchingLoan          MatchingLoan?        // One-to-one relation
-  coworkingApplication  CoWorkingApplication?
   incubationApplication IncubationApplication?
   iprReimbursement      IPRReimbursement?
 
@@ -234,27 +232,43 @@ model PostSeedFund {
 
 
 model QReport {
-    id                 String   @id @default(uuid()) @map("_id")
-    currentStage       String
-    averageTurnover    String
-    currentRevenue     String
-    netProfitOrLoss    String   // 'Profit' or 'Loss'
-    fundRaised         Boolean
-    workOrders         String
-    directEmployment   String
-    indirectEmployment String
-    maleEmployees      String
-    femaleEmployees    String
-    partnerships       String
-    nextQuarterGoals   String
-    userId             String   @unique
-   
-    user               User     @relation(fields: [userId], references: [user_id])
-    documentStatus     String
-    comment            String?
-    createdAt          DateTime @default(now())
-    updatedAt          DateTime  @updatedAt      // Auto-update modification timestamp
+  id                   String   @id @default(uuid()) @map("_id")
+  totalCoFounders      String
+  stage                String
+  sector               String
+  registeredDistrict   String
+  registeredBlock      String?          // Optional field if not selected
+  aboutStartup         String
+  fundsTaken           String             
+  currentRevenue       String
+  netProfitOrLoss      String
+  fundsRaised          Boolean
+  fundsDetails         String?          // Only if fundsRaised is true
+  fundAmount           String
+  iprReceived          String            
+  fullTimeMale         String
+  fullTimeFemale       String
+  partTimeMale         String
+  partTimeFemale       String
+  workOrders           String
+  totalWorkOrderAmount String?
+  customersAcquired    String
+  unitPhotos           String?            // For storing photo URLs or an object with photo1 and photo2
+  pitchdeck            String           // URL to uploaded PDF
+  auditedReport        String           // URL to uploaded PDF
+  incubationBenefits   String           // "Yes" or "No"
+  benefitsDetails      String?          // If incubationBenefits is "Yes"
+  otherAchievements    String?
+
+  userId               String
+  documentStatus       String
+  comment              String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
+
+
+
 
 
 model AccelerationProgram {
@@ -329,8 +343,7 @@ model CoWorkingApplication {
   seatNo           String
   status           String
 
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [user_id])
+  userId           String  
   documentStatus         String
   comment                String?
   createdAt              DateTime @default(now())

@@ -46,6 +46,8 @@ const LeftBar = ({ changePanel }) => {
     { name: 'IPR Reimbursement Form', panel: 'Reimbursement', icon: <FaMoneyBill />, open: true },
     { name: 'Acceleration Programme', panel: 'Acceleration', icon: <FaRocket />, open: true },
     { name: 'Apply For Incubation', panel: 'Incubation',icon: <FaFileAlt />, open: true  },
+    { name: 'Apply for Coworking', panel: 'Coworking', icon: <FaFileAlt />, open: true },
+    { name: 'Startup Progress Form', panel: 'Qpr', icon: <FaFileAlt />, open: true },
   ]);
    
 
@@ -142,10 +144,12 @@ const [seatItems, setSeatItems] = useState([
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`bg-[#1c2437] text-[#f5f7f6] h-screen overflow-y-scroll overflow-x-hidden flex flex-col justify-between p-4
+        className={`bg-[#1c2437] text-[#f5f7f6] h-screen overflow-y-scroll overflow-x-hidden flex flex-col justify-between p-4 z-60
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           md:translate-x-0 transition-transform duration-300 fixed md:static`}
-        style={{ width: isOpen ? '60%' : '22%' }}
+        style={{ width: isOpen ? '60%' : '22%',
+          zIndex: 50, 
+         }}
       >
         <Startupdetails startup={startup} />
 

@@ -109,7 +109,7 @@ const HomeSection = () => {
   }, [updateCount]);
 
   return (
-    <div className="h-screen overflow-y-auto">
+    <div className="h-screen overflow-y-auto z-40">
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-100">
        {/* ---------------------- NAVIGATION ---------------------- */}
        <nav className="px-4 py-2">

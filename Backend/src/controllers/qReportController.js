@@ -9,79 +9,125 @@ const JWT_SECRET = 'your_jwt_secret_key';
 
 const submitQuarterlyReport = async (req, res) => {
   try {
-    // Ensure a token is provided in the request headers
-    const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer <token> format
+    // Ensure a token is provided (assuming Bearer <token> format)
+    const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
-      return res.status(401).json({ error: 'Authorization token is required' });
+      return res.status(401).json({ error: "Authorization token is required" });
     }
 
     // Decode the JWT to get the user ID
-    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+    const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.user_id; // Adjust according to your token payload structure
 
+    // Extract fields from req.body
+    // Optionally, the client may send an `id` field if updating an existing report.
     const {
-      currentStage,
-      averageTurnover,
+      id, // optional: if provided, we update
+      totalCoFounders,
+      stage,
+      sector,
+      registeredDistrict,
+      registeredBlock,
+      aboutStartup,
+      fundsTaken,       // expected as an array
       currentRevenue,
       netProfitOrLoss,
-      fundRaised,
+      fundsRaised,      // expected as "Yes" or "No"
+      fundsDetails,
+      fundAmount,
+      iprReceived,      // expected as an array
+      fullTimeMale,
+      fullTimeFemale,
+      partTimeMale,
+      partTimeFemale,
       workOrders,
-      directEmployment,
-      indirectEmployment,
-      maleEmployees,
-      femaleEmployees,
-      partnerships,
-      nextQuarterGoals
+      totalWorkOrderAmount,
+      customersAcquired,
+   
+      incubationBenefits, // "Yes" or "No"
+      benefitsDetails,
+      otherAchievements,
     } = req.body;
+
+    const unitPhoto1 = req.files.unitPhoto1
+    ? req.files.unitPhoto1[0].location
+    : null;
+    const unitPhoto2 = req.files.unitPhoto2
+    ? req.files.unitPhoto2[0].location
+    : null;
+
+    const unitPhotos=unitPhoto1+";"+unitPhoto2
+
+    const pitchdeck = req.files.pitchdeck
+    ? req.files.pitchdeck[0].location
+    : null;
+
+    const auditedReport = req.files.auditedReport
+    ? req.files.auditedReport[0].location
+    : null;
+    // Convert multi-select arrays into semicolon-separated strings
+    
     
 
-      // Upsert: Create or update the PostSeedFund entry
-      const qReport = await prisma.qReport.upsert({
-        where: { userId }, // Use userId to find existing entry
-        update: {
-          currentStage , // Default to empty string
-          averageTurnover, // Ensure string format
-          currentRevenue,
-          netProfitOrLoss,
-          fundRaised: req.body.fundRaised === "Yes", // Convert "Yes" to boolean
-          workOrders,
-          directEmployment,
-          indirectEmployment,
-          maleEmployees,
-          femaleEmployees,
-          partnerships,
-          nextQuarterGoals,
-          documentStatus: 'Updates', // Default value
-        },
-        create: {
-          currentStage , // Default to empty string
-          averageTurnover, // Ensure string format
-          currentRevenue,
-          netProfitOrLoss,
-          fundRaised: req.body.fundRaised === "Yes", // Convert "Yes" to boolean
-          workOrders,
-          directEmployment,
-          indirectEmployment,
-          maleEmployees,
-          femaleEmployees,
-          partnerships,
-          nextQuarterGoals,
-          userId,
-          documentStatus: 'Created', // Default value
-        },
-      });
+      
 
-   
+    // Build the data object to save/update
+    const data = {
+      totalCoFounders,
+      stage,
+      sector,
+      registeredDistrict,
+      registeredBlock,
+      aboutStartup,
+      fundsTaken,
+      currentRevenue,
+      netProfitOrLoss,
+      fundsRaised: fundsRaised === "Yes", // Convert "Yes"/"No" to boolean
+      fundsDetails,
+      fundAmount,
+      iprReceived,
+      fullTimeMale,
+      fullTimeFemale,
+      partTimeMale,
+      partTimeFemale,
+      workOrders,
+      totalWorkOrderAmount,
+      customersAcquired,
+      unitPhotos,
+      pitchdeck,
+      auditedReport,
+      incubationBenefits,
+      benefitsDetails,
+      otherAchievements,
+      userId,
+      // Set a default documentStatus if needed:
+      documentStatus: "created",
+    };
+
+    let qReport;
+    if (id) {
+      // Update existing record if id is provided
+      qReport = await prisma.qReport.update({
+        where: { id },
+        data,
+      });
+    } else {
+      // Create a new report
+      qReport = await prisma.qReport.create({
+        data,
+      });
+    }
 
     return res.status(200).json({
-      message: qReport ? 'Quarterly report updated successfully' : 'Quarterly report created successfully',
+      message: id ? "Quarterly report updated successfully" : "Quarterly report created successfully",
       qReport,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while processing the request' });
+    console.error("Error in submitQuarterlyReport:", error);
+    return res.status(500).json({ error: "An error occurred while processing the request" });
   }
 };
+
 
 const getAllqReportWithUserDetails = async (req, res) => {
   try {
@@ -111,41 +157,37 @@ const getAllqReportWithUserDetails = async (req, res) => {
   }
 };
 
-const getQReportnById = async (req, res) => {
-  let { id } = req.params; // Retrieve id from the request parameters
-
+const getQReportsByUserId = async (req, res) => {
   try {
-  
-    // Check if id is provided
-    if (!id) {
-      return res.status(400).json({ error: 'ID is required' });
+    // Extract token from headers (assuming "Bearer <token>" format)
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "Authorization token is required" });
     }
 
-    // Fetch the document from the database
-    const document = await prisma.qReport.findUnique({
-      where: { id: id }, // Use the ID to query the database
-      include: {
-        user: {
-          select: {
-            user_id: true,          // Include specific fields from the User model
-            registration_no: true,
-            company_name: true,
-          },
-        },
-      },
+    // Decode the JWT to get the user ID
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id; // Adjust as needed based on your token payload
+
+    // Fetch all QReport forms for the given userId
+    const documents = await prisma.qReport.findMany({
+      where: { userId },
+     
     });
 
-    if (!document) {
-      // Return 404 if document is not found
-      return res.status(404).json({ error: 'Document not found' });
+    if (!documents || documents.length === 0) {
+      return res.status(404).json({ error: "No QReport forms found for this user" });
     }
 
-    // Return the document if found
-    return res.status(200).json(document); // Explicitly set status to 200
+    return res.status(200).json({
+      message: "QReport forms retrieved successfully",
+      data: documents,
+    });
   } catch (error) {
-    // Handle any server error
-    console.error(`Error retrieving document with id ${id}:`, error);
-    return res.status(500).json({ error: 'An error occurred while retrieving the document' });
+    console.error("Error retrieving QReports for user:", error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while retrieving the QReport forms" });
   }
 };
 
@@ -188,7 +230,7 @@ const updateQreportStatus = async (req, res) => {
 
 module.exports = {
   submitQuarterlyReport,
-  getQReportnById,
+  getQReportsByUserId,
   getAllqReportWithUserDetails,
   updateQreportStatus
 };

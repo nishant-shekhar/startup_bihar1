@@ -26,39 +26,39 @@ const submitPostSeedFund = async (req, res) => {
     } = req.body;
 
     // Handle file uploads
-				const auditedBalanceSheet = req.files.auditedBalanceSheet
-					? req.files.auditedBalanceSheet[0].location
-					: null;
+    const auditedBalanceSheet = req.files.auditedBalanceSheet
+      ? req.files.auditedBalanceSheet[0].location
+      : null;
     const gstReturn = req.files.gstReturn ? req.files.gstReturn[0].location : null;
     const projectReport = req.files.projectReport
-					? req.files.projectReport[0].location
-					: null;
+      ? req.files.projectReport[0].location
+      : null;
 
     // Upsert: Create or update the PostSeedFund entry
-				const postSeedFundEntry = await prisma.postSeedFund.upsert({
-					where: { userId }, // Use userId to find existing entry
-					update: {
-						currentStage,
-						technicalKnowledge: technicalKnowledge === "Yes", // Convert string to boolean
-						auditedBalanceSheet,
-						gstReturn,
-						raisedFunds: raisedFunds === "Yes", // Convert string to boolean
-						employment: employment === "Yes", // Convert string to boolean
-						projectReport,
-						documentStatus: "created",
-					},
-					create: {
-						currentStage,
-						technicalKnowledge: technicalKnowledge === "Yes", // Convert string to boolean
-						auditedBalanceSheet,
-						gstReturn,
-						raisedFunds: raisedFunds === "Yes", // Convert string to boolean
-						employment: employment === "Yes", // Convert string to boolean
-						projectReport,
-						userId, // Associate the entry with the user ID
-						documentStatus: "created",
-					},
-				});
+    const postSeedFundEntry = await prisma.postSeedFund.upsert({
+      where: { userId }, // Use userId to find existing entry
+      update: {
+        currentStage,
+        technicalKnowledge: technicalKnowledge === "Yes", // Convert string to boolean
+        auditedBalanceSheet,
+        gstReturn,
+        raisedFunds: raisedFunds === "Yes", // Convert string to boolean
+        employment: employment === "Yes", // Convert string to boolean
+        projectReport,
+        documentStatus: "created",
+      },
+      create: {
+        currentStage,
+        technicalKnowledge: technicalKnowledge === "Yes", // Convert string to boolean
+        auditedBalanceSheet,
+        gstReturn,
+        raisedFunds: raisedFunds === "Yes", // Convert string to boolean
+        employment: employment === "Yes", // Convert string to boolean
+        projectReport,
+        userId, // Associate the entry with the user ID
+        documentStatus: "created",
+      },
+    });
 
     res.status(200).json({
       message: postSeedFundEntry ? 'Post Seed Fund entry updated successfully' : 'Post Seed Fund entry created successfully',
@@ -122,18 +122,18 @@ const getAllpostWithUserDetails = async (req, res) => {
   try {
     const documents = await prisma.postSeedFund.findMany({
       select: {
-        id:true,
-        documentStatus:true,
-        updatedAt:true,
-				user: {
-					select: {
-						user_id: true, // Fields from the User model
-						registration_no: true,
-						company_name: true,
-						logo:true,
-						
-					},
-				},
+        id: true,
+        documentStatus: true,
+        updatedAt: true,
+        user: {
+          select: {
+            user_id: true, // Fields from the User model
+            registration_no: true,
+            company_name: true,
+            logo: true,
+
+          },
+        },
       },
     });
 
@@ -151,7 +151,7 @@ const getpostById = async (req, res) => {
   let { id } = req.params; // Retrieve id from the request parameters
 
   try {
-  
+
     // Check if id is provided
     if (!id) {
       return res.status(400).json({ error: 'ID is required' });
@@ -164,15 +164,15 @@ const getpostById = async (req, res) => {
         user: {
           select: {
             user_id: true,          // Include specific fields from the User model
-            logo:true,
+            logo: true,
             registration_no: true,
             company_name: true,
             founder_name: true,
             dateOfIncorporation: true,
-            districtRoc:true,
-            cin:true,
-            mobile:true,
-            email:true,
+            districtRoc: true,
+            cin: true,
+            mobile: true,
+            email: true,
 
           },
         },
@@ -195,39 +195,39 @@ const getpostById = async (req, res) => {
 
 const getPostSeedByToken = async (req, res) => {
   // Ensure a token is provided in the request headers
-  
-    try {
-      const token = req.headers.authorization?.split(" ")[1]; // Assuming Bearer <token> format
-      if (!token) {
-        return res.status(401).json({ error: "Authorization token is required" });
-      }
-      
-      // Decode the JWT to get the user ID
-      const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
-      const userId = decoded.user_id; // Adjust according to your token payload structure
-  
-      
-  
-      // Fetch the document from the database
-      const document = await prisma.postSeedFund.findUnique({
-        where: { userId: userId }, // Use the ID to query the database
-      });
-  
-      if (!document) {
-        // Return 404 if document is not found
-        return res.status(404).json({ error: "Document not found" });
-      }
-  
-      // Return the document if found
-      return res.status(200).json(document); // Explicitly set status to 200
-    } catch (error) {
-      // Handle any server error
-      console.error(`Error retrieving document with id ${id}:`, error);
-      return res
-        .status(500)
-        .json({ error: "An error occurred while retrieving the document" });
+
+  try {
+    const token = req.headers.authorization?.split(" ")[1]; // Assuming Bearer <token> format
+    if (!token) {
+      return res.status(401).json({ error: "Authorization token is required" });
     }
-  };
+
+    // Decode the JWT to get the user ID
+    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+    const userId = decoded.user_id; // Adjust according to your token payload structure
+
+
+
+    // Fetch the document from the database
+    const document = await prisma.postSeedFund.findUnique({
+      where: { userId: userId }, // Use the ID to query the database
+    });
+
+    if (!document) {
+      // Return 404 if document is not found
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    // Return the document if found
+    return res.status(200).json(document); // Explicitly set status to 200
+  } catch (error) {
+    // Handle any server error
+    console.error(`Error retrieving document with id ${id}:`, error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while retrieving the document" });
+  }
+};
 const updatepostStatus = async (req, res) => {
   const { id } = req.params;
   const {
@@ -311,7 +311,7 @@ const getPostSeedFundStatus = async (req, res) => {
       },
     });
 
-   if (!document) {
+    if (!document) {
       // If document not found, return a response with documentStatus: null
       return res.status(200).json({
         message: 'No post seed fund status found for this user',

@@ -1,7 +1,7 @@
 
 
 const express = require('express');
-const { applyForCoWorkingSpace,getAllCoworkingWithUserDetails,getcoworkingById,updateCoworkinStatus } = require('../controllers/coWorkingApplicationController');
+const { applyForCoWorkingSpace,getAllCoworkingWithUserDetails,getcoworkingById,updateCoworkinStatus, getCoWorkingByToken } = require('../controllers/coWorkingApplicationController');
 const router = express.Router();
 
 const { authenticateUser } = require('../middlewares/authenticateUser'); 
@@ -17,5 +17,10 @@ router.patch(
     '/u1/:id',authenticateAdmin,
     updateCoworkinStatus
   )
+
+  router.get(
+    '/v3',authenticateUser,
+    getCoWorkingByToken
+  );
 
 module.exports = router
