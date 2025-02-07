@@ -10,6 +10,8 @@ const QPRModuleDetails = ({ id }) => {
 	const token = localStorage.getItem("token");
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
+	const adminRole = localStorage.getItem("admin_role") || "admin";
+	const adminId = localStorage.getItem("admin_id") || "admin";
 
 	const fetchData = async () => {
 		if (id) {
@@ -60,6 +62,8 @@ const QPRModuleDetails = ({ id }) => {
 			handleDialog("Application is rejected.");
 			setIsCommentVisible(false);
 			await fetchData();
+			await postNotification("Your Startup Progress form has been rejected.", null, `Reason: ${comment}`);
+
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -107,6 +111,8 @@ const QPRModuleDetails = ({ id }) => {
 			);
 			handleDialog("Application is accepted.");
 			await fetchData();
+			await postNotification("Your Startup Progress Report form has been accepted.");
+
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -130,6 +136,48 @@ const QPRModuleDetails = ({ id }) => {
 		if (data.documentStatus === "Partially Rejected")
 			return "Document has been rejected";
 		return "";
+	};
+	const postNotification = async (notificationMessage, docLink = null, subtitle = "Post Seed Fund Application") => {
+		try {
+			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
+				console.error("Missing required fields to post a notification.");
+				return;
+			}
+			console.log(data?.user?.user_id)
+			console.log(data?.user_id)
+
+			const notificationData = {
+				user_id: data?.user?.user_id,  // Ensure `userId` is present
+				admin_id: adminId, // Replace with actual admin ID
+				admin_role: adminRole, // Replace with actual admin role
+				notification: notificationMessage,
+				subtitle: subtitle,
+				related_to: `Application ID: ${id}`, // Ensure `id` is defined
+			};
+
+			if (docLink) {
+				notificationData.docLink = docLink;
+			}
+
+			const response = await axios.post(
+				"https://startupbihar.in/api/notifications/",
+				notificationData,
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`, // Validate `token` existence
+					}
+				},
+			);
+
+			if (response.status === 201) {
+				console.log("Notification posted successfully.");
+			} else {
+				console.error("Unexpected response:", response);
+			}
+		} catch (error) {
+			console.error("Error posting notification:", error.response?.data || error.message);
+		}
 	};
 
 	const handleViewPdf = (url) => {
@@ -549,13 +597,7 @@ const QPRModuleDetails = ({ id }) => {
 							>
 								Reject
 							</button>
-							<button
-								type="button"
-								className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-								onClick={handlePartialReject}
-							>
-								Partial Reject
-							</button>
+							
 						</div>
 					</div>
 				)}

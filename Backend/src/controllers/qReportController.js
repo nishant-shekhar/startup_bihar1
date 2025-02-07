@@ -142,6 +142,8 @@ const getAllqReportWithUserDetails = async (req, res) => {
     const documents = await prisma.qReport.findMany({
       select: {
         id: true,
+        documentStatus:true,
+
         updatedAt: true,
         // Include select fields from the associated User model
         user: {

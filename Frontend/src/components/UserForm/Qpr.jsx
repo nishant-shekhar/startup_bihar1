@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import axios from "axios";
 import Upload from "./Upload";
+import StatusDialog from "./StatusDialog";
 
 // Helper functions for managing semicolon-separated strings
 const isOptionSelected = (option, valueStr) => {
@@ -23,58 +24,72 @@ const removeOptionFromString = (option, valueStr) => {
   return newArr.join(";");
 };
 const districtBlockMap = {
-  
-    "Araria": ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
-    "Arwal": ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
-    "Aurangabad": ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
-    "Banka": ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
-    
-    "Begusarai": ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
-    "Bhabhua": ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
 
-    "Bhagalpur": ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
-    "Bhojpur": ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
-    "Buxar": ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
-    "Darbhanga": ["Alinagar", "Bahadurpur", "Baheri", "Benipur", "Biraul", "Darbhanga", "Gaura Bauram", "Ghanshyampur", "Hanuman Nagar", "Hayaghat", "Jale", "Keoti", "Kiratpur", "Kusheswar Asthan", "Kusheswar Asthan East", "Manigachhi", "Singhwara", "Tardih"],
-    "East Champaran": ["Adapur", "Areraj", "Banjariya", "Chakia", "Chhauradano", "Chiraiya", "Dhaka", "Ghorasahan", "Harsiddhi", "Kalyanpur", "Kesaria", "Kotwa", "Madhuban", "Mehsi", "Motihari", "Paharpur", "Pakaridayal", "Patahi", "Phenhara", "Piprakothi", "Ramgarhwa", "Raxaul", "Sangrampur", "Sugauli", "Tetaria", "Turkauliya", "Bankatwa"],
-    "Gaya": ["Amas", "Atri", "Banke Bazar", "Barachatty", "Belaganj", "Bodh Gaya", "Dobhi", "Dumariya", "Fatehpur", "Gaya Sadar", "Guraru", "Gurua", "Imamganj", "Khizar Sarai", "Konch", "Manpur", "Mohanpur", "Mohra", "Paraiya", "Sherghatty", "Tankuppa", "Tekari", "Wazirganj"],
-    "Gopalganj": ["Bhore", "Gopalganj", "Manjha", "Uchkagaon", "Kuchaikot", "Kateya", "Vijaipur", "Barauli", "Hathua", "Baikunthpur", "Phulwaria", "Thawe", "Panchdevari", "Sidhwalia"],
-    "Jamui": ["Barhat", "Chakai", "Gidhaur", "Isalmanagar Aliganj", "Jamui", "Jhajha", "Khaira", "Laxmipur", "Sikandra", "Sono"],
-    "Jehanabad": ["Jehanabad", "Ghoshi", "Hulasgunj", "Kako", "Makhdumpur", "Modanganj", "Ratni Faridpur"],
-    "Katihar": ["Amdabad", "Azamnagar", "Balrampur", "Barari", "Barsoi", "Dandkhora", "Falka", "Hasanganj", "Kadwa", "Katihar", "Korha", "Kursela", "Manihari", "Mansahi", "Pranpur", "Sameli"],
-    "Khagaria": ["Allouli Beldaur", "Beldaur", "Chautham", "Gogari", "Khagaria", "Mansi", "Parbatta"],
-    "Kishanganj": ["Bahadurganj", "Dighalbank", "Kishanganj", "Kochadhaman", "Pothia", "Terhagachh", "Thakurganj"],
-    "Lakhisarai": ["Barahia", "Channan", "Halsi", "Lakhisarai", "Piparia", "Ramgarh Chowk", "Suryagarha"],
-    "Madhepura": ["Alamnagar", "Bihariganj", "Chausa", "Ghailadh", "Gamharia", "Gualpara", "Kumarkhand", "Madhepura", "Murliganj", "Puraini", "Shankarpur", "Singheshwarsthan", "Uda Kishanganj"],
-    "Madhubani": ["Khutauna", "Phulparas", "Laukahi", "Ghoghardiha", "Rahika", "Pandaul", "Rajnagar", "Khajauli", "Kaluahi", "Babubarhi", "Madhwapur", "Harlakhi", "Bisfi", "Benipatti", "Lakhnaur", "Madhepur", "Jhanjharpur", "Andharathari", "Basopatti", "Ladania", "Jainagar"],
-    "Munger": ["Munger Sadar", "Dharahara", "Bariyarpur", "Jamalpur", "Tetia Bamber", "Haveli Kharagpur", "Tarapur", "Asarganj", "Sangrampur"],
+  "Araria": ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
+  "Arwal": ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
+  "Aurangabad": ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
+  "Banka": ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
+
+  "Begusarai": ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
+  "Bhabhua": ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
+
+  "Bhagalpur": ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
+  "Bhojpur": ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
+  "Buxar": ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
+  "Darbhanga": ["Alinagar", "Bahadurpur", "Baheri", "Benipur", "Biraul", "Darbhanga", "Gaura Bauram", "Ghanshyampur", "Hanuman Nagar", "Hayaghat", "Jale", "Keoti", "Kiratpur", "Kusheswar Asthan", "Kusheswar Asthan East", "Manigachhi", "Singhwara", "Tardih"],
+  "East Champaran": ["Adapur", "Areraj", "Banjariya", "Chakia", "Chhauradano", "Chiraiya", "Dhaka", "Ghorasahan", "Harsiddhi", "Kalyanpur", "Kesaria", "Kotwa", "Madhuban", "Mehsi", "Motihari", "Paharpur", "Pakaridayal", "Patahi", "Phenhara", "Piprakothi", "Ramgarhwa", "Raxaul", "Sangrampur", "Sugauli", "Tetaria", "Turkauliya", "Bankatwa"],
+  "Gaya": ["Amas", "Atri", "Banke Bazar", "Barachatty", "Belaganj", "Bodh Gaya", "Dobhi", "Dumariya", "Fatehpur", "Gaya Sadar", "Guraru", "Gurua", "Imamganj", "Khizar Sarai", "Konch", "Manpur", "Mohanpur", "Mohra", "Paraiya", "Sherghatty", "Tankuppa", "Tekari", "Wazirganj"],
+  "Gopalganj": ["Bhore", "Gopalganj", "Manjha", "Uchkagaon", "Kuchaikot", "Kateya", "Vijaipur", "Barauli", "Hathua", "Baikunthpur", "Phulwaria", "Thawe", "Panchdevari", "Sidhwalia"],
+  "Jamui": ["Barhat", "Chakai", "Gidhaur", "Isalmanagar Aliganj", "Jamui", "Jhajha", "Khaira", "Laxmipur", "Sikandra", "Sono"],
+  "Jehanabad": ["Jehanabad", "Ghoshi", "Hulasgunj", "Kako", "Makhdumpur", "Modanganj", "Ratni Faridpur"],
+  "Katihar": ["Amdabad", "Azamnagar", "Balrampur", "Barari", "Barsoi", "Dandkhora", "Falka", "Hasanganj", "Kadwa", "Katihar", "Korha", "Kursela", "Manihari", "Mansahi", "Pranpur", "Sameli"],
+  "Khagaria": ["Allouli Beldaur", "Beldaur", "Chautham", "Gogari", "Khagaria", "Mansi", "Parbatta"],
+  "Kishanganj": ["Bahadurganj", "Dighalbank", "Kishanganj", "Kochadhaman", "Pothia", "Terhagachh", "Thakurganj"],
+  "Lakhisarai": ["Barahia", "Channan", "Halsi", "Lakhisarai", "Piparia", "Ramgarh Chowk", "Suryagarha"],
+  "Madhepura": ["Alamnagar", "Bihariganj", "Chausa", "Ghailadh", "Gamharia", "Gualpara", "Kumarkhand", "Madhepura", "Murliganj", "Puraini", "Shankarpur", "Singheshwarsthan", "Uda Kishanganj"],
+  "Madhubani": ["Khutauna", "Phulparas", "Laukahi", "Ghoghardiha", "Rahika", "Pandaul", "Rajnagar", "Khajauli", "Kaluahi", "Babubarhi", "Madhwapur", "Harlakhi", "Bisfi", "Benipatti", "Lakhnaur", "Madhepur", "Jhanjharpur", "Andharathari", "Basopatti", "Ladania", "Jainagar"],
+  "Munger": ["Munger Sadar", "Dharahara", "Bariyarpur", "Jamalpur", "Tetia Bamber", "Haveli Kharagpur", "Tarapur", "Asarganj", "Sangrampur"],
   "Muzaffarpur": ["Sahebganj", "Motipur", "Paroo", "Saraiya", "Kurhani", "Kanti", "Marwan", "Minapur", "Musahari", "Bochahan", "Aurai", "Katara", "Gaighat", "Muraul", "Sakra", "Bandra"],
   "Nalanda": ["Ekangarsarai", "Biharsarif", "Asthawan", "Noorsarai", "Sarmera", "Rahui", "Harnaut", "Hilsa", "Islampur", "Ben", "Bind", "Parwalpur", "Katrisarai", "Karai Parsurai", "Nagarnarusa", "Chandi", "Tharthari", "Giriyak", "Rajgir", "Silao"],
   "Nawada": ["Rajauli", "Akbarpur", "Sirdala", "Kowakole", "Pakaribarawan", "Warsaliganj", "Kashichak", "Nawada", "Nardiganj", "Roh", "Meskaur", "Govindpur", "Narhat", "Hisua"],
- 
-    "Patna": ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
-    "Purnea": ["Amour", "Baisa", "Baisi", "Banmankhi", "Barhara Kothi", "Bhawanipur", "Dagarua", "Dhamdaha", "Jalalgarh", "Krityanandnagar", "Kasba", "Purnia", "Rupouli", "Srinagar"],
-    "Rohtas": ["Akorhigola", "Bikramganj", "Chenari", "Dawath", "Dehri", "Dinara", "Karakata", "Kargahar", "Kochas", "Nasriganj", "Nauhatta", "Nokha", "Rajpur", "Rohtas", "Sanjhauli", "Sasaram", "Sheosagar", "Surajpura", "Tilouthu"],
 
-    "Saharsa": ["Kahra", "Sattar Katiya", "Saur Bazar", "Patarghat", "Mahishi", "Sonbarsa", "Nauhatta", "Salkhua", "Banma Itahri", "Simri Bakhtiyarpur"],
-    "Samastipur": ["Kalyanpur", "Warisnagar", "Khanpur", "Samastipur", "Pusa", "Tajpur", "Morwa", "Sarairanjan", "Patori", "Mohanpur", "Mohiuddinnagar", "Vidyapatinagar", "Dalsingsarai", "Ujiyarpur", "Bibhutipur", "Rosera", "Shivajinagar", "Singhia", "Hasanpur", "Bithan"],
-    "Saran": ["Baniyapur", "Lahladpur", "Jalalpur", "Nagra", "Ekma", "Manjhi", "Rivilganj", "Chapra", "Maker", "Garkha", "Marhourah", "Amnour", "Mashrakh", "Panapur", "Taraiyan", "Ishupur", "Parsa", "Dariyapur", "Dighwara", "Sonepur"],
-    "Sheikhpura": ["Sheikhpura", "Barbigha", "Shekhopur Sarai", "Ariari", "Chewara", "Ghat Kusumba"],
-    "Sheohar": ["Sheohar", "Dumari", "Piprahi", "Purnahiya", "Tariyani"],
-    "Sitamarhi": ["Belsand", "Parsauni", "Runnisaidpur", "Dumra", "Riga", "Bairgania", "Majorganj", "Suppi", "Bathnaha", "Sonbarsa", "Parihar", "Sursand", "Bajpatti", "Pupri", "Choraut", "Nanpur", "Bokhra"],
-    "Siwan": ["Jiradei", "Andar", "Siswan", "Guthani", "Pachrukhi", "Darauli", "Goreakothi", "Bhagwanpur", "Hussainganj", "Mairwa", "Duraudha", "Siwan", "Barharia", "Raghunathpur", "Basantpur", "Maharajganj", "Lakri Nabiganj", "Hasanpura", "Nautan"],
-    "Supaul": ["Nirmali", "Marauna", "Supaul", "Kishanpur", "Saraigarh", "Pipra", "Basantpur", "Raghopur", "Pratapganj", "Triveniganj", "Chhatapur"],
-    "Vaishali": ["Hajipur", "Raghopur", "Bidupur", "Lalganj", "Vaishali", "Bhagwanpur", "Patedhi Belsar", "Mahnar", "Sahdei", "Mahua", "Chehrakala", "Jandaha", "Garaul", "Patepur", "Rajapakar", "Desri"],
-  
-    "West Champaran": ["Bettiah", "Narkatiaganj", "Ramnagar", "Bagaha", "Lauriya", "Chanpatia", "Gaunaha", "Mainatand", "Sikta", "Jogapatti", "Bairiya"],
- 
-  
-  };
-const QprForm = () => {
+  "Patna": ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
+  "Purnea": ["Amour", "Baisa", "Baisi", "Banmankhi", "Barhara Kothi", "Bhawanipur", "Dagarua", "Dhamdaha", "Jalalgarh", "Krityanandnagar", "Kasba", "Purnia", "Rupouli", "Srinagar"],
+  "Rohtas": ["Akorhigola", "Bikramganj", "Chenari", "Dawath", "Dehri", "Dinara", "Karakata", "Kargahar", "Kochas", "Nasriganj", "Nauhatta", "Nokha", "Rajpur", "Rohtas", "Sanjhauli", "Sasaram", "Sheosagar", "Surajpura", "Tilouthu"],
+
+  "Saharsa": ["Kahra", "Sattar Katiya", "Saur Bazar", "Patarghat", "Mahishi", "Sonbarsa", "Nauhatta", "Salkhua", "Banma Itahri", "Simri Bakhtiyarpur"],
+  "Samastipur": ["Kalyanpur", "Warisnagar", "Khanpur", "Samastipur", "Pusa", "Tajpur", "Morwa", "Sarairanjan", "Patori", "Mohanpur", "Mohiuddinnagar", "Vidyapatinagar", "Dalsingsarai", "Ujiyarpur", "Bibhutipur", "Rosera", "Shivajinagar", "Singhia", "Hasanpur", "Bithan"],
+  "Saran": ["Baniyapur", "Lahladpur", "Jalalpur", "Nagra", "Ekma", "Manjhi", "Rivilganj", "Chapra", "Maker", "Garkha", "Marhourah", "Amnour", "Mashrakh", "Panapur", "Taraiyan", "Ishupur", "Parsa", "Dariyapur", "Dighwara", "Sonepur"],
+  "Sheikhpura": ["Sheikhpura", "Barbigha", "Shekhopur Sarai", "Ariari", "Chewara", "Ghat Kusumba"],
+  "Sheohar": ["Sheohar", "Dumari", "Piprahi", "Purnahiya", "Tariyani"],
+  "Sitamarhi": ["Belsand", "Parsauni", "Runnisaidpur", "Dumra", "Riga", "Bairgania", "Majorganj", "Suppi", "Bathnaha", "Sonbarsa", "Parihar", "Sursand", "Bajpatti", "Pupri", "Choraut", "Nanpur", "Bokhra"],
+  "Siwan": ["Jiradei", "Andar", "Siswan", "Guthani", "Pachrukhi", "Darauli", "Goreakothi", "Bhagwanpur", "Hussainganj", "Mairwa", "Duraudha", "Siwan", "Barharia", "Raghunathpur", "Basantpur", "Maharajganj", "Lakri Nabiganj", "Hasanpura", "Nautan"],
+  "Supaul": ["Nirmali", "Marauna", "Supaul", "Kishanpur", "Saraigarh", "Pipra", "Basantpur", "Raghopur", "Pratapganj", "Triveniganj", "Chhatapur"],
+  "Vaishali": ["Hajipur", "Raghopur", "Bidupur", "Lalganj", "Vaishali", "Bhagwanpur", "Patedhi Belsar", "Mahnar", "Sahdei", "Mahua", "Chehrakala", "Jandaha", "Garaul", "Patepur", "Rajapakar", "Desri"],
+
+  "West Champaran": ["Bettiah", "Narkatiaganj", "Ramnagar", "Bagaha", "Lauriya", "Chanpatia", "Gaunaha", "Mainatand", "Sikta", "Jogapatti", "Bairiya"],
+
+
+};
+const QprForm = ({ onFormSubmitSuccess }) => {
   // Separate state variables for multi-select fields (as semicolon-separated strings)
   const [fundsTakenStr, setFundsTakenStr] = useState("");
   const [iprReceivedStr, setIprReceivedStr] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+
+  const [statusPopup, setStatusPopup] = useState(false);
+  const [title, setTitle] = useState("");
+  const [buttonVisible, setButtonVisible] = useState(true);
+  const [subtitle, setSubtitle] = useState("");
+  const [isSuccess, setIsSuccess] = useState(""); // Add success state
+  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
+
+  const goBacktoHome = () => {
+		setDialogStatus({ ...dialogStatus, isVisible: false })
+		console.log("navigate to home")
+		onFormSubmitSuccess();
+	}
+
   const handleDistrictChange = (event) => {
     const district = event.target.value;
     setSelectedDistrict(district);
@@ -119,9 +134,9 @@ const QprForm = () => {
     if (!values.aboutStartup) {
       errors.aboutStartup = "About your Startup is required";
     }
-   //if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
-   //   errors.fundsTaken = "Select at least one option";
-   // }
+    //if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
+    //   errors.fundsTaken = "Select at least one option";
+    // }
     if (!values.currentRevenue) {
       errors.currentRevenue = "Current Revenue/Turnover details is required";
     }
@@ -141,7 +156,7 @@ const QprForm = () => {
     }
     //if (!iprReceivedStr || iprReceivedStr.split(";").filter(x => x).length === 0) {
     //  errors.iprReceived = "Select at least one option";
-   // }
+    // }
     if (!values.fullTimeMale) {
       errors.fullTimeMale = "No. of Full-time Male employees is required";
     } else if (isNaN(values.fullTimeMale)) {
@@ -230,6 +245,10 @@ const QprForm = () => {
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: async (values, { resetForm }) => {
+      setTitle("Submitting Startup Progress Form");
+			setSubtitle("Please wait while we submit your form");
+			setButtonVisible(false);
+			setStatusPopup(true);
       try {
         // Build FormData for multipart/form-data submission
         const formData = new FormData();
@@ -282,11 +301,22 @@ const QprForm = () => {
             },
           }
         );
-        alert("Data submitted successfully!");
+        //alert("Data submitted successfully!");
+        setTitle("Submission Successful");
+				setSubtitle(response.data.message);
+				setButtonVisible(true);
+				setIsSuccess("success"); // Set success state
         resetForm();
       } catch (error) {
         console.error("Error submitting data:", error.response?.data || error.message);
-        alert("Failed to submit data. Check console for details.");
+        //alert("Failed to submit data. Check console for details.");
+        setTitle("Submission Failed");
+				setSubtitle(
+					error.response?.data?.error || "An error occurred during submission"
+				);
+				setButtonVisible(true);
+			
+				setIsSuccess("failed"); // Set success state
       }
     },
   });
@@ -295,46 +325,46 @@ const QprForm = () => {
     <div className="h-screen overflow-y-auto">
       <div className="relative w-full h-[250px]">
 
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="1440" height="250" preserveAspectRatio="none" viewBox="0 0 1440 250">
-  <g mask="url(#SvgjsMask1000)" fill="none">
-    <rect width="1440" height="250" x="0" y="0" fill="#0e2a47"></rect>
-    <path d="M38 250L288 0L538.5 0L288.5 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-    <path d="M244.60000000000002 250L494.6 0L647.6 0L397.6 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-    <path d="M490.20000000000005 250L740.2 0L911.2 0L661.2 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-    <path d="M728.8000000000001 250L978.8000000000001 0L1289.3000000000002 0L1039.3000000000002 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-    <path d="M1406 250L1156 0L982 0L1232 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-    <path d="M1199.4 250L949.4000000000001 0L749.9000000000001 0L999.9000000000001 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-    <path d="M940.8 250L690.8 0L375.79999999999995 0L625.8 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-    <path d="M704.1999999999999 250L454.19999999999993 0L146.69999999999993 0L396.69999999999993 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-    <path d="M1205.2767553797382 250L1440 15.276755379738262L1440 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-    <path d="M0 250L234.72324462026174 250L 0 15.276755379738262z" fill="url(#SvgjsLinearGradient1002)"></path>
-  </g>
-  <defs>
-    <mask id="SvgjsMask1000">
-      <rect width="1440" height="250" fill="#ffffff"></rect>
-    </mask>
-    <linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="SvgjsLinearGradient1001">
-      <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
-      <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
-    </linearGradient>
-    <linearGradient x1="100%" y1="100%" x2="0%" y2="0%" id="SvgjsLinearGradient1002">
-      <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
-      <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
-    </linearGradient>
-  </defs>
-</svg>
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="1440" height="250" preserveAspectRatio="none" viewBox="0 0 1440 250">
+          <g mask="url(#SvgjsMask1000)" fill="none">
+            <rect width="1440" height="250" x="0" y="0" fill="#0e2a47"></rect>
+            <path d="M38 250L288 0L538.5 0L288.5 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+            <path d="M244.60000000000002 250L494.6 0L647.6 0L397.6 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+            <path d="M490.20000000000005 250L740.2 0L911.2 0L661.2 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+            <path d="M728.8000000000001 250L978.8000000000001 0L1289.3000000000002 0L1039.3000000000002 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+            <path d="M1406 250L1156 0L982 0L1232 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+            <path d="M1199.4 250L949.4000000000001 0L749.9000000000001 0L999.9000000000001 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+            <path d="M940.8 250L690.8 0L375.79999999999995 0L625.8 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+            <path d="M704.1999999999999 250L454.19999999999993 0L146.69999999999993 0L396.69999999999993 250z" fill="url(#SvgjsLinearGradient1002)"></path>
+            <path d="M1205.2767553797382 250L1440 15.276755379738262L1440 250z" fill="url(#SvgjsLinearGradient1001)"></path>
+            <path d="M0 250L234.72324462026174 250L 0 15.276755379738262z" fill="url(#SvgjsLinearGradient1002)"></path>
+          </g>
+          <defs>
+            <mask id="SvgjsMask1000">
+              <rect width="1440" height="250" fill="#ffffff"></rect>
+            </mask>
+            <linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="SvgjsLinearGradient1001">
+              <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
+              <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
+            </linearGradient>
+            <linearGradient x1="100%" y1="100%" x2="0%" y2="0%" id="SvgjsLinearGradient1002">
+              <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
+              <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
+            </linearGradient>
+          </defs>
+        </svg>
 
 
-<div className="absolute top-9 left-0 w-full p-6 text-white">
-  <h1 className="text-3xl font-bold mb-2 relative top-10">Startup Progress Report </h1>
-  <p className="text-lg max-w-xl relative top-10">
-    Share your startup progress metrix
-  </p>
-</div>
-</div>
+        <div className="absolute top-9 left-0 w-full p-6 text-white">
+          <h1 className="text-3xl font-bold mb-2 relative top-10">Startup Progress Report </h1>
+          <p className="text-lg max-w-xl relative top-10">
+            Share your startup progress metrics
+          </p>
+        </div>
+      </div>
       <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
         <form onSubmit={formik.handleSubmit} className="w-full max-w-4xl p-8">
-         
+
 
           {/* Row 1 - Column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -394,62 +424,75 @@ const QprForm = () => {
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
                 >
                   <option value="">Select Sector</option>
-                  <option value="IT">IT</option>
-                  <option value="Healthcare">Healthcare</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Agriculture">Agriculture</option>
-                  <option value="Manufacturing">Manufacturing</option>
+                  <option value="AI-ML-Deeptech">AI/ML/Deeptech</option>
+                  <option value="IT-ITeS-ESDM">IT/ITeS/ESDM</option>
+                  <option value="Health-tech">Health-tech</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="IoT & Robotics & Drone">IoT & Robotics & Drone</option>
+                  <option value="Green Energy-Environment">Green Energy/Environment</option>
+                  <option value="Edu-Tech">Edu-Tech</option>
+                  <option value="Food Processing">Food Processing</option>
+                  <option value="Fintech">Fintech</option>
+                  <option value="Fashion&Apparels">Fashion & Apparels</option>
+                  <option value="Manufacturing-Industrial Automation">Manufacturing/Industrial Automation</option>
+                  <option value="E-Vehicle">E-Vehicle</option>
+                  <option value="Construction/architecture/Proptech">Construction/Architecture/Proptech</option>
+                  <option value="Media and Entertainment">Media and Entertainment</option>
+                  <option value="Handicrafts">Handicrafts</option>
+                  <option value="Others">Others</option>
                 </select>
+
+
                 {formik.errors.sector && (
                   <div className="text-red-600">{formik.errors.sector}</div>
                 )}
               </div>
 
               {/* Registered office district */}
-      <div className="mb-4">
-        <label htmlFor="registeredDistrict" className="block font-medium">
-          Registered office district*
-        </label>
-        <select
-          id="registeredDistrict"
-          name="registeredDistrict"
-          value={formik.values.registeredDistrict}
-          onChange={handleDistrictChange}
-          className="w-full border border-gray-300 rounded-md p-2 mt-1"
-        >
-          <option value="">Select District</option>
-          {Object.keys(districtBlockMap).map((district) => (
-            <option key={district} value={district}>{district}</option>
-          ))}
-        </select>
-        {formik.errors.registeredDistrict && (
-          <div className="text-red-600">{formik.errors.registeredDistrict}</div>
-        )}
-      </div>
+              <div className="mb-4">
+                <label htmlFor="registeredDistrict" className="block font-medium">
+                  Registered office district*
+                </label>
+                <select
+                  id="registeredDistrict"
+                  name="registeredDistrict"
+                  value={formik.values.registeredDistrict}
+                  onChange={handleDistrictChange}
+                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                >
+                  <option value="">Select District</option>
+                  {Object.keys(districtBlockMap).map((district) => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
+                </select>
+                {formik.errors.registeredDistrict && (
+                  <div className="text-red-600">{formik.errors.registeredDistrict}</div>
+                )}
+              </div>
 
-      {/* Registered office Block */}
-      <div className="mb-4">
-        <label htmlFor="registeredBlock" className="block font-medium">
-          Registered office Block
-        </label>
-        <select
-          id="registeredBlock"
-          name="registeredBlock"
-          value={formik.values.registeredBlock}
-          onChange={formik.handleChange}
-          className="w-full border border-gray-300 rounded-md p-2 mt-1"
-          disabled={!selectedDistrict}
-        >
-          <option value="">Select Block</option>
-          {selectedDistrict &&
-            districtBlockMap[selectedDistrict].map((block) => (
-              <option key={block} value={block}>{block}</option>
-            ))}
-        </select>
-        {formik.errors.registeredBlock && (
-          <div className="text-red-600">{formik.errors.registeredBlock}</div>
-        )}
-      </div>
+              {/* Registered office Block */}
+              <div className="mb-4">
+                <label htmlFor="registeredBlock" className="block font-medium">
+                  Registered office Block
+                </label>
+                <select
+                  id="registeredBlock"
+                  name="registeredBlock"
+                  value={formik.values.registeredBlock}
+                  onChange={formik.handleChange}
+                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  disabled={!selectedDistrict}
+                >
+                  <option value="">Select Block</option>
+                  {selectedDistrict &&
+                    districtBlockMap[selectedDistrict].map((block) => (
+                      <option key={block} value={block}>{block}</option>
+                    ))}
+                </select>
+                {formik.errors.registeredBlock && (
+                  <div className="text-red-600">{formik.errors.registeredBlock}</div>
+                )}
+              </div>
 
               {/* About your Startup */}
               <div className="mb-4">
@@ -593,7 +636,7 @@ const QprForm = () => {
                 </label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="1"
                   id="fundAmount"
                   name="fundAmount"
                   value={formik.values.fundAmount}
@@ -737,7 +780,7 @@ const QprForm = () => {
                 </label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="1"
                   id="totalWorkOrderAmount"
                   name="totalWorkOrderAmount"
                   value={formik.values.totalWorkOrderAmount}
@@ -898,7 +941,17 @@ const QprForm = () => {
             {formik.isSubmitting ? "Submitting..." : "Submit"}
           </button>
         </form>
+        
       </div>
+      <StatusDialog
+				isVisible={statusPopup}
+				title={title}
+				subtitle={subtitle}
+				buttonVisible={buttonVisible}
+				status={isSuccess} // Pass success state
+
+				onClose={() => goBacktoHome()}
+			/>
     </div>
   );
 };
