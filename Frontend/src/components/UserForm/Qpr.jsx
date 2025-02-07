@@ -23,17 +23,53 @@ const removeOptionFromString = (option, valueStr) => {
   return newArr.join(";");
 };
 const districtBlockMap = {
-  "Araria": ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
-  "Arwal": ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
-  "Aurangabad": ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
-  "Banka": ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
-  "Begusarai": ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
-  "Bhagalpur": ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
-  "Gaya": ["Amas", "Atri", "Banke Bazar", "Barachatty", "Belaganj", "Bodh Gaya", "Dobhi", "Dumariya", "Fatehpur", "Gaya Sadar", "Guraru", "Gurua", "Imamganj", "Khizar Sarai", "Konch", "Manpur", "Mohanpur", "Mohra", "Paraiya", "Sherghatty", "Tankuppa", "Tekari", "Wazirganj"],
+  
+    "Araria": ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
+    "Arwal": ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
+    "Aurangabad": ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
+    "Banka": ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
+    
+    "Begusarai": ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
+    "Bhabhua": ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
+
+    "Bhagalpur": ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
+    "Bhojpur": ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
+    "Buxar": ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
+    "Darbhanga": ["Alinagar", "Bahadurpur", "Baheri", "Benipur", "Biraul", "Darbhanga", "Gaura Bauram", "Ghanshyampur", "Hanuman Nagar", "Hayaghat", "Jale", "Keoti", "Kiratpur", "Kusheswar Asthan", "Kusheswar Asthan East", "Manigachhi", "Singhwara", "Tardih"],
+    "East Champaran": ["Adapur", "Areraj", "Banjariya", "Chakia", "Chhauradano", "Chiraiya", "Dhaka", "Ghorasahan", "Harsiddhi", "Kalyanpur", "Kesaria", "Kotwa", "Madhuban", "Mehsi", "Motihari", "Paharpur", "Pakaridayal", "Patahi", "Phenhara", "Piprakothi", "Ramgarhwa", "Raxaul", "Sangrampur", "Sugauli", "Tetaria", "Turkauliya", "Bankatwa"],
+    "Gaya": ["Amas", "Atri", "Banke Bazar", "Barachatty", "Belaganj", "Bodh Gaya", "Dobhi", "Dumariya", "Fatehpur", "Gaya Sadar", "Guraru", "Gurua", "Imamganj", "Khizar Sarai", "Konch", "Manpur", "Mohanpur", "Mohra", "Paraiya", "Sherghatty", "Tankuppa", "Tekari", "Wazirganj"],
+    "Gopalganj": ["Bhore", "Gopalganj", "Manjha", "Uchkagaon", "Kuchaikot", "Kateya", "Vijaipur", "Barauli", "Hathua", "Baikunthpur", "Phulwaria", "Thawe", "Panchdevari", "Sidhwalia"],
+    "Jamui": ["Barhat", "Chakai", "Gidhaur", "Isalmanagar Aliganj", "Jamui", "Jhajha", "Khaira", "Laxmipur", "Sikandra", "Sono"],
+    "Jehanabad": ["Jehanabad", "Ghoshi", "Hulasgunj", "Kako", "Makhdumpur", "Modanganj", "Ratni Faridpur"],
+    "Katihar": ["Amdabad", "Azamnagar", "Balrampur", "Barari", "Barsoi", "Dandkhora", "Falka", "Hasanganj", "Kadwa", "Katihar", "Korha", "Kursela", "Manihari", "Mansahi", "Pranpur", "Sameli"],
+    "Khagaria": ["Allouli Beldaur", "Beldaur", "Chautham", "Gogari", "Khagaria", "Mansi", "Parbatta"],
+    "Kishanganj": ["Bahadurganj", "Dighalbank", "Kishanganj", "Kochadhaman", "Pothia", "Terhagachh", "Thakurganj"],
+    "Lakhisarai": ["Barahia", "Channan", "Halsi", "Lakhisarai", "Piparia", "Ramgarh Chowk", "Suryagarha"],
+    "Madhepura": ["Alamnagar", "Bihariganj", "Chausa", "Ghailadh", "Gamharia", "Gualpara", "Kumarkhand", "Madhepura", "Murliganj", "Puraini", "Shankarpur", "Singheshwarsthan", "Uda Kishanganj"],
+    "Madhubani": ["Khutauna", "Phulparas", "Laukahi", "Ghoghardiha", "Rahika", "Pandaul", "Rajnagar", "Khajauli", "Kaluahi", "Babubarhi", "Madhwapur", "Harlakhi", "Bisfi", "Benipatti", "Lakhnaur", "Madhepur", "Jhanjharpur", "Andharathari", "Basopatti", "Ladania", "Jainagar"],
+    "Munger": ["Munger Sadar", "Dharahara", "Bariyarpur", "Jamalpur", "Tetia Bamber", "Haveli Kharagpur", "Tarapur", "Asarganj", "Sangrampur"],
   "Muzaffarpur": ["Sahebganj", "Motipur", "Paroo", "Saraiya", "Kurhani", "Kanti", "Marwan", "Minapur", "Musahari", "Bochahan", "Aurai", "Katara", "Gaighat", "Muraul", "Sakra", "Bandra"],
-  "Patna": ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
-  "West Champaran": ["Bettiah", "Narkatiaganj", "Ramnagar", "Bagaha", "Lauriya", "Chanpatia", "Gaunaha", "Mainatand", "Sikta", "Jogapatti", "Bairiya"]
-};
+  "Nalanda": ["Ekangarsarai", "Biharsarif", "Asthawan", "Noorsarai", "Sarmera", "Rahui", "Harnaut", "Hilsa", "Islampur", "Ben", "Bind", "Parwalpur", "Katrisarai", "Karai Parsurai", "Nagarnarusa", "Chandi", "Tharthari", "Giriyak", "Rajgir", "Silao"],
+  "Nawada": ["Rajauli", "Akbarpur", "Sirdala", "Kowakole", "Pakaribarawan", "Warsaliganj", "Kashichak", "Nawada", "Nardiganj", "Roh", "Meskaur", "Govindpur", "Narhat", "Hisua"],
+ 
+    "Patna": ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
+    "Purnea": ["Amour", "Baisa", "Baisi", "Banmankhi", "Barhara Kothi", "Bhawanipur", "Dagarua", "Dhamdaha", "Jalalgarh", "Krityanandnagar", "Kasba", "Purnia", "Rupouli", "Srinagar"],
+    "Rohtas": ["Akorhigola", "Bikramganj", "Chenari", "Dawath", "Dehri", "Dinara", "Karakata", "Kargahar", "Kochas", "Nasriganj", "Nauhatta", "Nokha", "Rajpur", "Rohtas", "Sanjhauli", "Sasaram", "Sheosagar", "Surajpura", "Tilouthu"],
+
+    "Saharsa": ["Kahra", "Sattar Katiya", "Saur Bazar", "Patarghat", "Mahishi", "Sonbarsa", "Nauhatta", "Salkhua", "Banma Itahri", "Simri Bakhtiyarpur"],
+    "Samastipur": ["Kalyanpur", "Warisnagar", "Khanpur", "Samastipur", "Pusa", "Tajpur", "Morwa", "Sarairanjan", "Patori", "Mohanpur", "Mohiuddinnagar", "Vidyapatinagar", "Dalsingsarai", "Ujiyarpur", "Bibhutipur", "Rosera", "Shivajinagar", "Singhia", "Hasanpur", "Bithan"],
+    "Saran": ["Baniyapur", "Lahladpur", "Jalalpur", "Nagra", "Ekma", "Manjhi", "Rivilganj", "Chapra", "Maker", "Garkha", "Marhourah", "Amnour", "Mashrakh", "Panapur", "Taraiyan", "Ishupur", "Parsa", "Dariyapur", "Dighwara", "Sonepur"],
+    "Sheikhpura": ["Sheikhpura", "Barbigha", "Shekhopur Sarai", "Ariari", "Chewara", "Ghat Kusumba"],
+    "Sheohar": ["Sheohar", "Dumari", "Piprahi", "Purnahiya", "Tariyani"],
+    "Sitamarhi": ["Belsand", "Parsauni", "Runnisaidpur", "Dumra", "Riga", "Bairgania", "Majorganj", "Suppi", "Bathnaha", "Sonbarsa", "Parihar", "Sursand", "Bajpatti", "Pupri", "Choraut", "Nanpur", "Bokhra"],
+    "Siwan": ["Jiradei", "Andar", "Siswan", "Guthani", "Pachrukhi", "Darauli", "Goreakothi", "Bhagwanpur", "Hussainganj", "Mairwa", "Duraudha", "Siwan", "Barharia", "Raghunathpur", "Basantpur", "Maharajganj", "Lakri Nabiganj", "Hasanpura", "Nautan"],
+    "Supaul": ["Nirmali", "Marauna", "Supaul", "Kishanpur", "Saraigarh", "Pipra", "Basantpur", "Raghopur", "Pratapganj", "Triveniganj", "Chhatapur"],
+    "Vaishali": ["Hajipur", "Raghopur", "Bidupur", "Lalganj", "Vaishali", "Bhagwanpur", "Patedhi Belsar", "Mahnar", "Sahdei", "Mahua", "Chehrakala", "Jandaha", "Garaul", "Patepur", "Rajapakar", "Desri"],
+  
+    "West Champaran": ["Bettiah", "Narkatiaganj", "Ramnagar", "Bagaha", "Lauriya", "Chanpatia", "Gaunaha", "Mainatand", "Sikta", "Jogapatti", "Bairiya"],
+ 
+  
+  };
 const QprForm = () => {
   // Separate state variables for multi-select fields (as semicolon-separated strings)
   const [fundsTakenStr, setFundsTakenStr] = useState("");
@@ -83,9 +119,9 @@ const QprForm = () => {
     if (!values.aboutStartup) {
       errors.aboutStartup = "About your Startup is required";
     }
-    if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
-      errors.fundsTaken = "Select at least one option";
-    }
+   //if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
+   //   errors.fundsTaken = "Select at least one option";
+   // }
     if (!values.currentRevenue) {
       errors.currentRevenue = "Current Revenue/Turnover details is required";
     }
@@ -103,9 +139,9 @@ const QprForm = () => {
     } else if (isNaN(values.fundAmount)) {
       errors.fundAmount = "Amount must be a number";
     }
-    if (!iprReceivedStr || iprReceivedStr.split(";").filter(x => x).length === 0) {
-      errors.iprReceived = "Select at least one option";
-    }
+    //if (!iprReceivedStr || iprReceivedStr.split(";").filter(x => x).length === 0) {
+    //  errors.iprReceived = "Select at least one option";
+   // }
     if (!values.fullTimeMale) {
       errors.fullTimeMale = "No. of Full-time Male employees is required";
     } else if (isNaN(values.fullTimeMale)) {
@@ -237,7 +273,7 @@ const QprForm = () => {
         }
 
         const response = await axios.post(
-          "http://localhost:3007/api/Qreport",
+          "https://startupbihar.in/api/Qreport",
           formData,
           {
             headers: {

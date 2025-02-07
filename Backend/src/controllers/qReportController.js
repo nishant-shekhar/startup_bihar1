@@ -6,36 +6,49 @@ const prisma = new PrismaClient();
 
 //const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Use environment variable
 const JWT_SECRET = 'your_jwt_secret_key';
+const JWT_SECRET_ADMIN = 'your';
 
 const submitQuarterlyReport = async (req, res) => {
   try {
-    // Ensure a token is provided (assuming Bearer <token> format)
-    const token = req.headers.authorization?.split(" ")[1];
+    // Extract token from Authorization header (expects "Bearer <token>")
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: "Authorization token is required" });
+    }
+    const token = authHeader.split(" ")[1];
     if (!token) {
       return res.status(401).json({ error: "Authorization token is required" });
     }
 
-    // Decode the JWT to get the user ID
+    // Decode and verify the JWT
     const decoded = jwt.verify(token, JWT_SECRET);
-    const userId = decoded.user_id; // Adjust according to your token payload structure
+    const tokenUserId = decoded.user_id; // Should match User.user_id
 
-    // Extract fields from req.body
-    // Optionally, the client may send an `id` field if updating an existing report.
+    // Look up the user by the unique business identifier
+    const user = await prisma.user.findUnique({ where: { user_id: tokenUserId } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Use the user's primary key (UUID) to associate the QReport
+    const userId = user.id;
+    console.log("User ID:", userId);
+
+    // Extract fields from req.body (and optionally, the QReport id if updating)
     const {
-      id, // optional: if provided, we update
+      id, // Optional: provided when updating an existing report
       totalCoFounders,
       stage,
       sector,
       registeredDistrict,
       registeredBlock,
       aboutStartup,
-      fundsTaken,       // expected as an array
+      fundsTaken,
       currentRevenue,
       netProfitOrLoss,
-      fundsRaised,      // expected as "Yes" or "No"
+      fundsRaised,
       fundsDetails,
       fundAmount,
-      iprReceived,      // expected as an array
+      iprReceived,
       fullTimeMale,
       fullTimeFemale,
       partTimeMale,
@@ -43,35 +56,20 @@ const submitQuarterlyReport = async (req, res) => {
       workOrders,
       totalWorkOrderAmount,
       customersAcquired,
-   
-      incubationBenefits, // "Yes" or "No"
+      incubationBenefits,
       benefitsDetails,
       otherAchievements,
     } = req.body;
 
-    const unitPhoto1 = req.files.unitPhoto1
-    ? req.files.unitPhoto1[0].location
-    : null;
-    const unitPhoto2 = req.files.unitPhoto2
-    ? req.files.unitPhoto2[0].location
-    : null;
+    // Handle file uploads (if available)
+    const unitPhoto1 = req.files.unitPhoto1 ? req.files.unitPhoto1[0].location : null;
+    const unitPhoto2 = req.files.unitPhoto2 ? req.files.unitPhoto2[0].location : null;
+    // Concatenate photos if both exist; filter out any null values.
+    const unitPhotos = [unitPhoto1, unitPhoto2].filter(Boolean).join(";");
+    const pitchdeck = req.files.pitchdeck ? req.files.pitchdeck[0].location : null;
+    const auditedReport = req.files.auditedReport ? req.files.auditedReport[0].location : null;
 
-    const unitPhotos=unitPhoto1+";"+unitPhoto2
-
-    const pitchdeck = req.files.pitchdeck
-    ? req.files.pitchdeck[0].location
-    : null;
-
-    const auditedReport = req.files.auditedReport
-    ? req.files.auditedReport[0].location
-    : null;
-    // Convert multi-select arrays into semicolon-separated strings
-    
-    
-
-      
-
-    // Build the data object to save/update
+    // Build the data object that will be used for both create and update operations
     const data = {
       totalCoFounders,
       stage,
@@ -93,108 +91,134 @@ const submitQuarterlyReport = async (req, res) => {
       workOrders,
       totalWorkOrderAmount,
       customersAcquired,
-      unitPhotos,
-      pitchdeck,
-      auditedReport,
       incubationBenefits,
       benefitsDetails,
       otherAchievements,
-      userId,
-      // Set a default documentStatus if needed:
-      documentStatus: "created",
+      unitPhotos,
+      pitchdeck,
+      auditedReport,
+      // Set the document status based on whether this is an update or a new report
+      documentStatus: id ? "Updates" : "created",
+      userId, // Associate the QReport with the user's primary key
     };
 
     let qReport;
     if (id) {
-      // Update existing record if id is provided
+      // Update an existing QReport if an id is provided
       qReport = await prisma.qReport.update({
         where: { id },
         data,
       });
     } else {
-      // Create a new report
+      // Create a new QReport record if no id is provided
       qReport = await prisma.qReport.create({
         data,
       });
     }
 
+    console.log("QReport data:", data);
+
     return res.status(200).json({
-      message: id ? "Quarterly report updated successfully" : "Quarterly report created successfully",
+      message: id
+        ? "Quarterly report updated successfully"
+        : "Quarterly report created successfully",
       qReport,
     });
   } catch (error) {
     console.error("Error in submitQuarterlyReport:", error);
-    return res.status(500).json({ error: "An error occurred while processing the request" });
+    return res
+      .status(500)
+      .json({ error: "An error occurred while processing the request" });
   }
 };
+
+
+
+
 
 
 const getAllqReportWithUserDetails = async (req, res) => {
   try {
     const documents = await prisma.qReport.findMany({
       select: {
-        id:true,
-        updatedAt:true,
-				user: {
-					select: {
-						user_id: true, // Fields from the User model
-						registration_no: true,
-						company_name: true,
-						logo:true,
-						
-					},
-				},
+        id: true,
+        updatedAt: true,
+        // Include select fields from the associated User model
+        user: {
+          select: {
+            user_id: true,          // Business identifier (e.g., "ns_apps")
+            registration_no: true,
+            company_name: true,
+            logo: true,
+          },
+        },
       },
     });
 
     return res.status(200).json({
-      message: 'Documents with user and program details retrieved successfully',
+      message: "Documents with user details retrieved successfully",
       data: documents,
     });
   } catch (error) {
-    console.error('Error fetching documents with user details:', error);
-    res.status(500).json({ error: 'An error occurred while fetching documents' });
+    console.error("Error fetching QReport documents:", error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while fetching documents" });
   }
 };
 
 const getQReportsByUserId = async (req, res) => {
+  let { id } = req.params; // Retrieve id from the request parameters
+
   try {
-    // Extract token from headers (assuming "Bearer <token>" format)
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res.status(401).json({ error: "Authorization token is required" });
+  
+    // Check if id is provided
+    if (!id) {
+      return res.status(400).json({ error: 'ID is required' });
     }
 
-    // Decode the JWT to get the user ID
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const userId = decoded.user_id; // Adjust as needed based on your token payload
+    // Fetch the document from the database
+    const document = await prisma.qReport.findUnique({
+      where: { id: id }, // Use the ID to query the database
+      include: {
+        user: {
+          select: {
+            user_id: true,          // Include specific fields from the User model
+            logo: true,
+            registration_no: true,
+            company_name: true,
+            founder_name: true,
+            dateOfIncorporation: true,
+            districtRoc: true,
+            cin: true,
+            mobile: true,
+            email: true,
 
-    // Fetch all QReport forms for the given userId
-    const documents = await prisma.qReport.findMany({
-      where: { userId },
-     
+          },
+        },
+      },
     });
 
-    if (!documents || documents.length === 0) {
-      return res.status(404).json({ error: "No QReport forms found for this user" });
+    if (!document) {
+      // Return 404 if document is not found
+      return res.status(404).json({ error: 'Document not found' });
     }
 
-    return res.status(200).json({
-      message: "QReport forms retrieved successfully",
-      data: documents,
-    });
+    // Return the document if found
+    return res.status(200).json(document); // Explicitly set status to 200
   } catch (error) {
-    console.error("Error retrieving QReports for user:", error);
-    return res
-      .status(500)
-      .json({ error: "An error occurred while retrieving the QReport forms" });
+    // Handle any server error
+    console.error(`Error retrieving document with id ${id}:`, error);
+    return res.status(500).json({ error: 'An error occurred while retrieving the document' });
   }
 };
 
 
+
+
 const updateQreportStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus,comment } = req.body;
+  const { documentStatus, comment } = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
@@ -211,7 +235,7 @@ const updateQreportStatus = async (req, res) => {
 
     const updatedDocument = await prisma.qReport.update({
       where: { id },
-      data: { documentStatus , comment},
+      data: { documentStatus, comment },
     });
 
     res.status(200).json({

@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE `QReport` ADD CONSTRAINT `QReport_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`_id`) ON DELETE RESTRICT ON UPDATE CASCADE;

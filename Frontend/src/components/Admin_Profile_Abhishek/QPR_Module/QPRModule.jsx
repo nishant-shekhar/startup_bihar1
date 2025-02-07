@@ -39,6 +39,7 @@ const QPRModuleDetails = ({ id }) => {
 		setShowDialog(true);
 		setTimeout(() => setShowDialog(false), 2000);
 	};
+	const display = (value) => (value !== undefined && value !== null && value !== "" ? value : "N/A");
 
 	const handleReject = async () => {
 		handleDialog("Updating status to reject...");
@@ -149,65 +150,67 @@ const QPRModuleDetails = ({ id }) => {
 		>
 			<h1 className="pt-5 pl-8 text-2xl">QPR Module Details</h1>
 			<div className="overflow-x-auto p-4">
-  <div className="grid grid-cols-12 gap-4">
-    {/* Left Table */}
-    <table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
-      <tbody>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
-          <td className="px-4 py-2 text-gray-900">
-            <a
-              href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 hover:underline"
-            >
-              {data?.user?.company_name || "N/A"}
-            </a>
-          </td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Registration No.</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.registration_no || "N/A"}</td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Email</td>
-          <td className="px-4 py-2 text-indigo-600">{data?.user?.email || "N/A"}</td>
-        </tr>
-        <tr>
-          <td className="px-4 py-2 font-medium text-gray-600">CIN</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.cin || "N/A"}</td>
-        </tr>
-      </tbody>
-    </table>
+				<div className="grid grid-cols-12 gap-4">
+					{/* Left Table */}
+					<table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
+						<tbody>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
+								<td className="px-4 py-2 text-gray-900">
+									<a
+										href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-indigo-600 hover:underline"
+									>
+										{data?.user?.company_name || "N/A"}
+									</a>
+								</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Registration No.</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.registration_no || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Email</td>
+								<td className="px-4 py-2 text-indigo-600">{data?.user?.email || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
 
-    {/* Right Table */}
-    <table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
-      <tbody>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Startup ID</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.user_id || "N/A"}</td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Founder</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.founder_name || "N/A"}</td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Mobile</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.mobile || "N/A"}</td>
-        </tr>
-        <tr>
-          <td className="px-4 py-2 font-medium text-gray-600">District RoC</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.districtRoc || "N/A"}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-<p className="pl-8 text-sm font-light text-gray-600">
-  First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} | 
-  Last Action on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
-</p>
+								<td className="px-4 py-2 font-medium text-gray-600">CIN</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.cin || "N/A"}</td>
+							</tr>
+						</tbody>
+					</table>
+
+					{/* Right Table */}
+					<table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
+						<tbody>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Startup ID</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.user_id || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Founder</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.founder_name || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Mobile</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.mobile || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+
+								<td className="px-4 py-2 font-medium text-gray-600">District RoC</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.districtRoc || "N/A"}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<p className="pl-8 text-sm font-light text-gray-600">
+				First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} |
+				Last Action on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
+			</p>
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">
 					<tbody>
@@ -216,81 +219,281 @@ const QPRModuleDetails = ({ id }) => {
 							<tr>
 								<td className="py-4 px-4 border">Application Status</td>
 								<td className={`py-4 px-4 border ${getStatusColor()}`}>
-									{`${data.documentStatus} | ${getComment()}`}
+									{`${data.documentStatus} | Comment: ${display(getComment())}`}
 								</td>
 							</tr>
 						)}
-						<tr>
-							<td className="py-4 px-4 border">
-								Current stage of your startup
-							</td>
-							<td className="py-4 px-4 border">{data.currentStage}</td>
-						</tr>
-						<tr>
-							<td className="py-4 px-4 border">
-								Average turnover (In Lakhs, Since company formation till date)
-							</td>
-							<td className="py-4 px-4 border">{data.averageTurnover}</td>
-						</tr>
-						<tr>
-							<td className="py-4 px-4 border">
-								Current revenue (In lakhs, Last Financial Year)
-							</td>
-							<td className="py-4 px-4 border">{data.currentRevenue}</td>
-						</tr>
-						<tr>
-							<td className="py-4 px-4 border">Net Profit or Loss</td>
-							<td className="py-4 px-4 border">{data.netProfitOrLoss}</td>
-						</tr>
-						<tr>
-  <td className="py-4 px-4 border">
-    Any other fund raised or Grant received?
-  </td>
-  <td className="py-4 px-4 border">
-    {data.fundRaised ? "Yes" : "No"}
-  </td>
-</tr>
+						<tr className="border-b">
 
-						<tr>
-							<td className="py-4 px-4 border">No. of work orders received</td>
-							<td className="py-4 px-4 border">{data.workOrders}</td>
+							<td className="px-6 py-4 border">Total Co-Founders</td>
+							<td className="px-6 py-4 border">{display(data?.totalCoFounders)}</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">
-								Total Direct Employment generated
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Stage</td>
+							<td className="px-6 py-4 border">{display(data?.stage)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Sector</td>
+							<td className="px-6 py-4 border">{display(data?.sector)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Registered District</td>
+							<td className="px-6 py-4 border">{display(data?.registeredDistrict)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Registered Block</td>
+							<td className="px-6 py-4 border">{display(data?.registeredBlock)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">About Startup</td>
+							<td className="px-6 py-4 border">{display(data?.aboutStartup)}</td>
+						</tr>
+						{/* Financial & Operations */}
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Funds Taken</td>
+							<td className="px-6 py-4 border">{display(data?.fundsTaken)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Current Revenue</td>
+							<td className="px-6 py-4 border">{display(data?.currentRevenue)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Net Profit or Loss</td>
+							<td className="px-6 py-4 border">{display(data?.netProfitOrLoss)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Funds Raised</td>
+							<td className="px-6 py-4 border">{data?.fundsRaised ? "Yes" : "No"}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Funds Details</td>
+							<td className="px-6 py-4 border">{display(data?.fundsDetails)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Fund Amount</td>
+							<td className="px-6 py-4 border">{display(data?.fundAmount)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">IPR Received</td>
+							<td className="px-6 py-4 border">{display(data?.iprReceived)}</td>
+						</tr>
+						{/* Employment */}
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Full Time Male</td>
+							<td className="px-6 py-4 border">{display(data?.fullTimeMale)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Full Time Female</td>
+							<td className="px-6 py-4 border">{display(data?.fullTimeFemale)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Part Time Male</td>
+							<td className="px-6 py-4 border">{display(data?.partTimeMale)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Part Time Female</td>
+							<td className="px-6 py-4 border">{display(data?.partTimeFemale)}</td>
+						</tr>
+						{/* Work & Customers */}
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Work Orders</td>
+							<td className="px-6 py-4 border">{display(data?.workOrders)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Total Work Order Amount</td>
+							<td className="px-6 py-4 border">{display(data?.totalWorkOrderAmount)}</td>
+						</tr>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Customers Acquired</td>
+							<td className="px-6 py-4 border">{display(data?.customersAcquired)}</td>
+						</tr>
+						{/* Files & Uploads */}
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Unit Photos</td>
+							<td className="px-6 py-4 border">
+								{data?.unitPhotos ? (
+									data.unitPhotos.split(";").map((url, idx) => (
+										url && (
+											<a
+												key={idx}
+												href={url}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="inline-block mr-2 mb-2"
+											>
+												<img
+													src={url}
+													alt={`Unit Photo ${idx + 1}`}
+													className="w-16 h-16 object-cover rounded border"
+												/>
+											</a>
+										)
+									))
+								) : (
+									"N/A"
+								)}
 							</td>
+						</tr>
+
+					
+						<tr className="border-b">
+
 							<td className="py-4 px-4 border">
-								{data.directEmployment}
+								Pitchdeck
+							</td>
+							<td className=" border-b border-l border-t border-r w-[35vw]">
+								<div className="px-4 py-4 ">
+									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
+												<div className="flex w-0 flex-1 items-center">
+													<svg
+														className="h-5 w-5 shrink-0 text-gray-400"
+														viewBox="0 0 20 20"
+														fill="currentColor"
+														aria-hidden="true"
+														data-slot="icon"
+													>
+														<path
+															fillRule="evenodd"
+															d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
+															clipRule="evenodd"
+														/>
+													</svg>
+													<div className="ml-4 flex min-w-0 flex-1 gap-2">
+														<span className="truncate font-medium">
+															{data.pitchdeck ? (
+																data.pitchdeck
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
+														</span>
+													</div>
+												</div>
+												<div className="ml-4 shrink-0">
+													<button
+														onClick={() => handleViewPdf(data.pitchdeck)}
+														className="font-medium text-indigo-600 hover:text-indigo-900"
+													>
+														View
+													</button>
+												</div>
+												<div className="ml-4 shrink-0">
+													<a
+														href={data.pitchdeck}
+														download
+														className="font-medium text-indigo-600 hover:text-indigo-900"
+													>
+														Download
+													</a>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</div>
 							</td>
 						</tr>
-						<tr>
+						<tr className="border-b">
+
 							<td className="py-4 px-4 border">
-								Total indirect employment generated
+							Audited Report
 							</td>
-							<td className="py-4 px-4 border">
-								{data.indirectEmployment}
+							<td className=" border-b border-l border-t border-r w-[35vw]">
+								<div className="px-4 py-4 ">
+									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
+												<div className="flex w-0 flex-1 items-center">
+													<svg
+														className="h-5 w-5 shrink-0 text-gray-400"
+														viewBox="0 0 20 20"
+														fill="currentColor"
+														aria-hidden="true"
+														data-slot="icon"
+													>
+														<path
+															fillRule="evenodd"
+															d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z"
+															clipRule="evenodd"
+														/>
+													</svg>
+													<div className="ml-4 flex min-w-0 flex-1 gap-2">
+														<span className="truncate font-medium">
+															{data.pitchdeck ? (
+																data.pitchdeck
+															) : (
+																<span className="text-red-500">
+																	File is either rejected or not available
+																</span>
+															)}
+														</span>
+													</div>
+												</div>
+												<div className="ml-4 shrink-0">
+													<button
+														onClick={() => handleViewPdf(data.auditedReport)}
+														className="font-medium text-indigo-600 hover:text-indigo-900"
+													>
+														View
+													</button>
+												</div>
+												<div className="ml-4 shrink-0">
+													<a
+														href={data.auditedReport}
+														download
+														className="font-medium text-indigo-600 hover:text-indigo-900"
+													>
+														Download
+													</a>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</div>
 							</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">Total male employees</td>
-							<td className="py-4 px-4 border">{data.maleEmployees}</td>
+						
+						{/* Incubation & Achievements */}
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Incubation Benefits</td>
+							<td className="px-6 py-4 border">{display(data?.incubationBenefits)}</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">Total female employees</td>
-							<td className="py-4 px-4 border">{data.femaleEmployees}</td>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Benefits Details</td>
+							<td className="px-6 py-4 border">{display(data?.benefitsDetails)}</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">
-								New partnerships or collaborations?
-							</td>
-							<td className="py-4 px-4 border">
-								{data.partnerships}
-							</td>
+						<tr className="border-b">
+
+							<td className="px-6 py-4 border">Other Achievements</td>
+							<td className="px-6 py-4 border">{display(data?.otherAchievements)}</td>
 						</tr>
-						<tr>
-							<td className="py-4 px-4 border">Goals for next Quarter</td>
-							<td className="py-4 px-4 border">{data.nextQuarterGoals}</td>
-						</tr>
+						{/* Meta Info */}
+
+
 					</tbody>
 				</table>
 				<div className="flex items-center justify-end gap-x-2 pr-4 py-3">

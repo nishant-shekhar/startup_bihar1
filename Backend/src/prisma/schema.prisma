@@ -61,6 +61,8 @@ model User {
   matchingLoan          MatchingLoan?        // One-to-one relation
   incubationApplication IncubationApplication?
   iprReimbursement      IPRReimbursement?
+  qReports              QReport[]  // new field for the opposite relation
+  CoWorkingApplications CoWorkingApplication[]
 
   instagram             String?
   website               String?
@@ -260,7 +262,9 @@ model QReport {
   benefitsDetails      String?          // If incubationBenefits is "Yes"
   otherAchievements    String?
 
-  userId               String
+  userId               String @unique // Unique userId from JWT
+  // Define the relation:
+  user                 User   @relation(fields: [userId], references: [id])
   documentStatus       String
   comment              String?
   createdAt            DateTime @default(now())
@@ -344,6 +348,7 @@ model CoWorkingApplication {
   status           String
 
   userId           String  
+  user                 User   @relation(fields: [userId], references: [id])
   documentStatus         String
   comment                String?
   createdAt              DateTime @default(now())
