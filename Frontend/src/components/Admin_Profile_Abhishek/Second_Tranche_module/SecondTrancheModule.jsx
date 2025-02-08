@@ -20,7 +20,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`https://startupbihar.in/api/second-tranche/v1/${id}`,
+					`http://localhost:3007/api/second-tranche/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -59,7 +59,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`https://startupbihar.in/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -101,7 +101,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			}).join(", ");
 
 			await axios.patch(
-				`https://startupbihar.in/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -130,7 +130,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`https://startupbihar.in/api/second-tranche/u1/${id}`,
+				`http://localhost:3007/api/second-tranche/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -172,7 +172,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			}
 
 			const response = await axios.post(
-				"https://startupbihar.in/api/notifications/",
+				"http://localhost:3007/api/notifications/",
 				notificationData,
 				{
 					headers: {
@@ -251,7 +251,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
           <td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
           <td className="px-4 py-2 text-gray-900">
             <a
-              href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
+              href={`http://localhost:3007/Startup/${data?.user?.user_id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-indigo-600 hover:underline"

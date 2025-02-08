@@ -20,10 +20,10 @@ const ContactUs = () => {
 		},
 		{
 			id: 1,
-			name: 'Sri Alok Ranjan Ghosh, IAS',
+			name: '',
 			email: 'dir.ind-bih@nic.in',
 			phone: '0612-2235812',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Falok%20sir.jpg?alt=media&token=28a40104-b904-4854-bd54-44fa0db093a1',
+			image: '',
 			position: 'Director Industries, Department of Industries, GoB',
 			tag: 'Director Industry'
 		},

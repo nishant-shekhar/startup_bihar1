@@ -75,7 +75,7 @@ const HomeSection = () => {
       const [detailsResponse, showcasesResponse, employeesResponse] =
         await Promise.all([
           axios.get(
-            `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`, {
+            `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`, {
               headers: {
                 Authorization: localStorage.getItem("token"),
               },
@@ -83,9 +83,9 @@ const HomeSection = () => {
 
           ),
           axios.get(
-            `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
+            `http://localhost:3007/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
-         axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
+         axios.get(`http://localhost:3007/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
 
         ]);
 
@@ -154,7 +154,7 @@ const HomeSection = () => {
                 <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-semibold hover:underline cursor-pointer  hover:text-blue-600">
   <a 
-    href={`https://startupbihar.in/startup/${localStorage.getItem("user_id")}`} 
+    href={`http://localhost:3007/startup/${localStorage.getItem("user_id")}`} 
     target="_blank" 
     rel="noopener noreferrer"
   >
@@ -192,7 +192,7 @@ const HomeSection = () => {
                     Contact
                   </button>
                   <a
-  href={`https://startupbihar.in/Startup/${localStorage.getItem("user_id")}`}
+  href={`http://localhost:3007/Startup/${localStorage.getItem("user_id")}`}
   target="_blank"
   rel="noopener noreferrer"
   className="px-6 py-2 border border-gray-300 rounded-lg"

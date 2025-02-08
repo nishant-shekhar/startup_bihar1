@@ -80,7 +80,7 @@ const Startupdetails = ({ startup }) => {
 
       setShowDialog(true);
       setDialogMessage('Uploading cropped logo...');
-      await axios.put('https://startupbihar.in/api/userlogin/update-logo', formData, {
+      await axios.put('http://localhost:3007/api/userlogin/update-logo', formData, {
         headers: {
           Authorization: `${localStorage.getItem('token')}`,
           'Content-Type': 'multipart/form-data',
@@ -97,7 +97,7 @@ const Startupdetails = ({ startup }) => {
 
   const handleUpdate = async (field, value) => {
     const urlMap = {
-      moto: 'https://startupbihar.in/api/userlogin/update-moto',
+      moto: 'http://localhost:3007/api/userlogin/update-moto',
     };
 
     setShowDialog(true);

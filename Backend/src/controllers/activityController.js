@@ -50,7 +50,7 @@ const recordActivity = async (req, res) => {
 // Get Activities for Self
 const getActivities = async (req, res) => {
   try {
-    const { userId, adminId } = extractUserOrAdminId(req);
+    const { userId, adminId } = req.body;
 
     if (!userId && !adminId) {
       return res.status(403).json({ error: 'Unauthorized access' });

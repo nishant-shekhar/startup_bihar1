@@ -292,7 +292,7 @@ const QprForm = ({ onFormSubmitSuccess }) => {
         }
 
         const response = await axios.post(
-          "https://startupbihar.in/api/Qreport",
+          "http://localhost:3007/api/Qreport",
           formData,
           {
             headers: {
@@ -424,6 +424,7 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
                 >
                   <option value="">Select Sector</option>
+                  <option value="Agri-Tech and Allied Sector">Agri-Tech and Allied Sector</option>
                   <option value="AI-ML-Deeptech">AI/ML/Deeptech</option>
                   <option value="IT-ITeS-ESDM">IT/ITeS/ESDM</option>
                   <option value="Health-tech">Health-tech</option>
