@@ -17,7 +17,7 @@ const QPRModuleDetails = ({ id }) => {
 		if (id) {
 			try {
 				const response = await axios.get(
-					`http://localhost:3007/api/Qreport/v1/${id}`,
+					`https://startupbihar.in/api/Qreport/v1/${id}`,
 					{
 						headers: {
 							"Content-Type": "application/json",
@@ -47,7 +47,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to reject...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/Qreport/u1/${id}`,
+				`https://startupbihar.in/api/Qreport/u1/${id}`,
 				{
 					documentStatus: "Rejected",
 					comment: `Document has been rejected for reason: ${comment}`,
@@ -73,7 +73,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to partial reject...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/Qreport/u1/${id}`,
+				`https://startupbihar.in/api/Qreport/u1/${id}`,
 				{
 					documentStatus: "Partially Rejected",
 					comment: `Document has been partially rejected for reason: ${comment}`,
@@ -97,7 +97,7 @@ const QPRModuleDetails = ({ id }) => {
 		handleDialog("Updating status to accept...");
 		try {
 			await axios.patch(
-				`http://localhost:3007/api/Qreport/u1/${id}`,
+				`https://startupbihar.in/api/Qreport/u1/${id}`,
 				{
 					documentStatus: "Accepted",
 					comment: "Document has been reviewed and approved.",
@@ -160,7 +160,7 @@ const QPRModuleDetails = ({ id }) => {
 			}
 
 			const response = await axios.post(
-				"http://localhost:3007/api/notifications/",
+				"https://startupbihar.in/api/notifications/",
 				notificationData,
 				{
 					headers: {
@@ -206,7 +206,7 @@ const QPRModuleDetails = ({ id }) => {
 								<td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
 								<td className="px-4 py-2 text-gray-900">
 									<a
-										href={`http://localhost:3007/Startup/${data?.user?.user_id}`}
+										href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
 										target="_blank"
 										rel="noopener noreferrer"
 										className="text-indigo-600 hover:underline"

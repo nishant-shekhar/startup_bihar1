@@ -64,7 +64,7 @@ const [seatItems, setSeatItems] = useState([
   const fetchDetails = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3007/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`, {
+        `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem('user_id')}`, {
           headers: {
             Authorization: localStorage.getItem("token"),
           },
