@@ -52,6 +52,7 @@ const postShowcase = async (req, res) => {
         date:newShowcase.date,
       },
     });
+    
   } catch (error) {
     console.error('Error creating Showcase:', error);
     res.status(500).json({ error: 'An error occurred while creating the showcase' });
@@ -102,7 +103,7 @@ const getShowcaseUser = async (req, res) => {
       return res.status(404).json({ error: 'showcase not found' });
     }
 
-    console.log('showcase details:', showcase);
+    //console.log('showcase details:', showcase);
 
     // Respond with the basic details
     res.status(200).json({ showcase });

@@ -67,7 +67,14 @@ const applyForIPRReimbursement = async (req, res) => {
         userId,
       },
     });
-
+// Record the activity after successful update
+await prisma.activity.create({
+  data: {
+    user_id: userId,
+    action: 'IPR Reimbursement Form Submitted',
+    subtitle: `You have submitted your IPR Reimbursement Form`,
+  },
+});
     return res.status(200).json({
       message: 'IPR Reimbursement application submitted successfully',
       application,

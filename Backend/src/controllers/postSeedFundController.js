@@ -59,7 +59,14 @@ const submitPostSeedFund = async (req, res) => {
         documentStatus: "created",
       },
     });
-
+// Record the activity after successful update
+await prisma.activity.create({
+  data: {
+    user_id: userId,
+    action: 'Post Seed Fund Form Submitted',
+    subtitle: `You have submitted your Post Seed Fund Form`,
+  },
+});
     res.status(200).json({
       message: postSeedFundEntry ? 'Post Seed Fund entry updated successfully' : 'Post Seed Fund entry created successfully',
       data: postSeedFundEntry

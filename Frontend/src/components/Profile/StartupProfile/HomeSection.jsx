@@ -15,6 +15,7 @@ import { IoPencil } from "react-icons/io5";
 // <-- Import the new popup component
 import ShowcasePopup from "./FieldsUpdate/AddNewShowcase";
 import { faL } from "@fortawesome/free-solid-svg-icons";
+import UserActivity from "../../UserForm/UserActivity";
 
 const HomeSection = () => {
   const [startup, setStartup] = useState([]);
@@ -48,7 +49,7 @@ const HomeSection = () => {
   const fileInputRef = useRef(null);
 
   // For the category tabs
-  const categories = ["Showcase", "Notifications"];
+  const categories = ["Showcase", "Notifications","Action History"];
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
@@ -418,7 +419,7 @@ const HomeSection = () => {
                 Action History
               </h1>
               <hr className="mb-3 border-gray-500/30 " />
-              <UserNotification />
+              <UserActivity />
             </>
           )}
         </div>

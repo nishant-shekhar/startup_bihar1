@@ -118,6 +118,15 @@ const submitQuarterlyReport = async (req, res) => {
 
     console.log("QReport data:", data);
 
+    // Record the activity after successful update
+    await prisma.activity.create({
+      data: {
+        user_id: userId,
+        action: 'Startup Progress Report Submitted',
+        subtitle: `You have submitted your Startup Progress Report`,
+      },
+    });
+
     return res.status(200).json({
       message: id
         ? "Quarterly report updated successfully"

@@ -115,103 +115,109 @@ const QprForm = ({ onFormSubmitSuccess }) => {
     "Trade secret",
     "Industrial Design",
   ];
+// Custom validation function (adjust messages as needed)
+const validate = (values) => {
+  const errors = {};
 
-  // Custom validation function (adjust messages as needed)
-  const validate = (values) => {
-    const errors = {};
-    if (!values.totalCoFounders) {
-      errors.totalCoFounders = "Total no. of Co-founders is required";
-    }
-    if (!values.stage) {
-      errors.stage = "Stage is required";
-    }
-    if (!values.sector) {
-      errors.sector = "Sector is required";
-    }
-    if (!values.registeredDistrict) {
-      errors.registeredDistrict = "Registered office district is required";
-    }
-    if (!values.aboutStartup) {
-      errors.aboutStartup = "About your Startup is required";
-    }
-    //if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
-    //   errors.fundsTaken = "Select at least one option";
-    // }
-    if (!values.currentRevenue) {
-      errors.currentRevenue = "Current Revenue/Turnover details is required";
-    }
-    if (!values.netProfitOrLoss) {
-      errors.netProfitOrLoss = "Net Profit or Loss is required";
-    }
-    if (values.fundsRaised === "") {
-      errors.fundsRaised = "This field is required";
-    }
-    if (values.fundsRaised === "Yes" && !values.fundsDetails) {
-      errors.fundsDetails = "Please share details of funds raised";
-    }
-    if (!values.fundAmount) {
-      errors.fundAmount = "Amount of Fund is required";
-    } else if (isNaN(values.fundAmount)) {
-      errors.fundAmount = "Amount must be a number";
-    }
-    //if (!iprReceivedStr || iprReceivedStr.split(";").filter(x => x).length === 0) {
-    //  errors.iprReceived = "Select at least one option";
-    // }
-    if (!values.fullTimeMale) {
-      errors.fullTimeMale = "No. of Full-time Male employees is required";
-    } else if (isNaN(values.fullTimeMale)) {
-      errors.fullTimeMale = "Must be a number";
-    }
-    if (!values.fullTimeFemale) {
-      errors.fullTimeFemale = "No. of Full-time Female employees is required";
-    } else if (isNaN(values.fullTimeFemale)) {
-      errors.fullTimeFemale = "Must be a number";
-    }
-    if (!values.partTimeMale) {
-      errors.partTimeMale = "No. of Part-time Male employees is required";
-    } else if (isNaN(values.partTimeMale)) {
-      errors.partTimeMale = "Must be a number";
-    }
-    if (!values.partTimeFemale) {
-      errors.partTimeFemale = "No. of Part-time Female employees is required";
-    } else if (isNaN(values.partTimeFemale)) {
-      errors.partTimeFemale = "Must be a number";
-    }
-    if (!values.workOrders) {
-      errors.workOrders = "No. of Work orders received is required";
-    } else if (isNaN(values.workOrders)) {
-      errors.workOrders = "Must be a number";
-    }
-    if (!values.totalWorkOrderAmount) {
-      errors.totalWorkOrderAmount = "Total Amount of Work Orders received is required";
-    } else if (isNaN(values.totalWorkOrderAmount)) {
-      errors.totalWorkOrderAmount = "Must be a number";
-    }
-    if (!values.customersAcquired) {
-      errors.customersAcquired = "No. of Customers acquired is required";
-    } else if (isNaN(values.customersAcquired)) {
-      errors.customersAcquired = "Must be a number";
-    }
-    if (
-      !values.unitPhotos ||
-      (!values.unitPhotos.photo1 && !values.unitPhotos.photo2)
-    ) {
-      errors.unitPhotos = "Geo-tagged photos are required";
-    }
-    if (!values.pitchdeck) {
-      errors.pitchdeck = "Pitchdeck is required";
-    }
-    if (!values.auditedReport) {
-      errors.auditedReport = "Audited financial statement report is required";
-    }
-    if (!values.incubationBenefits) {
-      errors.incubationBenefits = "This field is required";
-    }
-    if (values.incubationBenefits === "Yes" && !values.benefitsDetails) {
-      errors.benefitsDetails = "Please mention the benefits";
-    }
-    return errors;
-  };
+  // Text or numeric fields where "0" is a valid value:
+  if (values.totalCoFounders === undefined || values.totalCoFounders === "") {
+    errors.totalCoFounders = "Total no. of Co-founders is required";
+  }
+  if (values.stage === undefined || values.stage === "") {
+    errors.stage = "Stage is required";
+  }
+  if (values.sector === undefined || values.sector === "") {
+    errors.sector = "Sector is required";
+  }
+  if (values.registeredDistrict === undefined || values.registeredDistrict === "") {
+    errors.registeredDistrict = "Registered office district is required";
+  }
+  if (values.aboutStartup === undefined || values.aboutStartup === "") {
+    errors.aboutStartup = "About your Startup is required";
+  }
+  // if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
+  //   errors.fundsTaken = "Select at least one option";
+  // }
+  if (values.currentRevenue === undefined || values.currentRevenue === "") {
+    errors.currentRevenue = "Current Revenue/Turnover details is required";
+  }
+  if (values.netProfitOrLoss === undefined || values.netProfitOrLoss === "") {
+    errors.netProfitOrLoss = "Net Profit or Loss is required";
+  }
+  if (values.fundsRaised === undefined || values.fundsRaised === "") {
+    errors.fundsRaised = "This field is required";
+  }
+  if (values.fundsRaised === "Yes" && (values.fundsDetails === undefined || values.fundsDetails === "")) {
+    errors.fundsDetails = "Please share details of funds raised";
+  }
+
+  // Numeric fields (0 is allowed)
+  if (values.fundAmount === undefined || values.fundAmount === "") {
+    errors.fundAmount = "Amount of Fund is required";
+  } else if (isNaN(values.fundAmount)) {
+    errors.fundAmount = "Amount must be a number";
+  }
+  if (values.fullTimeMale === undefined || values.fullTimeMale === "") {
+    errors.fullTimeMale = "No. of Full-time Male employees is required";
+  } else if (isNaN(values.fullTimeMale)) {
+    errors.fullTimeMale = "Must be a number";
+  }
+  if (values.fullTimeFemale === undefined || values.fullTimeFemale === "") {
+    errors.fullTimeFemale = "No. of Full-time Female employees is required";
+  } else if (isNaN(values.fullTimeFemale)) {
+    errors.fullTimeFemale = "Must be a number";
+  }
+  if (values.partTimeMale === undefined || values.partTimeMale === "") {
+    errors.partTimeMale = "No. of Part-time Male employees is required";
+  } else if (isNaN(values.partTimeMale)) {
+    errors.partTimeMale = "Must be a number";
+  }
+  if (values.partTimeFemale === undefined || values.partTimeFemale === "") {
+    errors.partTimeFemale = "No. of Part-time Female employees is required";
+  } else if (isNaN(values.partTimeFemale)) {
+    errors.partTimeFemale = "Must be a number";
+  }
+  if (values.workOrders === undefined || values.workOrders === "") {
+    errors.workOrders = "No. of Work orders received is required";
+  } else if (isNaN(values.workOrders)) {
+    errors.workOrders = "Must be a number";
+  }
+  if (values.totalWorkOrderAmount === undefined || values.totalWorkOrderAmount === "") {
+    errors.totalWorkOrderAmount = "Total Amount of Work Orders received is required";
+  } else if (isNaN(values.totalWorkOrderAmount)) {
+    errors.totalWorkOrderAmount = "Must be a number";
+  }
+  if (values.customersAcquired === undefined || values.customersAcquired === "") {
+    errors.customersAcquired = "No. of Customers acquired is required";
+  } else if (isNaN(values.customersAcquired)) {
+    errors.customersAcquired = "Must be a number";
+  }
+
+  // Other required fields
+
+  // Require both geo-tagged photos
+  if (!values.unitPhotos || !values.unitPhotos.photo1 || !values.unitPhotos.photo2) {
+    errors.unitPhotos = "Both geo-tagged photos are required";
+  }
+  // Require pitchdeck file upload
+  if (!values.pitchdeck) {
+    errors.pitchdeck = "Pitchdeck is required";
+  }
+  // Require audited financial statement report file upload
+  if (!values.auditedReport) {
+    errors.auditedReport = "Audited financial statement report is required";
+  }
+  if (values.incubationBenefits === undefined || values.incubationBenefits === "") {
+    errors.incubationBenefits = "This field is required";
+  }
+  if (values.incubationBenefits === "Yes" && (values.benefitsDetails === undefined || values.benefitsDetails === "")) {
+    errors.benefitsDetails = "Please mention the benefits";
+  }
+  
+  return errors;
+};
+
+
 
   const formik = useFormik({
     initialValues: {
@@ -638,6 +644,7 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                 <input
                   type="number"
                   step="1"
+                  min="0"
                   id="fundAmount"
                   name="fundAmount"
                   value={formik.values.fundAmount}
@@ -687,6 +694,7 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   type="number"
                   id="fullTimeMale"
                   name="fullTimeMale"
+                  min="0"
                   value={formik.values.fullTimeMale}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
@@ -705,6 +713,8 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   type="number"
                   id="fullTimeFemale"
                   name="fullTimeFemale"
+                  min="0"
+
                   value={formik.values.fullTimeFemale}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
@@ -723,6 +733,8 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   type="number"
                   id="partTimeMale"
                   name="partTimeMale"
+                  min="0"
+
                   value={formik.values.partTimeMale}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
@@ -741,6 +753,8 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   type="number"
                   id="partTimeFemale"
                   name="partTimeFemale"
+                  min="0"
+
                   value={formik.values.partTimeFemale}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
@@ -765,6 +779,8 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   type="number"
                   id="workOrders"
                   name="workOrders"
+                  min="0"
+
                   value={formik.values.workOrders}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
@@ -784,6 +800,8 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   step="1"
                   id="totalWorkOrderAmount"
                   name="totalWorkOrderAmount"
+                  min="0"
+
                   value={formik.values.totalWorkOrderAmount}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"
@@ -802,6 +820,8 @@ const QprForm = ({ onFormSubmitSuccess }) => {
                   type="number"
                   id="customersAcquired"
                   name="customersAcquired"
+                  min="0"
+
                   value={formik.values.customersAcquired}
                   onChange={formik.handleChange}
                   className="w-full border border-gray-300 rounded-md p-2 mt-1"

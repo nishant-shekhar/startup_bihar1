@@ -64,79 +64,105 @@ const UpdateMetrics = ({ startup, onClose, onUpdate }) => {
 					Update Business Details
 				</h2>
 				<Formik
-					initialValues={{
-						employeeCount: startup.employeeCount || "",
-						workOrders: startup.workOrders || "",
-						projects: startup.projects || "",
-						revenueLY: startup.revenueLY || "",
-					}}
-					onSubmit={async (values, { resetForm }) => {
-						for (const [field, value] of Object.entries(values)) {
-							if (value) {
-								await handleUpdate(field, value);
-							}
-						}
-						resetForm();
-						onUpdate();
-					}}
-				>
-					{() => (
-						<Form>
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">
-									Employee Count
-								</label>
-								<Field
-									type="number"
-									name="employeeCount"
-									placeholder="Enter Employee Count"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
+  initialValues={{
+    employeeCount: startup.employeeCount || "",
+    workOrders: startup.workOrders || "",
+    projects: startup.projects || "",
+    revenueLY: startup.revenueLY || "",
+  }}
+  onSubmit={async (values, { resetForm }) => {
+    try {
+      setDialogStatus({
+        isVisible: true,
+        title: "Updating Metrics",
+        subtitle: "Wait while we update your metrics!",
+        buttonVisible: false,
+        status: "checking",
+      });
 
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Work Orders</label>
-								<Field
-									type="number"
-									name="workOrders"
-									placeholder="Enter Work Orders"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
+      // Send all updated fields in a single API call
+      await axios.put(
+        "https://startupbihar.in/api/userlogin/update-data",
+        values,
+        {
+          headers: {
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">Projects</label>
-								<Field
-									type="number"
-									name="projects"
-									placeholder="Enter Projects"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
+      setDialogStatus({
+        isVisible: true,
+        title: "Metrics Updated",
+        subtitle: "Your metrics updated successfully",
+        buttonVisible: true,
+        status: "success",
+      });
 
-							<div className="mb-4">
-								<label className="block text-gray-700 mb-2">
-									Revenue Last Year
-								</label>
-								<Field
-									type="number"
-									name="revenueLY"
-									placeholder="Enter Revenue Last Year"
-									className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-								/>
-							</div>
+      resetForm();
+      onUpdate();
+    } catch (error) {
+      console.error("Error updating metrics:", error);
+      setDialogStatus({
+        isVisible: true,
+        title: "Metrics Update Failed",
+        subtitle: "Error updating metrics",
+        buttonVisible: true,
+        status: "failed",
+      });
+    }
+  }}
+>
+  {() => (
+    <Form>
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Employee Count</label>
+        <Field
+          type="number"
+          name="employeeCount"
+          placeholder="Enter Employee Count"
+          className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Work Orders</label>
+        <Field
+          type="number"
+          name="workOrders"
+          placeholder="Enter Work Orders"
+          className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Projects</label>
+        <Field
+          type="number"
+          name="projects"
+          placeholder="Enter Projects"
+          className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Revenue Last Year</label>
+        <Field
+          type="number"
+          name="revenueLY"
+          placeholder="Enter Revenue Last Year"
+          className="w-full p-2 bg-transparent border border-gray-300 rounded shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="text-center">
+        <button
+          type="submit"
+          className="bg-[#3B82F6] text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition"
+        >
+          Update Details
+        </button>
+      </div>
+    </Form>
+  )}
+</Formik>
 
-							<div className="text-center">
-								<button
-									type="submit"
-									className="bg-[#3B82F6] text-white px-4 py-2 rounded shadow hover:bg-blue-600 transition"
-								>
-									Update Details
-								</button>
-							</div>
-						</Form>
-					)}
-				</Formik>
 			</div>
 			<div className="z-60">
 				<StatusDialog

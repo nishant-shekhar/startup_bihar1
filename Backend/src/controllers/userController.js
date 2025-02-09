@@ -111,7 +111,7 @@ const getStartupDetails = async (req, res) => {
       return res.status(404).json({ error: 'Startup not found' });
     }
 
-    console.log('Startup details:', startup);
+    //console.log('Startup details:', startup);
 
     // Respond with the basic details
     res.status(200).json({ startup });
@@ -255,7 +255,16 @@ const updateLogo = async (req, res) => {
       data: { logo },
     });
 
-    res.status(200).json({ message: 'Website updated successfully', logo: updatedUser.logo });
+ // Record the activity after successful moto update
+ await prisma.activity.create({
+  data: {
+    user_id: user_id,
+    action: 'Logo Updated',
+    subtitle: `You have updated your Logo"`,
+  },
+});
+
+    res.status(200).json({ message: 'Logo updated successfully', logo: updatedUser.logo });
   } catch (error) {
     console.error('Error updating Website:', error);
     res.status(500).json({ error: 'An error occurred while updating Website' });
@@ -319,6 +328,14 @@ const updateMoto = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { user_id },
       data: { moto },
+    });
+    // Record the activity after successful moto update
+    await prisma.activity.create({
+      data: {
+        user_id: user_id,
+        action: 'Moto Updated',
+        subtitle: `You have updated your moto to ${moto}`,
+      },
     });
 
     res.status(200).json({ message: 'Moto updated successfully', moto: updatedUser.moto });
@@ -448,6 +465,15 @@ const updateMetrics = async (req, res) => {
       data: dataToUpdate,
     });
 
+    // Record the activity after successful moto update
+ await prisma.activity.create({
+  data: {
+    user_id: user_id,
+    action: 'You have updated your matrics ',
+    subtitle: `Revenue: ${revenueLY} | Employee: ${employeeCount} | Work Order: ${workOrders} | Projects: ${projects}`,
+  },
+});
+
     res.status(200).json({
       message: 'Metrics updated successfully',
       updatedMetrics: {
@@ -493,6 +519,15 @@ const updateUserField = async (req, res) => {
       data: fieldsToUpdate,
     });
 
+// Record the activity after successful moto update
+await prisma.activity.create({
+  data: {
+    user_id: user_id,
+    action: 'Social Media Links and About Updated',
+    subtitle: `You have updated your social media links and about.`,
+  },
+});
+
     res.status(200).json({
       message: 'User fields updated successfully',
       updatedFields: fieldsToUpdate,
@@ -535,7 +570,14 @@ const addStaff = async (req, res) => {
         rank: parseInt(rank, 10) || 0,
       },
     });
-
+// Record the activity after successful moto update
+await prisma.activity.create({
+  data: {
+    user_id: user_id,
+    action: 'Employee Added',
+    subtitle: `You have added ${name} to your employee list`,
+  },
+});
     res.status(201).json({
       message: "Staff added successfully",
       staff: newStaff,
@@ -583,7 +625,7 @@ const getStaffByStartup = async (req, res) => {
       return res.status(404).json({ error: 'employee not found' });
     }
 
-    console.log('employee details:', employee);
+   //console.log('employee details:', employee);
 
     // Respond with the basic details
     res.status(200).json({ employee });
@@ -624,7 +666,14 @@ const deleteStaff = async (req, res) => {
     await prisma.staff.delete({
       where: { id: id },
     });
-
+ // Record the activity after successful moto update
+ await prisma.activity.create({
+  data: {
+    user_id: user_id,
+    action: 'Employee Removed',
+    subtitle: `You have removed one of your employee`,
+  },
+});
     res.status(200).json({ message: "Staff deleted successfully" });
   } catch (error) {
     console.error("Detailed Error:", error.message, error.stack);

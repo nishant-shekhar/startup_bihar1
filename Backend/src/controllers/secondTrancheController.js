@@ -64,7 +64,14 @@ const submitSecondTranche = async (req, res) => {
 				documentStatus: "created",
 			},
 		});
-
+// Record the activity after successful update
+await prisma.activity.create({
+	data: {
+	  user_id: userId,
+	  action: 'Second Tranche Form Submitted',
+	  subtitle: `You have submitted your Second Tranche Form`,
+	},
+  });
 		res.status(200).json({
 			message: existingEntry
 				? "Second tranche entry updated successfully"

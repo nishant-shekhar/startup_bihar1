@@ -80,19 +80,53 @@ const UpdateSocialMediaURL = ({ startup, onPlatformSelect, onUpdate }) => {
 							website: startup.website,
 							moto: startup.moto,
 							about: startup.about,
-						}}
-						onSubmit={async (values, { resetForm }) => {
-							for (const [field, value] of Object.entries(values)) {
-								if (value) {
-									await handleUpdate(field, value);
+						  }}
+						  onSubmit={async (values, { resetForm }) => {
+							try {
+							  setDialogStatus({
+								isVisible: true,
+								title: "Updating User Fields",
+								subtitle: "Wait while we update your user data!",
+								buttonVisible: false,
+								status: "checking",
+							  });
+						
+							  // Send the entire values object in one API call
+							  await axios.put(
+								"https://startupbihar.in/api/userlogin/update-user-field",
+								values,
+								{
+								  headers: {
+									Authorization: `${localStorage.getItem("token")}`,
+								  },
 								}
+							  );
+						
+							  setDialogStatus({
+								isVisible: true,
+								title: "User Fields Updated",
+								subtitle: `All fields updated successfully`,
+								buttonVisible: true,
+								status: "success",
+							  });
+						
+							  resetForm();
+							  onUpdate();
+							} catch (error) {
+							  console.error("Error updating user fields:", error);
+							  setDialogStatus({
+								isVisible: true,
+								title: "User Field Update Failed",
+								subtitle: "Error updating user data",
+								buttonVisible: true,
+								status: "failed",
+							  });
 							}
-							resetForm();
-							onUpdate();
-						}}
-					>
-						{() => (
+						  }}
+						>
+						  {() => (
 							<Form className="grid grid-cols-2">
+						 
 
 
 								{/* Links Section */}

@@ -75,6 +75,16 @@ const uploadDocuments = async (req, res) => {
       create: createData,
     });
 
+     // Record the activity after successful update
+     const activityRecord = await prisma.activity.create({
+      data: {
+        user_id: userId, // or user_id: userId, depending on your schema
+        action: 'Startup Profile Form Submitted',
+        subtitle: `You have submitted your Startup Profile Form`,
+      },
+    });
+    console.log("Activity record created:", activityRecord);
+    console.log("document uploaded")
     res.status(200).json({
       message: 'Document updated successfully',
       document,

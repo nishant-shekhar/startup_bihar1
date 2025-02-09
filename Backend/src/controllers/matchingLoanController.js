@@ -85,6 +85,14 @@ const applyForMatchingLoan = async (req, res) => {
       },
     });
 
+    // Record the activity after successful update
+await prisma.activity.create({
+  data: {
+    user_id: userId,
+    action: 'Matching Loan Form Submitted',
+    subtitle: `You have submitted your matching Loan Form`,
+  },
+});
     // Return the created or updated loan application in the response
     return res.status(200).json({
       message: matchingLoan ? 'Loan application updated successfully' : 'Loan application created successfully',
