@@ -121,8 +121,14 @@ const AdminMainProfile = () => {
 				);
 
 			case "IPRReimbursementModule":
-				return <IPRReimbursementModule />;
-
+				return (
+					<CommonList
+						onSelect={handleSelect}
+						url="https://startupbihar.in/api/iprReimbursement/v2"
+						title="Post Seed Application List"
+						type="acceleration"
+					/>
+				);
 			case "CoworkingModule":
 				return <CoworkingModule />;
 
@@ -185,6 +191,8 @@ const AdminMainProfile = () => {
 				return <AccelerationProgrammeModuleDetails id={selectedId} />;
 			case "IncubationModule":
 				return <IncubationModuleDetails id={selectedId} />;
+				case "IPRReimbursementModule":
+				return <IPRReimbursementModule id={selectedId} />;
 			default:
 				return null;
 		}

@@ -32,6 +32,59 @@ const postNotification = async (req, res) => {
   }
 };
 
+
+
+// Post Notification - Admin sends a notification to a user
+const postPublicNotification = async (req, res) => {
+  try {
+    const {  admin_id, admin_role, notification, link, docLink ,archieve} = req.body;
+
+    if ( !admin_id || !admin_role || !notification) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const newNotification = await prisma.userNotification.create({
+      data: {
+        admin_id,
+        admin_role,
+        notification,
+        link,
+        archieve,
+        archieve,
+        docLink,
+      },
+    });
+
+    res.status(201).json({
+      message: 'Notification created successfully',
+      notification: newNotification,
+    });
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({ error: 'An error occurred while creating the notification.' });
+  }
+};
+
+// Get Notifications for a public
+const getPublicNotification = async (req, res) => {
+  try {
+
+    const notifications = await prisma.userNotification.findMany({
+      where: { archieve: false },
+
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.status(200).json({
+      message: 'Public notifications retrieved successfully',
+      notifications,
+    });
+  } catch (error) {
+    console.error('Error fetching Public notifications:', error);
+    res.status(500).json({ error: 'An error occurred while fetching Public notifications.' });
+  }
+};
+
 // Get Notifications for a User
 const getUserNotification = async (req, res) => {
   try {
@@ -97,4 +150,6 @@ module.exports = {
   getUserNotification,
   getAdminAction,
   getAdminRoleAction,
+  postPublicNotification,
+  getPublicNotification
 };

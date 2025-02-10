@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,125 +7,114 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Admin {
-  id String @id @default(uuid())
-  admin_id      String    @unique
-  password      String
-  role          String
-  designation   String
-  contact       String?
-  name          String
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
-
-
+  id          String   @id @default(uuid())
+  admin_id    String   @unique
+  password    String
+  contact     String?
+  createdAt   DateTime @default(now())
+  designation String
+  name        String
+  role        String
+  updatedAt   DateTime @updatedAt
 }
 
 model UserNotification {
-  id          String    @id @default(uuid()) @map("_id")
-  user_id     String
-  admin_id    String
-  admin_role  String
+  id           String   @id @default(uuid()) @map("_id")
+  user_id      String
+  admin_id     String
   notification String
-  subtitle    String?
-  related_to  String?
-  docLink     String?
-  isRead      Boolean   @default(false) // Track read status
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-model Activity {
-  id          String    @id @default(uuid()) @map("_id")
-  user_id     String?   // Nullable for admin-only activities
-  admin_id    String?   // Nullable for user-only activities
-  action      String
-  subtitle    String?    // Description of the activity
-  timestamp   DateTime  @default(now())
+  related_to   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  docLink      String?
+  subtitle     String?
+  admin_role   String
+  isRead       Boolean  @default(false)
 }
 
+model Activity {
+  id        String   @id @default(uuid()) @map("_id")
+  user_id   String?
+  admin_id  String?
+  action    String
+  subtitle  String?
+  timestamp DateTime @default(now())
+}
 
 model User {
-  id                    String               @id @default(uuid()) @map("_id")
-  user_id               String               @unique
+  id                    String                 @id @default(uuid()) @map("_id")
+  user_id               String                 @unique
   password              String
-  registration_no       String               @unique
-  registration_year     String?
+  registration_no       String                 @unique
   company_name          String
-  document              Document?            // One-to-one relation
-  seedFund              SeedFund?            // One-to-one relation
-  secondTranche         SecondTranche?       // One-to-one relation
-  postSeedFund          PostSeedFund?        // One-to-one relation
-  accelerationProgram   AccelerationProgram? // One-to-one relation
-  matchingLoan          MatchingLoan?        // One-to-one relation
-  incubationApplication IncubationApplication?
-  iprReimbursement      IPRReimbursement?
-  qReports              QReport[]  // new field for the opposite relation
-  CoWorkingApplications CoWorkingApplication[]
-
-  instagram             String?
-  website               String?
-  linkedin              String?
-  facebook              String?
-  twitter               String?
+  about                 String?                @db.Text
+  createdAt             DateTime               @default(now())
   email                 String?
-  mobile                String?
-
-  topStartup            Boolean  @default(false) // Add this field
-  status                String?
-  category              String?
-
-  revenueLY             Int?
-  employeeCount         Int?
-  workOrders            Int?
-  projects              Int?
-
-  seedFundAmount        Int? @default(0) // New field
-  secondTrancheAmount   Int? @default(0) // New field
-  postSeedAmount        Int? @default(0) // New field
-  matchingLoanAmount    Int? @default(0) // New field
-
-  startup_since         String?
-  about                 String? @db.Text  
-  moto                  String?
-  logo                  String?
-  coverPic              String?
+  facebook              String?
   founder_dp            String?
   founder_name          String?
-
-  dateOfIncorporation   String?
+  instagram             String?
+  linkedin              String?
+  logo                  String?
+  mobile                String?
+  moto                  String?
+  registration_year     String?
+  startup_since         String?
+  twitter               String?
+  updatedAt             DateTime               @updatedAt
+  website               String?
+  topStartup            Boolean                @default(false)
+  category              String?
+  coverPic              String?
+  employeeCount         Int?
+  projects              Int?
+  revenueLY             Int?
+  status                String?
+  workOrders            Int?
+  matchingLoanAmount    Int?                   @default(0)
+  postSeedAmount        Int?                   @default(0)
+  secondTrancheAmount   Int?                   @default(0)
+  seedFundAmount        Int?                   @default(0)
   address               String?
-  districtRoc           String?
   cin                   String?
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime  @updatedAt      // Auto-update modification timestamp
+  dateOfIncorporation   String?
+  districtRoc           String?
+  accelerationProgram   AccelerationProgram?
+  document              Document?
+  iprReimbursement      IPRReimbursement?
+  incubationApplication IncubationApplication?
+  matchingLoan          MatchingLoan?
+  postSeedFund          PostSeedFund?
+  qReports              QReport[]
+  secondTranche         SecondTranche?
+  seedFund              SeedFund?
 }
+
 model Staff {
   id            String   @id @default(uuid()) @map("_id")
-  user_id       String
   name          String
-  dp            String?  // Optional URL for profile picture
+  dp            String?
   qualification String
   designation   String
   display       Boolean  @default(true)
-  rank          Int      @default(0) // Rank for ordering staff
+  rank          Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  user_id       String
 }
 
-model Showcase{
-  id                     String   @id @default(uuid()) @map("_id")
-  user_id                String               
- 
-  title                  String
-  subtitle               String
-  picUrl                 String
-  projectLink            String?
-  location               String?
-  date                   String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
+model Showcase {
+  id          String   @id @default(uuid()) @map("_id")
+  user_id     String
+  title       String
+  subtitle    String
+  picUrl      String
+  projectLink String?
+  location    String?
+  date        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Document {
@@ -147,231 +135,204 @@ model Document {
   gender                 String
   dpiitRecognitionNo     String?
   appliedIPR             Boolean
-  user                   User     @relation(fields: [userId], references: [user_id]) // One-to-one relation
   userId                 String   @unique
   documentStatus         String
   comment                String?
   createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
-
+  updatedAt              DateTime @updatedAt
+  user                   User     @relation(fields: [userId], references: [user_id])
 }
 
-
-
 model SeedFund {
-  id                     String   @id @default(uuid()) @map("_id") 
-  companyName            String
-  registrationNumber     String
-  dateOfIncorporation    DateTime
-  businessEntityType     String
-  rocDistrict            String
-  companyAddress         String
-  pincode                String
-  bankName               String
-  ifscCode               String
-  currentAccountNumber   String
+  id                       String   @id @default(uuid()) @map("_id")
+  companyName              String
+  registrationNumber       String
+  dateOfIncorporation      DateTime
+  businessEntityType       String
+  companyCertificate       String?
+  rocDistrict              String
+  companyAddress           String
+  pincode                  String
+  bankName                 String
+  ifscCode                 String
+  currentAccountNumber     String
   currentAccountHolderName String
-  branchName             String
-  branchAddress          String
-
-
-  cancelChequeOrPassbook String?
-  companyCertificate     String?
-  inc33                  String?
-  inc34                  String?
-  partnershipAgreement   String?
-  dpr                    String?
-
-  panNumber              String
-  gstNumber              String
-  cinNumber              String?
-
-  comment                String?
-
-
-  userId                 String   @unique // One-to-one relation
-  user                   User     @relation(fields: [userId], references: [user_id]) // Many-to-one relation
-  documentStatus         String
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
+  branchName               String
+  branchAddress            String
+  cancelChequeOrPassbook   String?
+  panNumber                String
+  gstNumber                String
+  userId                   String   @unique
+  documentStatus           String
+  comment                  String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  dpr                      String?
+  inc33                    String?
+  inc34                    String?
+  partnershipAgreement     String?
+  cinNumber                String?
+  user                     User     @relation(fields: [userId], references: [user_id])
 }
 
 model SecondTranche {
-  id                     String   @id @default(uuid()) @map("_id") 
-  utilizationCertificate  String?
-  statusReport            String?
-  expenditurePlan         String?
-  bankStatement           String?
-  expenditureInvoice      String?
-  geoTaggedPhotos         String?
-
-
-  userId                 String   @unique // One-to-one relation
-  user                   User     @relation(fields: [userId], references: [user_id]) // Many-to-one relation
+  id                     String   @id @default(uuid()) @map("_id")
+  utilizationCertificate String?
+  statusReport           String?
+  expenditurePlan        String?
+  bankStatement          String?
+  expenditureInvoice     String?
+  geoTaggedPhotos        String?
+  userId                 String   @unique
   documentStatus         String
   comment                String?
   createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
+  updatedAt              DateTime @updatedAt
+  user                   User     @relation(fields: [userId], references: [user_id])
 }
 
 model PostSeedFund {
-  id                     String   @id @default(uuid()) @map("_id") 
-  currentStage           String   // dropdown (Ideation, Prototype Validation, MVP, Scaling)
-  technicalKnowledge     Boolean  // Checkbox (Yes/No)
-  auditedBalanceSheet    String?  // File path for audited balance sheet (nullable)
-  gstReturn              String?  // File path for GST return (nullable)
-  raisedFunds            Boolean  // Checkbox (Yes/No)
-  employment             Boolean  // Checkbox (Yes/No)
-  projectReport          String?  // File path for project report (nullable)
- 
-  userId                 String   @unique // One-to-one relation
-  user                   User     @relation(fields: [userId], references: [user_id])
-  documentStatus         String
-  comment                String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
+  id                  String   @id @default(uuid()) @map("_id")
+  currentStage        String
+  technicalKnowledge  Boolean
+  auditedBalanceSheet String?
+  gstReturn           String?
+  raisedFunds         Boolean
+  employment          Boolean
+  projectReport       String?
+  userId              String   @unique
+  documentStatus      String
+  comment             String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [user_id])
 }
-
 
 model QReport {
   id                   String   @id @default(uuid()) @map("_id")
-  totalCoFounders      String
-  stage                String
-  sector               String
-  registeredDistrict   String
-  registeredBlock      String?          // Optional field if not selected
-  aboutStartup         String
-  fundsTaken           String             
   currentRevenue       String
   netProfitOrLoss      String
-  fundsRaised          Boolean
-  fundsDetails         String?          // Only if fundsRaised is true
-  fundAmount           String
-  iprReceived          String            
-  fullTimeMale         String
-  fullTimeFemale       String
-  partTimeMale         String
-  partTimeFemale       String
   workOrders           String
-  totalWorkOrderAmount String?
-  customersAcquired    String
-  unitPhotos           String?            // For storing photo URLs or an object with photo1 and photo2
-  pitchdeck            String           // URL to uploaded PDF
-  auditedReport        String           // URL to uploaded PDF
-  incubationBenefits   String           // "Yes" or "No"
-  benefitsDetails      String?          // If incubationBenefits is "Yes"
-  otherAchievements    String?
-
-  userId               String @unique // Unique userId from JWT
-  // Define the relation:
-  user                 User   @relation(fields: [userId], references: [id])
+  userId               String
   documentStatus       String
   comment              String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+  aboutStartup         String
+  auditedReport        String
+  benefitsDetails      String?
+  customersAcquired    String
+  fullTimeFemale       String
+  fullTimeMale         String
+  fundAmount           String
+  fundsDetails         String?
+  fundsRaised          Boolean
+  fundsTaken           String
+  incubationBenefits   String
+  iprReceived          String
+  otherAchievements    String?
+  partTimeFemale       String
+  partTimeMale         String
+  pitchdeck            String
+  registeredBlock      String?
+  registeredDistrict   String
+  sector               String
+  stage                String
+  totalCoFounders      String
+  totalWorkOrderAmount String?
+  unitPhotos           String?
+  user                 User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "QReport_userId_fkey")
 }
 
-
-
-
-
 model AccelerationProgram {
-  id                       String   @id @default(uuid()) @map("_id") 
-  hostInstitute             String
-  programName               String
-  startDate                 DateTime
-  endDate                   DateTime
-  programWebsite            String?
-  founderName               String
-  coFounderName             String?
-  participationFee          Float
-  travelAccommodationCost   Float
-  totalPersons              Int
-  totalFee                  Float
- 
-  userId                    String   @unique // Unique userId from JWT
-  user                      User     @relation(fields: [userId], references: [user_id]) // Relation to User
-  documentStatus         String
-  comment                String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
-
+  id                      String   @id @default(uuid()) @map("_id")
+  hostInstitute           String
+  programName             String
+  startDate               DateTime
+  endDate                 DateTime
+  programWebsite          String?
+  founderName             String
+  coFounderName           String?
+  participationFee        Float
+  travelAccommodationCost Float
+  totalPersons            Int
+  totalFee                Float
+  userId                  String   @unique
+  documentStatus          String
+  comment                 String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  user                    User     @relation(fields: [userId], references: [user_id])
 }
 
 model MatchingLoan {
-  id                              String   @id @default(uuid()) @map("_id") 
-  fundRaised                      Float    // Total Amount of fund raised from recognized investors
-  investorName                    String   // Name of recognized investors
-  matchingGrantAmount              Float    // Amount required under Matching Grants
-  proofOfInvestmentName            String?  // File name for Proof of Investment
-  proofOfInvestmentPath            String?  // File path for Proof of Investment
-  accountStatementName             String?  // File name for Account Statement
-  accountStatementPath             String?  // File path for Account Statement
-  investorUndertakingName          String?  // File name for Investor Undertaking
-  investorUndertakingPath          String?  // File path for Investor Undertaking
-  equityDilutionProofName          String?  // File name for Equity Dilution Proof
-  equityDilutionProofPath          String?  // File path for Equity Dilution Proof
-  utilizationPlanName              String?  // File name for Fund Utilization Plan
-  utilizationPlanPath              String?  // File path for Fund Utilization Plan
-  boardResolutionName              String?  // File name for Board Resolution
-  boardResolutionPath              String?  // File path for Board Resolution
-
-  user                             User     @relation(fields: [userId], references: [user_id])
-  userId                           String   @unique // Foreign key to User
-  documentStatus         String
-  comment                String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
-  
+  id                      String   @id @default(uuid()) @map("_id")
+  fundRaised              Float
+  investorName            String
+  matchingGrantAmount     Float
+  proofOfInvestmentName   String?
+  proofOfInvestmentPath   String?
+  accountStatementName    String?
+  accountStatementPath    String?
+  investorUndertakingName String?
+  investorUndertakingPath String?
+  equityDilutionProofName String?
+  equityDilutionProofPath String?
+  utilizationPlanName     String?
+  utilizationPlanPath     String?
+  boardResolutionName     String?
+  boardResolutionPath     String?
+  userId                  String   @unique
+  documentStatus          String
+  comment                 String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  user                    User     @relation(fields: [userId], references: [user_id])
 }
 
 model IncubationApplication {
-  id           String   @id @default(uuid()) @map("_id")
-  userId       String   @unique // Relates to the User model
-  preference1  String
-  preference2  String
-  preference3  String
-  assignCenter String?
-  user         User     @relation(fields: [userId], references: [user_id])
+  id             String   @id @default(uuid()) @map("_id")
+  userId         String   @unique
   documentStatus String
-  comment      String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  comment        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  assignCenter   String?
+  preference1    String
+  preference2    String
+  preference3    String
+  user           User     @relation(fields: [userId], references: [user_id])
 }
 
-
-
 model CoWorkingApplication {
-  id               String   @id @default(uuid()) @map("_id") 
-  coworkingCenter  String
-  seatNo           String
-  status           String
-
-  userId           String  
-  user                 User   @relation(fields: [userId], references: [id])
-  documentStatus         String
-  comment                String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
-
+  id              String   @id @default(uuid()) @map("_id")
+  coworkingCenter String
+  seatNo          String
+  status          String
+  userId          String
+  documentStatus  String
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model IPRReimbursement {
-  id                             String   @id @default(uuid()) @map("_id") 
-  iprType                         String
-  iprCertificateFileName          String
-  iprCertificateFilePath          String
-  feePaidForApplicationForm       String
-  feePaidInvoiceFileName          String
-  feePaidInvoiceFilePath          String
-  consultancyFee                  String?
-  consultancyInvoiceFileName      String?
-  consultancyInvoiceFilePath      String?
- 
-  userId                          String   @unique
-  user                            User     @relation(fields: [userId], references: [user_id])
-  documentStatus         String
-  comment                String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime  @updatedAt      // Auto-update modification timestamp
+  id                         String   @id @default(uuid()) @map("_id")
+  iprType                    String
+  iprCertificateFileName     String
+  iprCertificateFilePath     String
+  feePaidForApplicationForm  String
+  feePaidInvoiceFileName     String
+  feePaidInvoiceFilePath     String
+  consultancyFee             String?
+  consultancyInvoiceFileName String?
+  consultancyInvoiceFilePath String?
+  userId                     String   @unique
+  documentStatus             String
+  comment                    String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  user                       User     @relation(fields: [userId], references: [user_id])
 }

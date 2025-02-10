@@ -8,73 +8,76 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Use envir
 
 const applyForIPRReimbursement = async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-
+    // Ensure a token is provided in the request headers
+    const token = req.headers.authorization?.split(' ')[1]; // Assuming "Bearer <token>" format
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
+      return res.status(401).json({ error: 'Authorization token is required' });
     }
-
-    let userId;
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      userId = decoded.user_id;
-    } catch (err) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-    }
-
-    const {
-      iprType,
-      feePaidForApplicationForm,
-      consultancyFee,
-    } = req.body;
-
+ 
+    // Decode the JWT to get the user ID
+    const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
+    const userId = decoded.user_id; // Adjust according to your token payload structure
+ 
+    const { iprType, feePaidForApplicationForm, consultancyFee } = req.body;
+ 
     if (!iprType || !feePaidForApplicationForm) {
       return res.status(400).json({ error: 'Required fields are missing' });
     }
-
-    const iprCertificateFile = req.files?.iprCertificate?.[0];
-    const feePaidInvoiceFile = req.files?.feePaidInvoice?.[0];
-    const consultancyInvoiceFile = req.files?.consultancyInvoice?.[0];
-
-    if (!iprCertificateFile || !feePaidInvoiceFile) {
-      return res.status(400).json({ error: 'IPR Certificate and Invoice files are required' });
-    }
-
+ 
+    // Handle file uploads
+    const iprCertificateFilePath = req.files.iprCertificate
+      ? req.files.iprCertificate[0].location
+      : "";
+    const feePaidInvoiceFilePath = req.files.feePaidInvoice
+      ? req.files.feePaidInvoice[0].location
+      : "";
+    const consultancyInvoiceFilePath = req.files.consultancyInvoice
+      ? req.files.consultancyInvoice[0].location
+      : "";
+ 
+    
+ 
     const application = await prisma.iPRReimbursement.upsert({
       where: { userId },
       update: {
         iprType,
         feePaidForApplicationForm,
         consultancyFee,
-        iprCertificateFileName: iprCertificateFile.filename,
-        iprCertificateFilePath: iprCertificateFile.path,
-        feePaidInvoiceFileName: feePaidInvoiceFile.filename,
-        feePaidInvoiceFilePath: feePaidInvoiceFile.path,
-        consultancyInvoiceFileName: consultancyInvoiceFile?.filename || null,
-        consultancyInvoiceFilePath: consultancyInvoiceFile?.path || null,
-        documentStatus : "created"
+        iprCertificateFilePath,
+        feePaidInvoiceFilePath,
+        consultancyInvoiceFilePath,
+        iprCertificateFileName: "a",
+        feePaidInvoiceFileName: "b",
+        consultancyInvoiceFileName: "c",
+        documentStatus: "created"
       },
       create: {
+       
+
         iprType,
         feePaidForApplicationForm,
         consultancyFee,
-        iprCertificateFileName: iprCertificateFile.filename,
-        iprCertificateFilePath: iprCertificateFile.path,
-        feePaidInvoiceFileName: feePaidInvoiceFile.filename,
-        feePaidInvoiceFilePath: feePaidInvoiceFile.path,
-        consultancyInvoiceFileName: consultancyInvoiceFile?.filename || null,
-        consultancyInvoiceFilePath: consultancyInvoiceFile?.path || null,
-        userId,
+        iprCertificateFilePath,
+        feePaidInvoiceFilePath,
+        consultancyInvoiceFilePath,
+        iprCertificateFileName: "a",
+        feePaidInvoiceFileName: "b",
+        consultancyInvoiceFileName: "c",
+        documentStatus: "created",
+        // Connect the related User via the unique user_id field
+        user: { connect: { user_id: userId } }
       },
     });
-// Record the activity after successful update
-await prisma.activity.create({
-  data: {
-    user_id: userId,
-    action: 'IPR Reimbursement Form Submitted',
-    subtitle: `You have submitted your IPR Reimbursement Form`,
-  },
-});
+ 
+    // Record the activity after successful update
+    await prisma.activity.create({
+      data: {
+        user_id: userId,
+        action: 'IPR Reimbursement Form Submitted',
+        subtitle: `You have submitted your IPR Reimbursement Form`,
+      },
+    });
+ 
     return res.status(200).json({
       message: 'IPR Reimbursement application submitted successfully',
       application,
