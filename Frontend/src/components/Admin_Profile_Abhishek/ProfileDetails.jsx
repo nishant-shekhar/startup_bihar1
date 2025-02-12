@@ -440,9 +440,6 @@ const StartupProfileDetails = ({ id }) => {
 											
 											
 											
-											
-											
-											
 											✕
 										</button>
 									</div>

@@ -12,6 +12,8 @@ const QPRModuleDetails = ({ id }) => {
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
 	const adminRole = localStorage.getItem("admin_role") || "admin";
 	const adminId = localStorage.getItem("admin_id") || "admin";
+	const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+	const [imageUrl, setImageUrl] = useState("");
 
 	const fetchData = async () => {
 		if (id) {
@@ -189,6 +191,16 @@ const QPRModuleDetails = ({ id }) => {
 	const closePdfModal = () => {
 		setIsPdfModalVisible(false);
 		setPdfUrl("");
+	};
+
+	const handleViewImage = (url) => {
+		setImageUrl(url);
+		setIsImageModalVisible(true);
+	};
+
+	const closeImageModal = () => {
+		setImageUrl("");
+		setIsImageModalVisible(false);
 	};
 
 	return (
@@ -376,32 +388,62 @@ const QPRModuleDetails = ({ id }) => {
 						</tr>
 						{/* Files & Uploads */}
 						<tr className="border-b">
+  <td className="px-6 py-4 border">Unit Photos</td>
+  <td className="px-6 py-4 border">
+    {data?.unitPhotos ? (
+      data.unitPhotos.split(";").map((url, idx) => (
+        url && (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => handleViewImage(url)}
+            className="inline-block mr-2 mb-2 focus:outline-none"
+          >
+            <img
+              src={url}
+              alt={`Unit Photo ${idx + 1}`}
+              className="w-16 h-16 object-cover rounded border"
+            />
+          </button>
+        )
+      ))
+    ) : (
+      "N/A"
+    )}
+  </td>
+</tr>
 
-							<td className="px-6 py-4 border">Unit Photos</td>
-							<td className="px-6 py-4 border">
-								{data?.unitPhotos ? (
-									data.unitPhotos.split(";").map((url, idx) => (
-										url && (
-											<a
-												key={idx}
-												href={url}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="inline-block mr-2 mb-2"
-											>
-												<img
-													src={url}
-													alt={`Unit Photo ${idx + 1}`}
-													className="w-16 h-16 object-cover rounded border"
-												/>
-											</a>
-										)
-									))
-								) : (
-									"N/A"
-								)}
-							</td>
-						</tr>
+{isImageModalVisible && (
+  <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg p-4 w-3/4 max-w-[800px]">
+      <div className="flex justify-end">
+        <button
+          className="text-gray-600 hover:text-gray-900"
+          onClick={closeImageModal}
+          type="button"
+        >
+          ✕
+        </button>
+      </div>
+      {/* Bigger Image Display */}
+      <img
+        src={imageUrl}
+        alt="Preview"
+        className="w-full h-auto object-contain"
+      />
+      {/* Download Button */}
+      <div className="mt-4 flex justify-center">
+        <a
+          href={imageUrl}
+          download
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded"
+        >
+          Download Image
+        </a>
+      </div>
+    </div>
+  </div>
+)}
 
 					
 						<tr className="border-b">

@@ -11,7 +11,8 @@ const ThirdPage = () => {
         { text: 'Startup Evaluation Test Result Held on 07th October 2024', date: 'Oct 7, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_07_October_2024_fc53bad3e2.pdf' },
         { text: 'New Startup Evaluation Test Result Held on 15th November 2024', date: 'Nov 15, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_15_November_2024_a92dabf022.pdf' },
 
-        { text: '🚀🚀 New Startup Evaluation Test Result Held on 8th & 9th January 2025 🚀🚀', date: 'Jan 20, 2025', author: 'Admin', link: '    https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_08_9th_January_2025.pdf?alt=media&token=e00dfc6b-b0f7-410a-9256-96ccc48866fc' },
+        { text: '🚀🚀 New Startup Evaluation Test Result Held on 8th & 9th January 2025 🚀🚀', date: 'Jan 20, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_08_9th_January_2025.pdf?alt=media&token=e00dfc6b-b0f7-410a-9256-96ccc48866fc' },
+        { text: '🚀🚀 New Startup Evaluation Test Result Held on 06th February 2025 🚀🚀', date: 'Feb 11, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_06_February_2025.pdf?alt=media&token=d6f31ec2-5723-4068-8c0e-588f015d10c6' },
     ];
     
     
@@ -123,7 +124,7 @@ const ThirdPage = () => {
                         {/* Security Section */}
                         <div className="relative max-lg:row-start-3 lg:col-start-2 lg:row-start-2">
                             <div className="absolute inset-px rounded-lg bg-white"></div>
-                            <div className="relative flex h-full flex-col overflow-hidden rounded-lg">
+                            <div className="relative flex h-full flex-col overflow-hidden rounded-lg items-center">
                                 <div className="px-8 pt-8 sm:px-10 sm:pt-10">
                                     <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
                                         Incubation & Mentorship
@@ -137,8 +138,8 @@ const ThirdPage = () => {
                                 <div className="flex flex-1 items-center max-lg:py-6 lg:pb-2">
                                     <img
                                         className="h-[min(152px,40cqw)] object-cover object-center"
-                                        src="https://tailwindui.com/plus/img/component-images/bento-03-security.png"
-                                        alt="Security"
+                                        src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fmentorship_incubation.png?alt=media&token=94481429-264e-47ee-8c12-cfad0ca902b0"
+                                        alt="mentorship"
                                     />
                                 </div>
                             </div>

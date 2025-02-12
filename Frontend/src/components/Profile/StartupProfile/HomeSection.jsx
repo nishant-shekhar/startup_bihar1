@@ -22,8 +22,8 @@ const HomeSection = () => {
   const [employees, setEmployees] = useState([]);
   const [showcases, setShowcases] = useState([]);
 
-    const [dialogMessageSimple, setDialogMessageSimple] = useState('');
-  
+  const [dialogMessageSimple, setDialogMessageSimple] = useState('');
+
   // Popups & Dialogs
   const [isContactVisible, setIsContactVisible] = useState(false);
   const [statusPopup, setStatusPopup] = useState(false);
@@ -49,7 +49,7 @@ const HomeSection = () => {
   const fileInputRef = useRef(null);
 
   // For the category tabs
-  const categories = ["Showcase", "Notifications","Action History"];
+  const categories = ["Showcase", "Notifications", "Action History"];
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };
@@ -77,20 +77,20 @@ const HomeSection = () => {
         await Promise.all([
           axios.get(
             `https://startupbihar.in/api/userlogin/startup-details?user_id=${localStorage.getItem("user_id")}`, {
-              headers: {
-                Authorization: localStorage.getItem("token"),
-              },
-            }
+            headers: {
+              Authorization: localStorage.getItem("token"),
+            },
+          }
 
           ),
           axios.get(
             `https://startupbihar.in/api/showcase/get-showcase/${localStorage.getItem("user_id")}`
           ),
-         axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
+          axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${localStorage.getItem("user_id")}`),
 
         ]);
 
-        setShowDialogSimple(false);
+      setShowDialogSimple(false);
 
       setStartup(detailsResponse.data.startup);
       setShowcases(showcasesResponse.data.showcase || []);
@@ -112,15 +112,15 @@ const HomeSection = () => {
   return (
     <div className="h-screen overflow-y-auto z-40">
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-100">
-       {/* ---------------------- NAVIGATION ---------------------- */}
-       <nav className="px-4 py-2">
+        {/* ---------------------- NAVIGATION ---------------------- */}
+        <nav className="px-4 py-2">
           <div className=" items-center space-x-1">
-            
+
             <div className="flex items-center justify-between space-x-2">
               <div className="flex">
                 <h1 className="text-purple-600 font-semibold">✦</h1>
                 <a href="/" className="font-semibold">
-                Startup Bihar
+                  Startup Bihar
                 </a>
               </div>
               <div>
@@ -153,15 +153,15 @@ const HomeSection = () => {
             <div className="flex pl-8 max-w-screen-lg w-screen ml-5 justify-between py-8">
               <div>
                 <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold hover:underline cursor-pointer  hover:text-blue-600">
-  <a 
-    href={`https://startupbihar.in/startup/${localStorage.getItem("user_id")}`} 
-    target="_blank" 
-    rel="noopener noreferrer"
-  >
-    {startup.company_name}
-  </a>
-</h1>
+                  <h1 className="text-2xl font-semibold hover:underline cursor-pointer  hover:text-blue-600">
+                    <a
+                      href={`https://startupbihar.in/startup/${localStorage.getItem("user_id")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {startup.company_name}
+                    </a>
+                  </h1>
                   <span className="px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center">
                     <svg
                       className="w-3 h-3 mr-1"
@@ -193,13 +193,13 @@ const HomeSection = () => {
                     Contact
                   </button>
                   <a
-  href={`https://startupbihar.in/Startup/${localStorage.getItem("user_id")}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="px-6 py-2 border border-gray-300 rounded-lg"
->
-  View Public Profile
-</a>
+                    href={`https://startupbihar.in/Startup/${localStorage.getItem("user_id")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2 border border-gray-300 rounded-lg"
+                  >
+                    View Public Profile
+                  </a>
                 </div>
               </div>
             </div>
@@ -343,8 +343,8 @@ const HomeSection = () => {
                   key={category}
                   onClick={() => handleCategoryClick(category)}
                   className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
-                      ? "bg-gray-200 text-[#0E0C22] font-semibold rounded-full scale-105"
-                      : "text-[#151334] font-medium hover:text-opacity-70 hover:bg-gray-100 hover:text-[#0E0C22] rounded-full"
+                    ? "bg-gray-200 text-[#0E0C22] font-semibold rounded-full scale-105"
+                    : "text-[#151334] font-medium hover:text-opacity-70 hover:bg-gray-100 hover:text-[#0E0C22] rounded-full"
                     }`}
                 >
                   {category}
@@ -454,7 +454,7 @@ const HomeSection = () => {
                 &times;
               </button>
               <h1 className="text-2xl font-bold">{startup.company_name}</h1>
-              <h1 className="mb-3">{startup.about}</h1>
+              <h1 className="mb-3">{startup.moto}</h1>
               <h2 className="text-xl font-semibold ">Contact:</h2>
               <p>
                 <strong>Phone:</strong>{" "}
