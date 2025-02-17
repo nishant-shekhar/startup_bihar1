@@ -36,7 +36,7 @@ const adminLogin = async (req, res) => {
     const token = jwt.sign(
       { admin_id: admin.admin_id },
       JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
+      { expiresIn: '24h' } // Token expires in 1 hour
     );
 
     // Return the token

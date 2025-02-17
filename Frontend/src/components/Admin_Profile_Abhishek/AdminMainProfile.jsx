@@ -126,11 +126,18 @@ const AdminMainProfile = () => {
 						onSelect={handleSelect}
 						url="https://startupbihar.in/api/iprReimbursement/v2"
 						title="Post Seed Application List"
-						type="acceleration"
+						type="iprReimbursement"
 					/>
 				);
 			case "CoworkingModule":
-				return <CoworkingModule />;
+				return (
+					<CommonList
+						onSelect={handleSelect}
+						url="https://startupbihar.in/api/coworking/v2"
+						title="Co-Working Application List"
+						type="coworking"
+					/>
+				);
 
 			case "StartupList":
 				setHasDetailsPanel(false); // Disable third section for this case
