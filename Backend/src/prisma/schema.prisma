@@ -80,6 +80,9 @@ model User {
   cin                   String?
   dateOfIncorporation   String?
   districtRoc           String?
+  dpiitCert             String?  
+
+
   accelerationProgram   AccelerationProgram?
   document              Document?
   iprReimbursement      IPRReimbursement?
@@ -89,6 +92,7 @@ model User {
   qReports              QReport[]
   secondTranche         SecondTranche?
   seedFund              SeedFund?
+
 }
 
 model Staff {
@@ -311,6 +315,7 @@ model CoWorkingApplication {
   coworkingCenter String
   seatNo          String
   status          String
+  seatAddress     String?
   userId          String
   documentStatus  String
   comment         String?

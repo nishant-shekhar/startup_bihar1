@@ -298,7 +298,7 @@ const validate = (values) => {
         }
 
         const response = await axios.post(
-          "https://startupbihar.in/api/Qreport",
+          "http://localhost:3007/api/Qreport",
           formData,
           {
             headers: {
