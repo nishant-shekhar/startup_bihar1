@@ -139,7 +139,7 @@ const QPRModuleDetails = ({ id }) => {
 			return "Document has been rejected";
 		return "";
 	};
-	const postNotification = async (notificationMessage, docLink = null, subtitle = "Post Seed Fund Application") => {
+	const postNotification = async (notificationMessage, docLink = null, subtitle = "Startup Progress Form") => {
 		try {
 			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
 				console.error("Missing required fields to post a notification.");

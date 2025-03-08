@@ -32,7 +32,7 @@ const HomeSection = () => {
   const [buttonVisible, setButtonVisible] = useState(true);
   const [isSuccess, setIsSuccess] = useState(""); // "success" | "failed" | "uploading"
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("Showcase");
+  const [selectedCategory, setSelectedCategory] = useState("Notifications");
   const [showDialog, setShowDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
   const [showDialogSimple, setShowDialogSimple] = useState(false);
@@ -49,7 +49,7 @@ const HomeSection = () => {
   const fileInputRef = useRef(null);
 
   // For the category tabs
-  const categories = ["Showcase", "Notifications", "Action History"];
+  const categories = [ "Notifications", "Showcase","Action History"];
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
   };

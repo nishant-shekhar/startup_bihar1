@@ -40,7 +40,7 @@ const Coworking = ({onFormSubmitSuccess}) => {
                 // Update state before submission
                 setTitle("Submitting Coworking Form");
                 setSubtitle("Please wait while we submit your form");
-                setButtonVisible(true);
+                setButtonVisible(false);
                 setStatusPopup(true);
                 setIsSuccess("tring");
     
@@ -144,8 +144,8 @@ Get Your Co-working space with just a click.
                             value={formik.values.coworkingCenter}
                         >
                             <option value="">Select a center</option>
-                            <option value="bhub-maurya">B-HUB Maurya Lok Complex</option>
-                            <option value="bhub-bsf">B-HUB BSFC Building Fraser Road</option>
+                            <option value="B-HUB Maurya Lok">B-HUB Maurya Lok Complex</option>
+                            <option value="B-HUB BSFC">B-HUB BSFC Building Fraser Road</option>
 
                         </select>
                         {formik.errors.coworkingCenter && <div className="text-red-600">{formik.errors.coworkingCenter}</div>}

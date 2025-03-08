@@ -3,70 +3,78 @@ const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
+
 const applyForCoWorkingSpace = async (req, res) => {
   try {
-    // Extract token from headers (assumes "Bearer <token>" format)
+    // Extract token from headers (expects "Bearer <token>" format)
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
 
-    let userId;
+    // Verify token and get the user identifier from token payload
+    let decoded;
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      userId = decoded.user_id; // Adjust as needed based on your JWT payload
+      decoded = jwt.verify(token, JWT_SECRET);
     } catch (err) {
       return res.status(401).json({ error: 'Unauthorized: Invalid token' });
     }
+    // Assuming the token payload contains a field "user_id"
+    const userIdFromToken = decoded.user_id;
+    if (!userIdFromToken) {
+      return res.status(400).json({ error: 'Token payload missing user_id' });
+    }
 
-    const { id, coworkingCenter, seatNo, status } = req.body;
+    // Extract required fields from the request body
+    const { coworkingCenter, seatNo, status, seatAddress } = req.body;
     if (!coworkingCenter || !seatNo || !status) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: 'Required fields are missing' });
     }
 
-    let application;
-    if (id) {
-      // Update the existing application if id is provided
-      application = await prisma.coWorkingApplication.update({
-        where: { id },
-        data: {
-          coworkingCenter,
-          seatNo,
-          status,
-          documentStatus: "created",
-        },
-      });
-    } else {
-      // Create a new application
-      application = await prisma.coWorkingApplication.create({
-        data: {
-          coworkingCenter,
-          seatNo,
-          status,
-          userId,
-          documentStatus: "created",
-        },
-      });
-    }
+    // Upsert the coworking application record (one-to-one relationship)
+    const application = await prisma.coWorking.upsert({
+      where: { userId: userIdFromToken },
+      update: {
+        coworkingCenter,
+        seatNo,
+        status,
+        seatAddress,
+        documentStatus: "updated",
+      },
+      create: {
+        coworkingCenter,
+        seatNo,
+        status,
+        seatAddress,
+        documentStatus: "created",
+        // Connect this new record to the user using the unique user_id field on the User model
+        user: { connect: { user_id: userIdFromToken } },
+      },
+    });
+
+    // Record the activity after successful update
+    await prisma.activity.create({
+      data: {
+        user_id: userIdFromToken,
+        action: 'Co-Working Space Application Submitted',
+        subtitle: `You have submitted co-working space request of ${seatNo} seat in ${coworkingCenter}`,
+      },
+    });
 
     return res.status(200).json({
-      message: id
-        ? "Application updated successfully"
-        : "Application submitted successfully",
+      message: 'CoWorking application submitted successfully',
       application,
     });
   } catch (error) {
     console.error("Error in applyForCoWorkingSpace:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while submitting the application" });
+    return res.status(500).json({ error: 'An error occurred while processing the application' });
   }
 };
 
 
 const getAllCoworkingWithUserDetails = async (req, res) => {
   try {
-    const documents = await prisma.coWorkingApplication.findMany({
+    const documents = await prisma.coWorking.findMany({
       select: {
         id:true,
         documentStatus:true,
@@ -104,8 +112,23 @@ const getcoworkingById = async (req, res) => {
     }
 
     // Fetch the document from the database
-    const document = await prisma.coWorkingApplication.findUnique({
+    const document = await prisma.coWorking.findUnique({
       where: { id: id }, // Use the ID to query the database
+      include: {
+        user: {
+          select: {
+            user_id: true,          // Include specific fields from the User model
+            registration_no: true,
+            company_name: true,
+            founder_name: true,
+            dateOfIncorporation: true,
+            districtRoc:true,
+            cin:true,
+            mobile:true,
+            email:true,
+          },
+        },
+      },
     });
 
     if (!document) {
@@ -124,14 +147,14 @@ const getcoworkingById = async (req, res) => {
 
 const updateCoworkinStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus } = req.body;
+  const { documentStatus ,comment} = req.body;
 
   if (!documentStatus) {
     return res.status(400).json({ error: 'Document status is required' });
   }
 
   try {
-    const document = await prisma.coWorkingApplication.findUnique({
+    const document = await prisma.coWorking.findUnique({
       where: { id },
     });
 
@@ -139,9 +162,9 @@ const updateCoworkinStatus = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const updatedDocument = await prisma.coWorkingApplication.update({
+    const updatedDocument = await prisma.coWorking.update({
       where: { id },
-      data: { documentStatus },
+      data: { documentStatus,comment },
     });
 
     res.status(200).json({
@@ -168,7 +191,7 @@ const getCoWorkingByToken = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.user_id;
 
-    const document = await prisma.coWorkingApplication.findUnique({
+    const document = await prisma.coWorking.findUnique({
       where: { userId },
     });
 

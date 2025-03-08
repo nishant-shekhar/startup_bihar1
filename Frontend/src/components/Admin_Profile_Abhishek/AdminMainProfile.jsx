@@ -163,7 +163,7 @@ const AdminMainProfile = () => {
 	const changePanel = (newPanel) => {
 		setActivePage(newPanel);
 		setDetailsView(false); // Reset to second section when changing main module
-		if (newPanel === "AdminNotification"|| activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining") {
+		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining") {
 			setHasDetailsPanel(false); // Disable third section for AdminNotification
 		} else {
 			setHasDetailsPanel(true); // Enable third section for other modules
@@ -198,8 +198,10 @@ const AdminMainProfile = () => {
 				return <AccelerationProgrammeModuleDetails id={selectedId} />;
 			case "IncubationModule":
 				return <IncubationModuleDetails id={selectedId} />;
-				case "IPRReimbursementModule":
+			case "IPRReimbursementModule":
 				return <IPRReimbursementModule id={selectedId} />;
+				case "CoworkingModule":
+					return <CoworkingModule id={selectedId} />;
 			default:
 				return null;
 		}
