@@ -205,7 +205,7 @@ model PostSeedFund {
   raisedFunds         Boolean
   employment          Boolean
   projectReport       String?
-  file1               String?
+  file1               String?  
   file2               String?
   file3               String?
   file4               String?

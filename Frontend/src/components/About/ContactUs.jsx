@@ -20,10 +20,10 @@ const ContactUs = () => {
 		},
 		{
 			id: 1,
-			name: '',
+			name: 'Sri Nikhil Dhanraj Nippanikar , IAS',
 			email: 'dir.ind-bih@nic.in',
 			phone: '0612-2235812',
-			image: '',
+			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fnikhil%20sir.png?alt=media&token=27791704-aff7-4fcb-97ef-54a6132bd8b3',
 			position: 'Director Industries, Department of Industries, GoB',
 			tag: 'Director Industry'
 		},
@@ -73,7 +73,7 @@ const ContactUs = () => {
 			name: 'Megha Bhadani', 
 			email: 'startup-bihar@gov.in',
 			phone: '6287797917', 
-			image: 'https://media.licdn.com/dms/image/v2/D4D03AQHqnpo50HZYzg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1702572081651?e=1741824000&v=beta&t=7pssZfd6QEKC0Qi3AdnZp6ftqYtRiUfKa1hK7BKMZ-g', 
+			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fmegha%20bhadani.jpeg?alt=media&token=2f1a8aa8-7c08-424c-a1bb-05becba32542', 
 			position: 'Consultant (Finance)', 
 			tag: 'Finance Wing' 
 		  },

@@ -242,61 +242,61 @@ const PostSeedFundModuleDetails = ({ id }) => {
 		>
 			<h1 className="pt-5 pl-8 text-2xl">Post Seed Fund Module Details</h1>
 			<div className="overflow-x-auto p-4">
-  <div className="grid grid-cols-12 gap-4">
-    {/* Left Table */}
-    <table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
-      <tbody>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
-          <td className="px-4 py-2 text-gray-900">
-            <a
-              href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 hover:underline"
-            >
-              {data?.user?.company_name || "N/A"}
-            </a>
-          </td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Registration No.</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.registration_no || "N/A"}</td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Email</td>
-          <td className="px-4 py-2 text-indigo-600">{data?.user?.email || "N/A"}</td>
-        </tr>
-        <tr>
-          <td className="px-4 py-2 font-medium text-gray-600">CIN</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.cin || "N/A"}</td>
-        </tr>
-      </tbody>
-    </table>
+				<div className="grid grid-cols-12 gap-4">
+					{/* Left Table */}
+					<table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
+						<tbody>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Company Name</td>
+								<td className="px-4 py-2 text-gray-900">
+									<a
+										href={`https://startupbihar.in/Startup/${data?.user?.user_id}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-indigo-600 hover:underline"
+									>
+										{data?.user?.company_name || "N/A"}
+									</a>
+								</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Registration No.</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.registration_no || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Email</td>
+								<td className="px-4 py-2 text-indigo-600">{data?.user?.email || "N/A"}</td>
+							</tr>
+							<tr>
+								<td className="px-4 py-2 font-medium text-gray-600">CIN</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.cin || "N/A"}</td>
+							</tr>
+						</tbody>
+					</table>
 
-    {/* Right Table */}
-    <table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
-      <tbody>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Startup ID</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.user_id || "N/A"}</td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Founder</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.founder_name || "N/A"}</td>
-        </tr>
-        <tr className="border-b">
-          <td className="px-4 py-2 font-medium text-gray-600">Mobile</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.mobile || "N/A"}</td>
-        </tr>
-        <tr>
-          <td className="px-4 py-2 font-medium text-gray-600">District RoC</td>
-          <td className="px-4 py-2 text-gray-900">{data?.user?.districtRoc || "N/A"}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+					{/* Right Table */}
+					<table className="col-span-12 sm:col-span-6 bg-white border border-gray-300 shadow-md rounded-lg text-sm">
+						<tbody>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Startup ID</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.user_id || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Founder</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.founder_name || "N/A"}</td>
+							</tr>
+							<tr className="border-b">
+								<td className="px-4 py-2 font-medium text-gray-600">Mobile</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.mobile || "N/A"}</td>
+							</tr>
+							<tr>
+								<td className="px-4 py-2 font-medium text-gray-600">District RoC</td>
+								<td className="px-4 py-2 text-gray-900">{data?.user?.districtRoc || "N/A"}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 
 
 
@@ -530,6 +530,153 @@ const PostSeedFundModuleDetails = ({ id }) => {
 								</div>
 							</td>
 						</tr>
+						{/* New Row: File1 - Startup Certificate */}
+						<tr>
+							<td className="py-4 px-4 border">
+								Startup Certificate
+							</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<div className="px-4 py-4">
+									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
+												<div className="flex w-0 flex-1 items-center">
+													<svg className="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+														<path fillRule="evenodd" d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z" clipRule="evenodd" />
+													</svg>
+													<div className="ml-4 flex min-w-0 flex-1 gap-2">
+														<span className="truncate font-medium">
+															{data.file1 ? data.file1 : <span className="text-red-500">File is either rejected or not available</span>}
+														</span>
+													</div>
+												</div>
+												<div className="ml-4 shrink-0">
+													<button onClick={() => handleViewPdf(data.file1)} className="font-medium text-indigo-600 hover:text-indigo-900">
+														View
+													</button>
+												</div>
+												<div className="ml-4 shrink-0">
+													<a href={data.file1} download className="font-medium text-indigo-600 hover:text-indigo-900">
+														Download
+													</a>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</div>
+							</td>
+						</tr>
+
+						{/* New Row: File2 - Bank Statement/ Salary Slip */}
+						<tr>
+							<td className="py-4 px-4 border">
+								Bank Statement/ Salary Slip
+							</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<div className="px-4 py-4">
+									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
+												<div className="flex w-0 flex-1 items-center">
+													<svg className="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+														<path fillRule="evenodd" d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z" clipRule="evenodd" />
+													</svg>
+													<div className="ml-4 flex min-w-0 flex-1 gap-2">
+														<span className="truncate font-medium">
+															{data.file2 ? data.file2 : <span className="text-red-500">File is either rejected or not available</span>}
+														</span>
+													</div>
+												</div>
+												<div className="ml-4 shrink-0">
+													<button onClick={() => handleViewPdf(data.file2)} className="font-medium text-indigo-600 hover:text-indigo-900">
+														View
+													</button>
+												</div>
+												<div className="ml-4 shrink-0">
+													<a href={data.file2} download className="font-medium text-indigo-600 hover:text-indigo-900">
+														Download
+													</a>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</div>
+							</td>
+						</tr>
+
+						{/* New Row: File3 - Proof of Technical Knowledge */}
+						<tr>
+							<td className="py-4 px-4 border">
+								Proof of Technical Knowledge
+							</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<div className="px-4 py-4">
+									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
+												<div className="flex w-0 flex-1 items-center">
+													<svg className="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+														<path fillRule="evenodd" d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z" clipRule="evenodd" />
+													</svg>
+													<div className="ml-4 flex min-w-0 flex-1 gap-2">
+														<span className="truncate font-medium">
+															{data.file3 ? data.file3 : <span className="text-red-500">File is either rejected or not available</span>}
+														</span>
+													</div>
+												</div>
+												<div className="ml-4 shrink-0">
+													<button onClick={() => handleViewPdf(data.file3)} className="font-medium text-indigo-600 hover:text-indigo-900">
+														View
+													</button>
+												</div>
+												<div className="ml-4 shrink-0">
+													<a href={data.file3} download className="font-medium text-indigo-600 hover:text-indigo-900">
+														Download
+													</a>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</div>
+							</td>
+						</tr>
+
+						{/* New Row: File4 - Audited Balance Sheet on Fund Receipt */}
+						<tr>
+							<td className="py-4 px-4 border">
+								Audited Balance Sheet on Fund Receipt
+							</td>
+							<td className="border-b border-l border-t border-r w-[35vw]">
+								<div className="px-4 py-4">
+									<dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+										<ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+											<li className="flex items-center justify-between py-4 pl-4 pr-5 text-sm/6">
+												<div className="flex w-0 flex-1 items-center">
+													<svg className="h-5 w-5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+														<path fillRule="evenodd" d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.242Z" clipRule="evenodd" />
+													</svg>
+													<div className="ml-4 flex min-w-0 flex-1 gap-2">
+														<span className="truncate font-medium">
+															{data.file4 ? data.file4 : <span className="text-red-500">File is either rejected or not available</span>}
+														</span>
+													</div>
+												</div>
+												<div className="ml-4 shrink-0">
+													<button onClick={() => handleViewPdf(data.file4)} className="font-medium text-indigo-600 hover:text-indigo-900">
+														View
+													</button>
+												</div>
+												<div className="ml-4 shrink-0">
+													<a href={data.file4} download className="font-medium text-indigo-600 hover:text-indigo-900">
+														Download
+													</a>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</div>
+							</td>
+						</tr>
 					</tbody>
 				</table>
 				<div className="flex items-center justify-end gap-x-2 pr-4 py-3">
@@ -584,41 +731,30 @@ const PostSeedFundModuleDetails = ({ id }) => {
 						<hr />
 						{/* Checkbox Group */}
 						<div className="my-4 space-y-2 ">
-							<label className="flex items-center space-x-2 cursor-pointer">
-								<input
-									type="checkbox"
-									name="rejectReason"
-									value="projectReport"
-									checked={selectedOptions.includes("projectReport")}
-									onChange={handleCheckboxChange}
-									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-								/>
-								<span className="text-sm text-slate-950">Project Report</span>
-							</label>
-							<label className="flex items-center space-x-2 cursor-pointer">
-								<input
-									type="checkbox"
-									name="rejectReason"
-									value="gstReturn"
-									checked={selectedOptions.includes("gstReturn")}
-									onChange={handleCheckboxChange}
-									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-								/>
-								<span className="text-sm text-slate-950">GST Return</span>
-							</label>
-							<label className="flex items-center space-x-2 cursor-pointer">
-								<input
-									type="checkbox"
-									name="rejectReason"
-									value="auditedBalanceSheet"
-									checked={selectedOptions.includes("auditedBalanceSheet")}
-									onChange={handleCheckboxChange}
-									className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-								/>
-								<span className="text-sm text-slate-950">
-									Audited Balance Sheet
-								</span>
-							</label>
+						<div className="my-4 space-y-2 ">
+  {[
+    { key: "projectReport", label: "Project Report" },
+    { key: "gstReturn", label: "GST Return" },
+    { key: "auditedBalanceSheet", label: "Audited Balance Sheet" },
+    { key: "file1", label: "Startup Certificate" },
+    { key: "file2", label: "Bank Statement/ Salary Slip" },
+    { key: "file3", label: "Proof of Technical Knowledge" },
+    { key: "file4", label: "Audited Balance Sheet on Fund Receipt" },
+  ].map(({ key, label }) => (
+    <label key={key} className="flex items-center space-x-2 cursor-pointer">
+      <input
+        type="checkbox"
+        name="rejectReason"
+        value={key}
+        checked={selectedOptions.includes(key)}
+        onChange={handleCheckboxChange}
+        className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+      />
+      <span className="text-sm text-slate-950">{label}</span>
+    </label>
+  ))}
+</div>
+
 						</div>
 						<div className="flex justify-end gap-x-2 mt-4">
 							<button

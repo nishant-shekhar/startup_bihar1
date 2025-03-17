@@ -7,8 +7,8 @@ const Upload = ({ label, onChange, name, allowImages = false }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0]; // Get the first selected file
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // Check if file size exceeds 5MB
-        setError('File size exceeds 5MB. Please upload a smaller file.');
+      if (file.size > 4 * 1024 * 1024) { // Check if file size exceeds 5MB
+        setError('File size exceeds 4MB. Please upload a smaller file.');
         setFileName('No file chosen'); // Reset file name
         onChange(null); // Reset file in parent
       } else {

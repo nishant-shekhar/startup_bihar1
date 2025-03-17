@@ -45,6 +45,11 @@ const PostSeed = ({ onFormSubmitSuccess }) => {
 			.test('fileRequired', 'Project Report is required', (value) => {
 				return value && value instanceof File;
 			}),
+			file1: Yup.mixed()
+			.test('fileRequired', 'Startup certificate is required', (value) => {
+				return value && value instanceof File;
+			}),
+			
 	});
 	// Formik setup for handling form submission
 	const formik = useFormik({
@@ -56,6 +61,10 @@ const PostSeed = ({ onFormSubmitSuccess }) => {
 			auditedBalanceSheet: null,
 			gstReturn: null,
 			projectReport: null,
+			file1: null,
+			file2: null,
+			file3: null,
+			file4: null,
 		},
 		validationSchema,
 		validateOnChange: false, // Disable validation on change
@@ -160,6 +169,8 @@ const PostSeed = ({ onFormSubmitSuccess }) => {
 					<p className="text-lg max-w-xl relative top-10">
 						Share your innovative ideas and secure funding to turn them into reality.
 					</p>
+					<p className="text-xs max-w-xl relative top-10"> Please ensure the total combined file size of all documents remains under 20 MB, as exceeding this limit may result in an error. </p>
+
 				</div>
 			</div>
 
@@ -344,16 +355,95 @@ const PostSeed = ({ onFormSubmitSuccess }) => {
 								<div className="text-red-600">{formik.errors.projectReport}</div>
 							)}
 						</div>
+						{/* File Upload: Startup Cert */}
+						<div className="mb-6">
+							<label
+								htmlFor="file1"
+								className="block text-sm/6 font-medium text-black  "
+							>
+								Upload Startup Certificate:
+							</label>
+							<Upload
+								id="file1"
+								name="file1"
+								type="file"
+								onChange={(file) => formik.setFieldValue("file1", file)}
+
+							/>
+							{formik.errors.file1 && (
+								<div className="text-red-600">{formik.errors.file1}</div>
+							)}
+						</div>
+						{/* File Upload: bank statement */}
+						{formik.values.employment === "Yes" && (
+							<div className="mb-6">
+								<label
+									htmlFor="file2"
+									className="block text-sm/6 font-medium text-black"
+								>
+									Bank Statement/ Salary Slip highlighting the payment to employees:
+								</label>
+								<Upload
+									id="file2"
+									name="file2"
+									type="file"
+									onChange={(file) => formik.setFieldValue("file2", file)}
+								/>
+								{formik.errors.file2 && (
+									<div className="text-red-600">{formik.errors.file2}</div>
+								)}
+							</div>
+						)}
+						{/* File Upload: technical skill */}
+						{formik.values.technicalKnowledge === "Yes" && (
+							<div className="mb-6">
+								<label
+									htmlFor="file3"
+									className="block text-sm/6 font-medium text-black"
+								>
+									Proof related to the technical knowledge/ necessary skills:
+								</label>
+								<Upload
+									id="file3"
+									name="file3"
+									type="file"
+									onChange={(file) => formik.setFieldValue("file3", file)}
+								/>
+								{formik.errors.file3 && (
+									<div className="text-red-600">{formik.errors.file3}</div>
+								)}
+							</div>
+						)}
+						{/* File Upload:  Audited Balance Sheet  when recieve fund */}
+						{formik.values.raisedFunds === "Yes" && (
+							<div className="mb-6">
+								<label
+									htmlFor="file4"
+									className="block text-sm/6 font-medium text-black"
+								>
+									Upload Audited Balance Sheet:
+								</label>
+								<Upload
+									id="file4"
+									name="file4"
+									type="file"
+									onChange={(file) => formik.setFieldValue("file4", file)}
+								/>
+								{formik.errors.file4 && (
+									<div className="text-red-600">{formik.errors.file4}</div>
+								)}
+							</div>
+						)}
 					</div>
 					{/* Submit Button */}
 					<div className="mt-6 flex items-center justify-end gap-x-6">
-					<button
-              type="button"
-              className="w-full md:w-auto text-sm font-semibold text-gray-900 border border-gray-400 rounded-md px-4 py-2"
-              onClick={goBacktoHome}
-            >
-              Cancel
-            </button>
+						<button
+							type="button"
+							className="w-full md:w-auto text-sm font-semibold text-gray-900 border border-gray-400 rounded-md px-4 py-2"
+							onClick={goBacktoHome}
+						>
+							Cancel
+						</button>
 						<button
 							type="submit"
 							className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"

@@ -16,11 +16,15 @@ const AllStartup = () => {
     "Logistics",
     "Edu-tech",
     "Health",
+    "Retail",
     "E-comm",
+    "Manufacturing",
     "Environment",
+    "General",
+    "Travel",
 
   ];
-
+ 
   const [selectedCategory, setSelectedCategory] = useState("Smart Innovations");
   const [startups, setStartups] = useState([]);
   const [searchTerm, setSearchTerm] = useState(""); // track what's typed in search

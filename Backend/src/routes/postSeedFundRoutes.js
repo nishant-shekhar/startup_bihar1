@@ -18,7 +18,11 @@ router.post(
   upload.fields([
     { name: 'auditedBalanceSheet', maxCount: 1 },
     { name: 'gstReturn', maxCount: 1 },
-    { name: 'projectReport', maxCount: 1 }
+    { name: 'projectReport', maxCount: 1 },
+    { name: 'file1', maxCount: 1 },
+    { name: 'file2', maxCount: 1 },
+    { name: 'file3', maxCount: 1 },
+    { name: 'file4', maxCount: 1 }
   ]),
   submitPostSeedFund
 );
@@ -29,6 +33,10 @@ router.post(
     { name: 'auditedBalanceSheet', maxCount: 1 },
     { name: 'gstReturn', maxCount: 1 },
     { name: 'projectReport', maxCount: 1 },
+    { name: 'file1', maxCount: 1 },
+    { name: 'file2', maxCount: 1 },
+    { name: 'file3', maxCount: 1 },
+    { name: 'file4', maxCount: 1 }
   ]),
   updatePostSeedFundFiles
 );

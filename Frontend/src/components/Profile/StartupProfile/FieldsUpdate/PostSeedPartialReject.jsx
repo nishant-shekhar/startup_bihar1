@@ -8,6 +8,10 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
     auditedBalanceSheet: null,
     gstReturn: null,
     projectReport: null,
+    file1: null,
+    file2: null,
+    file3: null,
+    file4: null,
    
   });
   const [requiredFiles, setRequiredFiles] = useState([]);
@@ -28,13 +32,17 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
         );
 
         const document = response.data;
-        console.log(comment)
+        console.log(response.data)
 
         // Populate initialValues with existing document fields
         const newInitialValues = {
           auditedBalanceSheet: document.auditedBalanceSheet || null,
           gstReturn: document.gstReturn || null,
           projectReport: document.projectReport || null,
+          file1: document.file1 || null,
+          file2: document.file2 || null,
+          file3: document.file3 || null,
+          file4: document.file4 || null,
         };
 
         // Determine required fields
@@ -42,6 +50,13 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
         if (document.auditedBalanceSheet == null) required.push("auditedBalanceSheet");
         if (document.gstReturn == null) required.push("gstReturn");
         if (document.projectReport == null) required.push("projectReport");
+        if (document.file1 == null) required.push("file1");
+      // Only require file2 if employment is "Yes"
+if (document.employment === true && document.file2 == null) required.push("file2");
+// Only require file3 if technicalKnowledge is "Yes"
+if (document.technicalKnowledge === true && document.file3 == null) required.push("file3");
+// Only require file4 if raisedFunds is "Yes"
+if (document.raisedFunds === true && document.file4 == null) required.push("file4");
       
         setInitialValues(newInitialValues);
         setRequiredFiles(required);
@@ -62,8 +77,8 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
         .required(`${file.replace(/([A-Z])/g, " $1")} is required.`)
         .test(
           "fileSize",
-          "File size is too large. Max size is 5MB.",
-          (value) => !value || (value && value.size <= 5 * 1024 * 1024)
+          "File size is too large. Max size is 4MB.",
+          (value) => !value || (value && value.size <= 4 * 1024 * 1024)
         );
       return schema;
     }, {})

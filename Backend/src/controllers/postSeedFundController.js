@@ -26,13 +26,14 @@ const submitPostSeedFund = async (req, res) => {
     } = req.body;
 
     // Handle file uploads
-    const auditedBalanceSheet = req.files.auditedBalanceSheet
-      ? req.files.auditedBalanceSheet[0].location
-      : null;
+    const auditedBalanceSheet = req.files.auditedBalanceSheet? req.files.auditedBalanceSheet[0].location: null;
     const gstReturn = req.files.gstReturn ? req.files.gstReturn[0].location : null;
-    const projectReport = req.files.projectReport
-      ? req.files.projectReport[0].location
-      : null;
+    const projectReport = req.files.projectReport? req.files.projectReport[0].location: null;
+
+    const file1 = req.files.file1 ? req.files.file1[0].location : null;
+    const file2 = req.files.file2 ? req.files.file2[0].location : null;
+    const file3 = req.files.file3 ? req.files.file3[0].location : null;
+    const file4 = req.files.file4 ? req.files.file4[0].location : null;
 
     // Upsert: Create or update the PostSeedFund entry
     const postSeedFundEntry = await prisma.postSeedFund.upsert({
@@ -45,6 +46,10 @@ const submitPostSeedFund = async (req, res) => {
         raisedFunds: raisedFunds === "Yes", // Convert string to boolean
         employment: employment === "Yes", // Convert string to boolean
         projectReport,
+        file1,  // new field
+        file2,  // new field
+        file3,  // new field
+        file4,  // new field
         documentStatus: "created",
       },
       create: {
@@ -56,17 +61,21 @@ const submitPostSeedFund = async (req, res) => {
         employment: employment === "Yes", // Convert string to boolean
         projectReport,
         userId, // Associate the entry with the user ID
+        file1,  // new field
+        file2,  // new field
+        file3,  // new field
+        file4,  // new field
         documentStatus: "created",
       },
     });
-// Record the activity after successful update
-await prisma.activity.create({
-  data: {
-    user_id: userId,
-    action: 'Post Seed Fund Form Submitted',
-    subtitle: `You have submitted your Post Seed Fund Form`,
-  },
-});
+    // Record the activity after successful update
+    await prisma.activity.create({
+      data: {
+        user_id: userId,
+        action: 'Post Seed Fund Form Submitted',
+        subtitle: `You have submitted your Post Seed Fund Form`,
+      },
+    });
     res.status(200).json({
       message: postSeedFundEntry ? 'Post Seed Fund entry updated successfully' : 'Post Seed Fund entry created successfully',
       data: postSeedFundEntry
@@ -101,7 +110,19 @@ const updatePostSeedFundFiles = async (req, res) => {
     if (req.files.projectReport) {
       updatedFields.projectReport = req.files.projectReport[0].location;
     }
-
+// Handle the four new file fields
+if (req.files.file1) {
+  updatedFields.file1 = req.files.file1[0].location;
+}
+if (req.files.file2) {
+  updatedFields.file2 = req.files.file2[0].location;
+}
+if (req.files.file3) {
+  updatedFields.file3 = req.files.file3[0].location;
+}
+if (req.files.file4) {
+  updatedFields.file4 = req.files.file4[0].location;
+}
     if (Object.keys(updatedFields).length === 0) {
       return res.status(400).json({ error: 'No files provided for update' });
     }
@@ -243,6 +264,10 @@ const updatepostStatus = async (req, res) => {
     auditedBalanceSheet,
     gstReturn,
     projectReport,
+    file1,
+    file2,
+    file3,
+    file4
   } = req.body;
 
   if (!documentStatus) {
@@ -258,7 +283,7 @@ const updatepostStatus = async (req, res) => {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    // Prepare update data dynamically based on what is provided in the request
+    // Prepare update data dynamically based on provided fields
     const updateData = { documentStatus, comment };
 
     if (auditedBalanceSheet !== undefined) {
@@ -269,6 +294,18 @@ const updatepostStatus = async (req, res) => {
     }
     if (projectReport !== undefined) {
       updateData.projectReport = projectReport;
+    }
+    if (file1 !== undefined) {
+      updateData.file1 = file1;
+    }
+    if (file2 !== undefined) {
+      updateData.file2 = file2;
+    }
+    if (file3 !== undefined) {
+      updateData.file3 = file3;
+    }
+    if (file4 !== undefined) {
+      updateData.file4 = file4;
     }
 
     const updatedDocument = await prisma.postSeedFund.update({
@@ -282,7 +319,6 @@ const updatepostStatus = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating document status:', error);
-
     res.status(500).json({
       error: 'Failed to update document status',
       details: error.message,
