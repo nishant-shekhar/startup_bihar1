@@ -19,7 +19,7 @@ import SecondTranchePartialReject from "./FieldsUpdate/SecondTranchePartialRejec
 import PostSeedPartialReject from "./FieldsUpdate/PostSeedPartialReject";
 import SeedFundPartialReject from "./FieldsUpdate/SeedFundPartialReject";
 import StartupFormPartialReject from "./FieldsUpdate/StartupFormPartialReject";
-import UserNotification from "../../Userform/UserNotification";
+import UserNotification from "../../UserForm/UserNotification";
 import SSU from "../../About/SSU";
 
 const COMPONENTS = {

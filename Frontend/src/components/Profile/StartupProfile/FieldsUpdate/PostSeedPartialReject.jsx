@@ -17,6 +17,17 @@ const PostSeedPartialReject = ({ isVisible, comment,onClose }) => {
   const [requiredFiles, setRequiredFiles] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Define a mapping for file keys to labels
+const fileLabels = {
+  file1: "Upload Startup Certificate",
+  file2: "Bank Statement/ Salary Slip highlighting the payment to employees:",
+  file3: "Proof related to the technical knowledge/ necessary skills:",
+  file4: "Upload Audited Balance Sheet:",
+  auditedBalanceSheet: "Upload Audited Balance Sheet:",
+  gstReturn: "Upload GST Return:",
+  projectReport: "Upload Project Report:",
+};
+
   useEffect(() => {
     const fetchDocumentStatus = async () => {
       try {
@@ -147,8 +158,8 @@ if (document.raisedFunds === true && document.file4 == null) required.push("file
                           htmlFor={fileKey}
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Upload {fileKey.replace(/([A-Z])/g, " $1")}:
-                        </label>
+        {fileLabels[fileKey] || `Upload ${fileKey.replace(/([A-Z])/g, " $1").trim()}:`}
+        </label>
                         <input
                           id={fileKey}
                           name={fileKey}

@@ -1,6 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const PostSeedFundModuleDetails = ({ id }) => {
 	const [data, setData] = useState({});
@@ -405,6 +406,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 														Download
 													</a>
 												</div>
+												
 											</li>
 										</ul>
 									</dd>
@@ -671,6 +673,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 														Download
 													</a>
 												</div>
+												
 											</li>
 										</ul>
 									</dd>
@@ -731,29 +734,29 @@ const PostSeedFundModuleDetails = ({ id }) => {
 						<hr />
 						{/* Checkbox Group */}
 						<div className="my-4 space-y-2 ">
-						<div className="my-4 space-y-2 ">
-  {[
-    { key: "projectReport", label: "Project Report" },
-    { key: "gstReturn", label: "GST Return" },
-    { key: "auditedBalanceSheet", label: "Audited Balance Sheet" },
-    { key: "file1", label: "Startup Certificate" },
-    { key: "file2", label: "Bank Statement/ Salary Slip" },
-    { key: "file3", label: "Proof of Technical Knowledge" },
-    { key: "file4", label: "Audited Balance Sheet on Fund Receipt" },
-  ].map(({ key, label }) => (
-    <label key={key} className="flex items-center space-x-2 cursor-pointer">
-      <input
-        type="checkbox"
-        name="rejectReason"
-        value={key}
-        checked={selectedOptions.includes(key)}
-        onChange={handleCheckboxChange}
-        className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
-      />
-      <span className="text-sm text-slate-950">{label}</span>
-    </label>
-  ))}
-</div>
+							<div className="my-4 space-y-2 ">
+								{[
+									{ key: "projectReport", label: "Project Report" },
+									{ key: "gstReturn", label: "GST Return" },
+									{ key: "auditedBalanceSheet", label: "Audited Balance Sheet" },
+									{ key: "file1", label: "Startup Certificate" },
+									{ key: "file2", label: "Bank Statement/ Salary Slip" },
+									{ key: "file3", label: "Proof of Technical Knowledge" },
+									{ key: "file4", label: "Audited Balance Sheet on Fund Receipt" },
+								].map(({ key, label }) => (
+									<label key={key} className="flex items-center space-x-2 cursor-pointer">
+										<input
+											type="checkbox"
+											name="rejectReason"
+											value={key}
+											checked={selectedOptions.includes(key)}
+											onChange={handleCheckboxChange}
+											className="form-checkbox h-4 w-4 text-indigo-600 rounded-none"
+										/>
+										<span className="text-sm text-slate-950">{label}</span>
+									</label>
+								))}
+							</div>
 
 						</div>
 						<div className="flex justify-end gap-x-2 mt-4">

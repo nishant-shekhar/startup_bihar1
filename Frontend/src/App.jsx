@@ -17,6 +17,7 @@ import StartupIncubationCell from './components/About/StartupCellList';
 import IncubationNodalList from './components/About/IncubationList';
 import Events from './components/About/Events';
 import Mentors from './components/About/Mentors';
+import PdfViewer from './components/Admin_Profile_Abhishek/PDFViewer';
 
 
 const App = () => {
@@ -43,6 +44,8 @@ const App = () => {
 					<Route path="/IncubationCell" element={<IncubationNodalList />} />
 					<Route path="/Mentors" element={<Mentors />} />
 					<Route path="/Events" element={<Events />} />
+					<Route path="/pdf-viewer" element={<PdfViewer/>} />
+
 					<Route
 						path="/Startup/:id"
 						element={<StartupPublicProfile />}
