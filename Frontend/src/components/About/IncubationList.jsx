@@ -397,7 +397,7 @@ const IncubationNodalList = () => {
                             Startup Bihar
                         </p>
                         <h2 className="pt-2 text-3xl md:text-4xl lg:text-5xl font-bold text-[#303462]">
-                            List of Incubation Nodal Centers
+                            List of Incubation Centers
                         </h2>
                     </div>
                     <div style={{ paddingTop: '20px', paddingBottom: '120px', paddingLeft: '100px', paddingRight: '100px', fontFamily: 'Arial, sans-serif' }}>

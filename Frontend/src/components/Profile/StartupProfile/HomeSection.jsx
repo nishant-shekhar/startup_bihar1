@@ -6,7 +6,7 @@ import ShowcaseCard from "../PublicProfile/ShowcaseCard";
 import UpdateMetrics from "./FieldsUpdate/UpdateMetrics";
 import UpdateEmployees from "./FieldsUpdate/updateEmployees";
 import EmployeeDetails from "./FieldsUpdate/EmployeeDetails";
-import UserNotification from "../../Userform/UserNotification";
+import UserNotification from "../../UserForm/UserNotification";
 
 // Icons
 import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin, FaGlobe, FaPlus } from "react-icons/fa";
