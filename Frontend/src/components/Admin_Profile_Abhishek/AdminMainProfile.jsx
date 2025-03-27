@@ -86,7 +86,7 @@ const AdminMainProfile = () => {
 					<CommonList
 						onSelect={handleSelect}
 						url="https://startupbihar.in/api/Qreport/v2"
-						title="QPR List"
+						title="Startup Progress Report List"
 						type="Qreport"
 					/>
 				);
@@ -125,7 +125,7 @@ const AdminMainProfile = () => {
 					<CommonList
 						onSelect={handleSelect}
 						url="https://startupbihar.in/api/iprReimbursement/v2"
-						title="Post Seed Application List"
+						title="IPR Reimbursment Application List"
 						type="iprReimbursement"
 					/>
 				);

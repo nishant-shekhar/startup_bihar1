@@ -415,7 +415,7 @@ const QPRModuleDetails = ({ id }) => {
 
 {isImageModalVisible && (
   <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-lg p-4 w-3/4 max-w-[800px]">
+    <div className="bg-white rounded-lg shadow-lg p-4 w-11/12 md:w-3/4 max-w-[800px] max-h-[90vh] overflow-auto flex flex-col">
       <div className="flex justify-end">
         <button
           className="text-gray-600 hover:text-gray-900"
@@ -426,11 +426,13 @@ const QPRModuleDetails = ({ id }) => {
         </button>
       </div>
       {/* Bigger Image Display */}
-      <img
-        src={imageUrl}
-        alt="Preview"
-        className="w-full h-auto object-contain"
-      />
+      <div className="flex-1 overflow-auto">
+        <img
+          src={imageUrl}
+          alt="Preview"
+          className="w-full h-auto object-contain"
+        />
+      </div>
       {/* Download Button */}
       <div className="mt-4 flex justify-center">
         <a
@@ -444,6 +446,7 @@ const QPRModuleDetails = ({ id }) => {
     </div>
   </div>
 )}
+
 
 					
 						<tr className="border-b">

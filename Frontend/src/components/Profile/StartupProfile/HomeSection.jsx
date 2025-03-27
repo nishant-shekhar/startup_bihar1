@@ -442,43 +442,43 @@ const HomeSection = () => {
           handleFileChange={handleFileChange}
         />
 
-        {/* ---------------------- CONTACT POPUP ---------------------- */}
-        {isContactVisible && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="absolute inset-0 bg-black opacity-10"></div>
-            <div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-5/12 p-8 rounded-lg shadow-lg">
-              <button
-                className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-                onClick={() => setIsContactVisible(false)}
-              >
-                &times;
-              </button>
-              <h1 className="text-2xl font-bold">{startup.company_name}</h1>
-              <h1 className="mb-3">{startup.moto}</h1>
-              <h2 className="text-xl font-semibold ">Contact:</h2>
-              <p>
-                <strong>Phone:</strong>{" "}
-                <a href={`tel:${startup.mobile}`} className="text-blue-600">
-                  {startup.mobile || "N/A"}
-                </a>
-              </p>
-              <p>
-                <strong>Website:</strong>{" "}
-                <a
-                  href={startup.website || "#"}
-                  className="text-blue-600 underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {startup.website || "#"}
-                </a>
-              </p>
-              <p>
-                <strong>Address:</strong> {/* Insert address logic if available */}
-              </p>
-            </div>
-          </div>
-        )}
+       {/* ---------------------- CONTACT POPUP ---------------------- */}
+{isContactVisible && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="absolute inset-0 bg-black opacity-30"></div>
+    <div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-11/12 md:w-5/12 p-6 md:p-8 rounded-lg shadow-xl">
+      <button
+        className="absolute top-2 right-3 text-gray-600 hover:text-gray-900 text-2xl"
+        onClick={() => setIsContactVisible(false)}
+      >
+        &times;
+      </button>
+      <h1 className="text-xl md:text-2xl font-bold break-words">{startup.company_name}</h1>
+      <h2 className="mb-3 text-sm md:text-base break-words">{startup.moto}</h2>
+      <h3 className="text-lg md:text-xl font-semibold">Contact:</h3>
+      <p className="text-sm md:text-base break-words">
+        <strong>Phone:</strong>{" "}
+        <a href={`tel:${startup.mobile}`} className="text-blue-600">
+          {startup.mobile || "N/A"}
+        </a>
+      </p>
+      <p className="text-sm md:text-base break-words">
+        <strong>Website:</strong>{" "}
+        <a
+          href={startup.website || "#"}
+          className="text-blue-600 underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {startup.website || "#"}
+        </a>
+      </p>
+      <p className="text-sm md:text-base break-words">
+        <strong>Address:</strong> {/* Insert address logic if available */}
+      </p>
+    </div>
+  </div>
+)}
 
         {/* ---------------------- GENERIC DIALOG ---------------------- */}
         {showDialog && (
