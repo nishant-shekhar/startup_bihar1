@@ -1,7 +1,15 @@
 
 const EventsData = [
 
-
+  {
+    id: 0,
+    imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2Fstartup%20mahakumbh.jpeg?alt=media&token=3888ee7c-2164-4b79-bafe-4427f1951dbb",
+    dateandtime: "Friday, Apr 4, 2025",
+    title: "🚀  Startup Mahakumbh 2025 🚀",
+    tag: "Startup",
+    subtitle: "India's Grand Innovation Confluence",
+    projectLink: "https://x.com/startup_bihar/status/1908026670159630634?t=FAbZmGza7Ek4e2Qd5Yk8UQ&s=08",
+  },
   {
     id: 0,
     imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FDSC_3473%20(1).jpg?alt=media&token=ead61695-0dff-46fc-9597-ad937d14894f",
