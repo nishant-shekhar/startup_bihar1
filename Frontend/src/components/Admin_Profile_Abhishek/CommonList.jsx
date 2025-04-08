@@ -64,7 +64,25 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
   const handleDownloadExcel = async () => {
     setIsExporting(true);
     try {
-      const promises = sdata.map(async (item) => {
+      // Filter sdata based on selectedCategory
+      const filteredToDownload = sdata.filter((item) => {
+        const status = item.documentStatus?.toLowerCase();
+  
+        if (selectedCategory === "All") return true;
+        if (selectedCategory === "Accepted") return status === "accepted";
+        if (selectedCategory === "Rejected")
+          return status === "rejected" || status === "partially rejected";
+        if (selectedCategory === "Pending")
+          return (
+            status !== "accepted" &&
+            status !== "rejected" &&
+            status !== "partially rejected"
+          );
+        return false;
+      });
+  
+      // Fetch detailed data for each filtered item
+      const promises = filteredToDownload.map(async (item) => {
         const response = await axios.get(
           `https://startupbihar.in/api/${type}/v1/${item.id}`,
           {
@@ -76,23 +94,21 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
         );
         return response.data;
       });
-
+  
       const detailedData = await Promise.all(promises);
-
+  
       if (detailedData.length === 0) {
         alert("No data available to download.");
         return;
       }
-
-      // Function to convert camelCase keys to normal text
-      const formatKey = (key) => {
-        return key
-          .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before capital letters
-          .replace(/_/g, " ") // Replace underscores with spaces
-          .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
-      };
-
-      // Function to format values properly
+  
+      // Convert camelCase keys to readable format
+      const formatKey = (key) =>
+        key
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase());
+  
       const formatValue = (value) => {
         if (typeof value === "boolean") return value ? "Yes" : "No";
         if (typeof value === "string") {
@@ -103,14 +119,14 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
         }
         return value;
       };
-
+  
       const excelData = detailedData.map((item) => {
         let createdAtFormatted = formatValue(item.createdAt) || "N/A";
         let updatedAtFormatted =
           item.createdAt === item.updatedAt
             ? "No Action Yet"
             : formatValue(item.updatedAt);
-
+  
         let formattedData = {
           "Registration No": item.user?.registration_no || "N/A",
           "User ID": item.user?.user_id || "N/A",
@@ -124,28 +140,28 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
           "Created At": createdAtFormatted,
           "Updated At": updatedAtFormatted,
         };
-
-        // Dynamically add other fields with formatted keys and values
+  
         Object.keys(item).forEach((key) => {
           if (!["id", "ID", "user", "createdAt", "updatedAt"].includes(key)) {
             formattedData[formatKey(key)] = formatValue(item[key]) || "N/A";
           }
         });
-
+  
         return formattedData;
       });
-
+  
       const worksheet = XLSX.utils.json_to_sheet(excelData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Startups");
-
-      XLSX.writeFile(workbook, `${type}_details.xlsx`);
+  
+      XLSX.writeFile(workbook, `${type}_${selectedCategory}_details.xlsx`);
     } catch (error) {
       console.error("Error downloading Excel:", error);
     } finally {
       setIsExporting(false);
     }
   };
+  
 
   // Filter data based on the search term and selected category
   const filteredData = sdata.filter((item) => {
