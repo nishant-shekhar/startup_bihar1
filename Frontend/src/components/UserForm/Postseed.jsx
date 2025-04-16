@@ -421,7 +421,7 @@ const PostSeed = ({ onFormSubmitSuccess }) => {
 									htmlFor="file4"
 									className="block text-sm/6 font-medium text-black"
 								>
-									Upload Audited Balance Sheet:
+									Upload fund Utilization certificate of Seed Fund:
 								</label>
 								<Upload
 									id="file4"

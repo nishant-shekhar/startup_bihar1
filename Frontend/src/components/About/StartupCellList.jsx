@@ -280,7 +280,7 @@ const StartupIncubationCell = () => {
             facultyIncharge: "Dr. Parimal, principal.pcep@gmail.com, 7358209468",
             email: "principal.pcep@gmail.com; startupcellpce.p@gmail.com",
             contactNumber: "7358209468",
-            coordinator: "Aditya Singh, 9801000608",
+            coordinator: "Abhishek Kumar, 8298663041",
         },
         {
             id: 30,

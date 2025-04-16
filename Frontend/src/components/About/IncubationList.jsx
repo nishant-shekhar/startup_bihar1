@@ -78,8 +78,8 @@ const IncubationNodalList = () => {
                 "richthakur61@gmail.com",
                 "incubationcentrebau@gmail.com"
             ],
-            contactNo: "7763077353",
-            contactPerson: "Mr. Rahman",
+            contactNo: "7020165790",
+            contactPerson: "Dr. Richa Kumari",
             designation: "Assistant Professor",
             facilities: [
                 "Idea to Prototype (Focus area of agripreneurship)",
@@ -377,6 +377,21 @@ const IncubationNodalList = () => {
             contactPerson: "Abhishek Kumar",
             designation: "Assistant Professor",
             facilities: ["Incubation and training facilities"]
+        },
+        {
+            id: 22,
+            centerName: "TBI, IIT Patna",
+            district: "Patna",
+            email: [
+                "info_tbi@iitp.ac.in",
+                "ceo_tbi@iitp.ac.in"
+            ],
+            contactNo: "916204595415",
+            contactPerson: "Dr. Praveen CEO",
+            designation: "CEO",
+            facilities: [
+                "Aims to foster innovation and entrepreneurship, particularly in Electronic System Design and Manufacturing and Medical Electronics, offering infrastructure, technical expertise, and networking support for startups."
+            ]
         }    
     ];
     

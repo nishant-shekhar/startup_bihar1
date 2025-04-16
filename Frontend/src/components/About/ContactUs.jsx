@@ -11,12 +11,12 @@ const ContactUs = () => {
 	const leadership = [
 		{
 			id: 0,
-			name: 'Smt Bandana Preyashi, IAS',
-			email: 'secy.ind-bih@nic.in',
+			name: 'Sri Mihir Kumar Singh, I.A.S.',
+			email: 'prsecy.ind-bih@nic.in',
 			phone: '0612-2215211',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fsecy_industry.jpeg?alt=media&token=68ad4faf-27a5-4c37-abde-c06bcef42baf',
-			position: 'Secretary, Department of Industries, GoB',
-			tag: 'Secretary Industry'
+			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FOfficers%2FACS%20Industry.jpeg?alt=media&token=48a4ed7a-4f70-4113-b59b-de5ecb9aa6c3',
+			position: 'Additional Chief Secretary, Department of Industries, GoB',
+			tag: 'ACS, Industry'
 		},
 		{
 			id: 1,

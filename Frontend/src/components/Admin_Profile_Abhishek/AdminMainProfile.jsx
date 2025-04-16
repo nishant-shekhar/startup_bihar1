@@ -16,6 +16,7 @@ import IncubationModuleDetails from "./Incubation_Module/IncubationModuleDetails
 import StartupProfileDetails from "./ProfileDetails.jsx";
 import RegisterStartup from "./RegisterStartup.jsx";
 import AdminNotification from "./AdminNotification.jsx";
+import UpdateStartup from "./UpdateStartup.jsx";
 
 const AdminMainProfile = () => {
 	const [activePage, setActivePage] = useState("StartupProfile"); // Controls second section
@@ -145,6 +146,9 @@ const AdminMainProfile = () => {
 			case "RegisterStartup":
 				return <RegisterStartup />;
 
+			case "UpdateStartup":
+				return <UpdateStartup />;	
+
 			case "DataMining":
 				return <DataMining />;
 
@@ -163,7 +167,7 @@ const AdminMainProfile = () => {
 	const changePanel = (newPanel) => {
 		setActivePage(newPanel);
 		setDetailsView(false); // Reset to second section when changing main module
-		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining") {
+		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup") {
 			setHasDetailsPanel(false); // Disable third section for AdminNotification
 		} else {
 			setHasDetailsPanel(true); // Enable third section for other modules
@@ -218,7 +222,7 @@ const AdminMainProfile = () => {
 			{/* Second Section - Main Content Area */}
 			<div
 				className={
-					activePage === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining"
+					activePage === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup"
 						? "col-span-10"
 						: hasDetailsPanel
 							? "col-span-3"

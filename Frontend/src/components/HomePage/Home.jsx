@@ -260,7 +260,7 @@ const HomePage = () => {
 							Explore Startups
 						</a>
 						<a
-							href="https://startup.bihar.gov.in/"
+							href="https://startup.bihar.gov.in/apply-new"
 							target="blank"
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>

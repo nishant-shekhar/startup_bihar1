@@ -47,6 +47,7 @@ const LeftBar = ({ changePanel }) => {
     { label: "Data Mining", panel: "DataMining" },
     { label: "Mentors List", panel: "MentorsList" },
     { label: "Register New Startups", panel: "RegisterStartup" },
+    { label: "Update Startup", panel: "UpdateStartup" },
     { label: "Grievance Redressal System", panel: "GrievanceRedressalSystem" },
   ];
 
@@ -65,6 +66,7 @@ const LeftBar = ({ changePanel }) => {
 	  "IPR Reimbursement Module",
 	  "Data Mining",
 	  "Register New Startups",
+    "Update Startup",
 	],
 	"finance-wing": [
     "Startup Profile",
