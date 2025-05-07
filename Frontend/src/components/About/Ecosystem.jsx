@@ -14,32 +14,37 @@ const Ecosystem = () => {
 
 	const [opacity, setOpacity] = useState(1);
 	const handleScroll = () => {
-		const scrollTop = window.scrollY; 
-		const newOpacity = Math.max(1 - scrollTop / 300, 0); 
+		const scrollTop = window.scrollY;
+		const newOpacity = Math.max(1 - scrollTop / 300, 0);
 		setOpacity(newOpacity);
-	  };
-	
-	  useEffect(() => {
+	};
+
+	useEffect(() => {
 		window.addEventListener("scroll", handleScroll);
-	
+
 		return () => {
-		  window.removeEventListener("scroll", handleScroll);
+			window.removeEventListener("scroll", handleScroll);
 		};
-	  }, []);
+	}, []);
+
+	useEffect(() => {
+		const hash = window.location.hash;
+		if (hash) {
+			const element = document.querySelector(hash);
+			if (element) {
+				setTimeout(() => {
+					element.scrollIntoView({ behavior: "smooth", block: "start" });
+				}, 100); // wait for page render
+			}
+		}
+	}, []);
 
 	return (
 		<div className="grid grid-cols-1">
 			<NavBarNew />
 			<div>
-				<div className="fixed left-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4 " style={{ opacity }}>
-				<a
-  				href="https://iciitp.com/zerolab/"
-  				target="_blank"
-  				rel="noopener noreferrer"
-  				className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-full rounded-l-none"
-				>
-				Zero Lab
-				</a>
+				<div className="fixed left-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4 " >
+					
 					<ScrollLink
 						to="bfsc-image"
 						smooth={true}
@@ -60,7 +65,13 @@ const Ecosystem = () => {
 						PSC
 					</ScrollLink>
 
-					<ScrollLink
+					
+
+				</div>
+
+				<div className="fixed right-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4" >
+
+				<ScrollLink
 						to="smic-image"
 						smooth={true}
 						offset={-50}
@@ -79,98 +90,9 @@ const Ecosystem = () => {
 					>
 						SSU
 					</ScrollLink>
-					<Link
-						to="/StartupCell"
-						className="bg-indigo-600 text-white px-5 py-2 md:px-7 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-l-none rounded-full"
-					>
-						Startup Cell
-					</Link>
-					<Link
-						to="/IncubationCell"
-						className="bg-indigo-600 text-white px-5 py-2 md:px-7 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-l-none rounded-full"
-					>
-						Incubation Cell
-					</Link>
-					<Link
-						to="/Mentors"
-						className="bg-indigo-600 text-white px-5 py-2 md:px-7 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-l-none rounded-full"
-					>
-						Mentors
-					</Link>
+
+
 				</div>
-
-				<div className="fixed right-0 top-[200px] flex flex-col gap-4 md:gap-6 lg:gap-8 z-10 mt-4" style={{ opacity }}>
-				
-				<a
-  href="https://bhub.org.in/"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-B-Hub
-</a>
-				
-				<a
-  href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-  Acceleration Program
-</a>
-
-
-<a
-  href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-Early Stage Funding
-</a>
-
-
-<a
-  href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-Exit Policy
-</a>
-
-
-<a
-  href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-Intellectual Property Rights
-</a>
-
-
-<a
-  href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-Matching Loan
-</a>
-
-
-<a
-  href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="bg-indigo-600 text-white px-4 py-2 md:px-6 hover:bg-indigo-700 hover:scale-105 transition-transform duration-500 ease-in-out transform rounded-r-none rounded-l-full"
->
-Second Tranche
-</a>
-
-
-</div>
 
 
 				<div

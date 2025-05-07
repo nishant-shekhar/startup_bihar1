@@ -161,82 +161,77 @@ const NavBarNew = () => {
 								Events
 							</Link>
 							<div
-  className="relative"
-  ref={dropdownRef}
-  onMouseEnter={() => setIsDropDownOpen(true)}
-  onMouseLeave={() => setIsDropDownOpen(false)}
->
-  <RouterLink
-    to="/ecosystem"
-    className="text-sm font-semibold leading-6 text-white py-2 hover:text-gray-500 active:text-gray-600 cursor-pointer"
-  >
-    <span className="flex items-center gap-1">
-      Startup Ecosystem
-      <FiChevronDown
-        className={`transition-transform duration-300 ${
-          isDropDownOpen ? 'rotate-180' : 'rotate-0'
-        }`}
-      />
-    </span>
-  </RouterLink>
+								className="relative"
+								ref={dropdownRef}
+								onMouseEnter={() => setIsDropDownOpen(true)}
+								onMouseLeave={() => setIsDropDownOpen(false)}
+							>
+								<RouterLink
+									to="/ecosystem"
+									className="text-sm font-semibold leading-6 text-white py-2 hover:text-gray-500 active:text-gray-600 cursor-pointer"
+								>
+									<span className="flex items-center gap-1">
+										Startup Ecosystem
+										<FiChevronDown
+											className={`transition-transform duration-300 ${isDropDownOpen ? 'rotate-180' : 'rotate-0'
+												}`}
+										/>
+									</span>
+								</RouterLink>
 
-  {isDropDownOpen && (
-    <div 
-      className="absolute left-0 top-full mt-0.5 flex flex-col bg-white shadow-lg z-50 w-64 rounded-lg overflow-hidden transition-all duration-300 ease-in-out"
-    >
-      {/* Column 1 */}
-      <a href="https://iciitp.com/zerolab/" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Zero Lab
-      </a>
-      <ScrollLink to="bfsc-image" smooth offset={-50} duration={500} className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800 cursor-pointer">
-        BSFT
-      </ScrollLink>
-      <ScrollLink to="psc-image" smooth offset={-50} duration={500} className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800 cursor-pointer">
-        PSC
-      </ScrollLink>
-      <ScrollLink to="smic-image" smooth offset={-50} duration={500} className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800 cursor-pointer">
-        SMIC
-      </ScrollLink>
-      <ScrollLink to="ssu-image" smooth offset={-50} duration={500} className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800 cursor-pointer">
-        SSU
-      </ScrollLink>
-      <RouterLink to="/StartupCell" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Startup Cell
-      </RouterLink>
-      <RouterLink to="/IncubationCell" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Incubation Cell
-      </RouterLink>
-      <RouterLink to="/Mentors" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Mentors
-      </RouterLink>
+								{isDropDownOpen && (
+									<div
+										className="absolute left-0 top-full mt-0.5 flex flex-col bg-white shadow-lg z-50 w-64 rounded-lg overflow-hidden transition-all duration-300 ease-in-out"
+									>
+										{/* Column 1 */}
+										<a href="https://iciitp.com/zerolab/" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Zero Lab
+										</a>
+										<RouterLink to="/ecosystem#bfsc-image" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">BSFT</RouterLink>
+<RouterLink to="/ecosystem#psc-image" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">PSC</RouterLink>
+<RouterLink to="/ecosystem#smic-image" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">SMIC</RouterLink>
+<RouterLink to="/ecosystem#ssu-image" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">SSU</RouterLink>
+										<RouterLink to="/StartupCell" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Startup Cell
+										</RouterLink>
+										<RouterLink to="/IncubationCell" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Incubation Cell
+										</RouterLink>
+										<RouterLink to="/Mentors" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Mentors
+										</RouterLink>
 
-      <hr className="border-t border-gray-200" />
+										<hr className="border-t border-gray-200" />
 
-      {/* Column 2 */}
-      <a href="https://bhub.org.in/" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        B-Hub
-      </a>
-      <a href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Acceleration Program
-      </a>
-      <a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Early Stage Funding
-      </a>
-      <a href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Exit Policy
-      </a>
-      <a href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Intellectual Property Rights
-      </a>
-      <a href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Matching Loan
-      </a>
-      <a href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-        Second Tranche
-      </a>
-    </div>
-  )}
-</div>
+										{/* Column 2 */}
+										<a href="https://bhub.org.in/" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											B-Hub
+										</a>
+										<a href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Acceleration Program
+										</a>
+										<a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Early Stage Funding
+										</a>
+										<a href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Exit Policy
+										</a>
+										<a href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Intellectual Property Rights
+										</a>
+										<a href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Matching Loan
+										</a>
+										<a href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Second Tranche
+										</a>
+										<a href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
+											Documents Required for Seed Fund
+
+										</a>
+									</div>
+								)}
+							</div>
 
 						</div>
 
@@ -486,6 +481,14 @@ const NavBarNew = () => {
 											className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800"
 										>
 											Second Tranche
+										</a>
+										<a
+											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362"
+											target="_blank"
+											rel="noopener noreferrer"
+											className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800"
+										>
+											Documents Required for Seed Fund
 										</a>
 									</div>
 								)}

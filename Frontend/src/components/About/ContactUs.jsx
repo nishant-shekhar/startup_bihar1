@@ -16,7 +16,7 @@ const ContactUs = () => {
 			phone: '0612-2215211',
 			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FOfficers%2FACS%20Industry.jpeg?alt=media&token=48a4ed7a-4f70-4113-b59b-de5ecb9aa6c3',
 			position: 'Additional Chief Secretary, Department of Industries, GoB',
-			tag: 'ACS, Industry'
+			tag: 'ACS, Industries'
 		},
 		{
 			id: 1,
@@ -25,7 +25,7 @@ const ContactUs = () => {
 			phone: '0612-2235812',
 			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fnikhil%20sir.png?alt=media&token=27791704-aff7-4fcb-97ef-54a6132bd8b3',
 			position: 'Director Industries, Department of Industries, GoB',
-			tag: 'Director Industry'
+			tag: 'Director Industries'
 		},
 		{
 			id: 2,

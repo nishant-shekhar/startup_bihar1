@@ -22,7 +22,7 @@ const fileLabels = {
   file1: "Upload Startup Certificate",
   file2: "Bank Statement/ Salary Slip highlighting the payment to employees:",
   file3: "Proof related to the technical knowledge/ necessary skills:",
-  file4: "Upload Audited Balance Sheet:",
+  file4: "Upload fund Utilization certificate:",
   auditedBalanceSheet: "Upload Audited Balance Sheet:",
   gstReturn: "Upload GST Return:",
   projectReport: "Upload Project Report:",

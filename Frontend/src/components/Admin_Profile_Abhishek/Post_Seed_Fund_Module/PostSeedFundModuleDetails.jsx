@@ -646,7 +646,7 @@ const PostSeedFundModuleDetails = ({ id }) => {
 						{/* New Row: File4 - Audited Balance Sheet on Fund Receipt */}
 						<tr>
 							<td className="py-4 px-4 border">
-								Audited Balance Sheet on Fund Receipt
+							Fund Utilization certificate
 							</td>
 							<td className="border-b border-l border-t border-r w-[35vw]">
 								<div className="px-4 py-4">
