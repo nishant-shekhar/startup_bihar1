@@ -21,7 +21,7 @@ const ChangePasswordDialog = ({ isVisible, onClose }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        "http://localhost:3007/api/userlogin/change-password",
+        "https://startupbihar.in/api/userlogin/change-password",
         {
           currentPassword,
           newPassword,
