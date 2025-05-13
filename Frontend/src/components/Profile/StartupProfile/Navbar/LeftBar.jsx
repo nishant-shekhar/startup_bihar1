@@ -5,6 +5,9 @@ import './LeftBar.css';
 import menu from '../../../../assets/menu.png';
 import LogOutDailogBox from './LogoutDialog';
 import axios from 'axios';
+
+import ChangePasswordDialog from '../../../UserForm/ChangePasswordDialog';
+
 import {
   FaLightbulb,
   FaHandshake,
@@ -30,6 +33,7 @@ const LeftBar = ({ changePanel }) => {
   const sidebarRef = useRef(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [isChangePasswordVisible, setIsChangePasswordVisible] = useState(false);
 
   // State for storing startup details
   const [startup, setStartup] = useState({});
@@ -213,6 +217,14 @@ const [seatItems, setSeatItems] = useState([
             </span>
           </Link>
           <button
+  onClick={() => setIsChangePasswordVisible(true)}
+  className="flex items-center justify-between px-3 py-4 hover:bg-gray-500 rounded-md"
+>
+  <FaUser className="text-xl" />
+  <span className="ml-2">Change Password</span>
+</button>
+
+          <button
             onClick={handleLogoutClick}
             className="flex items-center justify-between px-3 py-4 hover:bg-gray-500 rounded-md"
           >
@@ -234,6 +246,11 @@ const [seatItems, setSeatItems] = useState([
         onClose={handleClose}
         onCancel={handleCancel}
       />
+      <ChangePasswordDialog
+  isVisible={isChangePasswordVisible}
+  onClose={() => setIsChangePasswordVisible(false)}
+/>
+
     </>
   );
 };

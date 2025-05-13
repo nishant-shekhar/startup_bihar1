@@ -77,6 +77,8 @@ const LeftBar = ({ changePanel }) => {
 	  "Matching Loan",
 	  "Incubation Module",
 	  "Acceleration Programme Module",
+    "IPR Reimbursement Module",
+
 	],
   "incubation-wing":[ 
     "Startup Profile",

@@ -221,6 +221,50 @@ const createUser = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
+
+    const user_id = getUserIdFromToken(token);
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Both current and new password are required" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { user_id } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { user_id },
+      data: { password: hashedNewPassword },
+    });
+
+    // Optional: Record the activity
+    await prisma.activity.create({
+      data: {
+        user_id,
+        action: "Password Changed",
+        subtitle: "You have successfully changed your password",
+      },
+    });
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error.message);
+    res.status(500).json({ error: "An error occurred while changing the password" });
+  }
+};
+
+
 // Utility function to verify JWT and get user_id
 const getUserIdFromToken = (token) => {
   try {
@@ -762,5 +806,6 @@ module.exports = {
   getStaffByStartup,
   deleteStaff,
   getStartupsByCategory,
-  getPublicStartupDetails
+  getPublicStartupDetails,
+  changePassword
 };
