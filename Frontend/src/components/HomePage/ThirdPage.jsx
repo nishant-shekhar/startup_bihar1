@@ -4,16 +4,15 @@ import './ThirdPage.css';
 const ThirdPage = () => {
     const [activeTab, setActiveTab] = useState("notifications");
     const notifications = [
-            { text: 'Startup Evaluation Test Result Held on 07th August 2024', date: 'Aug 7, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_07_Aug_2024_b736de13ac.pdf' },
-        { text: 'Bihar Purchase Preference Policy updated, 2024', date: 'Aug 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/D__GazettePrinting_GazettePublished_749_2_2024_3016b57b6f.pdf' },
-        { text: 'Result of startup cell coordinator interview held on 24th August 2024', date: 'Aug 24, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/Startupcell_result_153bcc10c12.pdf' },
-        { text: 'Startup Evaluation Test Result Held on 13th September 2024', date: 'Sep 13, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_13_September_2024_f71367d10c10.pdf' },
+         { text: 'Startup Evaluation Test Result Held on 13th September 2024', date: 'Sep 13, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_13_September_2024_f71367d10c10.pdf' },
         { text: 'Startup Evaluation Test Result Held on 07th October 2024', date: 'Oct 7, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_07_October_2024_fc53bad3e2.pdf' },
         { text: 'New Startup Evaluation Test Result Held on 15th November 2024', date: 'Nov 15, 2024', author: 'Admin', link: 'https://startup.bihar.gov.in/api/upload/photo/StartUP_Evaluation_Result%20_15_November_2024_a92dabf022.pdf' },
 
         { text: '🚀🚀 New Startup Evaluation Test Result Held on 8th & 9th January 2025 🚀🚀', date: 'Jan 20, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_08_9th_January_2025.pdf?alt=media&token=e00dfc6b-b0f7-410a-9256-96ccc48866fc' },
         { text: '🚀🚀 New Startup Evaluation Test Result Held on 06th February 2025 🚀🚀', date: 'Feb 11, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_06_February_2025.pdf?alt=media&token=d6f31ec2-5723-4068-8c0e-588f015d10c6' },
-        { text: '🚀🚀 New Startup Evaluation Test Result Held on 7th, 10th, 11th March 2025 🚀🚀', date: 'March 15, 2025', author: 'Admin', link: '    https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_7_10_11_March_2025.pdf?alt=media&token=fac685ec-53bf-4567-b385-b479de8112ee' },
+        { text: '🚀🚀 New Startup Evaluation Test Result Held on 7th, 10th, 11th March 2025 🚀🚀', date: 'March 15, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_7_10_11_March_2025.pdf?alt=media&token=fac685ec-53bf-4567-b385-b479de8112ee' },
+        { text: '🚀🚀 RESULT OF START-UP EVALUATION TEST HELD ON 29th, 30th April & 02th May 2025 🚀🚀', date: 'May 14, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_29_30_April_02_May_2025.pdf?alt=media&token=08e091d4-4838-47a6-bb07-360f91c44c3a' },
+       
     ];
     
 
