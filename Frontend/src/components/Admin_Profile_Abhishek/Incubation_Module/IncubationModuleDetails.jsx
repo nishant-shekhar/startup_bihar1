@@ -165,7 +165,7 @@ const IncubationModuleDetails = ({ id }) => {
 			}
 
 			const response = await axios.post(
-				"http://localhost:3007/api/notifications/",
+				"https://startupbihar.in/api/notifications/",
 				notificationData,
 				{
 					headers: {

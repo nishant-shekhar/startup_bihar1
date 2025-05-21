@@ -118,7 +118,7 @@ const Incubation = ({ onFormSubmitSuccess }) => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const res = await axios.get("http://localhost:3007/api/incubation/status", {
+        const res = await axios.get("https://startupbihar.in/api/incubation/status", {
           headers: {
             Authorization: `${localStorage.getItem("token")}`,
           },
