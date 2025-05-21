@@ -101,7 +101,52 @@ const createAdmin = async (req, res) => {
   }
 };
 
+const resetUserPassword = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const admin_id = decoded.admin_id;
+
+    // Optional: Validate that the user has admin role, if your system has roles
+    const admin = await prisma.admin.findUnique({ where: { admin_id } });
+    if (!admin) return res.status(403).json({ error: "Access denied: Not a valid admin" });
+
+    const { user_id, newPassword } = req.body;
+
+    if (!user_id || !newPassword) {
+      return res.status(400).json({ error: "user_id and newPassword are required" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { user_id } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { user_id },
+      data: { password: hashedPassword },
+    });
+
+    // Optionally record admin activity
+    await prisma.activity.create({
+      data: {
+        user_id: user_id,
+        action: `Password Reset by Admin`,
+        subtitle: `Admin ${admin_id} has reset your password.`,
+      },
+    });
+
+    res.status(200).json({ message: "Password reset successfully by admin" });
+  } catch (error) {
+    console.error("Error resetting password by admin:", error);
+    res.status(500).json({ error: "An error occurred while resetting password" });
+  }
+};
+
 module.exports = {
   adminLogin,
-  createAdmin
+  createAdmin,
+  resetUserPassword,
 };

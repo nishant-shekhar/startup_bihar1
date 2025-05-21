@@ -1,5 +1,5 @@
 const express = require('express');
-const { adminLogin, createAdmin } = require('../controllers/adminController');
+const { adminLogin, createAdmin, resetUserPassword } = require('../controllers/adminController');
 
 const router = express.Router();
 
@@ -8,5 +8,6 @@ router.post('/', adminLogin);
 
 // POST route for creating a new admin
 router.post('/register', createAdmin);
+router.post('/reset-user-password', resetUserPassword);
 
 module.exports = router;

@@ -95,6 +95,9 @@ const IncubationModuleDetails = ({ id }) => {
       );
       handleDialog("Incubation center assigned successfully.");
       await fetchData();
+      // Post notification
+			await postNotification("Your Incubation application has been accepted.");
+	
     } catch (error) {
       console.error("Error assigning center:", error);
     }
@@ -124,6 +127,9 @@ const IncubationModuleDetails = ({ id }) => {
       handleDialog("Application rejected successfully.");
       setIsCommentVisible(false);
       await fetchData();
+      // Post notification
+			await postNotification("Your Incubation application has been rejected.");
+	
     } catch (error) {
       console.error("Error rejecting application:", error);
     }
@@ -135,6 +141,49 @@ const IncubationModuleDetails = ({ id }) => {
     if (data.documentStatus === "Rejected") return "text-red-500";
     return "text-yellow-500";
   };
+
+  const postNotification = async (notificationMessage, docLink = null, subtitle = "Incubation Form Application") => {
+	try {
+			if (!data?.userId || !adminId || !adminRole || !notificationMessage) {
+				console.error("Missing required fields to post a notification.");
+
+				return;
+			}
+			
+
+
+			const notificationData = {
+				user_id: data.userId, // Ensure `userId` is present
+				admin_id: adminId, // Replace with actual admin ID
+				admin_role: adminRole, // Replace with actual admin role
+				notification: notificationMessage,
+				subtitle: subtitle,
+				related_to: `Application ID: ${id}`, // Ensure `id` is defined
+			};
+			if (docLink) {
+				notificationData.docLink = docLink;
+			}
+
+			const response = await axios.post(
+				"http://localhost:3007/api/notifications/",
+				notificationData,
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `${token}`, // Validate `token` existence
+					}
+				},
+			);
+
+			if (response.status === 201) {
+				console.log("Notification posted successfully.");
+			} else {
+				console.error("Unexpected response:", response);
+			}
+		} catch (error) {
+			console.error("Error posting notification:", error.response?.data || error.message);
+		}
+	};
 
   return (
     <div className="h-screen overflow-y-auto">
@@ -251,8 +300,9 @@ const IncubationModuleDetails = ({ id }) => {
             </tr>
           </tbody>
         </table>
-
+        
         {/* Buttons */}
+        {data.documentStatus !== "Accepted" && (
         <div className="flex items-center justify-end gap-x-2 pr-4 py-3">
           <button
             type="button"
@@ -269,6 +319,7 @@ const IncubationModuleDetails = ({ id }) => {
             Reject
           </button>
         </div>
+        )}
 
         {/* Reject Comment Modal */}
         {isCommentVisible && (

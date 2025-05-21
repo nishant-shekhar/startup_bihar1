@@ -72,6 +72,10 @@ const getIncubationStatus = async (req, res) => {
         id: true,
         documentStatus: true,
         comment: true,
+        updatedAt: true,
+        preference1: true,
+        preference2: true,  
+        preference3: true,
         // add other fields as necessary
       },
     });
