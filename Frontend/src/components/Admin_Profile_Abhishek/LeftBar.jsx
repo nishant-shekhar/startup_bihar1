@@ -49,6 +49,8 @@ const LeftBar = ({ changePanel }) => {
     { label: "Register New Startups", panel: "RegisterStartup" },
     { label: "Update Startup", panel: "UpdateStartup" },
     { label: "Grievance Redressal System", panel: "GrievanceRedressalSystem" },
+    {label: "Startup List", panel: "StartupList"},
+    
   ];
 
  // Role-based menu access configuration
@@ -64,9 +66,9 @@ const LeftBar = ({ changePanel }) => {
 	  "Acceleration Programme Module",
     "Coworking Module",
 	  "IPR Reimbursement Module",
-	  "Data Mining",
 	  "Register New Startups",
     "Update Startup",
+    "Startup List",
 	],
 	"finance-wing": [
     "Startup Profile",

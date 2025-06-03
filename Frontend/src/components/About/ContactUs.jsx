@@ -20,10 +20,10 @@ const ContactUs = () => {
 		},
 		{
 			id: 1,
-			name: 'Sri Nikhil Dhanraj Nippanikar , IAS',
+			name: 'Sri Mukul Kumar Gupta , IAS',
 			email: 'dir.ind-bih@nic.in',
 			phone: '0612-2235812',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fnikhil%20sir.png?alt=media&token=27791704-aff7-4fcb-97ef-54a6132bd8b3',
+			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FOfficers%2Fdir_inds.jpeg?alt=media&token=afc42da1-9249-463a-a336-94a4569e7f82',
 			position: 'Director Industries, Department of Industries, GoB',
 			tag: 'Director Industries'
 		},

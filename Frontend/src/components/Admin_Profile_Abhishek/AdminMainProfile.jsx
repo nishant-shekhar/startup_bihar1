@@ -18,6 +18,8 @@ import RegisterStartup from "./RegisterStartup.jsx";
 import AdminNotification from "./AdminNotification.jsx";
 import UpdateStartup from "./UpdateStartup.jsx";
 
+
+
 const AdminMainProfile = () => {
 	const [activePage, setActivePage] = useState("StartupProfile"); // Controls second section
 	const [selectedId, setSelectedId] = useState(""); // Controls selected ID for details
@@ -141,7 +143,7 @@ const AdminMainProfile = () => {
 				);
 
 			case "StartupList":
-				setHasDetailsPanel(false); // Disable third section for this case
+
 				return <StartupList />;
 			case "RegisterStartup":
 				return <RegisterStartup />;
@@ -167,7 +169,7 @@ const AdminMainProfile = () => {
 	const changePanel = (newPanel) => {
 		setActivePage(newPanel);
 		setDetailsView(false); // Reset to second section when changing main module
-		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup") {
+		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup" || activePage==="StartupList") {
 			setHasDetailsPanel(false); // Disable third section for AdminNotification
 		} else {
 			setHasDetailsPanel(true); // Enable third section for other modules

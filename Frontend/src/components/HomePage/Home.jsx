@@ -267,6 +267,31 @@ const HomePage = () => {
 							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
+					  {/* Notification Section */}
+					  <motion.div
+  className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
+  variants={fadeIn}
+>
+  <div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-red-700 ring-1 ring-red-700/10 hover:ring-red-700/20 bg-red-50 flex items-center space-x-2">
+    {/* Animated "NEW" Badge */}
+    <span className="animate-pulse text-xs  text-white bg-red-600 px-2 py-0.5 rounded-full">
+      New
+    </span>
+    <span>
+      Request for Quotation For Appointment of Statutory Auditor for BSFT
+      <a
+        href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FROQ%20-%20memo%20No.-2137%2C%20Dated-02.06.2025.pdf?alt=media&token=3eb238d8-edc2-46b7-8b38-89050c6b306a"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold text-red-800 ml-2"
+      >
+        View. <span aria-hidden="true">&rarr;</span>
+      </a>
+    </span>
+  </div>
+</motion.div>
+
+
 				</motion.div>
 
 				
