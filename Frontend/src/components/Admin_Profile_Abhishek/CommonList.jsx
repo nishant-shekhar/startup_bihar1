@@ -3,13 +3,16 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import { RiFileExcel2Line } from "react-icons/ri"; // Import the icon
 import { IoMdRefresh } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 
-const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
+const CommonList = ({ onSelect, url, title, type = "StartupProfile" }) => {
   const [sdata, setSdata] = useState([]); // Initialize as an empty array
   const [searchTerm, setSearchTerm] = useState(""); // State to manage search input
   const [isLoading, setIsLoading] = useState(true); // State for loading status
   const [isExporting, setIsExporting] = useState(false); // State for export status
   const [selectedId, setSelectedId] = useState(null);
+
+  const navigate = useNavigate(); // Use this for redirection
 
   const token = localStorage.getItem("token");
 
@@ -42,9 +45,14 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
           },
         });
         setSdata(response.data?.data || []); // Ensure data fallback
-        console.log(response.data?.data);
+        //console.log(response.data?.data);
       } catch (error) {
         console.error("Error fetching data:", error);
+        if (error.response?.status === 401) {
+          localStorage.clear(); // Optional: clear invalid token
+          navigate("/login");
+          console.error("Access forbidden. Please log in again.");
+        }
       } finally {
         setIsLoading(false); // Loading complete
       }
@@ -215,7 +223,7 @@ const CommonList = ({ onSelect, url, title, type = "seed-fund" }) => {
     return 0;
   };
 
-  console.log("Filtered data:", filteredData);
+  //console.log("Filtered data:", filteredData);
 
   return (
     <div

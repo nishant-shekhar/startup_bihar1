@@ -34,6 +34,8 @@ const LeftBar = ({ changePanel }) => {
   const menuItems = [
     { label: "Notifications", panel: "AdminNotification" },
     { label: "Startup Profile", panel: "StartupProfile" },
+    { label: "Startup List", panel: "StartupList" },
+
     { label: "Seed Fund Module", panel: "SeedFundModule" },
     { label: "Second Tranche Module", panel: "SecondTrancheModule" },
     { label: "Post Seed Fund Module", panel: "PostSeedFundModule" },
@@ -43,14 +45,13 @@ const LeftBar = ({ changePanel }) => {
     { label: "Acceleration Programme Module", panel: "AccelerationProgrammeModule" },
     { label: "IPR Reimbursement Module", panel: "IPRReimbursementModule" },
     { label: "Coworking Module", panel: "CoworkingModule" },
-    { label: "Startup List", panel: "StartupList" },
+    { label: "CoWorking Map", panel: "CoWorkingMap" },    
+
     { label: "Data Mining", panel: "DataMining" },
     { label: "Mentors List", panel: "MentorsList" },
     { label: "Register New Startups", panel: "RegisterStartup" },
     { label: "Update Startup", panel: "UpdateStartup" },
     { label: "Grievance Redressal System", panel: "GrievanceRedressalSystem" },
-    {label: "Startup List", panel: "StartupList"},
-    
   ];
 
  // Role-based menu access configuration
@@ -65,6 +66,7 @@ const LeftBar = ({ changePanel }) => {
 	  "Incubation Module",
 	  "Acceleration Programme Module",
     "Coworking Module",
+    "CoWorking Map",
 	  "IPR Reimbursement Module",
 	  "Register New Startups",
     "Update Startup",
@@ -78,6 +80,8 @@ const LeftBar = ({ changePanel }) => {
 	  "Startup Progress Report",
 	  "Matching Loan",
 	  "Incubation Module",
+    "Startup List",
+
 	  "Acceleration Programme Module",
     "IPR Reimbursement Module",
 
@@ -89,6 +93,8 @@ const LeftBar = ({ changePanel }) => {
 	  "Post Seed Fund Module",
 	  "Startup Progress Report",
 	  "Matching Loan",
+    "Startup List",
+
 	  "Incubation Module",
 	  "Acceleration Programme Module",
   ],
@@ -99,9 +105,15 @@ const LeftBar = ({ changePanel }) => {
 	  "Post Seed Fund Module",
 	  "Startup Progress Report",
 	  "Matching Loan",
+    "Startup List",
+
 	  "Incubation Module",
 	  "Acceleration Programme Module",
   ],
+  "coworking": [
+    "Coworking Module",
+  ], 
+  
 	guest: ["Notifications" , "Startup Profile", "Startup List"],
   };
 
@@ -130,7 +142,6 @@ const LeftBar = ({ changePanel }) => {
         <div className="text-white">
           <h1 className="text-l">{localStorage.getItem("admin_name")}</h1>
           <h1 className="text-sm text-white/60">
-            {localStorage.getItem("admin_role")},{" "}
             {localStorage.getItem("admin_designation")}
           </h1>
           <h1 className="text-sm text-white/60">Department of Industries</h1>

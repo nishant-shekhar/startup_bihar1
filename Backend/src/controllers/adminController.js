@@ -145,8 +145,147 @@ const resetUserPassword = async (req, res) => {
   }
 };
 
+const getStartupsByCategoryAdmin = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    const selectFields = {
+      user_id: true,
+      registration_no: true,
+      company_name: true,
+      email: true,
+      logo: true,
+      mobile: true,
+      moto: true,
+      registration_year: true,
+      startup_since: true,
+      website: true,
+      topStartup: true,
+      category: true,
+      matchingLoanAmount: true,
+      postSeedAmount: true,
+      secondTrancheAmount: true,
+      seedFundAmount: true,
+      districtRoc: true,
+      dpiitCert: true,
+    };
+
+    let startups;
+
+    if (category === "All") {
+      startups = await prisma.user.findMany({ select: selectFields });
+    } else {
+      startups = await prisma.user.findMany({
+        where: { category },
+        select: selectFields,
+      });
+
+      if (startups.length === 0) {
+        return res.status(404).json({ error: `No startups found for category: ${category}` });
+      }
+    }
+
+    res.status(200).json({ startups });
+  } catch (error) {
+    console.error("Error fetching startups:", error);
+    res.status(500).json({ error: "An error occurred while fetching startups", details: error.message });
+  }
+};
+
+const startupDetailAdmin = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    const startup = await prisma.user.findUnique({
+      where: { user_id },
+      include: {
+        accelerationProgram: true,
+        document: true,
+        iprReimbursement: true,
+        incubationApplication: true,
+        matchingLoan: true,
+        postSeedFund: true,
+        qReports: true,
+        secondTranche: true,
+        seedFund: true,
+        coWorking: true,
+      },
+    });
+
+    if (!startup) {
+      return res.status(404).json({ error: `Startup not found for user_id: ${user_id}` });
+    }
+
+    res.status(200).json({ startup });
+  } catch (error) {
+    console.error("Error fetching startup details:", error);
+    res.status(500).json({ error: "An error occurred while fetching startup details", details: error.message });
+  }
+};
+
+const updateStartupByAdmin = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const admin_id = decoded.admin_id;
+
+    const admin = await prisma.admin.findUnique({ where: { admin_id } });
+    if (!admin) return res.status(403).json({ error: "Access denied: Not a valid admin" });
+
+    const { user_id, ...updates } = req.body;
+    if (!user_id) return res.status(400).json({ error: "user_id is required" });
+
+    // Allowed fields to update
+    const allowedFields = [
+      "company_name", "founder_name", "mobile", "email", "website",
+      "category", "topStartup", "startup_since", "dateOfIncorporation", "cin",
+      "districtRoc", "address", "dpiitCert", "seedFundAmount",
+      "secondTrancheAmount", "postSeedAmount", "matchingLoanAmount",
+      "revenueLY", "employeeCount"
+    ];
+
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (updates.hasOwnProperty(field)) {
+        if (["seedFundAmount", "secondTrancheAmount", "postSeedAmount", "matchingLoanAmount", "revenueLY", "employeeCount"].includes(field)) {
+          updateData[field] = Number(updates[field]) || 0;
+        } else if (field === "topStartup") {
+          updateData[field] = updates[field] === true || updates[field] === "true";
+        } else {
+          updateData[field] = updates[field];
+        }
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { user_id },
+      data: updateData,
+    });
+
+    // Optional: log admin update activity
+    await prisma.activity.create({
+      data: {
+        user_id: user_id,
+        action: `Details Updated by Admin`,
+        subtitle: `Admin ${admin_id} updated startup profile.`,
+      },
+    });
+
+    res.status(200).json({ message: "Startup details updated successfully", updated });
+  } catch (error) {
+    console.error("Error updating startup:", error);
+    res.status(500).json({ error: "An error occurred while updating startup details", details: error.message });
+  }
+};
+
+
 module.exports = {
   adminLogin,
   createAdmin,
   resetUserPassword,
+  getStartupsByCategoryAdmin,
+  startupDetailAdmin,
+  updateStartupByAdmin
 };

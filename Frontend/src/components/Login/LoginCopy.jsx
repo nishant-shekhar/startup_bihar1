@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 import loginvid from '../../assets/loginvid.mp4'; // Video import
 
-const LoginCopy = () => {
+const LoginCopy = ({ onLogin }) => {  // Accept the prop here
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [isAdminLogin, setIsAdminLogin] = useState(false);
@@ -44,6 +44,7 @@ const LoginCopy = () => {
       if (response.ok) {
         toast.success(data.message || 'Login successful!');
         localStorage.setItem('token', `Bearer ${data.token}`);
+        if (onLogin) onLogin();  // Call parent’s login handler
 
         if (!isAdminLogin) {
           localStorage.setItem('registration_no', data.registration_no);

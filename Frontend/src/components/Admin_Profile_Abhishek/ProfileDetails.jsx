@@ -20,7 +20,7 @@ const StartupProfileDetails = ({ id }) => {
 	const adminRole = localStorage.getItem("admin_role") || "admin";
 	const adminId = localStorage.getItem("admin_id") || "admin";
 
-	console.log(data);
+	//console.log(data);
 	const fetchData = async () => {
 		if (id) {
 			try {
@@ -37,8 +37,8 @@ const StartupProfileDetails = ({ id }) => {
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
-			console.log(`https://startupbihar.in/api/StartupProfile/v1/${id}`);
-			console.log(data);
+			//console.log(`https://startupbihar.in/api/StartupProfile/v1/${id}`);
+			//console.log(data);
 		}
 	};
 	useEffect(() => {

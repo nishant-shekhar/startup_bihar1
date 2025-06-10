@@ -13,7 +13,7 @@ const StartupProfile = ({ onSelect }) => {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				console.log(token);
+				//console.log(token);
 				const response = await axios.get(
 					"https://startupbihar.in/api/StartupProfile/v2",
 					{
@@ -32,7 +32,7 @@ const StartupProfile = ({ onSelect }) => {
 		fetchData();
 
 	}, []);
-	console.log(sdata);
+	//console.log(sdata);
 	return (
 		<div
 			className="w-full bg-slate-200 h-screen overflow-y-auto"

@@ -263,23 +263,26 @@ const CoworkingModule = ({ id }) => {
           </tbody>
         </table>
 
-        {/* Approve and Reject Buttons */}
-        <div className="flex items-center justify-end gap-x-2 pr-4 py-3">
-          <button
-            type="button"
-            className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
-            onClick={handleApprove}
-          >
-            Approve
-          </button>
-          <button
-            type="button"
-            className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
-            onClick={() => setIsCommentVisible(true)}
-          >
-            Reject
-          </button>
-        </div>
+       {/* Show Approve/Reject buttons only if status is neither Accepted nor Rejected */}
+{data.documentStatus !== "Accepted" && data.documentStatus !== "Rejected" && (
+  <div className="flex items-center justify-end gap-x-2 pr-4 py-3">
+    <button
+      type="button"
+      className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
+      onClick={handleApprove}
+    >
+      Approve
+    </button>
+    <button
+      type="button"
+      className="rounded-md bg-gray-800 px-3 py-2 text-sm font-semibold text-white"
+      onClick={() => setIsCommentVisible(true)}
+    >
+      Reject
+    </button>
+  </div>
+)}
+
 
         {/* Reject Comment Modal */}
         {isCommentVisible && (

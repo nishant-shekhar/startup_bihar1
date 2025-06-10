@@ -17,18 +17,26 @@ import StartupProfileDetails from "./ProfileDetails.jsx";
 import RegisterStartup from "./RegisterStartup.jsx";
 import AdminNotification from "./AdminNotification.jsx";
 import UpdateStartup from "./UpdateStartup.jsx";
+import CoWorkingMap from "./CoWorkingMap.jsx";
 
 
 
 const AdminMainProfile = () => {
-	const [activePage, setActivePage] = useState("StartupProfile"); // Controls second section
+	const userRole = localStorage.getItem("admin_role") || "admin";
+	const [activePage, setActivePage] = useState(userRole === "coworking" ? "CoworkingModule" : "StartupProfile");
+		
 	const [selectedId, setSelectedId] = useState(""); // Controls selected ID for details
 	const [detailsView, setDetailsView] = useState(false); // Controls if third section is displayed
 	const [hasDetailsPanel, setHasDetailsPanel] = useState(true); // Controls the visibility of the third section
+	
+	const designation = localStorage.getItem("admin_designation"); // Coworking center name like "Patna Hub"
 
 
 	// Handles the main content section (second section) based on `activePage`
 	function handlePageChange() {
+		
+
+
 		switch (activePage) {
 			case "AdminNotification":
 				return (
@@ -133,10 +141,15 @@ const AdminMainProfile = () => {
 					/>
 				);
 			case "CoworkingModule":
+				const coworkingUrl =
+					userRole === "coworking" && designation
+						? `https://startupbihar.in/api/coworking/center/${encodeURIComponent(designation)}`
+						: `https://startupbihar.in/api/coworking/v2`;
+
 				return (
 					<CommonList
 						onSelect={handleSelect}
-						url="https://startupbihar.in/api/coworking/v2"
+						url={coworkingUrl}
 						title="Co-Working Application List"
 						type="coworking"
 					/>
@@ -145,11 +158,14 @@ const AdminMainProfile = () => {
 			case "StartupList":
 
 				return <StartupList />;
+			case "CoWorkingMap":
+
+				return <CoWorkingMap />;
 			case "RegisterStartup":
 				return <RegisterStartup />;
 
 			case "UpdateStartup":
-				return <UpdateStartup />;	
+				return <UpdateStartup />;
 
 			case "DataMining":
 				return <DataMining />;
@@ -169,7 +185,7 @@ const AdminMainProfile = () => {
 	const changePanel = (newPanel) => {
 		setActivePage(newPanel);
 		setDetailsView(false); // Reset to second section when changing main module
-		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup" || activePage==="StartupList") {
+		if (newPanel === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup" || activePage === "StartupList" || activePage === "CoWorkingMap") {
 			setHasDetailsPanel(false); // Disable third section for AdminNotification
 		} else {
 			setHasDetailsPanel(true); // Enable third section for other modules
@@ -206,8 +222,8 @@ const AdminMainProfile = () => {
 				return <IncubationModuleDetails id={selectedId} />;
 			case "IPRReimbursementModule":
 				return <IPRReimbursementModule id={selectedId} />;
-				case "CoworkingModule":
-					return <CoworkingModule id={selectedId} />;
+			case "CoworkingModule":
+				return <CoworkingModule id={selectedId} />;
 			default:
 				return null;
 		}
@@ -224,7 +240,7 @@ const AdminMainProfile = () => {
 			{/* Second Section - Main Content Area */}
 			<div
 				className={
-					activePage === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup"
+					activePage === "AdminNotification" || activePage === "RegisterStartup" || activePage === "MentorsList" || activePage === "DataMining" || activePage === "UpdateStartup" || activePage === "StartupList" || activePage === "CoWorkingMap"
 						? "col-span-10"
 						: hasDetailsPanel
 							? "col-span-3"

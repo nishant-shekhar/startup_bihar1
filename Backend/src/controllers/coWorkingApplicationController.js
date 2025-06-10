@@ -79,6 +79,7 @@ const getAllCoworkingWithUserDetails = async (req, res) => {
         id:true,
         documentStatus:true,
         updatedAt:true,
+        coworkingCenter:true,
 				user: {
 					select: {
 						user_id: true, // Fields from the User model
@@ -97,6 +98,42 @@ const getAllCoworkingWithUserDetails = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching documents with user details:', error);
+    res.status(500).json({ error: 'An error occurred while fetching documents' });
+  }
+};
+
+const getAllCoworkingWiseApplication = async (req, res) => {
+  const { center } = req.params; // or use req.query.center if you're passing via query
+
+  if (!center) {
+    return res.status(400).json({ error: "Coworking center name is required" });
+  }
+
+  try {
+    const documents = await prisma.coWorking.findMany({
+      where: { coworkingCenter: center },
+      select: {
+        id: true,
+        documentStatus: true,
+        updatedAt: true,
+       
+        user: {
+          select: {
+            user_id: true,
+            registration_no: true,
+            company_name: true,
+            logo: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      message: `Applications for coworking center: ${center} retrieved successfully`,
+      data: documents,
+    });
+  } catch (error) {
+    console.error('Error fetching applications for coworking center:', error);
     res.status(500).json({ error: 'An error occurred while fetching documents' });
   }
 };
@@ -211,5 +248,6 @@ module.exports = {
   getAllCoworkingWithUserDetails,
   getcoworkingById,
   updateCoworkinStatus,
-  getCoWorkingByToken
+  getCoWorkingByToken,
+  getAllCoworkingWiseApplication
 };
