@@ -658,7 +658,7 @@ const validate = (values) => {
 
               {/* Any IPR received */}
               <div className="mb-4">
-                <label className="block font-medium">Any IPR received*</label>
+                <label className="block font-medium">Any IPR Received</label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {iprOptions.map((option, index) => (
                     <label key={index} className="inline-flex items-center">

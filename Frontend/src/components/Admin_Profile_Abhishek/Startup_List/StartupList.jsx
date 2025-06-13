@@ -65,10 +65,18 @@ const StartupList = () => {
     setSelectedCategory(category);
   };
 
-  const filteredStartups = startups.filter((startup) =>
-    (startup.company_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-    (startup.category?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+  const filteredStartups = startups.filter((startup) => {
+  const term = searchTerm.toLowerCase();
+  return (
+    (startup.user_id || "").toLowerCase().includes(term) ||
+    (startup.founder_name || "").toLowerCase().includes(term) ||
+    (startup.company_name || "").toLowerCase().includes(term) ||
+    (startup.email || "").toLowerCase().includes(term) ||
+    (startup.mobile || "").toLowerCase().includes(term) ||
+    (startup.registration_no || "").toLowerCase().includes(term)
   );
+});
+
   
 
   const openStartupDialog = (startup) => {
@@ -205,7 +213,7 @@ const StartupList = () => {
               <thead className="bg-gray-900 text-white">
                 <tr>
                   {[
-                    "User ID", "Logo", "Company Name", "Phone", "Email", "District ROC", "DPIIT", "Website",
+                    "User ID","Registration No" ,"Logo", "Company Name", "Phone", "Email", "District ROC",  "Website",
                     "Seed Fund", "Second Tranche", "Post Seed", "Matching Loan", "Top Startup"
                   ].map((header) => (
                     <th key={header} className="px-4 py-3 text-left font-semibold border-b border-gray-200">
@@ -222,6 +230,7 @@ const StartupList = () => {
                     onClick={() => openStartupDialog(startup)}
                   >
                     <td className="px-4 py-3">{startup.user_id}</td>
+                    <td className="px-4 py-3">{startup.registration_no}</td>
                     <td className="px-4 py-3">
                       <img
                         src={
@@ -250,7 +259,6 @@ const StartupList = () => {
                     </td>
 
                     <td className="px-4 py-3 text-gray-600">{startup.districtRoc}</td>
-                    <td className="px-4 py-3 text-gray-600">{startup.dpiitCert || "—"}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <a

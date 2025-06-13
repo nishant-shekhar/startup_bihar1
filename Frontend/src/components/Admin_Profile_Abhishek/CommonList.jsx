@@ -48,7 +48,7 @@ const CommonList = ({ onSelect, url, title, type = "StartupProfile" }) => {
         //console.log(response.data?.data);
       } catch (error) {
         console.error("Error fetching data:", error);
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
           localStorage.clear(); // Optional: clear invalid token
           navigate("/login");
           console.error("Access forbidden. Please log in again.");
@@ -175,7 +175,13 @@ const CommonList = ({ onSelect, url, title, type = "StartupProfile" }) => {
   const filteredData = sdata.filter((item) => {
     const userId = item?.user?.user_id?.toLowerCase() || "";
     const status = item.documentStatus?.toLowerCase();
-    const matchesSearchTerm = userId.includes(searchTerm.toLowerCase());
+const regNo = item?.user?.registration_no?.toLowerCase() || "";
+const companyName = item?.user?.company_name?.toLowerCase() || "";
+const matchesSearchTerm = (
+  userId.includes(searchTerm.toLowerCase()) ||
+  regNo.includes(searchTerm.toLowerCase()) ||
+  companyName.includes(searchTerm.toLowerCase())
+);
 
     let matchesCategory = false;
     if (selectedCategory === "All") {
