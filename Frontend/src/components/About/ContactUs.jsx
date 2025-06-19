@@ -69,15 +69,6 @@ const ContactUs = () => {
 		  },
 		
 		  { 
-			id: 4, 
-			name: 'Megha Bhadani', 
-			email: 'startup-bihar@gov.in',
-			phone: '6287797917', 
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fmegha%20bhadani.jpeg?alt=media&token=2f1a8aa8-7c08-424c-a1bb-05becba32542', 
-			position: 'Consultant (Finance)', 
-			tag: 'Finance Wing' 
-		  },
-		  { 
 			id: 5, 
 			name: 'Shivendra Kumar', 
 			email: 'startup-bihar@gov.in',
@@ -86,15 +77,7 @@ const ContactUs = () => {
 			position: 'Jr. Consultant (Finance)', 
 			tag: 'Finance Wing' 
 		  },
-		  { 
-			id: 6, 
-			name: 'Pushkar Parag', 
-			email: 'startup-bihar@gov.in',
-			phone: '9262993979', 
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fpushkar.jpeg?alt=media&token=8a2385c3-3a0b-4716-984f-85784ee50b2e', 
-			position: 'Co-ordinator Finance', 
-			tag: 'Finance Wing' 
-		  },
+		
 		  { 
 			id: 7, 
 			name: 'Kunal Prakash', 

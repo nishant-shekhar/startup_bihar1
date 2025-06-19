@@ -342,6 +342,18 @@ model CoWorking {
   // Define the one-to-one relation with User:
   user                     User     @relation(fields: [userId], references: [user_id])
 }
+model CoWorkingSeatMap {
+  id              String   @id @default(uuid()) @map("_id")
+  center          String   // coworkingCenter → center (optional cleanup)
+  seatNo          String
+  seatName        String?  // Optional: if you want names like "A-1", "Corner Seat"
+  userId          String?  // nullable if seat not assigned yet
+  seatType        String?  // e.g., Desk, Cabin, Conference
+  status          String   // e.g., "Available", "Booked", "Inactive"
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
 
 
 model IPRReimbursement {
