@@ -152,6 +152,7 @@ const getStartupsByCategoryAdmin = async (req, res) => {
     const selectFields = {
       user_id: true,
       registration_no: true,
+      founder_name: true,
       company_name: true,
       email: true,
       logo: true,
@@ -168,6 +169,10 @@ const getStartupsByCategoryAdmin = async (req, res) => {
       seedFundAmount: true,
       districtRoc: true,
       dpiitCert: true,
+      revenueLY: true,
+      employeeCount: true,
+      dateOfIncorporation: true,
+      cin: true,
     };
 
     let startups;
