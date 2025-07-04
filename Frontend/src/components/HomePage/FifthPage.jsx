@@ -19,7 +19,7 @@ const FifthPage = () => {
 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl lg:mx-0 text-left ">
           <h2 className="text-4xl sm:text-6xl font-bold tracking-tight text-white">
-            Work with us
+            At a Glance
           </h2>
           <p className="mt-4 sm:mt-6 text-lg sm:text-2xl leading-7 sm:leading-10 text-gray-300">
             We invite startups and firms from across India and the world to collaborate with Bihar's thriving startup ecosystem, driving innovation, growth, and success together.

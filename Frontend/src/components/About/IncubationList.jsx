@@ -4,6 +4,8 @@ import topImage from "/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Fron
 import bottomImage from "/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Frontend/src/assets/bottom_left.png";
 import NavBarNew from '../HomePage/NavBarNew';
 import Footer from '../HomePage/footer';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const IncubationNodalList = () => {
     const data = [
@@ -12,9 +14,9 @@ const IncubationNodalList = () => {
             centerName: "Chandragupt Institute of Management (CIMP) Patna",
             district: "Patna",
             email: ["director@cimp.ac.in", "ceo.startup@cimp.ac.in", "Startup@cimp.ac.in", "StartupHelpline@cimp.ac.in"],
-            contactNo: ["9334076225","9128912345"],
+            contactNo: ["9334076225", "9128912345"],
             contactPerson: ["Mr. Kumod Kumar"],
-            designation: ["CAO, CIMP","CEO, CIMP BIIF"],
+            designation: ["CAO, CIMP", "CEO, CIMP BIIF"],
             facilities: [
                 "Grooming by Skilled Trainers",
                 "2-month Orientation Programme",
@@ -90,7 +92,7 @@ const IncubationNodalList = () => {
                 "Network access"
             ]
         },
-        
+
         {
             id: 5,
             centerName: "Central Institute of Petrochemicals Engineering & Technology (CIPET), Hajipur",
@@ -392,9 +394,29 @@ const IncubationNodalList = () => {
             facilities: [
                 "Aims to foster innovation and entrepreneurship, particularly in Electronic System Design and Manufacturing and Medical Electronics, offering infrastructure, technical expertise, and networking support for startups."
             ]
-        }    
+        }
     ];
-    
+
+    const handleDownloadExcel = () => {
+        const sheetData = data.map((item, index) => ({
+            "Sl. No.": index + 1,
+            "Incubation Center": item.centerName,
+            "District": item.district,
+            "Email": Array.isArray(item.email) ? item.email.join("\n") : item.email,
+            "Contact No": Array.isArray(item.contactNo) ? item.contactNo.join("\n") : item.contactNo,
+            "Contact Person": Array.isArray(item.contactPerson) ? item.contactPerson.join("\n") : item.contactPerson,
+            "Designation": Array.isArray(item.designation) ? item.designation.join("\n") : item.designation,
+            "Facilities": item.facilities.join("\n")
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(sheetData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'IncubationCenters');
+
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+        saveAs(blob, 'Incubation_Centers.xlsx');
+    };
 
     return (
         <div className="grid grid-cols-1">
@@ -415,76 +437,86 @@ const IncubationNodalList = () => {
                             List of Incubation Centers
                         </h2>
                     </div>
+                    <div className="flex justify-end mb-4">
+                        <button
+                            onClick={handleDownloadExcel}
+                            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded mr-20"
+                        >
+                            Download Excel
+                        </button>
+                    </div>
                     <div style={{ paddingTop: '20px', paddingBottom: '120px', paddingLeft: '100px', paddingRight: '100px', fontFamily: 'Arial, sans-serif' }}>
-                    <table
-    style={{
-        width: '100%',
-        borderCollapse: 'collapse',
-        margin: 'auto',
-        backgroundColor: '#f9f9f906',
-    }}
->
-    <thead>
-        <tr style={{ backgroundColor: '#ffffff', borderBottom: '2px solid #ccc' }}>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Sl. No.</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Name of Incubation Center</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>District</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Email</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Contact No</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Name of Contact Person</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Designation</th>
-            <th style={{ padding: '10px', border: '1px solid #ddd', width: '30%' }}>Details of Facilities</th>
-        </tr>
-    </thead>
-    <tbody>
-        {data.map((item) => (
-            <tr key={item.id}>
-                <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'center' }}>
-                    {item.id}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{item.centerName}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{item.district}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
-                    {item.email.map((email, index) => (
-                        <div key={index}>{email}</div>
-                    ))}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
-                    {Array.isArray(item.contactNo) ? (
-                        item.contactNo.map((contact, index) => (
-                            <div key={index}>{contact}</div>
-                        ))
-                    ) : (
-                        <div>{item.contactNo}</div>
-                    )}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
-                    {Array.isArray(item.contactPerson) ? (
-                        item.contactPerson.map((person, index) => (
-                            <div key={index}>{person}</div>
-                        ))
-                    ) : (
-                        <div>{item.contactPerson}</div>
-                    )}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                    {Array.isArray(item.designation) ? (
-                        item.designation.map((designation, index) => (
-                            <div key={index}>- {designation}</div>
-                        ))
-                    ) : (
-                        <div>- {item.designation}</div>
-                    )}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
-                    {item.facilities.map((facility, index) => (
-                        <div key={index}>- {facility}</div>
-                    ))}
-                </td>
-            </tr>
-        ))}
-    </tbody>
-</table>
+                        <table
+                            style={{
+                                width: '100%',
+                                borderCollapse: 'collapse',
+                                margin: 'auto',
+                                backgroundColor: '#f9f9f906',
+                            }}
+                        >
+
+
+                            <thead>
+                                <tr style={{ backgroundColor: '#ffffff', borderBottom: '2px solid #ccc' }}>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Sl. No.</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Name of Incubation Center</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>District</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Email</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Contact No</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Name of Contact Person</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd' }}>Designation</th>
+                                    <th style={{ padding: '10px', border: '1px solid #ddd', width: '30%' }}>Details of Facilities</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.map((item) => (
+                                    <tr key={item.id}>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd', textAlign: 'center' }}>
+                                            {item.id}
+                                        </td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{item.centerName}</td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>{item.district}</td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
+                                            {item.email.map((email, index) => (
+                                                <div key={index}>{email}</div>
+                                            ))}
+                                        </td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
+                                            {Array.isArray(item.contactNo) ? (
+                                                item.contactNo.map((contact, index) => (
+                                                    <div key={index}>{contact}</div>
+                                                ))
+                                            ) : (
+                                                <div>{item.contactNo}</div>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
+                                            {Array.isArray(item.contactPerson) ? (
+                                                item.contactPerson.map((person, index) => (
+                                                    <div key={index}>{person}</div>
+                                                ))
+                                            ) : (
+                                                <div>{item.contactPerson}</div>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd' }}>
+                                            {Array.isArray(item.designation) ? (
+                                                item.designation.map((designation, index) => (
+                                                    <div key={index}>- {designation}</div>
+                                                ))
+                                            ) : (
+                                                <div>- {item.designation}</div>
+                                            )}
+                                        </td>
+                                        <td style={{ padding: '10px', border: '1px solid #ddd', whiteSpace: 'pre-wrap' }}>
+                                            {item.facilities.map((facility, index) => (
+                                                <div key={index}>- {facility}</div>
+                                            ))}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
 
 
                     </div>

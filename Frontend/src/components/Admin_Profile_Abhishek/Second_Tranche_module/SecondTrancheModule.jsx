@@ -232,6 +232,47 @@ const SecondTrancheModuleDetails = ({ id }) => {
 			setComment((prevComment) => `${prevComment}\n• `);
 		}
 	};
+const downloadAllDocuments = () => {
+	const fileFields = [
+		{ key: "utilizationCertificate", label: "C.A certificate" },
+		{ key: "statusReport", label: "Status Report" },
+		{ key: "expenditurePlan", label: "Expenditure Plan" },
+		{ key: "bankStatement", label: "Bank Statement" },
+		{ key: "expenditureInvoice", label: "Expenditure Invoice" },
+		{ key: "geoTaggedPhotos", label: "Geo-tagged Photos" },
+	];
+
+	fileFields.forEach(({ key, label }) => {
+		const url = data[key];
+		if (url) {
+			const link = document.createElement("a");
+			link.href = url;
+			link.download = label;
+			link.target = "_blank";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+	});
+};
+const viewAllDocuments = () => {
+	const fileFields = [
+		"utilizationCertificate",
+		"statusReport",
+		"expenditurePlan",
+		"bankStatement",
+		"expenditureInvoice",
+		"geoTaggedPhotos",
+	];
+
+	fileFields.forEach(key => {
+		const url = data[key];
+		if (url) {
+			const viewerUrl = `https://docs.google.com/viewerng/viewer?url=${encodeURIComponent(url)}`;
+			window.open(viewerUrl, "_blank");
+		}
+	});
+};
 
 	return (
 		<div
@@ -241,7 +282,7 @@ const SecondTrancheModuleDetails = ({ id }) => {
 				scrollbarWidth: "none",
 			}}
 		>
-			<h1 className="pt-5 pl-8 text-2xl">Second Tranche Application Details </h1>
+			<h1 className="pt-5 pl-8 text-2xl">{data?.user?.company_name}  </h1>
 			<div className="overflow-x-auto p-4">
 				<div className="grid grid-cols-12 gap-4">
 					{/* Left Table */}
@@ -298,12 +339,30 @@ const SecondTrancheModuleDetails = ({ id }) => {
 					</table>
 				</div>
 			</div>
+<div className="flex items-center justify-between px-8 py-5">
+  <p className="text-sm font-light text-gray-600">
+    First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} |
+    Last Action on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
+  </p>
+  
+  <div className="flex items-center space-x-2">
+	<button
+      type="button"
+      onClick={downloadAllDocuments}
+      className="text-sm text-indigo-700 hover:text-indigo-900 underline hover:font-medium transition-all duration-200"
+    >
+      Download All Documents
+    </button>
+  <button
+      type="button"
+      onClick={viewAllDocuments}
+      className="text-sm text-indigo-700 hover:text-indigo-900 underline hover:font-medium transition-all duration-200"
+    >
+      Open All Documents
+    </button>
+	</div>
+</div>
 
-
-			<p className="pl-8 text-sm font-light text-gray-600">
-				First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} |
-				Last Action on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
-			</p>
 			<div className="px-8 py-5">
 				<table className="min-w-full bg-white">
 					<tbody>

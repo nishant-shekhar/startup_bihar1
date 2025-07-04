@@ -173,6 +173,7 @@ const getStartupsByCategoryAdmin = async (req, res) => {
       employeeCount: true,
       dateOfIncorporation: true,
       cin: true,
+      address: true,
     };
 
     let startups;

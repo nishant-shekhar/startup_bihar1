@@ -64,14 +64,14 @@ const submitSecondTranche = async (req, res) => {
 				documentStatus: "created",
 			},
 		});
-// Record the activity after successful update
-await prisma.activity.create({
-	data: {
-	  user_id: userId,
-	  action: 'Second Tranche Form Submitted',
-	  subtitle: `You have submitted your Second Tranche Form`,
-	},
-  });
+		// Record the activity after successful update
+		await prisma.activity.create({
+			data: {
+				user_id: userId,
+				action: 'Second Tranche Form Submitted',
+				subtitle: `You have submitted your Second Tranche Form`,
+			},
+		});
 		res.status(200).json({
 			message: existingEntry
 				? "Second tranche entry updated successfully"
@@ -92,15 +92,15 @@ const getAllSecnWithUserDetails = async (req, res) => {
 		const documents = await prisma.secondTranche.findMany({
 			select: {
 				id: true,
-				documentStatus:true,
-				updatedAt:true,
+				documentStatus: true,
+				updatedAt: true,
 				user: {
 					select: {
 						user_id: true, // Fields from the User model
 						registration_no: true,
 						company_name: true,
-						logo:true,
-						
+						logo: true,
+
 					},
 				},
 			},
@@ -132,20 +132,20 @@ const getSecondById = async (req, res) => {
 			where: { id: id }, // Use the ID to query the database
 			include: {
 				user: {
-				  select: {
-					user_id: true,          // Include specific fields from the User model
-					registration_no: true,
-					logo:true,
-					company_name: true,
-					founder_name: true,
-					dateOfIncorporation: true,
-					districtRoc:true,
-					cin:true,
-					mobile:true,
-					email:true,
-				  },
+					select: {
+						user_id: true,          // Include specific fields from the User model
+						registration_no: true,
+						logo: true,
+						company_name: true,
+						founder_name: true,
+						dateOfIncorporation: true,
+						districtRoc: true,
+						cin: true,
+						mobile: true,
+						email: true,
+					},
 				},
-			  },
+			},
 		});
 
 		if (!document) {
@@ -164,19 +164,19 @@ const getSecondById = async (req, res) => {
 	}
 };
 const getSecondByToken = async (req, res) => {
-// Ensure a token is provided in the request headers
+	// Ensure a token is provided in the request headers
 
 	try {
 		const token = req.headers.authorization?.split(" ")[1]; // Assuming Bearer <token> format
 		if (!token) {
 			return res.status(401).json({ error: "Authorization token is required" });
 		}
-		
+
 		// Decode the JWT to get the user ID
 		const decoded = jwt.verify(token, JWT_SECRET); // Use your JWT secret
 		const userId = decoded.user_id; // Adjust according to your token payload structure
 
-		
+
 
 		// Fetch the document from the database
 		const document = await prisma.secondTranche.findUnique({
@@ -263,50 +263,127 @@ const updateSecondStatus = async (req, res) => {
 
 const getSecondTrancheStatus = async (req, res) => {
 	try {
-	  // Extract the token from headers
-	  const token = req.headers.authorization?.split(' ')[1];
-	  if (!token) {
-		return res.status(401).json({ error: 'Unauthorized: No token provided' });
-	  }
-  
-	  // Decode the token to get the user ID
-	  let userId;
-	  try {
-		const decoded = jwt.verify(token, JWT_SECRET);
-		userId = decoded.user_id;
-	  } catch (err) {
-		return res.status(401).json({ error: 'Unauthorized: Invalid token' });
-	  }
-  
-	  // Query for documents linked to this user ID
-	  const document = await prisma.secondTranche.findUnique({
-		where: { userId },
-		select: {
-		  id: true,
-		  documentStatus: true,
-		  comment: true,
-		  // add other fields as necessary
-		},
-	  });
-  
-	  if (!document) {
-		// If document not found, return a response with documentStatus: null
-		return res.status(200).json({
-		  message: 'No Second Tranche status found for this user',
-		  document: { documentStatus: null, comment: null },
+		// Extract the token from headers
+		const token = req.headers.authorization?.split(' ')[1];
+		if (!token) {
+			return res.status(401).json({ error: 'Unauthorized: No token provided' });
+		}
+
+		// Decode the token to get the user ID
+		let userId;
+		try {
+			const decoded = jwt.verify(token, JWT_SECRET);
+			userId = decoded.user_id;
+		} catch (err) {
+			return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+		}
+
+		// Query for documents linked to this user ID
+		const document = await prisma.secondTranche.findUnique({
+			where: { userId },
+			select: {
+				id: true,
+				documentStatus: true,
+				comment: true,
+				// add other fields as necessary
+			},
 		});
-	  }
-  
-	  // Send the document and its status in response
-	  return res.status(200).json({
-		message: 'Seed Fund Status retrieved successfully',
-		document,
-	  });
+
+		if (!document) {
+			// If document not found, return a response with documentStatus: null
+			return res.status(200).json({
+				message: 'No Second Tranche status found for this user',
+				document: { documentStatus: null, comment: null },
+			});
+		}
+
+		// Send the document and its status in response
+		return res.status(200).json({
+			message: 'Seed Fund Status retrieved successfully',
+			document,
+		});
 	} catch (error) {
-	  console.error('Error retrieving user seed fund status:', error);
-	  res.status(500).json({ error: 'An error occurred while fetching the seed fund status' });
+		console.error('Error retrieving user seed fund status:', error);
+		res.status(500).json({ error: 'An error occurred while fetching the seed fund status' });
 	}
-  };
+};
+const getPaginatedSecondTrancheApplications = async (req, res) => {
+	try {
+		const { page = 1, status = "all" } = req.query;
+		const pageSize = 20;
+		const skip = (Number(page) - 1) * pageSize;
+
+		// Build filter condition
+		let whereClause = {};
+
+if (status !== "all") {
+  if (status === "created") {
+    // Handle null or "created" status using OR
+    whereClause = {
+      OR: [
+        { documentStatus: "created" },
+      ],
+    };
+  } else {
+    whereClause.documentStatus = status;
+  }
+}
+
+		// Fetch paginated data
+		const applications = await prisma.secondTranche.findMany({
+			where: whereClause,
+			skip,
+			take: pageSize,
+			orderBy: { updatedAt: 'desc' },
+			select: {
+				id: true,
+				documentStatus: true,
+				updatedAt: true,
+				createdAt: true,
+				comment: true,
+				user: {
+					select: {
+						user_id: true,
+						registration_no: true,
+						company_name: true,
+						logo: true,
+						founder_name: true,
+						mobile: true,
+					},
+				},
+			},
+		});
+
+		// Total counts for header cards
+		const totalCounts = {
+			all: await prisma.secondTranche.count(),
+			Accepted: await prisma.secondTranche.count({ where: { documentStatus: "Accepted" } }),
+			Rejected: await prisma.secondTranche.count({ where: { documentStatus: "Rejected" } }),
+			"Partially Rejected": await prisma.secondTranche.count({ where: { documentStatus: "Partially Rejected" } }),
+		};
+
+		// Count for pagination of current filtered set
+		const totalCount = await prisma.secondTranche.count({ where: whereClause });
+
+		return res.status(200).json({
+			message: "Applications fetched successfully",
+			data: applications,
+			pagination: {
+				total: totalCount,
+				currentPage: Number(page),
+				totalPages: Math.ceil(totalCount / pageSize),
+			},
+			totalCounts,
+		});
+	} catch (error) {
+		console.error("Error fetching paginated Second Tranche applications:", error);
+		return res.status(500).json({
+			error: "An error occurred while fetching applications",
+		});
+	}
+};
+
+
 
 module.exports = {
 	submitSecondTranche,
@@ -314,5 +391,6 @@ module.exports = {
 	getAllSecnWithUserDetails,
 	updateSecondStatus,
 	getSecondTrancheStatus,
-	getSecondByToken
+	getSecondByToken,
+	getPaginatedSecondTrancheApplications,
 };

@@ -4,7 +4,8 @@ import topImage from "/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Fron
 import bottomImage from "/Users/nishantshekhar/Documents/GitHub/startup_bihar1/Frontend/src/assets/bottom_left.png"
 import NavBarNew from '../HomePage/NavBarNew';
 import Footer from '../HomePage/footer';
-
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 const StartupIncubationCell = () => {
     const data = [
         {
@@ -437,6 +438,25 @@ const StartupIncubationCell = () => {
         },
     ];
 
+const downloadExcel = () => {
+  const worksheetData = data.map(({ id, college, district, facultyIncharge, email, contactNumber, coordinator }) => ({
+    "Sl. No.": id,
+    "Engineering College": college,
+    "District": district,
+    "Faculty Incharge": facultyIncharge,
+    "Email": email,
+    "Contact Number": contactNumber,
+    "Startup Cell Coordinator": coordinator
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'StartupCells');
+
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const fileData = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  saveAs(fileData, 'Startup_Cells.xlsx');
+};
 
 
     return (
@@ -459,6 +479,15 @@ const StartupIncubationCell = () => {
                     </h2>
 
                 </div>
+                <div className="flex justify-end pr-10 pb-4">
+  <button
+    onClick={downloadExcel}
+    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded shadow mr-16"
+  >
+    Download Excel
+  </button>
+</div>
+
                 <div style={{ paddingTop: '20px',paddingBottom: '120px',paddingLeft: '100px',paddingRight: '100px', fontFamily: 'Arial, sans-serif' }}>
                     <table
                         style={{

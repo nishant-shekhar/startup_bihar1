@@ -9,9 +9,9 @@ import NavBarNew from "../HomePage/NavBarNew";
 
 const teamLead = [
     {
-        name: "Nishant Sekhar",
+        name: "Nishant Shekhar",
         role: "Founder, NS Apps Innovations",
-        image: "https://media.licdn.com/dms/image/v2/D4D03AQFUD3EMJW-SMQ/profile-displayphoto-shrink_800_800/B4DZR_Z.U3HkAg-/0/1737304303571?e=1743638400&v=beta&t=aelt0OVRghDVsVc87Jr_jT6U_UumWK59U16-DP0ZnDY",
+        image: "https://media.licdn.com/dms/image/v2/D4D03AQFUD3EMJW-SMQ/profile-displayphoto-shrink_800_800/B4DZR_Z.U3HkAg-/0/1737304303571?e=1756339200&v=beta&t=8hP8IgMBOmmkcwGtdACuWoSxnXgkgFZSlmS6AnHFYIc",
         show: true,
         linkedin: "https://www.linkedin.com/in/nishantshekhar28/",
         technologies: "React, Node.js, Prisma, AWS",

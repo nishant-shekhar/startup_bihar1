@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CompanyCard2 from './StartupCardWide';
 
-const CardList = ({ category }) => {
+const CardListM = ({ category }) => {
   // Sample card data
   const cardsData = [
     { logo: 'https://cdn.brandfetch.io/idLWYGd2zx/w/300/h/300/theme/dark/icon.png?k=id64Mup7ac&t=1668030994775', name: 'Dream Fire Studio', founder: 'Robert', founderLogo: 'https://randomuser.me/api/portraits/men/1.jpg', startupSince: '2023', fundingStatus: 'Seed Funded', Category: "Tech", tagline: "Innovating digital solutions for next-gen tech needs." },
@@ -77,4 +77,4 @@ const CardList = ({ category }) => {
   );
 };
 
-export default CardList;
+export default CardListM;
