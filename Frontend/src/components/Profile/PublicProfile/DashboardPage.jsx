@@ -72,12 +72,32 @@ const chartDataRevenue = {
 
 const chartOptionsRevenue = {
   responsive: true,
-  maintainAspectRatio: false, // Important!
+  maintainAspectRatio: false,
   plugins: {
-    legend: { position: "top" },
+    legend: {
+      position: "top",
+    },
     title: {
-      display: true,
-      text: "",
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: function (context) {
+          const label = context.dataset.label || "";
+          const value = context.raw || 0;
+          const range = context.label || "";
+          return `${value} startups in range ${range}`;
+        },
+      },
+      backgroundColor: "#1f2937", // dark gray
+      titleColor: "#facc15",       // yellow
+      bodyColor: "#ffffff",        // white
+      borderColor: "#e5e7eb",      // light border
+      borderWidth: 1,
+      padding: 10,
+      cornerRadius: 6,
+      displayColors: false,
     },
   },
   scales: {
@@ -85,7 +105,10 @@ const chartOptionsRevenue = {
       beginAtZero: true,
       title: {
         display: true,
-        text: "Number of Companies",
+        text: "Revenue wise Startups",
+      },
+      ticks: {
+        stepSize: 50,
       },
     },
     x: {
@@ -100,6 +123,7 @@ const chartOptionsRevenue = {
     },
   },
 };
+
 
 
 
@@ -498,11 +522,9 @@ const DashboardPagePublic = () => {
       <NavBarNew />
       <div className="md:px-4 pt-12 sm:pt-24 bg-gradient-to-br from-[#f3e8ff] via-[#e0f2f1] to-[#fce4ec] min-h-screen ">
         <div className="mx-auto max-w-3xl text-center mt-20 sm:mt-4">
-          <h2 className="text-base font-semibold leading-7 text-indigo-600">
-            A Glimpse into Bihar’s Startup Journey
-          </h2>
+         
           <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Key Insights from Our Startup Ecosystem
+            Startup Bihar Analytics
           </p>
 
         </div>
@@ -511,73 +533,80 @@ const DashboardPagePublic = () => {
           {/* Top 40% */}
           <div className="gap-4 flex flex-col">
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Card 1 */}
-              <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-                {/* Icon Top Right */}
-                <div className="absolute top-4 right-4 text-purple-500 ">
-                  <Building2 className="" size={24} />
-                </div>
+<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+  {/* Card 1 */}
+  <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    <div className="absolute top-4 right-4 text-purple-500">
+      <Building2 size={24} />
+    </div>
+    <h3 className="text-sm font-medium text-gray-500 mb-1">Total Startup</h3>
+    <p className="text-3xl font-bold text-purple-700 mb-2">1500+</p>
+    <div className="flex items-center gap-2 text-sm text-green-600">
+      <ArrowUpRight size={16} />
+    </div>
+  </div>
 
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Total Startup</h3>
-                <p className="text-3xl font-bold text-purple-700 mb-2">1540</p>
+  {/* Card 2 */}
+  <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    <div className="absolute top-4 right-4 text-green-500">
+      <BadgeCheck size={24} />
+    </div>
+    <h3 className="text-sm font-medium text-gray-500 mb-1">Fund Disbursed</h3>
+    <p className="text-3xl font-bold text-green-700 mb-2">₹75+ Cr</p>
+    <div className="flex items-center gap-2 text-sm text-green-600">
+      <ArrowUpRight size={16} />
+    </div>
+  </div>
 
-                {/* Trend Section */}
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <ArrowUpRight size={16} />
-                  <span>450 increase</span>
-                  <span className="text-gray-400 ml-auto text-xs">June 2025</span>
-                </div>
-              </div>
+  {/* Card 3 */}
+  <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    <div className="absolute top-4 right-4 text-yellow-500">
+      <Clock size={24} />
+    </div>
+    <h3 className="text-sm font-medium text-gray-500 mb-1">DPIIT Registered Startups</h3>
+    <p className="text-3xl font-bold text-yellow-600 mb-2">3500+</p>
+    <div className="flex items-center gap-2 text-sm text-green-600">
+      <ArrowUpRight size={16} />
+    </div>
+  </div>
 
-              {/* Card 2 */}
-              <div className="bg-white/70 backdrop-blur-md  border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-                <div className="absolute top-4 right-4 text-green-500">
-                  <BadgeCheck size={24} />
-                </div>
+  {/* Card 4 */}
+  <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    <div className="absolute top-4 right-4 text-blue-500">
+      <Ticket size={24} />
+    </div>
+    <h3 className="text-sm font-medium text-gray-500 mb-1">Events Conducted</h3>
+    <p className="text-3xl font-bold text-blue-700 mb-2">850+</p>
+    <div className="flex items-center gap-2 text-sm text-green-600">
+      <ArrowUpRight size={16} />
+    </div>
+  </div>
 
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Fund Disbursed</h3>
-                <p className="text-3xl font-bold text-green-700 mb-2">₹75 Cr</p>
+  {/* Card 5 - Startup Cells */}
+  <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    <div className="absolute top-4 right-4 text-indigo-500">
+      <Building2 size={24} />
+    </div>
+    <h3 className="text-sm font-medium text-gray-500 mb-1">Startup Cells</h3>
+    <p className="text-3xl font-bold text-indigo-700 mb-2">46</p>
+    <div className="flex items-center gap-2 text-sm text-green-600">
+      <ArrowUpRight size={16} />
+    </div>
+  </div>
 
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <ArrowUpRight size={16} />
-                  <span>5.7% increase</span>
-                  <span className="text-gray-400 ml-auto text-xs">June 2025</span>
-                </div>
-              </div>
+  {/* Card 6 - Incubation Centers */}
+  <div className="bg-white/70 backdrop-blur-md border border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+    <div className="absolute top-4 right-4 text-rose-500">
+      <BadgeCheck size={24} />
+    </div>
+    <h3 className="text-sm font-medium text-gray-500 mb-1">Incubation Centers</h3>
+    <p className="text-3xl font-bold text-rose-700 mb-2">22</p>
+    <div className="flex items-center gap-2 text-sm text-green-600">
+      <ArrowUpRight size={16} />
+    </div>
+  </div>
+</div>
 
-              {/* Card 3 */}
-              <div className="bg-white/70 backdrop-blur-md  border-gray-100/90 rounded-3xl p-5  border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-                <div className="absolute top-4 right-4 text-yellow-500">
-                  <Clock size={24} />
-                </div>
-
-                <h3 className="text-sm font-medium text-gray-500 mb-1">DPIIT Resgistered Startups</h3>
-                <p className="text-3xl font-bold text-yellow-600 mb-2">3500+</p>
-
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <ArrowUpRight size={16} />
-                  <span>42 increase</span>
-                  <span className="text-gray-400 ml-auto text-xs">Last Week</span>
-                </div>
-              </div>
-
-              {/* Card 4 */}
-              <div className="bg-white/70 backdrop-blur-md border-gray-100/90 rounded-3xl p-5 border border-gray-200 relative overflow-hidden drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
-                <div className="absolute top-4 right-4 text-blue-500">
-                  <Ticket size={24} />
-                </div>
-
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Events Conducted</h3>
-                <p className="text-3xl font-bold text-blue-700 mb-2">850+</p>
-
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <ArrowUpRight size={16} />
-                  <span>15 increase</span>
-                  <span className="text-gray-400 ml-auto text-xs">Today</span>
-                </div>
-              </div>
-            </div>
 
 
 
