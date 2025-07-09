@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // Import useState
+import React, { useState, useEffect }from "react"; // Import useState
 import { motion } from "framer-motion";
 import NavBarNew from "./NavBarNew";
 import ThirdPage from "./ThirdPage";
@@ -14,6 +14,28 @@ import DashboardPagePublic from "../Profile/PublicProfile/DashboardPage";
 
 const HomePage = () => {
 	const [isCountdownComplete, setCountdownComplete] = useState(false);
+
+	const [showDialog, setShowDialog] = useState(true);
+const [secondsLeft, setSecondsLeft] = useState(30);
+
+useEffect(() => {
+  if (!showDialog) return;
+
+  const interval = setInterval(() => {
+    setSecondsLeft((prev) => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        setShowDialog(false);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [showDialog]);
+
+
 
 	const fadeIn = {
 		hidden: { opacity: 0, y: 20 },
@@ -308,6 +330,38 @@ const HomePage = () => {
 
 			<SixthPage />
 			<Footer />
+			{showDialog && (
+  <div
+    className="fixed inset-0 z-50 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center"
+    onClick={() => setShowDialog(false)}
+  >
+    <div
+      className="relative bg-white rounded-2xl overflow-hidden w-[90%] max-w-7xl h-[80vh] shadow-xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close button */}
+      <button
+        className="absolute top-3 left-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-8 h-8 flex items-center justify-center z-10"
+        onClick={() => setShowDialog(false)}
+      >
+        ×
+      </button>
+
+      {/* Image link */}
+      <a href="https://thebharatproject.co.in/bihar-idea-festival.html" target="_blank" rel="noopener noreferrer"   className="cursor-pointer" >
+        <img
+          src="ideafest.png"
+          alt="Promotion"
+          className="w-full h-full object-cover cursor-pointer"
+        />
+      </a>
+
+      
+    </div>
+  </div>
+)}
+
+
 		</div>
 	);
 };
