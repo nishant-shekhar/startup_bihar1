@@ -15,7 +15,7 @@ import DashboardPagePublic from "../Profile/PublicProfile/DashboardPage";
 const HomePage = () => {
 	const [isCountdownComplete, setCountdownComplete] = useState(false);
 
-	const [showDialog, setShowDialog] = useState(true);
+	const [showDialog, setShowDialog] = useState(false);
 const [secondsLeft, setSecondsLeft] = useState(30);
 
 useEffect(() => {
@@ -352,7 +352,7 @@ useEffect(() => {
         <img
           src="ideafest.png"
           alt="Promotion"
-          className="w-full h-full object-cover cursor-pointer"
+          className="w-full h-full object-contain cursor-pointer"
         />
       </a>
 
