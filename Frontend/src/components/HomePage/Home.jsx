@@ -15,7 +15,7 @@ import DashboardPagePublic from "../Profile/PublicProfile/DashboardPage";
 const HomePage = () => {
 	const [isCountdownComplete, setCountdownComplete] = useState(false);
 
-	const [showDialog, setShowDialog] = useState(false);
+	const [showDialog, setShowDialog] = useState(true);
 const [secondsLeft, setSecondsLeft] = useState(30);
 
 useEffect(() => {
@@ -290,13 +290,13 @@ useEffect(() => {
 							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
-					{/* Notification Section */}
+					{/* Notification Section *
 					<motion.div
 						className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
 						variants={fadeIn}
 					>
 						<div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-red-700 ring-1 ring-red-700/10 hover:ring-red-700/20 bg-red-50 flex items-center space-x-2">
-							{/* Animated "NEW" Badge */}
+							
 							<span className="animate-pulse text-xs  text-white bg-red-600 px-2 py-0.5 rounded-full">
 								New
 							</span>
@@ -312,8 +312,7 @@ useEffect(() => {
 								</a>
 							</span>
 						</div>
-					</motion.div>
-
+					</motion.div>*/}
 
 				</motion.div>
 
@@ -350,7 +349,7 @@ useEffect(() => {
       {/* Image link */}
       <a href="https://thebharatproject.co.in/bihar-idea-festival.html" target="_blank" rel="noopener noreferrer"   className="cursor-pointer" >
         <img
-          src="ideafest.png"
+          src="banneridea.png"
           alt="Promotion"
           className="w-full h-full object-contain cursor-pointer"
         />
