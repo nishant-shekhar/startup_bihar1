@@ -16,7 +16,7 @@ const HomePage = () => {
 	const [isCountdownComplete, setCountdownComplete] = useState(false);
 
 	const [showDialog, setShowDialog] = useState(true);
-const [secondsLeft, setSecondsLeft] = useState(30);
+const [secondsLeft, setSecondsLeft] = useState(2);
 
 useEffect(() => {
   if (!showDialog) return;
@@ -25,7 +25,7 @@ useEffect(() => {
     setSecondsLeft((prev) => {
       if (prev <= 1) {
         clearInterval(interval);
-        setShowDialog(false);
+        //setShowDialog(false);
         return 0;
       }
       return prev - 1;
