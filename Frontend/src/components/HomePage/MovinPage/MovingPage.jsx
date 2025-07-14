@@ -68,12 +68,12 @@ const MovingPage = () => {
         <div id="startups" className='w-screen overflow-hidden'>
             <div className='flex m-4 justify-between'>
                 <h1 className='text-2xl font-semibold px-10 lg:max-w-7xl lg:px-10'>Top Startups</h1>
-                <Link to="/AllStartups" className="flex items-center px-10 lg:max-w-7xl lg:px-10">
+                {/*<Link to="/AllStartups" className="flex items-center px-10 lg:max-w-7xl lg:px-10">
                     <span className="text-gray-700 font-semibold mr-2">See all</span>
                     <div className="flex items-center justify-center w-8 h-8 bg-indigo-500 rounded-full hover:bg-indigo-400 transition">
                         <FaArrowRight className="text-white text-sm" />
                     </div>
-                </Link>
+                </Link>*/}
             </div>
 
             {/* Infinite Scrolling Section */}

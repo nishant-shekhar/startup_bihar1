@@ -20,8 +20,7 @@ const Footer = () => {
 									DEPARTMENT OF INDUSTRIES <br />
 									Government of Bihar <br />
 									Copyright owned by DoI Bihar,
-									<br /> All Rights Reserved <br /> Privacy and Policy | Terms
-									of use | Copyright Policy
+									<br /> All Rights Reserved <br /> 
 									<div className="flex items-center gap-4 mt-4">
 										<h2 className="text-sm py-4 font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
 											<HiOutlineMail />
