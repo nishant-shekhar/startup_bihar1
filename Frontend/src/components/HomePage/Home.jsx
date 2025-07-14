@@ -256,7 +256,7 @@ useEffect(() => {
 					>
 						<div className="relative rounded-full px-3 py-1 text-xs sm:text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
 							Announcing new opportunities for growth.
-							<a href="#" className="font-semibold text-indigo-600 ml-2">
+							<a href="/ecosystem" className="font-semibold text-indigo-600 ml-2">
 								<span className="absolute inset-0" aria-hidden="true"></span>
 								Read more <span aria-hidden="true">&rarr;</span>
 							</a>
