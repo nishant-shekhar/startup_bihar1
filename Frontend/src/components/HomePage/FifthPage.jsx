@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import CountUp from 'react-countup';
 import { Parallax } from 'react-parallax';
 import { useInView } from 'react-intersection-observer';
+import { Link } from 'react-router-dom'
+
 
 const FifthPage = () => {
     const { ref, inView } = useInView({

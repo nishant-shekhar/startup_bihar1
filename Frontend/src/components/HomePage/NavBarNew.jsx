@@ -99,16 +99,7 @@ const NavBarNew = () => {
 
 							
 							
-							<ScrollLink
-								to="work"
-								smooth={true}
-								offset={-50}
-								duration={500}
-								className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
-							>
-								<Link to="/">At a Glance
-</Link>
-							</ScrollLink>
+						
 						
 							
 							<Link
@@ -269,18 +260,10 @@ const NavBarNew = () => {
 					{/* Mobile Menu */}
 				{mobileMenu && (
   <div className="flex flex-col lg:hidden p-4 bg-white shadow-md space-y-2">
-    <RouterLink to="/" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      Startups List
-    </RouterLink>
-    <RouterLink to="/" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      Vision
-    </RouterLink>
-    <RouterLink to="/" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      At a Glance
-    </RouterLink>
-    <RouterLink to="/" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      Contact Us
-    </RouterLink>
+  
+    
+
+  
     <RouterLink to="/PublicDashboard" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
       Dashboard
     </RouterLink>

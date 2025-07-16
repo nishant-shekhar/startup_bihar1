@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LogOutDialogBox from '../Profile/StartupProfile/Navbar/LogoutDialog';
+import { Link } from 'react-router-dom'
 
 
 const LeftBar = ({ changePanel }) => {
@@ -131,12 +132,18 @@ const LeftBar = ({ changePanel }) => {
 
   return (
     <div className="w-full bg-gray-900 h-screen overflow-y-auto overflow-x-hidden">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700  ">
+					<a href="/" className="font-semibold text-white text-lg">
+						Startup Bihar
+					</a>
+				</div>
 				<div className="flex items-center pt-12 pl-8 gap-4">
+           
         <div>
           <img
             src="https://www.w3schools.com/howto/img_avatar.png"
             alt="avatar"
-            className="w-12 h-12 rounded-full"
+            className="w-12 h-12 rounded-full"  
           />
         </div>
         <div className="text-white">

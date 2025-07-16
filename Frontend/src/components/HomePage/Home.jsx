@@ -290,7 +290,7 @@ useEffect(() => {
 							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
-					{/* Notification Section *
+					{/* Notification Section */}
 					<motion.div
 						className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
 						variants={fadeIn}
@@ -303,7 +303,7 @@ useEffect(() => {
 							<span>
 								Request for Quotation For Appointment of Statutory Auditor for BSFT
 								<a
-									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FROQ%20-%20memo%20No.-2137%2C%20Dated-02.06.2025.pdf?alt=media&token=3eb238d8-edc2-46b7-8b38-89050c6b306a"
+									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FMemo%20No.-2624%2C%20Dated-16.07.2025.pdf?alt=media&token=b9090b01-f9d7-4987-9f0c-e8a94ceb00f4"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="font-semibold text-red-800 ml-2"
@@ -312,7 +312,7 @@ useEffect(() => {
 								</a>
 							</span>
 						</div>
-					</motion.div>*/}
+					</motion.div>
 
 				</motion.div>
 
@@ -322,10 +322,10 @@ useEffect(() => {
 				{/* Moving Page Component */}
 				<MovingPage />
 			</div>
-			<FifthPage />
 
 			<ThirdPage />
 			<FourthPage />
+			<FifthPage />
 
 			<SixthPage />
 			<Footer />

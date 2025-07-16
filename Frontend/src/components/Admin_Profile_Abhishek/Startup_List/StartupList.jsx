@@ -146,7 +146,7 @@ const StartupList = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className=" mx-auto px-6 py-10">
         {/* Category Tags */}
         <div className="mb-6 flex flex-wrap gap-3 justify-center">
           {categories.map((category) => (
@@ -209,100 +209,106 @@ const StartupList = () => {
             </div>
 
           ) : (
-            <table className="min-w-full table-auto text-xs bg-white border border-gray-900 rounded-md shadow">
-              <thead className="bg-gray-900 text-white">
-                <tr>
-                  {[
-                    "User ID","Registration No" ,"Logo", "Company Name", "Phone", "Email", "District ROC",  "Website",
-                    "Seed Fund", "Second Tranche", "Post Seed", "Matching Loan", "Top Startup"
-                  ].map((header) => (
-                    <th key={header} className="px-4 py-3 text-left font-semibold border-b border-gray-200">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStartups.map((startup) => (
-                  <tr
-                    key={startup.user_id}
-                    className="hover:bg-indigo-50 transition cursor-pointer border-b border-gray-200"
-                    onClick={() => openStartupDialog(startup)}
-                  >
-                    <td className="px-4 py-3">{startup.user_id}</td>
-                    <td className="px-4 py-3">{startup.registration_no}</td>
-                    <td className="px-4 py-3">
-                      <img
-                        src={
-                          startup.logo ||
-                          "https://media.istockphoto.com/id/924915448/vector/startup-icon-simple-element-illustration.jpg?s=612x612&w=0&k=20&c=CQhjbpi6bX9F8Ajv8ZT2xEgpuCHaO_4UQ4mb1tHJJwE="
-                        }
-                        alt="Logo"
-                        className="h-10 w-10 rounded-full border shadow object-cover"
-                      />
-                    </td>
-                    <td className="px-4 py-3 font-medium text-gray-800">
-                      {startup.company_name}
-                    </td>
-                    {/* Mobile Column */}
-                    <td className="px-4 py-3 text-gray-600 whitespace-pre-line">
-                      {startup.mobile?.split(";").map((num, idx) => (
-                        <div key={idx}>{num.trim()}</div>
-                      ))}
-                    </td>
+<table className="min-w-full w-full table-auto text-xs bg-white border border-gray-900 rounded-md shadow">
+  <thead className="bg-gray-900 text-white">
+    <tr>
+      {[
+        "Sr. No", "User ID", "Registration No", "Logo", "Company Name", "Phone", "Email",
+        "District ROC", "Website", "Seed Fund", "Second Tranche",
+        "Post Seed", "Matching Loan", "Top Startup"
+      ].map((header) => (
+        <th
+          key={header}
+          className="px-4 py-3 text-left font-semibold border-b border-gray-200"
+        >
+          {header}
+        </th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {filteredStartups.map((startup, index) => (
+      <tr
+        key={startup.user_id}
+        className="hover:bg-indigo-50 transition cursor-pointer border-b border-gray-200"
+        onClick={() => openStartupDialog(startup)}
+      >
+        <td className="px-4 py-3">{index + 1}</td> {/* Sr. No */}
+        <td className="px-4 py-3">{startup.user_id}</td>
+        <td className="px-4 py-3">{startup.registration_no}</td>
+        <td className="px-4 py-3">
+          <img
+            src={
+              startup.logo ||
+              "startup.png"
+            }
+            alt="Logo"
+            className="h-10 w-10 rounded-full border shadow object-cover"
+          />
+        </td>
+        <td className="px-4 py-3 font-medium text-gray-800">
+          {startup.company_name}
+        </td>
+        <td className="px-4 py-3 text-gray-600 whitespace-pre-line">
+          {startup.mobile?.split(";").map((num, idx) => (
+            <div key={idx}>{num.trim()}</div>
+          ))}
+        </td>
+        <td className="px-4 py-3 text-gray-600 whitespace-pre-line">
+          {startup.email?.split(";").map((mail, idx) => (
+            <div key={idx}>{mail.trim()}</div>
+          ))}
+        </td>
+        <td className="px-4 py-3 text-gray-600">{startup.districtRoc}</td>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <a
+              href={
+                startup.website?.startsWith("http")
+                  ? startup.website
+                  : `https://${startup.website}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:text-indigo-800 transition"
+              title="Visit Website"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Globe className="w-5 h-5" />
+            </a>
+            <span className="truncate max-w-[160px] text-gray-500 text-xs">
+              {startup.website}
+            </span>
+          </div>
+        </td>
+        <td className="px-4 py-3 text-gray-700">
+          ₹ {startup.seedFundAmount}
+        </td>
+        <td className="px-4 py-3 text-gray-700">
+          ₹ {startup.secondTrancheAmount}
+        </td>
+        <td className="px-4 py-3 text-gray-700">
+          ₹ {startup.postSeedAmount}
+        </td>
+        <td className="px-4 py-3 text-gray-700">
+          ₹ {startup.matchingLoanAmount}
+        </td>
+        <td className="px-4 py-3">
+          {startup.topStartup ? (
+            <span className="bg-black text-white rounded-full px-2 py-1 text-xs">
+              Yes
+            </span>
+          ) : (
+            <span className="bg-gray-200 text-black rounded px-2 py-1 text-xs">
+              No
+            </span>
+          )}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
-                    {/* Email Column */}
-                    <td className="px-4 py-3 text-gray-600 whitespace-pre-line">
-                      {startup.email?.split(";").map((mail, idx) => (
-                        <div key={idx}>{mail.trim()}</div>
-                      ))}
-                    </td>
-
-                    <td className="px-4 py-3 text-gray-600">{startup.districtRoc}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={
-                            startup.website?.startsWith("http")
-                              ? startup.website
-                              : `https://${startup.website}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-600 hover:text-indigo-800 transition"
-                          title="Visit Website"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Globe className="w-5 h-5" />
-                        </a>
-                        <span className="truncate max-w-[160px] text-gray-500 text-xs">
-                          {startup.website}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      ₹ {startup.seedFundAmount}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      ₹ {startup.secondTrancheAmount}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      ₹ {startup.postSeedAmount}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      ₹ {startup.matchingLoanAmount}
-                    </td>
-                    <td className="px-4 py-3">
-                      {startup.topStartup ? (
-                        <CircleCheck className="text-green-500 w-5 h-5" />
-                      ) : (
-                        <CircleX className="text-red-500 w-5 h-5" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
 
 
           )}

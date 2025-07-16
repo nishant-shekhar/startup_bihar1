@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast'; // Import toast for notifications
 import loginvid from '../../assets/loginvid.mp4'; // Video import
+import { Link } from 'react-router-dom'
 
 const LoginCopy = ({ onLogin }) => {  // Accept the prop here
   const [id, setId] = useState('');
@@ -83,11 +84,13 @@ const LoginCopy = ({ onLogin }) => {  // Accept the prop here
     <div className="relative flex items-center justify-center min-h-screen bg-gray-100 px-6 py-12 lg:px-8">
       <div className="relative z-10 bg-white p-6 rounded-lg shadow-md login-container w-full max-w-xs mx-auto">
         <div className="sm:mx-auto sm:w-full sm:max-w-xs">
-          <img
-            className="mx-auto h-10 w-auto"
-            src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
-            alt="Startup Bihar"
-          />
+         <Link to="/">
+    <img
+      className="mx-auto h-10 w-auto cursor-pointer"
+      src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
+      alt="Startup Bihar"
+    />
+  </Link>
           <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
             Sign in to your account
           </h2>
