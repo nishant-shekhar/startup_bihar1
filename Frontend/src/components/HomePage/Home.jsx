@@ -11,13 +11,28 @@ import Footer from "./footer";
 import CountdownTimer from "./CountdownTimer";
 import CountUp from 'react-countup';
 import DashboardPagePublic from "../Profile/PublicProfile/DashboardPage";
+import { Lightbulb } from "lucide-react"; // or any icon library you're using
 
 const HomePage = () => {
 	const [isCountdownComplete, setCountdownComplete] = useState(false);
 
 	const [showDialog, setShowDialog] = useState(true);
 const [secondsLeft, setSecondsLeft] = useState(2);
+const [totalIdeas, setTotalIdeas] = useState(null);
 
+  useEffect(() => {
+    const fetchIdeasCount = async () => {
+      try {
+        const response = await fetch("https://9w19cua4ga.execute-api.ap-south-1.amazonaws.com/prod/count");
+        const data = await response.json();
+        setTotalIdeas(data.count);
+      } catch (error) {
+        console.error("Error fetching ideas count:", error);
+      }
+    };
+
+    fetchIdeasCount();
+  }, []);
 useEffect(() => {
   if (!showDialog) return;
 
@@ -334,29 +349,41 @@ useEffect(() => {
     className="fixed inset-0 z-50 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center"
     onClick={() => setShowDialog(false)}
   >
-    <div
-      className="relative bg-white rounded-2xl overflow-hidden w-[90%] max-w-7xl h-[80vh] shadow-xl"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* Close button */}
-      <button
-        className="absolute top-3 left-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-8 h-8 flex items-center justify-center z-10"
-        onClick={() => setShowDialog(false)}
-      >
-        ×
-      </button>
+   <div
+  className="relative bg-white rounded-2xl overflow-hidden w-[90%] max-w-7xl h-[80vh] shadow-xl"
+  onClick={(e) => e.stopPropagation()}
+>
+  {/* Close button */}
+  <button
+    className="absolute top-3 left-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full w-8 h-8 flex items-center justify-center z-10"
+    onClick={() => setShowDialog(false)}
+  >
+    ×
+  </button>
 
-      {/* Image link */}
-      <a href="https://thebharatproject.co.in/bihar-idea-festival.html" target="_blank" rel="noopener noreferrer"   className="cursor-pointer" >
-        <img
-          src="banneridea.png"
-          alt="Promotion"
-          className="w-full h-full object-contain cursor-pointer"
-        />
-      </a>
+  {/* Image link */}
+  <a
+    href="https://thebharatproject.co.in/bihar-idea-festival.html"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="cursor-pointer"
+  >
+    <img
+      src="banneridea.png"
+      alt="Promotion"
+      className="w-full h-full object-contain cursor-pointer"
+    />
+  </a>
 
-      
-    </div>
+  {totalIdeas !== null && (
+      <div className="absolute bottom-[5%] left-1/2 transform -translate-x-1/2 bg-white/90 border border-yellow-400 shadow-lg rounded-xl px-6 py-3 flex items-center gap-2 backdrop-blur-sm">
+        <Lightbulb className="text-yellow-500" size={20} />
+        <span className="text-sm font-semibold text-gray-800">
+          Total ideas submitted: <span className="text-yellow-600">{totalIdeas}</span>
+        </span>
+      </div>
+    )}
+</div>
   </div>
 )}
 

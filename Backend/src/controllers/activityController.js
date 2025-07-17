@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const jwt = require('jsonwebtoken'); // Assuming JWT is used for tokens
+const { get } = require('../routes/notificationRoutes');
 
 // Middleware to Extract ID from Token
 
@@ -154,11 +155,40 @@ const recordActivity = async (req, res) => {
       res.status(500).json({ error: 'An error occurred while fetching activities' });
     }
   };
+  // Get all activity logs for a specific startup user_id
+const getActivityStartup = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId parameter' });
+    }
+
+    const activities = await prisma.activity.findMany({
+        where: {
+          OR: [
+            { user_id: userId || undefined },
+          ],
+        },
+        orderBy: { timestamp: 'desc' },
+      });
+  
+      res.status(200).json({
+        message: 'Activities retrieved successfully',
+        activities,
+      });
+  } catch (error) {
+    console.error('Error fetching startup activity logs:', error);
+    res.status(500).json({ error: 'An error occurred while fetching activity logs.' });
+  }
+};
+
 
 module.exports = {
   recordActivity,
   getActivities,
   getAdminActivities,
-  recordActivityAdmin
+  recordActivityAdmin,
+  getActivityStartup
 };
 

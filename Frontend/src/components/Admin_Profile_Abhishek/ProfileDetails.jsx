@@ -149,7 +149,7 @@ const StartupProfileDetails = ({ id }) => {
 			await fetchData(); // Update the data after status change
 
 				// Post notification
-		await postNotification("Your Start-up application has been accepted.");
+		await postNotification("Your Start-up application has been verified.");
 		} catch (error) {
 			console.error("Error updating data:", error);
 		}
@@ -513,7 +513,7 @@ const StartupProfileDetails = ({ id }) => {
 						className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white"
 						onClick={handleAccept}
 					>
-						Accept
+						Verify
 					</button>
 					<button
 						type="button"

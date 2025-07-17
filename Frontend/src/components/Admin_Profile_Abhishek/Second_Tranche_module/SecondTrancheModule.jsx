@@ -1,6 +1,9 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import NotificationActivity from "../StartupNotificationActivity";
+
 
 const SecondTrancheModuleDetails = ({ id }) => {
 	const [data, setData] = useState({});
@@ -15,6 +18,10 @@ const SecondTrancheModuleDetails = ({ id }) => {
 
 	const [pdfUrl, setPdfUrl] = useState("");
 	const [isPdfModalVisible, setIsPdfModalVisible] = useState(false); // State to manage PDF modal visibility
+
+	const [showNotificationActivity,setNotificationActivity] = useState(false);
+
+
 
 	const fetchData = async () => {
 		if (id) {
@@ -344,6 +351,14 @@ const viewAllDocuments = () => {
     First Applied on: {data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : "N/A"} |
     Last Action on: {data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : "N/A"}
   </p>
+  <button
+	type="button"
+	onClick={() => setNotificationActivity(true)}
+	className="text-sm text-indigo-700 hover:text-indigo-900 underline hover:font-medium transition-all duration-200"
+>
+	View Notifications
+</button>
+
   
   <div className="flex items-center space-x-2">
 	<button
@@ -923,7 +938,15 @@ const viewAllDocuments = () => {
 						</div>
 					</div>
 				)}
+				{showNotificationActivity && (
+				<NotificationActivity userId={data?.user?.user_id} startupName={data?.user?.company_name } onClose={() => setNotificationActivity(false)} />
+			)}
+			
+
+
 			</div>
+			
+
 		</div>
 	);
 };

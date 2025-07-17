@@ -4,13 +4,13 @@ import {
   FaBuilding, FaUserTie, FaPhoneAlt, FaGlobe, FaHashtag, FaMoneyCheckAlt, FaRocket,
   FaEnvelope, FaFlagCheckered, FaFacebookF, FaInstagram, FaLinkedinIn, FaWhatsapp,
   FaMale, FaFemale,
-  FaTwitter
+  FaTwitter, FaBell
 } from "react-icons/fa";
 import { FaCircleInfo } from "react-icons/fa6";
 import { FaSave } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-
+import NotificationActivity from "../StartupNotificationActivity";
 
 
 const InputField = ({ icon: Icon, label, name, value, onChange, placeholder, readOnly = false }) => (
@@ -60,6 +60,7 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
   const [originalData, setOriginalData] = useState(data || {});
   const navigate = useNavigate(); // Use this for redirection
 
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -88,7 +89,7 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
     };
     fetchDetails();
   }, [data]);
-  
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -104,26 +105,26 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
     }
     return changed;
   };
-  
+
 
   const handleUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
       const updatedFields = getChangedFields(originalData, formData);
-  
+
       if (Object.keys(updatedFields).length === 0) {
         alert("No changes to save.");
         return;
       }
-  
+
       await axios.put(
         "https://startupbihar.in/api/adminlogin/update-startup-details",
         { user_id: formData.user_id, ...updatedFields },
         { headers: { Authorization: `${token}` } }
       );
-  
+
       alert("Startup details updated successfully.");
-      
+
       onUpdate();
       onClose();
     } catch (err) {
@@ -131,7 +132,7 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
       alert("Error updating startup.");
     }
   };
-  
+
   const categories = [
     "Smart Innovations", "Finance", "Technology", "Food", "Art & Entertainment",
     "Logistics", "Edu-tech", "Health", "Retail", "E-comm", "Manufacturing",
@@ -175,13 +176,33 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <img src={formData.logo || "https://media.istockphoto.com/id/924915448/vector/startup-icon-simple-element-illustration.jpg?s=612x612&w=0&k=20&c=CQhjbpi6bX9F8Ajv8ZT2xEgpuCHaO_4UQ4mb1tHJJwE="} className="w-12 h-12 rounded-full border border-white shadow-lg" alt="Logo" />
-            <h2 className="text-base font-semibold text-gray-700">{formData.company_name || "Edit Startup Details"}</h2>
+            <img
+              src={
+                formData.logo ||
+                "https://media.istockphoto.com/id/924915448/vector/startup-icon-simple-element-illustration.jpg?s=612x612&w=0&k=20&c=CQhjbpi6bX9F8Ajv8ZT2xEgpuCHaO_4UQ4mb1tHJJwE="
+              }
+              className="w-12 h-12 rounded-full border border-white shadow-lg"
+              alt="Logo"
+            />
+            <h2 className="text-base font-semibold text-gray-700">
+              {formData.company_name || "Edit Startup Details"}
+            </h2>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full text-gray-600 hover:bg-gray-200">
-            <MdCancel size={20} />
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowNotificationDialog(true)}
+              className="p-2 rounded-full text-gray-600 hover:bg-gray-100"
+              title="View Notifications & Activity"
+            >
+              <FaBell size={18} />
+            </button>
+            <button onClick={onClose} className="p-2 rounded-full text-gray-600 hover:bg-gray-200">
+              <MdCancel size={20} />
+            </button>
+          </div>
         </div>
+
 
         {renderSection("Basic Info", <FaCircleInfo />, [
           { icon: FaBuilding, label: "Company Name", name: "company_name", placeholder: "e.g. Tech Nova" },
@@ -216,9 +237,9 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
             ]}
           />
         </div>
-      
-         {/* Gender */}
-         <div className="grid grid-flow-col mt-6 auto-cols-max gap-2 text-xs text-indigo-600 rounded-lg items-center">
+
+        {/* Gender */}
+        <div className="grid grid-flow-col mt-6 auto-cols-max gap-2 text-xs text-indigo-600 rounded-lg items-center">
           {formData.gender === "female" ? (
             <div className="flex items-center gap-1 bg-pink-400 text-white px-2 py-1 rounded-md">
               <FaFemale className="w-4 h-4" /> Female
@@ -230,11 +251,11 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
           )}
         </div>
         {isLoadingDetails && (
-  <div className="text-xs text-gray-500 italic mb-4 ml-1 flex flex-1 justify-center">Fetching more details...</div>
-)}
+          <div className="text-xs text-gray-500 italic mb-4 ml-1 flex flex-1 justify-center">Fetching more details...</div>
+        )}
         {renderSection("Company Info", <FaBuilding />, [
           { icon: FaFlagCheckered, label: "About", name: "about", placeholder: "Company description" },
-          { icon: FaFlagCheckered, label: "Motto", name: "moto", placeholder: "Company motto"  },
+          { icon: FaFlagCheckered, label: "Motto", name: "moto", placeholder: "Company motto" },
           { icon: FaFlagCheckered, label: "Startup Since", name: "startup_since", placeholder: "e.g. 2021" },
           { icon: FaFlagCheckered, label: "Date of Incorporation", name: "dateOfIncorporation", placeholder: "DD-MM-YYYY" },
           { icon: FaFlagCheckered, label: "CIN", name: "cin", placeholder: "e.g. U12345BR2022PTC123456" },
@@ -257,13 +278,13 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
 
         {/* Social Media Links */}
         {renderSection("Social Media", <FaLinkedinIn />, [
-          { icon: FaFacebookF, label: "Facebook", name: "facebook", placeholder: "Facebook URL", readOnly: true  },
-          { icon: FaInstagram, label: "Instagram", name: "instagram", placeholder: "Instagram URL", readOnly: true  },
-          { icon: FaLinkedinIn, label: "LinkedIn", name: "linkedin", placeholder: "LinkedIn URL", readOnly: true  },
-          { icon: FaTwitter, label: "Twitter", name: "twitter", placeholder: "Twitter URL" , readOnly: true },
+          { icon: FaFacebookF, label: "Facebook", name: "facebook", placeholder: "Facebook URL", readOnly: true },
+          { icon: FaInstagram, label: "Instagram", name: "instagram", placeholder: "Instagram URL", readOnly: true },
+          { icon: FaLinkedinIn, label: "LinkedIn", name: "linkedin", placeholder: "LinkedIn URL", readOnly: true },
+          { icon: FaTwitter, label: "Twitter", name: "twitter", placeholder: "Twitter URL", readOnly: true },
         ])}
 
-       
+
 
         {/* Action Buttons */}
         <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -293,6 +314,14 @@ const StartupDetailsDialog = ({ data, onClose, onUpdate }) => {
             </div>
           </div>
         )}
+        {showNotificationDialog && (
+  <NotificationActivity
+    userId={formData.user_id}
+    startupName={formData.company_name}
+    onClose={() => setShowNotificationDialog(false)}
+  />
+)}
+
       </div>
     </div>
   );

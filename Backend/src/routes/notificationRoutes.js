@@ -31,7 +31,11 @@ router.get(
   authenticateUser,  // Ensure the user is authenticated
   getUserNotification    // Controller function to get the user's document
 );
-
+router.get(
+  '/userNotificationAdmin/:id',
+  authenticateAdmin,  // Ensure the user is authenticated
+  getUserNotification    // Controller function to get the user's document
+);
 router.get(
   '/adminNotification/:adminId',
   authenticateAdmin,  // Ensure the admin is authenticated

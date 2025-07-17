@@ -35,7 +35,6 @@ const LeftBar = ({ changePanel }) => {
   const menuItems = [
     { label: "Notifications", panel: "AdminNotification" },
     { label: "Startup Profile", panel: "StartupProfile" },
-    { label: "Startup List", panel: "StartupList" },
 
     { label: "Seed Fund Module", panel: "SeedFundModule" },
     { label: "Second Tranche Module", panel: "SecondTrancheModule" },
@@ -53,12 +52,22 @@ const LeftBar = ({ changePanel }) => {
     { label: "Register New Startups", panel: "RegisterStartup" },
     { label: "Update Startup", panel: "UpdateStartup" },
     { label: "Grievance Redressal System", panel: "GrievanceRedressalSystem" },
+        { label: "Startup List", panel: "StartupList" },
+
   ];
 
  // Role-based menu access configuration
  const roleBasedMenuAccess = {
+  
+   "STARTUPDIR": [
+	 
+    "Startup List",
+	],
+  "DI": [
+	 
+    "Startup List",
+	],
 	"IT": [
-	  "Startup Profile",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
 	  "Post Seed Fund Module",
@@ -67,49 +76,35 @@ const LeftBar = ({ changePanel }) => {
 	  "Incubation Module",
 	  "Acceleration Programme Module",
     "Coworking Module",
-    "CoWorking Map",
 	  "IPR Reimbursement Module",
 	  "Register New Startups",
-    "Update Startup",
     "Startup List",
 	],
 	"finance-wing": [
-    "Startup Profile",
-	  "Seed Fund Module",
+   
 	  "Second Tranche Module",
 	  "Post Seed Fund Module",
 	  "Startup Progress Report",
 	  "Matching Loan",
-	  "Incubation Module",
     "Startup List",
-
 	  "Acceleration Programme Module",
     "IPR Reimbursement Module",
 
 	],
   "incubation-wing":[ 
-    "Startup Profile",
-	  "Seed Fund Module",
-	  "Second Tranche Module",
-	  "Post Seed Fund Module",
+
 	  "Startup Progress Report",
-	  "Matching Loan",
     "Startup List",
 
 	  "Incubation Module",
-	  "Acceleration Programme Module",
+
   ],
   "startup_nodal":[ 
     "Startup Profile",
-	  "Seed Fund Module",
-	  "Second Tranche Module",
-	  "Post Seed Fund Module",
-	  "Startup Progress Report",
-	  "Matching Loan",
+	 
     "Startup List",
 
-	  "Incubation Module",
-	  "Acceleration Programme Module",
+	 
   ],
   "coworking": [
     "Coworking Module",
