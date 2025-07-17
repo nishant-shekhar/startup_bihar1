@@ -95,7 +95,7 @@ const ShowcaseCard = ({
 							window.open(url, "_blank");
 						}}
 					>
-						Project Link
+						Link
 					</button>
 }
 					{!delhidden && (
