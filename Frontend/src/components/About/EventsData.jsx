@@ -1,6 +1,14 @@
 
 const EventsData = [
-
+{
+    id: 0,
+    imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FEvents%2Fspark2point0.jpeg?alt=media&token=b8bb5f69-4707-4aab-8fcf-fbd95301b4f4",
+    dateandtime: "Tuesday, Jul 1, 2025",
+    title: "🚀  Startup Spark 2.0 🚀",
+    tag: "Startup",
+    subtitle: "Igniting Innovation in Bihar",
+    projectLink: "https://x.com/startup_bihar/status/1940061923099517009?t=HOCMeKmH5DNiRLT6I5muVg&s=19",
+  },
   {
     id: 0,
     imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2Fstartup%20mahakumbh.jpeg?alt=media&token=3888ee7c-2164-4b79-bafe-4427f1951dbb",
