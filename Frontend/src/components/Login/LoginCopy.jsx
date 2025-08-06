@@ -87,7 +87,7 @@ const LoginCopy = ({ onLogin }) => {  // Accept the prop here
          <Link to="/">
     <img
       className="mx-auto h-10 w-auto cursor-pointer"
-      src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
+      src="startup_bihar_logo1.png"
       alt="Startup Bihar"
     />
   </Link>

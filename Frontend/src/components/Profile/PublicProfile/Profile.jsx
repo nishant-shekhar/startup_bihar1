@@ -21,7 +21,7 @@ const Profile = () => {
             </Link>
           </div>
           <div className="flex lg:flex-1 justify-end">
-            <img className="h-12 w-auto" src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png" alt="Company Logo" />
+            <img className="h-12 w-auto" src="startup_bihar_logo1.png" alt="Company Logo" />
           </div>
         </nav>
       </header>

@@ -316,9 +316,9 @@ useEffect(() => {
 								New
 							</span>
 							<span>
-								Request for Quotation For Appointment of Statutory Auditor for BSFT
+								For Selection of event management company for Bihar IDea Festival 2025
 								<a
-									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FMemo%20No.-2624%2C%20Dated-16.07.2025.pdf?alt=media&token=b9090b01-f9d7-4987-9f0c-e8a94ceb00f4"
+									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FRFP_%20Bihar%20Idea%20festival-compressed.pdf?alt=media&token=8c40dd5e-f04b-4271-af84-09d9d8b7cb15"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="font-semibold text-red-800 ml-2"
@@ -370,7 +370,7 @@ useEffect(() => {
   >
     <img
       src="banneridea.png"
-      alt="Promotion"
+      alt="Idea Festival Banner"
       className="w-full h-full object-contain cursor-pointer"
     />
   </a>

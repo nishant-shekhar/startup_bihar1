@@ -20,7 +20,7 @@ const NavBar = () => {
         <div className="flex items-center">
           <img
             alt="logo"
-            src="https://startup.bihar.gov.in/static/media/new_logo.efdd49a20c5fb7fe0b73.png"
+            src="startup_bihar_logo1.png"
             className="h-10"
           />
         </div>
