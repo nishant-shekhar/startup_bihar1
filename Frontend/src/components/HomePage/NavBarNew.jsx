@@ -100,7 +100,7 @@ const NavBarNew = () => {
 							
 							
 						
-						
+					
 							
 							<Link
 								to="/PublicDashboard"
@@ -150,6 +150,17 @@ const NavBarNew = () => {
 							>
 								Events
 							</Link>
+								<ScrollLink
+								to="notification"
+								smooth={true}
+								offset={-50}
+								duration={500}
+								className="text-sm font-semibold leading-6 text-white cursor-pointer hover:text-gray-200 active:text-gray-300"
+							>
+								<Link to="/">
+									Notifications</Link>
+							</ScrollLink>
+
 							<div
 								className="relative"
 								ref={dropdownRef}
@@ -222,15 +233,7 @@ const NavBarNew = () => {
 									</div>
 								)}
 							</div>
-							<a
-  href="https://thebharatproject.co.in/bihar-idea-festival.html"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-sm font-semibold leading-6 text-yellow-300 bg-indigo-900 px-3 py-1.5 rounded-md shadow hover:bg-yellow-400 hover:text-indigo-900 flex items-center gap-1 cursor-pointer transition duration-300 animate-fade-in"
->
-<IoBulb className="text-lg animate-bounce-slow drop-shadow-[0_0_6px_#facc15]" />
-  Bihar Idea Festival
-</a>
+							
 
 
 
@@ -278,6 +281,18 @@ const NavBarNew = () => {
     <RouterLink to="/Events" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
       Events
     </RouterLink>
+		<ScrollLink
+								to="notification"
+								smooth={true}
+								offset={-50}
+								duration={500}
+								className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500"
+							>
+								<Link to="/">
+									Notifications</Link>
+							</ScrollLink>
+
+
 
     {/* Startup Ecosystem dropdown for mobile */}
     <details className="group">
@@ -307,16 +322,7 @@ const NavBarNew = () => {
         <a href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Documents for Seed Fund</a>
       </div>
     </details>
-	<a
-  href="https://thebharatproject.co.in/bihar-idea-festival.html"
-  target="_blank"
-  rel="noopener noreferrer"
-  onClick={toggleMenu}
-  className="text-sm font-semibold text-yellow-600 bg-yellow-100 px-3 py-2 rounded shadow hover:bg-yellow-200 flex items-center gap-2 animate-fade-in"
->
-  <FiZap className="animate-bounce-slow text-yellow-600" />
-  Bihar Idea Festival
-</a>
+	
 
   </div>
 )}
