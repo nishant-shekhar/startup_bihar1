@@ -27,15 +27,7 @@ const ContactUs = () => {
 			position: 'Director Industries, Department of Industries, GoB',
 			tag: 'Director Industries'
 		},
-		{
-			id: 2,
-			name: 'Sri Nikhil Dhanraj Nippanikar , IAS',
-			email: 'dirhs-bih@gov.in',
-			phone: '0612-2215637',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fnikhil%20sir.png?alt=media&token=27791704-aff7-4fcb-97ef-54a6132bd8b3',
-			position: 'Directorate of Handloom and Sericulture',
-			tag: 'Director H S (Startup)'
-		},
+	
 		{
 			id: 3,
 			name: 'Jyoti Kumari',
@@ -108,7 +100,7 @@ const ContactUs = () => {
 					<h2 className="pt-2 text-3xl md:text-4xl lg:text-5xl font-bold text-[#303462]">Leadership Team</h2>
 
 				</div>
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-10 py-6  mb-2">
+				<div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-4 px-10 py-6  mb-2">
 					{leadership.map((contact) => (
 						<ContactCard
 							key={contact.id}
