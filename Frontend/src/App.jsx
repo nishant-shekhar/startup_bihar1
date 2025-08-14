@@ -22,8 +22,11 @@ import PrivateRoute from './components/Login/PrivateRoute';
 import StartupList from './components/Admin_Profile_Abhishek/Startup_List/StartupList';
 import MainAdmin from './components/AdminRedesign/MainAdmin';
 import DashboardPagePublic from './components/Profile/PublicProfile/DashboardPage';
-
-
+import StartupRegistrationMain from './components/New_Applications/StartupRegistration/StartupRegistrationMain';
+import StartupDetailsForm from './components/New_Applications/StartupRegistration/StartupDetailsForm';
+import StartupMainForm from './components/New_Applications/StartupRegistration/StartupMainRegistration';
+import UserSignup from './components/New_Applications/StartupRegistration/UserSignup';
+import Response from './components/New_Applications/Response';
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -85,6 +88,10 @@ const App = () => {
 					element={<StartupPublicProfile />}
 				/>
 				<Route path="/notif" element={<UserNotification />} />
+				<Route path="/NewStartupForm" element={<StartupDetailsForm />} />
+				<Route path="/SR" element={<UserSignup />} />
+				<Route path="/rv" element={<Response />} />
+				<Route path="/newtest" element={<StartupMainForm />} />
 			</Routes>
 		</Router>
 	);

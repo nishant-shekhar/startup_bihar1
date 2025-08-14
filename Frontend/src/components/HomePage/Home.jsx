@@ -305,7 +305,7 @@ const HomePage = () => {
 							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
-					{/* Notification Section */}
+					{/* Notification Section 
 					<motion.div
 						className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
 						variants={fadeIn}
@@ -328,6 +328,7 @@ const HomePage = () => {
 							</span>
 						</div>
 					</motion.div>
+					*/}
 
 				</motion.div>
 
