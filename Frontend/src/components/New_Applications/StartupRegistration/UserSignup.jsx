@@ -21,7 +21,7 @@ const LoginSchema = Yup.object().shape({
 		.required("Password is required"),
 });
 
-const UserSignup = () => {
+const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
 	const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 	const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 	const [userEmail, setUserEmail] = useState("");
@@ -54,44 +54,38 @@ const UserSignup = () => {
 		setIsPhoneModalOpen(false);
 
 		if (formValues) {
-			// TODO: Submit registration with verified email and phone
-			console.log("Registration complete", formValues);
+			// Call onSubmit to save data and move to next step
+			onSubmit(formValues);
 		}
 	};
 
 	return (
-		 <div
-      className="min-h-screen w-full px-10 py-10 bg-cover bg-center"
-      style={{ backgroundImage: `url('/bg1.jpg')` }}
-    >
 		<>
 			<link
 				rel="stylesheet"
 				href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.3.45/css/materialdesignicons.min.css"
 			/>
-			<section className="bg-gradient-to-br from-pink-50 via-white to-purple-100">
-				<div className="flex flex-col items-center justify-center px-6 pb-10 mx-auto md:min-h-screen">
-					<img className="w-56 h-auto" src="favicon_full.png" alt="" />
-					<div className="w-full bg-white rounded-lg md:mt-0 sm:max-w-2xl xl:p-0 ">
-						<div className="p-6 space-y-4 md:space-y-6 sm:p-8 sm:pt-6">
-							<h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-3xl">
-								Register your startup
-							</h1>
+			<div className="flex flex-col items-center justify-center px-6 pb-10 mx-auto">
+				<div className="w-full bg-white rounded-lg md:mt-0 sm:max-w-4xl xl:p-0">
+					<div className="p-6 space-y-4 md:space-y-6 sm:p-8 sm:pt-6">
+						<h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-3xl">
+							Register your startup
+						</h1>
 
-							<hr />
-							<Formik
-								initialValues={{
-									founderName: "",
-									startupName: "",
-									email: "",
-									phoneNumber: "",
-									aadharNumber: "",
-									password: "",
-									remember: false,
-								}}
-								validationSchema={LoginSchema}
-								onSubmit={handleSubmit}
-							>
+						<hr />
+						<Formik
+							initialValues={initialValues || {
+								founderName: "",
+								startupName: "",
+								email: "",
+								phoneNumber: "",
+								aadharNumber: "",
+								password: "",
+								remember: false,
+							}}
+							validationSchema={LoginSchema}
+							onSubmit={handleSubmit}
+						>
 								{({ isSubmitting, errors, touched }) => (
 									<Form className="space-y-4 md:space-y-6">
 										<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,8 +308,8 @@ const UserSignup = () => {
 							</Formik>
 						</div>
 					</div>
-				</div>
-			</section>
+			</div>
+			
 			<OTPModal
 				isOpen={isEmailModalOpen}
 				onClose={() => setIsEmailModalOpen(false)}
@@ -329,7 +323,6 @@ const UserSignup = () => {
 				phoneNumber={userPhone}
 			/>
 		</>
-		</div>
 	);
 };
 

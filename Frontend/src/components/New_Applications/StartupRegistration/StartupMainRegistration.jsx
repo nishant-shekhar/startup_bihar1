@@ -1,26 +1,47 @@
 // src/components/StartupMainForm.jsx
 import React, { useState, useEffect } from "react";
-import { FaArrowLeft, FaCheck, FaHome, FaClipboardList, FaInfoCircle, FaChartBar, FaWallet } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaCheck,
+  FaHome,
+  FaClipboardList,
+  FaInfoCircle,
+  FaChartBar,
+  FaWallet,
+  FaUserCheck,
+  FaEye,
+  FaClipboardCheck,
+  FaLock,
+} from "react-icons/fa";
+import UserSignup from "./UserSignup";
 import BasicDetailsStep from "./FormSteps/BasicDetailsStep";
 import EntityDetailsStep from "./FormSteps/EntityDetailsStep";
 import StartupDetailsStep from "./FormSteps/StartupDetailsStep";
 import CoFounderDetailsStep from "./FormSteps/CoFounderDetailsStep";
 import BusinessIdeaStep from "./FormSteps/BusinessIdeaStep";
+import Preview from "./Preview";
+import FormStatus from "./FormStatus";
 
 const stepLabels = [
+  "Register & Verify",
   "Basic Details",
   "Entity Details",
   "Startup Details",
   "Co-Founder Details",
   "Business Idea",
+  "Preview",
+  "Form Status",
 ];
 
 const icons = [
-  <FaHome />, 
-  <FaClipboardList />, 
-  <FaInfoCircle />, 
-  <FaChartBar />, 
-  <FaWallet />
+  <FaUserCheck />,
+  <FaHome />,
+  <FaClipboardList />,
+  <FaInfoCircle />,
+  <FaChartBar />,
+  <FaWallet />,
+  <FaEye />,
+  <FaClipboardCheck />,
 ];
 
 const StartupMainForm = () => {
@@ -32,6 +53,7 @@ const StartupMainForm = () => {
   const [formData, setFormData] = useState(() => {
     const data = {};
     for (let key of [
+      "userSignup",
       "basicDetails",
       "entityDetails",
       "startupDetails",
@@ -52,11 +74,17 @@ const StartupMainForm = () => {
     const updatedFormData = { ...formData };
 
     const storageKeys = [
+      "userSignup",
       "basicDetails",
       "entityDetails",
       "startupDetails",
       "cofounderDetails",
       "businessIdea",
+      "reviewStage1",
+      "reviewStage2",
+      "reviewStage3",
+      "exam",
+      "interview",
     ];
 
     updatedFormData[storageKeys[step - 1]] = stepData;
@@ -64,7 +92,7 @@ const StartupMainForm = () => {
 
     setFormData(updatedFormData);
 
-    if (step === 5) {
+    if (step === 11) {
       try {
         await submitFullForm(updatedFormData);
         clearLocalStorage();
@@ -72,6 +100,9 @@ const StartupMainForm = () => {
         console.error("Form submission error:", error);
         return;
       }
+    } else if (step === 6) {
+      // After completing Business Idea, automatically unlock and go to Review Stage 1
+      setCurrentStep(7);
     } else {
       setCurrentStep(step + 1);
     }
@@ -83,12 +114,14 @@ const StartupMainForm = () => {
   };
 
   const handleTabClick = (stepIndex) => {
-    setCurrentStep(stepIndex + 1);
+    const stepNumber = stepIndex + 1;
+    setCurrentStep(stepNumber);
   };
 
   const clearLocalStorage = () => {
     localStorage.removeItem("currentFormStep");
     for (let key of [
+      "userSignup",
       "basicDetails",
       "entityDetails",
       "startupDetails",
@@ -104,24 +137,42 @@ const StartupMainForm = () => {
   };
 
   const renderStep = () => {
+    const stepKeys = [
+      "userSignup",
+      "basicDetails",
+      "entityDetails",
+      "startupDetails",
+      "cofounderDetails",
+      "businessIdea",
+      "preview",
+      "formStatus",
+    ];
     const props = {
       onSubmit: (values) => handleStepSubmit(values, currentStep),
-      initialValues: formData[Object.keys(formData)[currentStep - 1]],
+      initialValues: formData[stepKeys[currentStep - 1]],
       onPrevious:
-        currentStep > 1 ? (values) => handlePrevious(values, currentStep) : undefined,
+        currentStep > 1
+          ? (values) => handlePrevious(values, currentStep)
+          : undefined,
     };
 
     switch (currentStep) {
       case 1:
-        return <BasicDetailsStep {...props} />;
+        return <UserSignup {...props} />;
       case 2:
-        return <EntityDetailsStep {...props} />;
+        return <BasicDetailsStep {...props} />;
       case 3:
-        return <StartupDetailsStep {...props} />;
+        return <EntityDetailsStep {...props} />;
       case 4:
-        return <CoFounderDetailsStep {...props} />;
+        return <StartupDetailsStep {...props} />;
       case 5:
+        return <CoFounderDetailsStep {...props} />;
+      case 6:
         return <BusinessIdeaStep {...props} />;
+      case 7:
+        return <Preview {...props} formData={formData} />;
+      case 8:
+        return <FormStatus {...props} />;
       default:
         return null;
     }
@@ -139,8 +190,14 @@ const StartupMainForm = () => {
         <div className="w-1/5 bg-white/30 backdrop-blur-md p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <img src="/favicon_full.png" alt="Logo" className="w-10 h-10 rounded-full" />
-              <h2 className="text-xl font-semibold text-gray-800">Startup Bihar</h2>
+              <img
+                src="/favicon_full.png"
+                alt="Logo"
+                className="w-10 h-10 rounded-full"
+              />
+              <h2 className="text-xl font-semibold text-gray-800">
+                Startup Bihar
+              </h2>
             </div>
 
             <div className="mb-8">
@@ -155,36 +212,70 @@ const StartupMainForm = () => {
                 const isCompleted = (() => {
                   switch (stepNumber) {
                     case 1:
-                      return formData.basicDetails !== null;
+                      return formData.userSignup !== null;
                     case 2:
-                      return formData.entityDetails !== null;
+                      return formData.basicDetails !== null;
                     case 3:
-                      return formData.startupDetails !== null;
+                      return formData.entityDetails !== null;
                     case 4:
-                      return formData.cofounderDetails !== null;
+                      return formData.startupDetails !== null;
                     case 5:
+                      return formData.cofounderDetails !== null;
+                    case 6:
                       return formData.businessIdea !== null;
+                    case 7:
+                      return formData.reviewStage1 !== null;
+                    case 8:
+                      return formData.reviewStage2 !== null;
+                    case 9:
+                      return formData.reviewStage3 !== null;
+                    case 10:
+                      return formData.exam !== null;
+                    case 11:
+                      return formData.interview !== null;
                     default:
                       return false;
                   }
                 })();
 
+                // Check if step is locked
+                // All steps are now unlocked for easy navigation
+                const isLocked = false;
+
                 return (
                   <button
                     key={index}
-                    onClick={() => handleTabClick(index)}
+                    onClick={() => !isLocked && handleTabClick(index)}
+                    disabled={isLocked}
                     className={`flex items-center justify-between w-full px-3 py-2 rounded-md transition-all duration-150 ${
-                      isActive ? "bg-white text-gray-800 shadow-sm" : "hover:bg-white/20 text-gray-600"
+                      isActive
+                        ? "bg-white text-gray-800 shadow-sm"
+                        : isLocked
+                        ? "text-gray-400 cursor-not-allowed opacity-60"
+                        : "hover:bg-white/20 text-gray-600"
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <span className="text-[16px]" style={{ color: gray }}>{icons[index]}</span>
+                      <span
+                        className="text-[16px]"
+                        style={{
+                          color: isLocked ? "#D1D5DB" : gray,
+                        }}
+                      >
+                        {isLocked ? <FaLock /> : icons[index]}
+                      </span>
                       <span className="text-sm font-medium">{label}</span>
                     </span>
-                    {isCompleted && !isActive && (
-                      <span className="w-5 h-5 flex items-center justify-center rounded-full border text-xs" style={{ color: gray, borderColor: gray }}>
+                    {isCompleted && !isLocked && (
+                      <span
+                        className="w-5 h-5 flex items-center justify-center rounded-full border text-xs"
+                        style={{ color: gray, borderColor: gray }}
+                      >
                         <FaCheck />
                       </span>
+                    )}
+                    {isLocked && (
+                      <span className="text-xs text-gray-400">Locked</span>
                     )}
                   </button>
                 );
@@ -200,8 +291,6 @@ const StartupMainForm = () => {
 
         {/* Main Renderer */}
         <div className="w-4/5 bg-white p-6 flex flex-col">
-           
-
           <div className="flex-1 overflow-y-auto">{renderStep()}</div>
         </div>
       </div>
