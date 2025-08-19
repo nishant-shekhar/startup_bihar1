@@ -3,11 +3,17 @@ import { Field, ErrorMessage } from "formik";
 
 // Common qualifications list
 export const qualificationOptions = [
-	"High School",
-	"Bachelor's Degree",
-	"Master's Degree",
-	"PhD",
-	"Other",
+	"10th",
+	"12th",
+	"B. Tech/B.E.",
+	"BBA",
+	"BCA",
+	"Graduate",
+	"M.Tech",
+	"MBA/PGDBA",
+	"MBBS",
+	"MCA",
+	"Others"
 ];
 
 // Common category list

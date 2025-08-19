@@ -12,6 +12,7 @@ import {
   FaEye,
   FaClipboardCheck,
   FaLock,
+  FaPrint,
 } from "react-icons/fa";
 import UserSignup from "./UserSignup";
 import BasicDetailsStep from "./FormSteps/BasicDetailsStep";
@@ -20,17 +21,19 @@ import StartupDetailsStep from "./FormSteps/StartupDetailsStep";
 import CoFounderDetailsStep from "./FormSteps/CoFounderDetailsStep";
 import BusinessIdeaStep from "./FormSteps/BusinessIdeaStep";
 import Preview from "./Preview";
+import PrintAcknowledgement from "./PrintAcknowledgement";
 import FormStatus from "./FormStatus";
 
 const stepLabels = [
-  "Register & Verify",
+  "Register",
   "Basic Details",
   "Entity Details",
   "Startup Details",
   "Co-Founder Details",
   "Business Idea",
-  "Preview",
-  "Form Status",
+  "Preview & Confirm",
+  "Print Acknowledgement",
+  "Application Status",
 ];
 
 const icons = [
@@ -41,34 +44,22 @@ const icons = [
   <FaChartBar />,
   <FaWallet />,
   <FaEye />,
+  <FaPrint />,
   <FaClipboardCheck />,
 ];
 
 const StartupMainForm = () => {
-  const [currentStep, setCurrentStep] = useState(() => {
-    const savedStep = localStorage.getItem("currentFormStep");
-    return savedStep ? Number.parseInt(savedStep) : 1;
-  });
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
-  const [formData, setFormData] = useState(() => {
-    const data = {};
-    for (let key of [
-      "userSignup",
-      "basicDetails",
-      "entityDetails",
-      "startupDetails",
-      "cofounderDetails",
-      "businessIdea",
-    ]) {
-      const item = localStorage.getItem(key);
-      data[key] = item ? JSON.parse(item) : null;
-    }
-    return data;
+  const [formData, setFormData] = useState({
+    userSignup: null,
+    basicDetails: null,
+    entityDetails: null,
+    startupDetails: null,
+    cofounderDetails: null,
+    businessIdea: null,
   });
-
-  useEffect(() => {
-    localStorage.setItem("currentFormStep", currentStep.toString());
-  }, [currentStep]);
 
   const handleStepSubmit = async (stepData, step) => {
     const updatedFormData = { ...formData };
@@ -80,28 +71,13 @@ const StartupMainForm = () => {
       "startupDetails",
       "cofounderDetails",
       "businessIdea",
-      "reviewStage1",
-      "reviewStage2",
-      "reviewStage3",
-      "exam",
-      "interview",
     ];
 
     updatedFormData[storageKeys[step - 1]] = stepData;
-    localStorage.setItem(storageKeys[step - 1], JSON.stringify(stepData));
-
     setFormData(updatedFormData);
 
-    if (step === 11) {
-      try {
-        await submitFullForm(updatedFormData);
-        clearLocalStorage();
-      } catch (error) {
-        console.error("Form submission error:", error);
-        return;
-      }
-    } else if (step === 6) {
-      // After completing Business Idea, automatically unlock and go to Review Stage 1
+    if (step === 6) {
+      // After completing Business Idea, go to Preview
       setCurrentStep(7);
     } else {
       setCurrentStep(step + 1);
@@ -118,22 +94,14 @@ const StartupMainForm = () => {
     setCurrentStep(stepNumber);
   };
 
-  const clearLocalStorage = () => {
-    localStorage.removeItem("currentFormStep");
-    for (let key of [
-      "userSignup",
-      "basicDetails",
-      "entityDetails",
-      "startupDetails",
-      "cofounderDetails",
-      "businessIdea",
-    ]) {
-      localStorage.removeItem(key);
-    }
-  };
-
   const submitFullForm = async (data) => {
     console.log("Submitting full form data:", data);
+    setIsFormSubmitted(true);
+    setCurrentStep(8); // Navigate to Print Acknowledgement after submission
+  };
+
+  const handleFormSubmit = () => {
+    submitFullForm(formData);
   };
 
   const renderStep = () => {
@@ -145,6 +113,7 @@ const StartupMainForm = () => {
       "cofounderDetails",
       "businessIdea",
       "preview",
+      "printAck",
       "formStatus",
     ];
     const props = {
@@ -170,8 +139,16 @@ const StartupMainForm = () => {
       case 6:
         return <BusinessIdeaStep {...props} />;
       case 7:
-        return <Preview {...props} formData={formData} />;
+        return (
+          <Preview
+            {...props}
+            formData={formData}
+            onFormSubmit={handleFormSubmit}
+          />
+        );
       case 8:
+        return <PrintAcknowledgement formData={formData} />;
+      case 9:
         return <FormStatus {...props} />;
       default:
         return null;
@@ -202,7 +179,7 @@ const StartupMainForm = () => {
 
             <div className="mb-8">
               <p className="text-sm text-gray-600">Welcome back,</p>
-              <p className="font-semibold text-gray-800">Sarah Smith</p>
+              <p className="font-semibold text-gray-800">Abhishek Kumar</p>
             </div>
 
             <nav className="flex flex-col gap-2 text-gray-700 font-medium">
@@ -224,23 +201,32 @@ const StartupMainForm = () => {
                     case 6:
                       return formData.businessIdea !== null;
                     case 7:
-                      return formData.reviewStage1 !== null;
+                      return false; // Preview is never "completed"
                     case 8:
-                      return formData.reviewStage2 !== null;
-                    case 9:
-                      return formData.reviewStage3 !== null;
-                    case 10:
-                      return formData.exam !== null;
-                    case 11:
-                      return formData.interview !== null;
+                      return false; // Form Status is never "completed"
                     default:
                       return false;
                   }
                 })();
 
                 // Check if step is locked
-                // All steps are now unlocked for easy navigation
-                const isLocked = false;
+                // Step 1 (Register & Verify) is always unlocked
+                // Steps 2-7 (Basic Details to Preview) unlock after completing registration
+                // Step 8 (Form Status) unlocks only after form submission
+                const isLocked = (() => {
+                  if (stepNumber === 1) {
+                    return false; // Register & Verify is always unlocked
+                  } else if (stepNumber >= 2 && stepNumber <= 7) {
+                    return formData.userSignup === null; // Unlock after registration
+                  } else if (stepNumber === 8) {
+                    // Print Acknowledgement unlocks after submission
+                    return !isFormSubmitted;
+                  } else if (stepNumber === 9) {
+                    // Form Status unlocks after submission
+                    return !isFormSubmitted;
+                  }
+                  return false;
+                })();
 
                 return (
                   <button
@@ -284,7 +270,14 @@ const StartupMainForm = () => {
           </div>
 
           <div className="text-sm text-gray-500">
-            <p className="hover:text-gray-700 cursor-pointer">Support</p>
+            <a
+              href="/contact-us"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-gray-700 cursor-pointer"
+            >
+              Support
+            </a>
             <p className="hover:text-gray-700 cursor-pointer">Sign Out</p>
           </div>
         </div>

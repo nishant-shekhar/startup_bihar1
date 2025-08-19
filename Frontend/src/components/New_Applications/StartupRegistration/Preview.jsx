@@ -16,33 +16,7 @@ import {
   FaClipboardList,
 } from "react-icons/fa";
 
-const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
-  const [formData, setFormData] = useState({});
-
-  // Fetch data from localStorage
-  useEffect(() => {
-    const loadFormData = () => {
-      const data = {};
-      const keys = [
-        "userSignup",
-        "basicDetails",
-        "entityDetails",
-        "startupDetails",
-        "cofounderDetails",
-        "businessIdea",
-      ];
-
-      keys.forEach((key) => {
-        const item = localStorage.getItem(key);
-        data[key] = item ? JSON.parse(item) : null;
-      });
-
-      // Use localStorage data or fallback to props
-      setFormData(data);
-    };
-
-    loadFormData();
-  }, [propFormData]);
+const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
   const sections = [
     {
       title: "User Registration",
@@ -62,14 +36,12 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
       icon: <FaInfoCircle />,
       data: formData?.basicDetails,
       fields: [
-        { key: "firstName", label: "First Name", icon: <FaUser /> },
-        { key: "lastName", label: "Last Name", icon: <FaUser /> },
-        { key: "email", label: "Email Address", icon: <FaEnvelope /> },
-        { key: "phoneNumber", label: "Phone Number", icon: <FaPhone /> },
+        { key: "fullName", label: "Full Name", icon: <FaUser /> },
         { key: "gender", label: "Gender", icon: <FaUser /> },
         { key: "category", label: "Category", icon: <FaUser /> },
         { key: "dateOfBirth", label: "Date of Birth", icon: <FaCalendarAlt /> },
         { key: "qualification", label: "Qualification", icon: <FaUser /> },
+        { key: "district", label: "District", icon: <FaMapMarkerAlt /> },
         { key: "profilePhoto", label: "Profile Photo", icon: <FaUser /> },
       ],
     },
@@ -78,6 +50,11 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
       icon: <FaBuilding />,
       data: formData?.entityDetails,
       fields: [
+        {
+          key: "hasRegisteredEntity",
+          label: "Has Registered Entity",
+          icon: <FaBuilding />,
+        },
         { key: "entityName", label: "Entity Name", icon: <FaBuilding /> },
         { key: "entityType", label: "Entity Type", icon: <FaBuilding /> },
         {
@@ -93,7 +70,6 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
         { key: "sector", label: "Sector", icon: <FaChartBar /> },
         { key: "stage", label: "Stage", icon: <FaChartBar /> },
         { key: "certificate", label: "Certificate", icon: <FaBuilding /> },
-        { key: "logo", label: "Logo", icon: <FaBuilding /> },
       ],
     },
     {
@@ -111,12 +87,6 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
         { key: "city", label: "City", icon: <FaMapMarkerAlt /> },
         { key: "state", label: "State", icon: <FaMapMarkerAlt /> },
         { key: "pincode", label: "PIN Code", icon: <FaMapMarkerAlt /> },
-        {
-          key: "auditedBalanceSheet",
-          label: "Audited Balance Sheet",
-          icon: <FaClipboardList />,
-        },
-        { key: "gstReturn", label: "GST Return", icon: <FaClipboardList /> },
       ],
     },
     {
@@ -144,35 +114,9 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
         },
         { key: "solution", label: "Solution", icon: <FaLightbulb /> },
         { key: "targetMarket", label: "Target Market", icon: <FaChartBar /> },
-        { key: "revenueModel", label: "Revenue Model", icon: <FaRupeeSign /> },
         {
-          key: "fundingRequired",
-          label: "Funding Required",
-          icon: <FaRupeeSign />,
-        },
-        {
-          key: "fundingReason",
-          label: "Funding Reason",
-          icon: <FaRupeeSign />,
-        },
-        {
-          key: "expenditurePlan",
-          label: "Expenditure Plan",
-          icon: <FaClipboardList />,
-        },
-        {
-          key: "bankStatement",
-          label: "Bank Statement",
-          icon: <FaClipboardList />,
-        },
-        {
-          key: "expenditureInvoice",
-          label: "Expenditure Invoice",
-          icon: <FaClipboardList />,
-        },
-        {
-          key: "geoTaggedPhotos",
-          label: "Geo-Tagged Photos",
+          key: "pitchDeck",
+          label: "Pitch Deck (PDF/PPT)",
           icon: <FaClipboardList />,
         },
       ],
@@ -234,14 +178,8 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
     // Handle file uploads
     if (
       field?.key === "certificate" ||
-      field?.key === "logo" ||
       field?.key === "profilePhoto" ||
-      field?.key === "auditedBalanceSheet" ||
-      field?.key === "gstReturn" ||
-      field?.key === "expenditurePlan" ||
-      field?.key === "bankStatement" ||
-      field?.key === "expenditureInvoice" ||
-      field?.key === "geoTaggedPhotos"
+      field?.key === "pitchDeck"
     ) {
       if (value && typeof value === "object" && Object.keys(value).length > 0) {
         return <span className="text-blue-600">File uploaded</span>;
@@ -267,8 +205,6 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
       field?.key === "problemStatement" ||
       field?.key === "solution" ||
       field?.key === "targetMarket" ||
-      field?.key === "revenueModel" ||
-      field?.key === "fundingReason" ||
       field?.key === "registeredAddress"
     ) {
       return (
@@ -302,7 +238,9 @@ const Preview = ({ formData: propFormData, onPrevious, onSubmit }) => {
   };
 
   const handleFinalSubmit = () => {
-    if (onSubmit) {
+    if (onFormSubmit) {
+      onFormSubmit();
+    } else if (onSubmit) {
       onSubmit({
         ...formData,
         submittedAt: new Date().toISOString(),
