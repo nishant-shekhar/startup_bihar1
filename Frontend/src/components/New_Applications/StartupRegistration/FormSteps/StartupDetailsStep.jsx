@@ -114,6 +114,7 @@ const StartupDetailsStep = ({ onSubmit, initialValues, onPrevious }) => {
               label: "Pincode",
               required: true,
             })}
+            
           </div>
 
           <div className="flex justify-between mt-6">

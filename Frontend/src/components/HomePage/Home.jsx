@@ -305,7 +305,7 @@ const HomePage = () => {
 							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
-					{/* Notification Section 
+					{/* Notification Section 	*/}
 					<motion.div
 						className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
 						variants={fadeIn}
@@ -316,9 +316,9 @@ const HomePage = () => {
 								New
 							</span>
 							<span>
-								For Selection of event management company for Bihar IDea Festival 2025
+								RFP for selection of event manangement company for Bihar Idea Festival 2025.
 								<a
-									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FRFP_%20Bihar%20Idea%20festival-compressed.pdf?alt=media&token=8c40dd5e-f04b-4271-af84-09d9d8b7cb15"
+									href="https://state.bihar.gov.in/industries/cache/26/21-Aug-25/SHOW_DOCS/RFP%20Letter%20No.-3117%20Dated-21.08.2025.pdf"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="font-semibold text-red-800 ml-2"
@@ -328,7 +328,7 @@ const HomePage = () => {
 							</span>
 						</div>
 					</motion.div>
-					*/}
+				
 
 				</motion.div>
 

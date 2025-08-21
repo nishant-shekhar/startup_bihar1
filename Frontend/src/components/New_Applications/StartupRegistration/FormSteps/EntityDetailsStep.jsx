@@ -12,9 +12,7 @@ const EntityDetailsStep = ({ onSubmit, initialValues, onPrevious }) => {
     "Pvt Ltd",
     "LLP",
     "Partnership",
-    "Proprietorship",
     "OPC",
-    "Other",
   ];
 
   const sectorOptions = [

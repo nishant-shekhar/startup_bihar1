@@ -49,7 +49,7 @@ const BusinessIdeaStep = ({ onSubmit, initialValues, onPrevious }) => {
               label: "What is your unique solution?",
               as: "textarea",
               rows: 3,
-              placeholder: "Describe your product/service and how it solves the problem better.",
+              placeholder: "Describe your product/service, technology involved and how it solves the problem better.",
               required: true,
             })}
           </div>
