@@ -27,6 +27,8 @@ import StartupDetailsForm from './components/New_Applications/StartupRegistratio
 import StartupMainForm from './components/New_Applications/StartupRegistration/StartupMainRegistration';
 import UserSignup from './components/New_Applications/StartupRegistration/UserSignup';
 import Response from './components/New_Applications/Response';
+import IdeaFestHome from './components/IdeaFest/IdeaFestHome';
+import Certificate from './components/IdeaFest/Certificate';
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -92,6 +94,9 @@ const App = () => {
 				<Route path="/SR" element={<UserSignup />} />
 				<Route path="/rv" element={<Response />} />
 				<Route path="/newtest" element={<StartupMainForm />} />
+				<Route path="/ideafest" element={<IdeaFestHome />} />
+						<Route path="/certificate/:id" element={<Certificate />} />
+				
 			</Routes>
 		</Router>
 	);

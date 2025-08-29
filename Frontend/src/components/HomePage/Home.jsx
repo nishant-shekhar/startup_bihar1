@@ -298,14 +298,14 @@ const HomePage = () => {
 							Explore Startups
 						</a>*/}
 						<a
-							href="https://startup.bihar.gov.in/apply-new"
+							href="https://odfararia.web.app/apply-new"
 							target="blank"
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>
 							Register New Startup <span aria-hidden="true">→</span>
 						</a>
 					</motion.div>
-					{/* Notification Section 	*/}
+					{/* Notification Section 	
 					<motion.div
 						className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
 						variants={fadeIn}
@@ -328,7 +328,7 @@ const HomePage = () => {
 							</span>
 						</div>
 					</motion.div>
-				
+				*/}
 
 				</motion.div>
 
