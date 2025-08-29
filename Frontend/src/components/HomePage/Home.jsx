@@ -298,7 +298,7 @@ const HomePage = () => {
 							Explore Startups
 						</a>*/}
 						<a
-							href="https://odfararia.web.app/apply-new"
+							href="https://startup.bihar.gov.in/apply-new"
 							target="blank"
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>
