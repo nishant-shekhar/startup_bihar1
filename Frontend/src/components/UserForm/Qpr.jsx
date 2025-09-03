@@ -1,38 +1,133 @@
 import React, { useState } from "react";
 import { useFormik } from "formik";
+import * as Yup from "yup";
 import axios from "axios";
 import Upload from "./Upload";
 import StatusDialog from "./StatusDialog";
 
-// Helper functions for managing semicolon-separated strings
+/* ========================= Helpers & Constants ========================= */
+
+const MAX_TOTAL_BYTES = 20 * 1024 * 1024; // 20 MB
+
 const isOptionSelected = (option, valueStr) => {
-  const arr = valueStr.split(";").filter((x) => x);
+  const arr = (valueStr || "").split(";").filter(Boolean);
   return arr.includes(option);
 };
-
 const addOptionToString = (option, valueStr) => {
-  const arr = valueStr.split(";").filter((x) => x);
-  if (!arr.includes(option)) {
-    arr.push(option);
-  }
+  const arr = (valueStr || "").split(";").filter(Boolean);
+  if (!arr.includes(option)) arr.push(option);
   return arr.join(";");
 };
-
 const removeOptionFromString = (option, valueStr) => {
-  const arr = valueStr.split(";").filter((x) => x);
-  const newArr = arr.filter((item) => item !== option);
-  return newArr.join(";");
+  const arr = (valueStr || "").split(";").filter(Boolean);
+  return arr.filter((x) => x !== option).join(";");
 };
-const districtBlockMap = {
 
+const FieldError = ({ error }) =>
+  error ? <p className="mt-1 text-sm text-red-600">{error}</p> : null;
+
+const SectionCard = ({ title, children }) => (
+  <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+    <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">{title}</h2>
+    {children}
+  </div>
+);
+
+const Label = ({ htmlFor, children, required }) => (
+  <label htmlFor={htmlFor} className="block font-medium text-gray-800">
+    {children}
+    {required && <span className="text-red-600">*</span>}
+  </label>
+);
+
+/* ========================= Options ========================= */
+
+const fundsOptions = [
+  "1st tranche seed fund",
+  "2nd tranche seed fund",
+  "Post-seed fund",
+  "Matching fund",
+  "IPR support",
+  "Acceleration support",
+  "Additional incentive women",
+  "Additional incentive SC/ST/Physically challenged",
+];
+
+const iprOptions = ["Trademark", "Copyright", "Patent", "Trade secret", "Industrial Design"];
+
+/* ========================= Validation (Yup) ========================= */
+
+const numberRequired = (label) =>
+  Yup.number()
+    .typeError(`${label} must be a number`)
+    .min(0, `${label} cannot be negative`)
+    .required(`${label} is required`);
+
+const validationSchema = Yup.object({
+  totalCoFounders: numberRequired("Total no. of Co-founders"),
+  stage: Yup.string().required("Stage is required"),
+  sector: Yup.string().required("Sector is required"),
+  registeredDistrict: Yup.string().required("Registered office district is required"),
+  registeredBlock: Yup.string().nullable(),
+  aboutStartup: Yup.string().required("About your Startup is required"),
+  fundsTaken: Yup.string()
+    .test(
+      "at-least-one",
+      "Select at least one option",
+      (val) => !!val && val.split(";").filter(Boolean).length > 0
+    )
+    .required("Select at least one option"),
+  currentRevenue: Yup.string().required("Current Revenue/Turnover details is required"),
+  netProfitOrLoss: Yup.string().required("Net Profit or Loss is required"),
+  fundsRaised: Yup.string().required("This field is required"),
+  fundsDetails: Yup.string().when("fundsRaised", {
+    is: (val) => val === "Yes",
+    then: (schema) => schema.required("Please share details of funds raised"),
+    otherwise: (schema) => schema,
+  }),
+  fundAmount: numberRequired("Amount of Fund"),
+  fullTimeMale: numberRequired("No. of Full-time Male employees"),
+  fullTimeFemale: numberRequired("No. of Full-time Female employees"),
+  partTimeMale: numberRequired("No. of Part-time Male employees"),
+  partTimeFemale: numberRequired("No. of Part-time Female employees"),
+  workOrders: numberRequired("No. of Work orders received"),
+  totalWorkOrderAmount: numberRequired("Total Amount of Work Orders received"),
+  customersAcquired: numberRequired("No. of Customers acquired"),
+  incubationBenefits: Yup.string().required("This field is required"),
+  benefitsDetails: Yup.string().when("incubationBenefits", {
+    is: (val) => val === "Yes",
+    then: (schema) => schema.required("Please mention the benefits"),
+    otherwise: (schema) => schema,
+  }),
+  unitPhotos: Yup.object({
+    photo1: Yup.mixed().required("Photo 1 is required"),
+    photo2: Yup.mixed().required("Photo 2 is required"),
+  }).required("Both geo-tagged photos are required"),
+  pitchdeck: Yup.mixed().required("Pitchdeck is required"),
+  auditedReport: Yup.mixed().required("Audited financial statement report is required"),
+  // Virtual field for total-size check—error will render in "Uploads & Evidence" section
+  filesTotal: Yup.mixed().test("total-size", "Total selected files exceed 20 MB", function () {
+    const { unitPhotos, pitchdeck, auditedReport } = this.parent || {};
+    const files = [
+      unitPhotos?.photo1,
+      unitPhotos?.photo2,
+      pitchdeck,
+      auditedReport,
+    ].filter(Boolean);
+    const total = files.reduce((sum, f) => sum + (f?.size || 0), 0);
+    return total <= MAX_TOTAL_BYTES;
+  }),
+});
+
+/* ========================= District Map ========================= */
+
+const districtBlockMap = {
   "Araria": ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
   "Arwal": ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
   "Aurangabad": ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
   "Banka": ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
-
   "Begusarai": ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
   "Bhabhua": ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
-
   "Bhagalpur": ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
   "Bhojpur": ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
   "Buxar": ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
@@ -52,11 +147,9 @@ const districtBlockMap = {
   "Muzaffarpur": ["Sahebganj", "Motipur", "Paroo", "Saraiya", "Kurhani", "Kanti", "Marwan", "Minapur", "Musahari", "Bochahan", "Aurai", "Katara", "Gaighat", "Muraul", "Sakra", "Bandra"],
   "Nalanda": ["Ekangarsarai", "Biharsarif", "Asthawan", "Noorsarai", "Sarmera", "Rahui", "Harnaut", "Hilsa", "Islampur", "Ben", "Bind", "Parwalpur", "Katrisarai", "Karai Parsurai", "Nagarnarusa", "Chandi", "Tharthari", "Giriyak", "Rajgir", "Silao"],
   "Nawada": ["Rajauli", "Akbarpur", "Sirdala", "Kowakole", "Pakaribarawan", "Warsaliganj", "Kashichak", "Nawada", "Nardiganj", "Roh", "Meskaur", "Govindpur", "Narhat", "Hisua"],
-
   "Patna": ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
   "Purnea": ["Amour", "Baisa", "Baisi", "Banmankhi", "Barhara Kothi", "Bhawanipur", "Dagarua", "Dhamdaha", "Jalalgarh", "Krityanandnagar", "Kasba", "Purnia", "Rupouli", "Srinagar"],
   "Rohtas": ["Akorhigola", "Bikramganj", "Chenari", "Dawath", "Dehri", "Dinara", "Karakata", "Kargahar", "Kochas", "Nasriganj", "Nauhatta", "Nokha", "Rajpur", "Rohtas", "Sanjhauli", "Sasaram", "Sheosagar", "Surajpura", "Tilouthu"],
-
   "Saharsa": ["Kahra", "Sattar Katiya", "Saur Bazar", "Patarghat", "Mahishi", "Sonbarsa", "Nauhatta", "Salkhua", "Banma Itahri", "Simri Bakhtiyarpur"],
   "Samastipur": ["Kalyanpur", "Warisnagar", "Khanpur", "Samastipur", "Pusa", "Tajpur", "Morwa", "Sarairanjan", "Patori", "Mohanpur", "Mohiuddinnagar", "Vidyapatinagar", "Dalsingsarai", "Ujiyarpur", "Bibhutipur", "Rosera", "Shivajinagar", "Singhia", "Hasanpur", "Bithan"],
   "Saran": ["Baniyapur", "Lahladpur", "Jalalpur", "Nagra", "Ekma", "Manjhi", "Rivilganj", "Chapra", "Maker", "Garkha", "Marhourah", "Amnour", "Mashrakh", "Panapur", "Taraiyan", "Ishupur", "Parsa", "Dariyapur", "Dighwara", "Sonepur"],
@@ -66,158 +159,26 @@ const districtBlockMap = {
   "Siwan": ["Jiradei", "Andar", "Siswan", "Guthani", "Pachrukhi", "Darauli", "Goreakothi", "Bhagwanpur", "Hussainganj", "Mairwa", "Duraudha", "Siwan", "Barharia", "Raghunathpur", "Basantpur", "Maharajganj", "Lakri Nabiganj", "Hasanpura", "Nautan"],
   "Supaul": ["Nirmali", "Marauna", "Supaul", "Kishanpur", "Saraigarh", "Pipra", "Basantpur", "Raghopur", "Pratapganj", "Triveniganj", "Chhatapur"],
   "Vaishali": ["Hajipur", "Raghopur", "Bidupur", "Lalganj", "Vaishali", "Bhagwanpur", "Patedhi Belsar", "Mahnar", "Sahdei", "Mahua", "Chehrakala", "Jandaha", "Garaul", "Patepur", "Rajapakar", "Desri"],
-
   "West Champaran": ["Bettiah", "Narkatiaganj", "Ramnagar", "Bagaha", "Lauriya", "Chanpatia", "Gaunaha", "Mainatand", "Sikta", "Jogapatti", "Bairiya"],
-
-
 };
+
+/* ========================= Component ========================= */
+
 const QprForm = ({ onFormSubmitSuccess }) => {
-  // Separate state variables for multi-select fields (as semicolon-separated strings)
-  const [fundsTakenStr, setFundsTakenStr] = useState("");
-  const [iprReceivedStr, setIprReceivedStr] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [iprReceivedStr, setIprReceivedStr] = useState(""); // optional field (not required by Yup)
 
   const [statusPopup, setStatusPopup] = useState(false);
   const [title, setTitle] = useState("");
   const [buttonVisible, setButtonVisible] = useState(true);
   const [subtitle, setSubtitle] = useState("");
-  const [isSuccess, setIsSuccess] = useState(""); // Add success state
-  const [dialogStatus, setDialogStatus] = useState({ isVisible: false, title: "", subtitle: "", buttonVisible: false, status: "" });
+  const [isSuccess, setIsSuccess] = useState("");
 
-  const goBacktoHome = () => {
-		setDialogStatus({ ...dialogStatus, isVisible: false })
-		console.log("navigate to home")
-		onFormSubmitSuccess();
-	}
-
-  const handleDistrictChange = (event) => {
-    const district = event.target.value;
-    setSelectedDistrict(district);
-    formik.setFieldValue("registeredDistrict", district);
-    formik.setFieldValue("registeredBlock", ""); // Reset block selection
-  };
-  // Options for tickboxes
-  const fundsOptions = [
-    "1st tranche seed fund",
-    "2nd tranche seed fund",
-    "Post-seed fund",
-    "Matching fund",
-    "IPR support",
-    "Acceleration support",
-    "Additional incentive women",
-    "Additional incentive SC/ST/Physically challenged",
-  ];
-
-  const iprOptions = [
-    "Trademark",
-    "Copyright",
-    "Patent",
-    "Trade secret",
-    "Industrial Design",
-  ];
-// Custom validation function (adjust messages as needed)
-const validate = (values) => {
-  const errors = {};
-
-  // Text or numeric fields where "0" is a valid value:
-  if (values.totalCoFounders === undefined || values.totalCoFounders === "") {
-    errors.totalCoFounders = "Total no. of Co-founders is required";
-  }
-  if (values.stage === undefined || values.stage === "") {
-    errors.stage = "Stage is required";
-  }
-  if (values.sector === undefined || values.sector === "") {
-    errors.sector = "Sector is required";
-  }
-  if (values.registeredDistrict === undefined || values.registeredDistrict === "") {
-    errors.registeredDistrict = "Registered office district is required";
-  }
-  if (values.aboutStartup === undefined || values.aboutStartup === "") {
-    errors.aboutStartup = "About your Startup is required";
-  }
-  // if (!fundsTakenStr || fundsTakenStr.split(";").filter(x => x).length === 0) {
-  //   errors.fundsTaken = "Select at least one option";
-  // }
-  if (values.currentRevenue === undefined || values.currentRevenue === "") {
-    errors.currentRevenue = "Current Revenue/Turnover details is required";
-  }
-  if (values.netProfitOrLoss === undefined || values.netProfitOrLoss === "") {
-    errors.netProfitOrLoss = "Net Profit or Loss is required";
-  }
-  if (values.fundsRaised === undefined || values.fundsRaised === "") {
-    errors.fundsRaised = "This field is required";
-  }
-  if (values.fundsRaised === "Yes" && (values.fundsDetails === undefined || values.fundsDetails === "")) {
-    errors.fundsDetails = "Please share details of funds raised";
-  }
-
-  // Numeric fields (0 is allowed)
-  if (values.fundAmount === undefined || values.fundAmount === "") {
-    errors.fundAmount = "Amount of Fund is required";
-  } else if (isNaN(values.fundAmount)) {
-    errors.fundAmount = "Amount must be a number";
-  }
-  if (values.fullTimeMale === undefined || values.fullTimeMale === "") {
-    errors.fullTimeMale = "No. of Full-time Male employees is required";
-  } else if (isNaN(values.fullTimeMale)) {
-    errors.fullTimeMale = "Must be a number";
-  }
-  if (values.fullTimeFemale === undefined || values.fullTimeFemale === "") {
-    errors.fullTimeFemale = "No. of Full-time Female employees is required";
-  } else if (isNaN(values.fullTimeFemale)) {
-    errors.fullTimeFemale = "Must be a number";
-  }
-  if (values.partTimeMale === undefined || values.partTimeMale === "") {
-    errors.partTimeMale = "No. of Part-time Male employees is required";
-  } else if (isNaN(values.partTimeMale)) {
-    errors.partTimeMale = "Must be a number";
-  }
-  if (values.partTimeFemale === undefined || values.partTimeFemale === "") {
-    errors.partTimeFemale = "No. of Part-time Female employees is required";
-  } else if (isNaN(values.partTimeFemale)) {
-    errors.partTimeFemale = "Must be a number";
-  }
-  if (values.workOrders === undefined || values.workOrders === "") {
-    errors.workOrders = "No. of Work orders received is required";
-  } else if (isNaN(values.workOrders)) {
-    errors.workOrders = "Must be a number";
-  }
-  if (values.totalWorkOrderAmount === undefined || values.totalWorkOrderAmount === "") {
-    errors.totalWorkOrderAmount = "Total Amount of Work Orders received is required";
-  } else if (isNaN(values.totalWorkOrderAmount)) {
-    errors.totalWorkOrderAmount = "Must be a number";
-  }
-  if (values.customersAcquired === undefined || values.customersAcquired === "") {
-    errors.customersAcquired = "No. of Customers acquired is required";
-  } else if (isNaN(values.customersAcquired)) {
-    errors.customersAcquired = "Must be a number";
-  }
-
-  // Other required fields
-
-  // Require both geo-tagged photos
-  if (!values.unitPhotos || !values.unitPhotos.photo1 || !values.unitPhotos.photo2) {
-    errors.unitPhotos = "Both geo-tagged photos are required";
-  }
-  // Require pitchdeck file upload
-  if (!values.pitchdeck) {
-    errors.pitchdeck = "Pitchdeck is required";
-  }
-  // Require audited financial statement report file upload
-  if (!values.auditedReport) {
-    errors.auditedReport = "Audited financial statement report is required";
-  }
-  if (values.incubationBenefits === undefined || values.incubationBenefits === "") {
-    errors.incubationBenefits = "This field is required";
-  }
-  if (values.incubationBenefits === "Yes" && (values.benefitsDetails === undefined || values.benefitsDetails === "")) {
-    errors.benefitsDetails = "Please mention the benefits";
-  }
-  
-  return errors;
-};
-
-
+  const inputClass = (name, formik) =>
+    `w-full border rounded-md p-2 mt-1 ${
+      formik.submitCount > 0 && formik.errors[name]
+        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+        : "border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+    }`;
 
   const formik = useFormik({
     initialValues: {
@@ -227,9 +188,10 @@ const validate = (values) => {
       registeredDistrict: "",
       registeredBlock: "",
       aboutStartup: "",
+      fundsTaken: "", // semicolon string (validated by Yup)
       currentRevenue: "",
       netProfitOrLoss: "",
-      fundsRaised: "", // Expect "Yes" or "No"
+      fundsRaised: "",
       fundsDetails: "",
       fundAmount: "",
       fullTimeMale: "",
@@ -239,39 +201,38 @@ const validate = (values) => {
       workOrders: "",
       totalWorkOrderAmount: "",
       customersAcquired: "",
-      // For file uploads, unitPhotos is an object; pitchdeck and auditedReport are files.
       unitPhotos: { photo1: null, photo2: null },
       pitchdeck: null,
       auditedReport: null,
-      incubationBenefits: "", // "Yes" or "No"
+      incubationBenefits: "",
       benefitsDetails: "",
       otherAchievements: "",
+      filesTotal: 0, // virtual field for total-size test (computed in Yup test)
     },
-    validate,
-    validateOnChange: false,
-    validateOnBlur: false,
-    onSubmit: async (values, { resetForm }) => {
+    validationSchema,
+    validateOnChange: false,  // show errors only on submit
+    validateOnBlur: false,    // show errors only on submit
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
       setTitle("Submitting Startup Progress Form");
-			setSubtitle("Please wait while we submit your form");
-			setButtonVisible(false);
-			setStatusPopup(true);
+      setSubtitle("Please wait while we submit your form");
+      setButtonVisible(false);
+      setStatusPopup(true);
+
       try {
-        // Build FormData for multipart/form-data submission
         const formData = new FormData();
         formData.append("totalCoFounders", values.totalCoFounders);
         formData.append("stage", values.stage);
         formData.append("sector", values.sector);
         formData.append("registeredDistrict", values.registeredDistrict);
-        formData.append("registeredBlock", values.registeredBlock);
+        formData.append("registeredBlock", values.registeredBlock || "");
         formData.append("aboutStartup", values.aboutStartup);
-        // Append our semicolon-separated strings for multi-select fields
-        formData.append("fundsTaken", fundsTakenStr);
+        formData.append("fundsTaken", values.fundsTaken); // from Yup-validated string
         formData.append("currentRevenue", values.currentRevenue);
         formData.append("netProfitOrLoss", values.netProfitOrLoss);
         formData.append("fundsRaised", values.fundsRaised);
-        formData.append("fundsDetails", values.fundsDetails);
+        formData.append("fundsDetails", values.fundsDetails || "");
         formData.append("fundAmount", values.fundAmount);
-        formData.append("iprReceived", iprReceivedStr);
+        formData.append("iprReceived", iprReceivedStr); // optional
         formData.append("fullTimeMale", values.fullTimeMale);
         formData.append("fullTimeFemale", values.fullTimeFemale);
         formData.append("partTimeMale", values.partTimeMale);
@@ -280,131 +241,111 @@ const validate = (values) => {
         formData.append("totalWorkOrderAmount", values.totalWorkOrderAmount);
         formData.append("customersAcquired", values.customersAcquired);
         formData.append("incubationBenefits", values.incubationBenefits);
-        formData.append("benefitsDetails", values.benefitsDetails);
-        formData.append("otherAchievements", values.otherAchievements);
+        formData.append("benefitsDetails", values.benefitsDetails || "");
+        formData.append("otherAchievements", values.otherAchievements || "");
 
-        // Append file fields if available
-        if (values.unitPhotos.photo1) {
-          formData.append("unitPhoto1", values.unitPhotos.photo1);
-        }
-        if (values.unitPhotos.photo2) {
-          formData.append("unitPhoto2", values.unitPhotos.photo2);
-        }
-        if (values.pitchdeck) {
-          formData.append("pitchdeck", values.pitchdeck);
-        }
-        if (values.auditedReport) {
-          formData.append("auditedReport", values.auditedReport);
-        }
+        if (values.unitPhotos.photo1) formData.append("unitPhoto1", values.unitPhotos.photo1);
+        if (values.unitPhotos.photo2) formData.append("unitPhoto2", values.unitPhotos.photo2);
+        if (values.pitchdeck) formData.append("pitchdeck", values.pitchdeck);
+        if (values.auditedReport) formData.append("auditedReport", values.auditedReport);
 
-        const response = await axios.post(
-          "https://startupbihar.in/api/Qreport",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        //alert("Data submitted successfully!");
+        const response = await axios.post("https://startupbihar.in/api/Qreport", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `${localStorage.getItem("token")}`,
+          },
+        });
+
         setTitle("Submission Successful");
-				setSubtitle(response.data.message);
-				setButtonVisible(true);
-				setIsSuccess("success"); // Set success state
+        setSubtitle(response?.data?.message || "Data submitted successfully");
+        setButtonVisible(true);
+        setIsSuccess("success");
+
         resetForm();
+        setIprReceivedStr("");
       } catch (error) {
-        console.error("Error submitting data:", error.response?.data || error.message);
-        //alert("Failed to submit data. Check console for details.");
+        // Friendly mapping for common server failures
+        let msg = "An error occurred during submission";
+        if (error?.response) {
+          const status = error.response.status;
+          if (status === 413) {
+            msg = "Upload too large. Combined files exceed the server's 20 MB limit. Please compress and retry.";
+          } else if (status === 401 || status === 403) {
+            msg = "Your session seems to have expired. Please log in again and resubmit.";
+          } else {
+            msg =
+              error.response.data?.error ||
+              error.response.data?.message ||
+              `Request failed with status ${status}`;
+          }
+        } else if (error?.request) {
+          msg = "Network error. Please check your connection and try again.";
+        } else if (error?.message) {
+          msg = error.message;
+        }
+
         setTitle("Submission Failed");
-				setSubtitle(
-					error.response?.data?.error || "An error occurred during submission"
-				);
-				setButtonVisible(true);
-			
-				setIsSuccess("failed"); // Set success state
+        setSubtitle(msg);
+        setButtonVisible(true);
+        setIsSuccess("failed");
+      } finally {
+        setSubmitting(false);
       }
     },
   });
 
+  const handleDistrictChange = (e) => {
+    const district = e.target.value;
+    formik.setFieldValue("registeredDistrict", district);
+    formik.setFieldValue("registeredBlock", "");
+  };
+
+  const goBacktoHome = () => {
+    setStatusPopup(false);
+    if (isSuccess === "success") onFormSubmitSuccess?.();
+  };
+
   return (
-    <div className="h-screen overflow-y-auto">
-      <div className="relative w-full h-[250px]">
-
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="1440" height="250" preserveAspectRatio="none" viewBox="0 0 1440 250">
-          <g mask="url(#SvgjsMask1000)" fill="none">
-            <rect width="1440" height="250" x="0" y="0" fill="#0e2a47"></rect>
-            <path d="M38 250L288 0L538.5 0L288.5 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-            <path d="M244.60000000000002 250L494.6 0L647.6 0L397.6 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-            <path d="M490.20000000000005 250L740.2 0L911.2 0L661.2 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-            <path d="M728.8000000000001 250L978.8000000000001 0L1289.3000000000002 0L1039.3000000000002 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-            <path d="M1406 250L1156 0L982 0L1232 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-            <path d="M1199.4 250L949.4000000000001 0L749.9000000000001 0L999.9000000000001 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-            <path d="M940.8 250L690.8 0L375.79999999999995 0L625.8 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-            <path d="M704.1999999999999 250L454.19999999999993 0L146.69999999999993 0L396.69999999999993 250z" fill="url(#SvgjsLinearGradient1002)"></path>
-            <path d="M1205.2767553797382 250L1440 15.276755379738262L1440 250z" fill="url(#SvgjsLinearGradient1001)"></path>
-            <path d="M0 250L234.72324462026174 250L 0 15.276755379738262z" fill="url(#SvgjsLinearGradient1002)"></path>
-          </g>
-          <defs>
-            <mask id="SvgjsMask1000">
-              <rect width="1440" height="250" fill="#ffffff"></rect>
-            </mask>
-            <linearGradient x1="0%" y1="100%" x2="100%" y2="0%" id="SvgjsLinearGradient1001">
-              <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
-              <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
-            </linearGradient>
-            <linearGradient x1="100%" y1="100%" x2="0%" y2="0%" id="SvgjsLinearGradient1002">
-              <stop stop-color="rgba(15, 70, 185, 0.2)" offset="0"></stop>
-              <stop stop-opacity="0" stop-color="rgba(15, 70, 185, 0.2)" offset="0.66"></stop>
-            </linearGradient>
-          </defs>
-        </svg>
-
-
-        <div className="absolute top-9 left-0 w-full p-6 text-white">
-          <h1 className="text-3xl font-bold mb-2 relative top-10">Startup Progress Report </h1>
-          <p className="text-lg max-w-xl relative top-10">
-            Share your startup progress metrics
-          </p>
+    <div className="h-screen overflow-y-auto bg-gray-50">
+      {/* Hero */}
+      <div className="relative w-full h-[210px] bg-[#0e2a47] text-white">
+        <div className="relative h-full flex flex-col justify-center px-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Startup Progress Report</h1>
+          <p className="text-base md:text-lg opacity-90">Share your startup progress metrics</p>
         </div>
       </div>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
-        <form onSubmit={formik.handleSubmit} className="w-full max-w-4xl p-8">
 
-
-          {/* Row 1 - Column layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Column 1 */}
-            <div>
-              {/* Total no. of Co-founders */}
-              <div className="mb-4">
-                <label htmlFor="totalCoFounders" className="block font-medium">
-                  Total no. of Co-founders*
-                </label>
+      <div className="max-w-5xl mx-auto px-4 md:px-6 mt-8 pb-16">
+        <form onSubmit={formik.handleSubmit} className="space-y-6">
+          {/* Company & Stage */}
+          <SectionCard title="Company & Stage">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="totalCoFounders" required>
+                  Total no. of Co-founders
+                </Label>
                 <input
-                  type="text"
                   id="totalCoFounders"
                   name="totalCoFounders"
+                  type="number"
+                  min="0"
                   value={formik.values.totalCoFounders}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("totalCoFounders", formik)}
                 />
-                {formik.errors.totalCoFounders && (
-                  <div className="text-red-600">{formik.errors.totalCoFounders}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.totalCoFounders : undefined} />
               </div>
 
-              {/* Stage */}
-              <div className="mb-4">
-                <label htmlFor="stage" className="block font-medium">
-                  Stage* (Dropdown)
-                </label>
+              <div>
+                <Label htmlFor="stage" required>
+                  Stage
+                </Label>
                 <select
                   id="stage"
                   name="stage"
                   value={formik.values.stage}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("stage", formik)}
                 >
                   <option value="">Select Stage</option>
                   <option value="Ideation">Ideation</option>
@@ -412,22 +353,19 @@ const validate = (values) => {
                   <option value="MVP">MVP</option>
                   <option value="Scaling">Scaling</option>
                 </select>
-                {formik.errors.stage && (
-                  <div className="text-red-600">{formik.errors.stage}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.stage : undefined} />
               </div>
 
-              {/* Sector */}
-              <div className="mb-4">
-                <label htmlFor="sector" className="block font-medium">
-                  Sector*
-                </label>
+              <div>
+                <Label htmlFor="sector" required>
+                  Sector
+                </Label>
                 <select
                   id="sector"
                   name="sector"
                   value={formik.values.sector}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("sector", formik)}
                 >
                   <option value="">Select Sector</option>
                   <option value="Agri-Tech and Allied Sector">Agri-Tech and Allied Sector</option>
@@ -448,180 +386,156 @@ const validate = (values) => {
                   <option value="Handicrafts">Handicrafts</option>
                   <option value="Others">Others</option>
                 </select>
-
-
-                {formik.errors.sector && (
-                  <div className="text-red-600">{formik.errors.sector}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.sector : undefined} />
               </div>
 
-              {/* Registered office district */}
-              <div className="mb-4">
-                <label htmlFor="registeredDistrict" className="block font-medium">
-                  Registered office district*
-                </label>
+              <div>
+                <Label htmlFor="aboutStartup" required>
+                  About your Startup (in one line)
+                </Label>
+                <input
+                  id="aboutStartup"
+                  name="aboutStartup"
+                  value={formik.values.aboutStartup}
+                  onChange={formik.handleChange}
+                  className={inputClass("aboutStartup", formik)}
+                />
+                <FieldError error={formik.submitCount > 0 ? formik.errors.aboutStartup : undefined} />
+              </div>
+            </div>
+          </SectionCard>
+
+          {/* Registered Office */}
+          <SectionCard title="Registered Office">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="registeredDistrict" required>
+                  Registered office district
+                </Label>
                 <select
                   id="registeredDistrict"
                   name="registeredDistrict"
                   value={formik.values.registeredDistrict}
                   onChange={handleDistrictChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("registeredDistrict", formik)}
                 >
                   <option value="">Select District</option>
-                  {Object.keys(districtBlockMap).map((district) => (
-                    <option key={district} value={district}>{district}</option>
+                  {Object.keys(districtBlockMap).map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
                   ))}
                 </select>
-                {formik.errors.registeredDistrict && (
-                  <div className="text-red-600">{formik.errors.registeredDistrict}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.registeredDistrict : undefined} />
               </div>
 
-              {/* Registered office Block */}
-              <div className="mb-4">
-                <label htmlFor="registeredBlock" className="block font-medium">
-                  Registered office Block
-                </label>
+              <div>
+                <Label htmlFor="registeredBlock">Registered office Block</Label>
                 <select
                   id="registeredBlock"
                   name="registeredBlock"
                   value={formik.values.registeredBlock}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
-                  disabled={!selectedDistrict}
+                  className={inputClass("registeredBlock", formik)}
+                  disabled={!formik.values.registeredDistrict}
                 >
                   <option value="">Select Block</option>
-                  {selectedDistrict &&
-                    districtBlockMap[selectedDistrict].map((block) => (
-                      <option key={block} value={block}>{block}</option>
+                  {formik.values.registeredDistrict &&
+                    districtBlockMap[formik.values.registeredDistrict].map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
                     ))}
                 </select>
-                {formik.errors.registeredBlock && (
-                  <div className="text-red-600">{formik.errors.registeredBlock}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.registeredBlock : undefined} />
               </div>
+            </div>
+          </SectionCard>
 
-              {/* About your Startup */}
-              <div className="mb-4">
-                <label htmlFor="aboutStartup" className="block font-medium">
-                  About your Startup (In one line)*
-                </label>
-                <input
-                  type="text"
-                  id="aboutStartup"
-                  name="aboutStartup"
-                  value={formik.values.aboutStartup}
-                  onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
-                />
-                {formik.errors.aboutStartup && (
-                  <div className="text-red-600">{formik.errors.aboutStartup}</div>
-                )}
-              </div>
-
-              {/* Funds taken from Startup Bihar */}
-              <div className="mb-4">
-                <label className="block font-medium">
-                  Funds taken from Startup Bihar*
-                </label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {fundsOptions.map((option, index) => (
-                    <label key={index} className="inline-flex items-center">
+          {/* Funding & Financials */}
+          <SectionCard title="Funding & Financials">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label required>Funds taken from Startup Bihar</Label>
+                <div id="fundsTaken" className="flex flex-wrap gap-3 mt-1">
+                  {fundsOptions.map((option) => (
+                    <label key={option} className="inline-flex items-center gap-2">
                       <input
                         type="checkbox"
-                        name="fundsTaken"
                         value={option}
-                        checked={isOptionSelected(option, fundsTakenStr)}
+                        checked={isOptionSelected(option, formik.values.fundsTaken)}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setFundsTakenStr((prev) => addOptionToString(option, prev));
+                            formik.setFieldValue("fundsTaken", addOptionToString(option, formik.values.fundsTaken));
                           } else {
-                            setFundsTakenStr((prev) => removeOptionFromString(option, prev));
+                            formik.setFieldValue("fundsTaken", removeOptionFromString(option, formik.values.fundsTaken));
                           }
                         }}
-                        className="form-checkbox"
                       />
-                      <span className="ml-2 text-sm">{option}</span>
+                      <span className="text-sm">{option}</span>
                     </label>
                   ))}
                 </div>
-                {formik.errors.fundsTaken && (
-                  <div className="text-red-600">{formik.errors.fundsTaken}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.fundsTaken : undefined} />
               </div>
 
-              {/* Current Revenue/Turnover details */}
-              <div className="mb-4">
-                <label htmlFor="currentRevenue" className="block font-medium">
-                  Current Revenue/Turnover details (In Rs. Lakhs)*
-                </label>
+              <div>
+                <Label htmlFor="currentRevenue" required>
+                  Current Revenue/Turnover details (in ₹ Lakhs)
+                </Label>
                 <input
-                  type="text"
                   id="currentRevenue"
                   name="currentRevenue"
                   value={formik.values.currentRevenue}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("currentRevenue", formik)}
                 />
-                {formik.errors.currentRevenue && (
-                  <div className="text-red-600">{formik.errors.currentRevenue}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.currentRevenue : undefined} />
               </div>
 
-              {/* Net Profit or Loss */}
-              <div className="mb-4">
-                <label htmlFor="netProfitOrLoss" className="block font-medium">
-                  Net Profit or Loss (Rs. In lakh)*
-                </label>
+              <div>
+                <Label htmlFor="netProfitOrLoss" required>
+                  Net Profit or Loss (in ₹ Lakhs)
+                </Label>
                 <input
-                  type="text"
                   id="netProfitOrLoss"
                   name="netProfitOrLoss"
                   value={formik.values.netProfitOrLoss}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("netProfitOrLoss", formik)}
                 />
-                {formik.errors.netProfitOrLoss && (
-                  <div className="text-red-600">{formik.errors.netProfitOrLoss}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.netProfitOrLoss : undefined} />
               </div>
-            </div>
 
-            {/* Column 2 */}
-            <div>
-              {/* Funds raised or Grants received */}
-              <div className="mb-4">
-                <label htmlFor="fundsRaised" className="block font-medium">
-                  Any Funds raised or Grants received*
-                </label>
+              <div>
+                <Label htmlFor="fundsRaised" required>
+                  Any Funds raised or Grants received
+                </Label>
                 <select
                   id="fundsRaised"
                   name="fundsRaised"
                   value={formik.values.fundsRaised}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("fundsRaised", formik)}
                 >
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
-                {formik.errors.fundsRaised && (
-                  <div className="text-red-600">{formik.errors.fundsRaised}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.fundsRaised : undefined} />
               </div>
 
-              {/* If yes, share details */}
               {formik.values.fundsRaised === "Yes" && (
-                <div className="mb-4">
-                  <label htmlFor="fundsDetails" className="block font-medium">
+                <div className="md:col-span-2">
+                  <Label htmlFor="fundsDetails" required>
                     If yes, share details (Name of organization)
-                  </label>
+                  </Label>
                   <select
                     id="fundsDetails"
                     name="fundsDetails"
                     value={formik.values.fundsDetails}
                     onChange={formik.handleChange}
-                    className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                    className={inputClass("fundsDetails", formik)}
                   >
                     <option value="">Select</option>
                     <option value="HNI">HNI</option>
@@ -630,41 +544,38 @@ const validate = (values) => {
                     <option value="AIF CAT-2">AIF CAT-2</option>
                     <option value="Startup India">Startup India</option>
                   </select>
-                  {formik.errors.fundsDetails && (
-                    <div className="text-red-600">{formik.errors.fundsDetails}</div>
-                  )}
+                  <FieldError error={formik.submitCount > 0 ? formik.errors.fundsDetails : undefined} />
                 </div>
               )}
 
-              {/* Amount of Fund */}
-              <div className="mb-4">
-                <label htmlFor="fundAmount" className="block font-medium">
+              <div>
+                <Label htmlFor="fundAmount" required>
                   Amount of Fund
-                </label>
+                </Label>
                 <input
-                  type="number"
-                  step="1"
-                  min="0"
                   id="fundAmount"
                   name="fundAmount"
+                  type="number"
+                  min="0"
                   value={formik.values.fundAmount}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("fundAmount", formik)}
                 />
-                {formik.errors.fundAmount && (
-                  <div className="text-red-600">{formik.errors.fundAmount}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.fundAmount : undefined} />
               </div>
+            </div>
+          </SectionCard>
 
-              {/* Any IPR received */}
-              <div className="mb-4">
-                <label className="block font-medium">Any IPR Received</label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {iprOptions.map((option, index) => (
-                    <label key={index} className="inline-flex items-center">
+          {/* IPR & Team */}
+          <SectionCard title="IPR & Team">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <Label>Any IPR Received (optional)</Label>
+                <div id="iprReceived" className="flex flex-wrap gap-3 mt-1">
+                  {iprOptions.map((option) => (
+                    <label key={option} className="inline-flex items-center gap-2">
                       <input
                         type="checkbox"
-                        name="iprReceived"
                         value={option}
                         checked={isOptionSelected(option, iprReceivedStr)}
                         onChange={(e) => {
@@ -674,305 +585,279 @@ const validate = (values) => {
                             setIprReceivedStr((prev) => removeOptionFromString(option, prev));
                           }
                         }}
-                        className="form-checkbox"
                       />
-                      <span className="ml-2 text-sm">{option}</span>
+                      <span className="text-sm">{option}</span>
                     </label>
                   ))}
                 </div>
-                {formik.errors.iprReceived && (
-                  <div className="text-red-600">{formik.errors.iprReceived}</div>
-                )}
               </div>
 
-              {/* Full-time Male employees */}
-              <div className="mb-4">
-                <label htmlFor="fullTimeMale" className="block font-medium">
-                  No. of Full-time Male employees*
-                </label>
+              <div>
+                <Label htmlFor="fullTimeMale" required>
+                  No. of Full-time Male employees
+                </Label>
                 <input
-                  type="number"
                   id="fullTimeMale"
                   name="fullTimeMale"
+                  type="number"
                   min="0"
                   value={formik.values.fullTimeMale}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("fullTimeMale", formik)}
                 />
-                {formik.errors.fullTimeMale && (
-                  <div className="text-red-600">{formik.errors.fullTimeMale}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.fullTimeMale : undefined} />
               </div>
 
-              {/* Full-time Female employees */}
-              <div className="mb-4">
-                <label htmlFor="fullTimeFemale" className="block font-medium">
-                  No. of Full-time Female employees*
-                </label>
+              <div>
+                <Label htmlFor="fullTimeFemale" required>
+                  No. of Full-time Female employees
+                </Label>
                 <input
-                  type="number"
                   id="fullTimeFemale"
                   name="fullTimeFemale"
+                  type="number"
                   min="0"
-
                   value={formik.values.fullTimeFemale}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("fullTimeFemale", formik)}
                 />
-                {formik.errors.fullTimeFemale && (
-                  <div className="text-red-600">{formik.errors.fullTimeFemale}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.fullTimeFemale : undefined} />
               </div>
 
-              {/* Part-time Male employees */}
-              <div className="mb-4">
-                <label htmlFor="partTimeMale" className="block font-medium">
-                  No. of Part-time Male employees*
-                </label>
+              <div>
+                <Label htmlFor="partTimeMale" required>
+                  No. of Part-time Male employees
+                </Label>
                 <input
-                  type="number"
                   id="partTimeMale"
                   name="partTimeMale"
+                  type="number"
                   min="0"
-
                   value={formik.values.partTimeMale}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("partTimeMale", formik)}
                 />
-                {formik.errors.partTimeMale && (
-                  <div className="text-red-600">{formik.errors.partTimeMale}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.partTimeMale : undefined} />
               </div>
 
-              {/* Part-time Female employees */}
-              <div className="mb-4">
-                <label htmlFor="partTimeFemale" className="block font-medium">
-                  No. of Part-time Female employees*
-                </label>
+              <div>
+                <Label htmlFor="partTimeFemale" required>
+                  No. of Part-time Female employees
+                </Label>
                 <input
-                  type="number"
                   id="partTimeFemale"
                   name="partTimeFemale"
+                  type="number"
                   min="0"
-
                   value={formik.values.partTimeFemale}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("partTimeFemale", formik)}
                 />
-                {formik.errors.partTimeFemale && (
-                  <div className="text-red-600">{formik.errors.partTimeFemale}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.partTimeFemale : undefined} />
               </div>
             </div>
-          </div>
+          </SectionCard>
 
-          {/* Row 3 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Column 1 */}
-            <div>
-              {/* Work orders received */}
-              <div className="mb-4">
-                <label htmlFor="workOrders" className="block font-medium">
-                  No. of Work orders received *
-                </label>
+          {/* Orders & Users */}
+          <SectionCard title="Orders & Users">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="workOrders" required>
+                  No. of Work orders received
+                </Label>
                 <input
-                  type="number"
                   id="workOrders"
                   name="workOrders"
+                  type="number"
                   min="0"
-
                   value={formik.values.workOrders}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("workOrders", formik)}
                 />
-                {formik.errors.workOrders && (
-                  <div className="text-red-600">{formik.errors.workOrders}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.workOrders : undefined} />
               </div>
-
-              {/* Total amount of work orders received */}
-              <div className="mb-4">
-                <label htmlFor="totalWorkOrderAmount" className="block font-medium">
-                  Total Amount of Work Orders received*
-                </label>
+              <div>
+                <Label htmlFor="totalWorkOrderAmount" required>
+                  Total Amount of Work Orders received
+                </Label>
                 <input
-                  type="number"
-                  step="1"
                   id="totalWorkOrderAmount"
                   name="totalWorkOrderAmount"
+                  type="number"
                   min="0"
-
                   value={formik.values.totalWorkOrderAmount}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("totalWorkOrderAmount", formik)}
                 />
-                {formik.errors.totalWorkOrderAmount && (
-                  <div className="text-red-600">{formik.errors.totalWorkOrderAmount}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.totalWorkOrderAmount : undefined} />
               </div>
-
-              {/* Customers acquired */}
-              <div className="mb-4">
-                <label htmlFor="customersAcquired" className="block font-medium">
-                  No. of Customers acquired/Current Active users *
-                </label>
+              <div>
+                <Label htmlFor="customersAcquired" required>
+                  No. of Customers acquired / Current Active users
+                </Label>
                 <input
-                  type="number"
                   id="customersAcquired"
                   name="customersAcquired"
+                  type="number"
                   min="0"
-
                   value={formik.values.customersAcquired}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("customersAcquired", formik)}
                 />
-                {formik.errors.customersAcquired && (
-                  <div className="text-red-600">{formik.errors.customersAcquired}</div>
-                )}
-              </div>
-
-              {/* Upload Geo-tagged photos (2 photos) */}
-              <div className="mb-4">
-                <label className="block font-medium">
-                  Upload 2 Geo-tagged photos of your unit/office*
-                </label>
-                <div className="flex flex-col gap-4 mt-2">
-                  <Upload
-                    label="Photo 1"
-                    name="unitPhoto1"
-                    onChange={(file) =>
-                      formik.setFieldValue("unitPhotos", {
-                        ...formik.values.unitPhotos,
-                        photo1: file,
-                      })
-                    }
-                    allowImages={true}
-                  />
-                  <Upload
-                    label="Photo 2"
-                    name="unitPhoto2"
-                    onChange={(file) =>
-                      formik.setFieldValue("unitPhotos", {
-                        ...formik.values.unitPhotos,
-                        photo2: file,
-                      })
-                    }
-                    allowImages={true}
-                  />
-                </div>
-                {formik.errors.unitPhotos && (
-                  <div className="text-red-600">{formik.errors.unitPhotos}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.customersAcquired : undefined} />
               </div>
             </div>
+          </SectionCard>
 
-            {/* Column 2 */}
-            <div>
-              {/* Pitchdeck */}
-              <div className="mb-4">
+          {/* Uploads */}
+          <SectionCard title="Uploads & Evidence">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div id="unitPhotos" className="md:col-span-2">
+                <Label required>Upload 2 Geo-tagged photos of your unit/office</Label>
+                <div className="flex flex-col md:flex-row gap-4 mt-2">
+                  <div className="flex-1">
+                    <Upload
+                      label="Photo 1"
+                      name="unitPhoto1"
+                      onChange={(file) =>
+                        formik.setFieldValue("unitPhotos", {
+                          ...formik.values.unitPhotos,
+                          photo1: file,
+                        })
+                      }
+                      allowImages={true}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Upload
+                      label="Photo 2"
+                      name="unitPhoto2"
+                      onChange={(file) =>
+                        formik.setFieldValue("unitPhotos", {
+                          ...formik.values.unitPhotos,
+                          photo2: file,
+                        })
+                      }
+                      allowImages={true}
+                    />
+                  </div>
+                </div>
+                <FieldError
+                  error={
+                    formik.submitCount > 0
+                      ? formik.errors.unitPhotos?.photo1 ||
+                        formik.errors.unitPhotos?.photo2 ||
+                        formik.errors.unitPhotos
+                      : undefined
+                  }
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="pitchdeck" required>
+                  Upload updated pitchdeck (PDF)
+                </Label>
                 <Upload
-                  label="Upload updated pitchdeck (PDF)*"
+                  label="Pitchdeck (PDF)"
                   name="pitchdeck"
                   onChange={(file) => formik.setFieldValue("pitchdeck", file)}
                 />
-                {formik.errors.pitchdeck && (
-                  <div className="text-red-600">{formik.errors.pitchdeck}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.pitchdeck : undefined} />
               </div>
 
-              {/* Audited Financial Statement */}
-              <div className="mb-4">
+              <div>
+                <Label htmlFor="auditedReport" required>
+                  Upload last year audited financial statement report
+                </Label>
                 <Upload
-                  label="Upload last year audited financial statement report*"
+                  label="Audited Financials (PDF)"
                   name="auditedReport"
                   onChange={(file) => formik.setFieldValue("auditedReport", file)}
                 />
-                {formik.errors.auditedReport && (
-                  <div className="text-red-600">{formik.errors.auditedReport}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.auditedReport : undefined} />
               </div>
 
-              {/* Benefits from incubation/mentors */}
-              <div className="mb-4">
-                <label htmlFor="incubationBenefits" className="block font-medium">
-                  Any benefits available from the incubation center/appointed mentors*
-                </label>
+              {/* Total-size error (Yup virtual field) */}
+              <div className="md:col-span-2">
+                <FieldError error={formik.submitCount > 0 ? formik.errors.filesTotal : undefined} />
+              </div>
+            </div>
+          </SectionCard>
+
+          {/* Incubation & Achievements */}
+          <SectionCard title="Incubation & Other Achievements">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="incubationBenefits" required>
+                  Any benefits available from the incubation center/appointed mentors
+                </Label>
                 <select
                   id="incubationBenefits"
                   name="incubationBenefits"
                   value={formik.values.incubationBenefits}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("incubationBenefits", formik)}
                 >
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
-                {formik.errors.incubationBenefits && (
-                  <div className="text-red-600">{formik.errors.incubationBenefits}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.incubationBenefits : undefined} />
               </div>
 
-              {/* If yes, Benefits details */}
               {formik.values.incubationBenefits === "Yes" && (
-                <div className="mb-4">
-                  <label htmlFor="benefitsDetails" className="block font-medium">
+                <div>
+                  <Label htmlFor="benefitsDetails" required>
                     If yes, please mention
-                  </label>
+                  </Label>
                   <input
-                    type="text"
                     id="benefitsDetails"
                     name="benefitsDetails"
                     value={formik.values.benefitsDetails}
                     onChange={formik.handleChange}
-                    className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                    className={inputClass("benefitsDetails", formik)}
                   />
-                  {formik.errors.benefitsDetails && (
-                    <div className="text-red-600">{formik.errors.benefitsDetails}</div>
-                  )}
+                  <FieldError error={formik.submitCount > 0 ? formik.errors.benefitsDetails : undefined} />
                 </div>
               )}
 
-              {/* Other Achievements */}
-              <div className="mb-4">
-                <label htmlFor="otherAchievements" className="block font-medium">
-                  Any other Achievements, share details
-                </label>
+              <div className="md:col-span-2">
+                <Label htmlFor="otherAchievements">Any other Achievements, share details</Label>
                 <input
-                  type="text"
                   id="otherAchievements"
                   name="otherAchievements"
                   value={formik.values.otherAchievements}
                   onChange={formik.handleChange}
-                  className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                  className={inputClass("otherAchievements", formik)}
                 />
-                {formik.errors.otherAchievements && (
-                  <div className="text-red-600">{formik.errors.otherAchievements}</div>
-                )}
+                <FieldError error={formik.submitCount > 0 ? formik.errors.otherAchievements : undefined} />
               </div>
             </div>
+          </SectionCard>
+
+          {/* Submit */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={formik.isSubmitting}
+              className={`w-full py-3 rounded-xl font-medium text-white ${
+                formik.isSubmitting ? "bg-indigo-300 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
+            >
+              {formik.isSubmitting ? "Submitting..." : "Submit"}
+            </button>
           </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={formik.isSubmitting}
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-          >
-            {formik.isSubmitting ? "Submitting..." : "Submit"}
-          </button>
         </form>
-        
       </div>
-      <StatusDialog
-				isVisible={statusPopup}
-				title={title}
-				subtitle={subtitle}
-				buttonVisible={buttonVisible}
-				status={isSuccess} // Pass success state
 
-				onClose={() => goBacktoHome()}
-			/>
+      <StatusDialog
+        isVisible={statusPopup}
+        title={title}
+        subtitle={subtitle}
+        buttonVisible={buttonVisible}
+        status={isSuccess}
+        onClose={goBacktoHome}
+      />
     </div>
   );
 };
