@@ -13,6 +13,7 @@ const ThirdPage = () => {
         { text: ' New Startup Evaluation Test Result Held on 7th, 10th, 11th March 2025 ', date: 'March 15, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_7_10_11_March_2025.pdf?alt=media&token=fac685ec-53bf-4567-b385-b479de8112ee' },
         { text: ' RESULT OF START-UP EVALUATION TEST HELD ON 29th, 30th April & 02th May 2025 ', date: 'May 14, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_29_30_April_02_May_2025.pdf?alt=media&token=08e091d4-4838-47a6-bb07-360f91c44c3a' },
         { text: '🚀🚀Startup Evaluation Test Result Held on 2nd,3rd & 4th July 2025🚀🚀', date: 'Aug 11, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_2_3_4_july_2025.pdf?alt=media&token=2c089e1a-cf3c-4260-b795-69f3c9cd3392' },
+        { text: '🚀🚀Startup Evaluation Test Result Held on 26th -27th Aug 2025🚀🚀', date: 'Oct 7, 2025', author: 'Admin', link: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FStartUP_Evaluation_Result%20_26_27_Aug.pdf?alt=media&token=1dd20ea5-ef2f-405b-982b-de60e77537a1' },
 
     ];
     

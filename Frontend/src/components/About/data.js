@@ -48,15 +48,7 @@ const contacts = [
       position: 'Co-ordinator Finance', 
       tag: 'Finance Wing' 
     },
-    { 
-      id: 8, 
-      name: 'Mukesh Kumar', 
-      email: 'startup-bihar@gov.in',
-      phone: '6287797919', 
-      image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fmukesh%20ji.jpeg?alt=media&token=5f39811c-3085-42a5-94de-7be57a9cba32', 
-      position: 'Jr. Consultant (IT)', 
-      tag: 'IT Wing' 
-    }
+    
   ];
   
   export default contacts;

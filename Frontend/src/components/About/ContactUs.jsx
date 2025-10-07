@@ -78,16 +78,8 @@ const ContactUs = () => {
 			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FWhatsApp%20Image%202025-01-10%20at%2018.32.46.jpeg?alt=media&token=cf286280-dda5-4cc6-b70e-fe63a8519306', 
 			position: 'Co-ordinator Finance', 
 			tag: 'Finance Wing' 
-		  },
-		  { 
-			id: 8, 
-			name: 'Mukesh Kumar', 
-			email: 'startup-bihar@gov.in',
-			phone: '6287797919', 
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fmukesh%20ji.jpeg?alt=media&token=5f39811c-3085-42a5-94de-7be57a9cba32', 
-			position: 'Jr. Consultant (IT)', 
-			tag: 'IT Wing' 
 		  }
+		 
 		];
 
 	return (
@@ -117,7 +109,7 @@ const ContactUs = () => {
 
 				</div>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 p-10  mb-16">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-10  mb-16">
 					{contactsSSU.map((contact) => (
 						<ContactCard
 							key={contact.id}
