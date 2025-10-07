@@ -83,7 +83,7 @@ const ThirdPage = () => {
                                     <div className="absolute inset-x-10 bottom-0 top-10 overflow-hidden rounded-t-[12cqw] border-x-8 border-t-8 border-gray-700 bg-gray-900 shadow-2xl transition-transform duration-300 hover:scale-105">
                                         <img
                                             className="size-full object-cover object-top"
-                                            src="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FFB_IMG_1736488698591.jpg?alt=media&token=6a91c5af-675c-45b8-9311-d0546de3e75e"
+                                            src="bbc24.jpeg"
                                             alt="Mobile friendly"
                                         />
                                     </div>
