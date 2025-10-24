@@ -589,6 +589,7 @@ const QPRModuleDetails = ({ id }) => {
 
 					</tbody>
 				</table>
+				{/*
 				<div className="flex items-center justify-end gap-x-2 pr-4 py-3">
 					<button
 						type="button"
@@ -618,6 +619,7 @@ const QPRModuleDetails = ({ id }) => {
 						Partial Reject
 					</button>
 				</div>
+				*/}
 
 				{isCommentVisible && (
 					<div className="absolute top-64 w-3/12 bg-white rounded-md shadow-xl p-4 z-10 left-[37%]">
