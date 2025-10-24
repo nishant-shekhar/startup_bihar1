@@ -8,9 +8,27 @@ const contacts = [
     position: 'Assistant Director',
     tag: 'Nodal Officer'
   },
+   { 
+			id: 1, 
+			name: 'Gopi Krishna ', 
+			email: 'startup-bihar@gov.in',
+			phone: '7258071721', 
+			image: 'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=', 
+			position: 'Industries Extension Officer', 
+			tag: 'StartUp Wing' 
+		  },
+		  { 
+			id: 2, 
+			name: 'Jyoti Kumari', 
+			email: 'startup-bihar@gov.in',
+			phone: '8210892215', 
+			image: 'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=', 
+			position: 'Assistant Section Officer', 
+			tag: 'StartUp Wing' 
+		  },
     
     { 
-      id: 1, 
+      id: 3, 
       name: 'Manish Kumar Ranjan', 
       email: 'startup-bihar@gov.in',
       phone: '9262993981', 
@@ -19,7 +37,7 @@ const contacts = [
       tag: 'StartUp Wing' 
     },
     { 
-      id: 2, 
+      id: 4, 
       name: 'Sudarshan Chakravarty', 
       email: 'startup-bihar@gov.in',
       phone: '6287797918', 
