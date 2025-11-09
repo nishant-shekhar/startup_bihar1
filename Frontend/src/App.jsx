@@ -51,6 +51,7 @@ const App = () => {
 				<Route path="/StartupCell" element={<StartupIncubationCell />} />
 				<Route path="/IncubationCell" element={<IncubationNodalList />} />
 				<Route path="/Mentors" element={<Mentors />} />
+				<Route path="/newapplicationdashboard" element={<MainAdmin />} />
 				<Route path="/Events" element={<Events />} />
 				<Route path="/pdf-viewer" element={<PdfViewer />} />
 				<Route

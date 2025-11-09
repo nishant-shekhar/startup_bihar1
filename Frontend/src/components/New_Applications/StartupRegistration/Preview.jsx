@@ -15,17 +15,26 @@ import {
   FaRupeeSign,
   FaClipboardList,
 } from "react-icons/fa";
+import { useLanguage } from "./LanguageContext";
 
-const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
+const Preview = ({
+  formData,
+  onPrevious,
+  onSubmit,
+  onFormSubmit,
+  onNavigateToStep,
+}) => {
+  const { t } = useLanguage();
   const sections = [
     {
       title: "User Registration",
       icon: <FaUser />,
       data: formData?.userSignup,
+      step: 1,
       fields: [
-        { key: "founderName", label: "Founder Name", icon: <FaUser /> },
+        { key: "founderName", label: "Applicant Name", icon: <FaUser /> },
         { key: "startupName", label: "Startup Name", icon: <FaBuilding /> },
-        { key: "email", label: "Email", icon: <FaEnvelope /> },
+        { key: "email", label: "Email Address", icon: <FaEnvelope /> },
         { key: "phoneNumber", label: "Phone Number", icon: <FaPhone /> },
         { key: "aadharNumber", label: "Aadhar Number", icon: <FaUser /> },
         { key: "password", label: "Password", icon: null, hidden: true },
@@ -35,12 +44,27 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
       title: "Basic Details",
       icon: <FaInfoCircle />,
       data: formData?.basicDetails,
+      step: 2,
       fields: [
         { key: "fullName", label: "Full Name", icon: <FaUser /> },
         { key: "gender", label: "Gender", icon: <FaUser /> },
         { key: "category", label: "Category", icon: <FaUser /> },
         { key: "dateOfBirth", label: "Date of Birth", icon: <FaCalendarAlt /> },
         { key: "qualification", label: "Qualification", icon: <FaUser /> },
+        { key: "institution", label: "Institution", icon: <FaBuilding /> },
+        {
+          key: "otherInstitution",
+          label: "Other Institution",
+          icon: <FaBuilding />,
+          optional: true,
+        },
+        {
+          key: "linkedinProfile",
+          label: "LinkedIn Profile",
+          icon: <FaUser />,
+          optional: true,
+        },
+        { key: "state", label: "State", icon: <FaMapMarkerAlt /> },
         { key: "district", label: "District", icon: <FaMapMarkerAlt /> },
         { key: "profilePhoto", label: "Profile Photo", icon: <FaUser /> },
       ],
@@ -49,43 +73,81 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
       title: "Entity Details",
       icon: <FaBuilding />,
       data: formData?.entityDetails,
+      step: 3,
+      optional: true,
       fields: [
         {
           key: "hasRegisteredEntity",
           label: "Has Registered Entity",
           icon: <FaBuilding />,
         },
-        { key: "entityName", label: "Entity Name", icon: <FaBuilding /> },
-        { key: "entityType", label: "Entity Type", icon: <FaBuilding /> },
+        {
+          key: "entityName",
+          label: "Entity Name (Firm Name)",
+          icon: <FaBuilding />,
+          optional: true,
+        },
+        {
+          key: "entityType",
+          label: "Entity Type",
+          icon: <FaBuilding />,
+          optional: true,
+        },
         {
           key: "entityRegistrationNumber",
-          label: "Registration Number",
+          label: "Registration No.",
           icon: <FaBuilding />,
+          optional: true,
         },
         {
           key: "dateOfRegistration",
           label: "Date of Registration",
           icon: <FaCalendarAlt />,
+          optional: true,
         },
-        { key: "sector", label: "Sector", icon: <FaChartBar /> },
-        { key: "stage", label: "Stage", icon: <FaChartBar /> },
-        { key: "certificate", label: "Certificate", icon: <FaBuilding /> },
+        {
+          key: "businessAddress",
+          label: "Business Operating Address",
+          icon: <FaMapMarkerAlt />,
+          optional: true,
+        },
+        {
+          key: "state",
+          label: "State",
+          icon: <FaMapMarkerAlt />,
+          optional: true,
+        },
+        {
+          key: "district",
+          label: "District",
+          icon: <FaMapMarkerAlt />,
+          optional: true,
+        },
+        {
+          key: "certificate",
+          label: "Certificate",
+          icon: <FaBuilding />,
+          optional: true,
+        },
       ],
     },
     {
       title: "Startup Details",
       icon: <FaChartBar />,
       data: formData?.startupDetails,
+      step: 4,
       fields: [
         { key: "teamSize", label: "Team Size", icon: <FaUsers /> },
         { key: "website", label: "Website", icon: <FaInfoCircle /> },
+        { key: "sector", label: "Sector", icon: <FaChartBar /> },
+        { key: "stage", label: "Stage", icon: <FaChartBar /> },
         {
-          key: "registeredAddress",
-          label: "Registered Address",
+          key: "applicantAddress",
+          label: "Applicant's Address",
           icon: <FaMapMarkerAlt />,
         },
-        { key: "city", label: "City", icon: <FaMapMarkerAlt /> },
         { key: "state", label: "State", icon: <FaMapMarkerAlt /> },
+        { key: "district", label: "District", icon: <FaMapMarkerAlt /> },
         { key: "pincode", label: "PIN Code", icon: <FaMapMarkerAlt /> },
       ],
     },
@@ -93,6 +155,7 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
       title: "Co-Founder Details",
       icon: <FaUsers />,
       data: formData?.cofounderDetails,
+      step: 5,
       fields: [
         {
           key: "coFounders",
@@ -106,6 +169,7 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
       title: "Business Idea",
       icon: <FaLightbulb />,
       data: formData?.businessIdea,
+      step: 6,
       fields: [
         {
           key: "problemStatement",
@@ -113,7 +177,12 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
           icon: <FaLightbulb />,
         },
         { key: "solution", label: "Solution", icon: <FaLightbulb /> },
-        { key: "targetMarket", label: "Target Market", icon: <FaChartBar /> },
+        { key: "innovation", label: "Innovation", icon: <FaLightbulb /> },
+        {
+          key: "businessModel",
+          label: "Business Model & Revenue Model",
+          icon: <FaChartBar />,
+        },
         {
           key: "pitchDeck",
           label: "Pitch Deck (PDF/PPT)",
@@ -204,8 +273,9 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
     if (
       field?.key === "problemStatement" ||
       field?.key === "solution" ||
+      field?.key === "innovation" ||
       field?.key === "targetMarket" ||
-      field?.key === "registeredAddress"
+      field?.key === "applicantAddress"
     ) {
       return (
         <div className="text-sm text-gray-800">
@@ -225,16 +295,25 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
   };
 
   const isFormComplete = () => {
-    return sections.every(
-      (section) => section.data && Object.keys(section.data).length > 0
-    );
+    return sections.every((section) => {
+      // Entity Details is optional - just check if data exists (even if hasRegisteredEntity is false)
+      if (section.optional) {
+        return section.data !== null && section.data !== undefined;
+      }
+      // For required sections, check that data exists and has content
+      return section.data && Object.keys(section.data).length > 0;
+    });
   };
 
   const getCompletionPercentage = () => {
-    const completedSections = sections.filter(
+    // Only count required sections for completion percentage
+    const requiredSections = sections.filter((section) => !section.optional);
+    const completedRequiredSections = requiredSections.filter(
       (section) => section.data && Object.keys(section.data).length > 0
     ).length;
-    return Math.round((completedSections / sections.length) * 100);
+    return Math.round(
+      (completedRequiredSections / requiredSections.length) * 100
+    );
   };
 
   const handleFinalSubmit = () => {
@@ -317,10 +396,12 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
                 <button
                   className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
                   onClick={() => {
-                    /* Navigate to edit this section */
+                    if (onNavigateToStep && section.step) {
+                      onNavigateToStep(section.step);
+                    }
                   }}
                 >
-                  <FaEdit className="mr-1" /> Edit
+                  <FaEdit className="mr-1" /> {t("preview.edit")}
                 </button>
               </div>
 
@@ -353,7 +434,7 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500 italic">
-                    This section has not been completed yet
+                    {t("preview.sectionNotCompleted")}
                   </p>
                 </div>
               )}
@@ -365,18 +446,14 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
       {/* Final Submission */}
       <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Final Submission
+          {t("preview.finalSubmission")}
         </h3>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-gray-600 mb-2">
-              By submitting this application, you confirm that all information
-              provided is accurate and complete.
+              {t("preview.confirmationText")}
             </p>
-            <p className="text-sm text-gray-500">
-              You will receive a confirmation email once your application is
-              submitted.
-            </p>
+            <p className="text-sm text-gray-500">{t("preview.emailText")}</p>
           </div>
         </div>
       </div>
@@ -389,7 +466,7 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
             onClick={() => onPrevious()}
             className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
-            ← Previous
+            ← {t("common.previous")}
           </button>
         )}
 
@@ -403,8 +480,8 @@ const Preview = ({ formData, onPrevious, onSubmit, onFormSubmit }) => {
           }`}
         >
           {isFormComplete()
-            ? "Submit Application"
-            : "Complete All Sections First"}
+            ? t("preview.submitApplication")
+            : t("preview.completeAllSections")}
         </button>
       </div>
     </div>

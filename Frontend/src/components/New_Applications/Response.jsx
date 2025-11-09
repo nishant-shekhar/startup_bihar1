@@ -1,774 +1,886 @@
 import React, { useState, useEffect } from "react";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Building,
+  Calendar,
+  Tag,
+  Globe,
+  CheckCircle,
+  XCircle,
+  Save,
+} from "lucide-react";
 
-const Response = () => {
-	const [formData, setFormData] = useState({
-		basicDetails: null,
-		entityDetails: null,
-		startupDetails: null,
-		cofounderDetails: null,
-		businessIdea: null,
-	});
+const Response = ({ rowData, onBack }) => {
+  const [formData, setFormData] = useState({
+    basicDetails: null,
+    entityDetails: null,
+    startupDetails: null,
+    cofounderDetails: null,
+    businessIdea: null,
+  });
 
-	const [loading, setLoading] = useState(true);
-	const [activeSection, setActiveSection] = useState("all");
-	// Admin review states
-	const [recommendation, setRecommendation] = useState(null); // 'recommended', 'not-recommended', null
-	const [rating, setRating] = useState(null); // 'A', 'B', 'C', or 'D' grade
-	const [comments, setComments] = useState("");
-	const [notification, setNotification] = useState({
-		show: false,
-		message: "",
-		type: "",
-	});
-	const [saveStatus, setSaveStatus] = useState("idle"); // idle, saving, success, error
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("all");
+  const [businessIdeaRatings, setBusinessIdeaRatings] = useState(null);
 
-	useEffect(() => {
-		// Load saved data for each step from localStorage
-		const basicDetails = localStorage.getItem("basicDetails");
-		const entityDetails = localStorage.getItem("entityDetails");
-		const startupDetails = localStorage.getItem("startupDetails");
-		const cofounderDetails = localStorage.getItem("cofounderDetails");
-		const businessIdea = localStorage.getItem("businessIdea");
+  // ✅ Admin ratings for each question (1-10 per question, max 40 total)
+  const [adminRatings, setAdminRatings] = useState({
+    problemStatement: 0,
+    solution: 0,
+    innovation: 0,
+    targetMarket: 0,
+  });
+  const [totalMarks, setTotalMarks] = useState(0);
 
-		setFormData({
-			basicDetails: basicDetails ? JSON.parse(basicDetails) : null,
-			entityDetails: entityDetails ? JSON.parse(entityDetails) : null,
-			startupDetails: startupDetails ? JSON.parse(startupDetails) : null,
-			cofounderDetails: cofounderDetails ? JSON.parse(cofounderDetails) : null,
-			businessIdea: businessIdea ? JSON.parse(businessIdea) : null,
-		});
+  // Admin review states
+  const [recommendation, setRecommendation] = useState(null);
+  const [rating, setRating] = useState("B");
+  const [comments, setComments] = useState("");
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+  const [saveStatus, setSaveStatus] = useState("idle");
 
-		setLoading(false);
-	}, []);
+  // ✅ Load all data from localStorage
+  useEffect(() => {
+    try {
+      const basicDetails = localStorage.getItem("basicDetails");
+      const entityDetails = localStorage.getItem("entityDetails");
+      const startupDetails = localStorage.getItem("startupDetails");
+      const cofounderDetails = localStorage.getItem("cofounderDetails");
+      const businessIdea = localStorage.getItem("businessIdea");
+      const businessIdeaRatingsData = localStorage.getItem("businessIdeaRatings");
 
-	// Helper function to format date strings
-	const formatDate = (dateString) => {
-		if (!dateString) return "";
-		try {
-			const date = new Date(dateString);
-			return date.toLocaleDateString();
-		} catch (e) {
-			return dateString;
-		}
-	};
+      const businessIdeaParsed = businessIdea
+        ? JSON.parse(businessIdea)
+        : null;
+      const businessIdeaRatingsParsed = businessIdeaRatingsData
+        ? JSON.parse(businessIdeaRatingsData)
+        : null;
 
-	// Helper function to format currency values
-	const formatCurrency = (value) => {
-		if (!value && value !== 0) return "";
-		return new Intl.NumberFormat("en-IN", {
-			style: "currency",
-			currency: "INR",
-			maximumFractionDigits: 0,
-		}).format(value);
-	};
+      setFormData({
+        basicDetails: basicDetails ? JSON.parse(basicDetails) : null,
+        entityDetails: entityDetails ? JSON.parse(entityDetails) : null,
+        startupDetails: startupDetails ? JSON.parse(startupDetails) : null,
+        cofounderDetails: cofounderDetails
+          ? JSON.parse(cofounderDetails)
+          : null,
+        businessIdea: businessIdeaParsed,
+      });
 
-	// Helper function to render a single field
-	const renderField = (key, value, sectionTitle) => {
-		// Skip null values
-		if (value === null || value === undefined) return null;
+      if (businessIdeaRatingsParsed) {
+        setBusinessIdeaRatings(businessIdeaRatingsParsed);
+      }
 
-		// Skip logo field for Entity Details section
-		if (key === "logo" && sectionTitle === "Entity Details") return null;
+      // Load previously saved admin ratings if any
+      const savedAdminRatings = localStorage.getItem("adminBusinessIdeaRatings");
+      if (savedAdminRatings) {
+        const parsed = JSON.parse(savedAdminRatings);
+        setAdminRatings(parsed.ratings || {});
+        setTotalMarks(parsed.totalMarks || 0);
+      }
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [rowData]);
 
-		// Format key for display (convert camelCase to Title Case)
-		const formattedKey = key
-			.replace(/([A-Z])/g, " $1")
-			.replace(/^./, (str) => str.toUpperCase());
+  // ✅ Handle admin rating change
+  const handleAdminRating = (field, value) => {
+    const newRatings = { ...adminRatings, [field]: value };
+    setAdminRatings(newRatings);
 
-		// Special handling for logo/image field - only for Basic Details
-		if (key === "logo" && sectionTitle === "Basic Details") {
-			return (
-				<div key={key} className="w-full flex justify-center">
-					{typeof value === "string" ? (
-						<img
-							src={value}
-							alt="Logo"
-							className="max-w-full h-auto rounded-md shadow-sm"
-						/>
-					) : (
-						<div className="bg-purple-100 p-6 rounded-lg text-center">
-							<i className="mdi mdi-file-image-outline text-5xl text-purple-600 mb-2" />
-							<div className="text-purple-800 font-medium">
-								{value instanceof File ? value.name : "Logo Image"}
-							</div>
-						</div>
-					)}
-				</div>
-			);
-		}
+    // Calculate total
+    const total =
+      newRatings.problemStatement +
+      newRatings.solution +
+      newRatings.innovation +
+      newRatings.targetMarket;
+    setTotalMarks(total);
 
-		// Special handling for Business Idea section with vertical label-value layout
-		if (sectionTitle === "Business Idea") {
-			// Format different types of values appropriately
-			let displayValue = value;
+    // Save to localStorage
+    localStorage.setItem(
+      "adminBusinessIdeaRatings",
+      JSON.stringify({
+        ratings: newRatings,
+        totalMarks: total,
+      })
+    );
+  };
 
-			if (typeof value === "object") {
-				if (value instanceof File) {
-					displayValue = (
-						<span className="text-purple-600">
-							<i className="mdi mdi-file-document-outline mr-1" />
-							{value.name}
-						</span>
-					);
-				} else if (value instanceof Date) {
-					displayValue = formatDate(value);
-				} else {
-					return null; // Skip complex objects we can't display
-				}
-			} else if (typeof value === "boolean") {
-				displayValue = value ? "Yes" : "No";
-			} else if (key.toLowerCase().includes("date")) {
-				displayValue = formatDate(value);
-			} else if (
-				key.toLowerCase().includes("fund") &&
-				typeof value === "number"
-			) {
-				displayValue = formatCurrency(value);
-			}
+  // ✅ Get color based on individual question rating (1-10)
+  const getQuestionRatingColor = (rating) => {
+    if (rating === 0) return "bg-gray-200 text-gray-600 border-gray-300";
+    if (rating <= 2) return "bg-red-500 text-white border-red-600";
+    if (rating <= 4) return "bg-orange-500 text-white border-orange-600";
+    if (rating <= 6) return "bg-yellow-500 text-white border-yellow-600";
+    if (rating <= 8) return "bg-lime-500 text-white border-lime-600";
+    return "bg-green-500 text-white border-green-600";
+  };
 
-			return (
-				<div key={key} className="p-3 bg-gray-50 rounded-md">
-					<div className="text-gray-700 font-medium text-lg mb-2">
-						{formattedKey}
-					</div>
-					<div className="text-gray-800 pl-2">{displayValue.toString()}</div>
-				</div>
-			);
-		}
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch (e) {
+      return dateString;
+    }
+  };
 
-		// Format different types of values appropriately
-		let displayValue = value;
+  const getStageColor = (stage) => {
+    const colors = {
+      "Pre-Seed": "bg-purple-50 text-purple-600 border-purple-200",
+      Seed: "bg-blue-50 text-blue-600 border-blue-200",
+      "Series A": "bg-green-50 text-green-600 border-green-200",
+      "Series B": "bg-orange-50 text-orange-600 border-orange-200",
+      Ideation: "bg-indigo-50 text-indigo-600 border-indigo-200",
+      Validation: "bg-pink-50 text-pink-600 border-pink-200",
+      "Early Traction": "bg-yellow-50 text-yellow-600 border-yellow-200",
+      Scaling: "bg-cyan-50 text-cyan-600 border-cyan-200",
+    };
+    return colors[stage] || "bg-gray-50 text-gray-600 border-gray-200";
+  };
 
-		if (typeof value === "object") {
-			if (value instanceof File) {
-				displayValue = (
-					<span className="text-purple-600">
-						<i className="mdi mdi-file-document-outline mr-1" />
-						{value.name}
-					</span>
-				);
-			} else if (value instanceof Date) {
-				displayValue = formatDate(value);
-			} else {
-				return null; // Skip complex objects we can't display
-			}
-		} else if (typeof value === "boolean") {
-			displayValue = value ? "Yes" : "No";
-		} else if (key.toLowerCase().includes("date")) {
-			displayValue = formatDate(value);
-		} else if (
-			key.toLowerCase().includes("fund") &&
-			typeof value === "number"
-		) {
-			displayValue = formatCurrency(value);
-		}
+  // ✅ Get color for total marks (out of 40)
+  const getTotalMarksColor = (marks) => {
+    const percentage = (marks / 40) * 100;
+    if (percentage < 25) return "bg-red-500 text-white";
+    if (percentage < 50) return "bg-orange-500 text-white";
+    if (percentage < 75) return "bg-yellow-500 text-white";
+    if (percentage < 90) return "bg-lime-500 text-white";
+    return "bg-green-500 text-white";
+  };
 
-		return (
-			<div key={key} className="p-3 bg-gray-50 rounded-md flex">
-				<div className="text-gray-600 font-medium block mb- mr-2">
-					{formattedKey} :{" "}
-				</div>
-				<div className="text-gray-800">{displayValue.toString()}</div>
-			</div>
-		);
-	}; // Helper function to render a data section
-	const renderSection = (title, data, icon) => {
-		if (!data) return null;
+  const handleSaveReview = async () => {
+    setSaveStatus("saving");
+    try {
+      const reviewData = {
+        applicationId: rowData?.id || "unknown",
+        entityName: rowData?.entityName || formData.entityDetails?.entityName,
+        recommendation,
+        rating,
+        comments,
+        businessIdeaRatings: adminRatings,
+        totalMarks: totalMarks,
+        reviewedAt: new Date().toISOString(),
+      };
 
-		if (
-			activeSection !== "all" &&
-			activeSection !== title.toLowerCase().replace(/\s+/g, "")
-		) {
-			return null;
-		}
+      localStorage.setItem("adminReview", JSON.stringify(reviewData));
 
-		// Special handling for Basic Details section with image on left and fields on right
-		if (title === "Basic Details" && data) {
-			// Extract logo if it exists
-			const { logo, ...otherFields } = data;
+      setSaveStatus("success");
+      setNotification({
+        show: true,
+        message: "✅ Review saved successfully!",
+        type: "success",
+      });
 
-			return (
-				<div className="bg-white rounded-lg shadow-md p-6 mb-6 transition-all duration-300 hover:shadow-lg">
-					<div className="flex items-center mb-6 pb-2 border-b border-gray-100">
-						<i className={`${icon} text-purple-600 text-2xl mr-3`} />
-						<h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-					</div>{" "}
-					<div className="flex flex-col md:flex-row gap-6">
-						<div className="md:w-1/3 flex justify-center items-start">
-							<div className="w-full max-w-xs bg-gray-50 rounded-lg p-4 flex justify-center">
-								{" "}
-								{logo ? (
-									renderField("logo", logo, title)
-								) : (
-									<div className="bg-gray-50 p-2 rounded-lg text-center">
-										<img
-											src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
-											alt="Sample Profile"
-											className="w-32 h-32 mx-auto rounded-md"
-										/>
-										<div className="text-gray-500 mt-2">
-											Sample Profile Image
-										</div>
-									</div>
-								)}
-							</div>
-						</div>{" "}
-						<div className="md:w-2/3">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-								{Object.entries(otherFields).map(([key, value], index) => {
-									// We'll create two columns of 4 elements each
-									const column = Math.floor(index / 4); // 0 for first 4 items (0-3), 1 for next 4 (4-7)
+      setTimeout(() => {
+        setNotification({ show: false, message: "", type: "" });
+      }, 3000);
+    } catch (error) {
+      setSaveStatus("error");
+      setNotification({
+        show: true,
+        message: "❌ Failed to save review",
+        type: "error",
+      });
+    }
+  };
 
-									// Return the field in the appropriate column
-									return renderField(key, value, title);
-								})}
-							</div>
-						</div>
-					</div>
-				</div>
-			);
-		}
+  if (loading) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-gray-500">Loading application details...</p>
+      </div>
+    );
+  }
 
-		// Special handling for Business Idea section - single column layout
-		if (title === "Business Idea" && data) {
-			return (
-				<div className="bg-white rounded-lg shadow-md p-6 mb-6 transition-all duration-300 hover:shadow-lg">
-					<div className="flex items-center mb-6 pb-2 border-b border-gray-100">
-						<i className={`${icon} text-purple-600 text-2xl mr-3`} />
-						<h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-					</div>{" "}
-					<div className="grid grid-cols-1 gap-4">
-						{Object.entries(data).map(([key, value]) =>
-							renderField(key, value, title),
-						)}
-					</div>
-				</div>
-			);
-		}
+  return (
+    <div className="p-6 min-h-screen">
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 px-4 py-2 mb-6 text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors border border-blue-200"
+      >
+        <ArrowLeft size={18} />
+        Back to Applications
+      </button>
 
-		// Default rendering for other sections
-		return (
-			<div className="bg-white rounded-lg shadow-md p-6 mb-6 transition-all duration-300 hover:shadow-lg">
-				<div className="flex items-center mb-6 pb-2 border-b border-gray-100">
-					<i className={`${icon} text-purple-600 text-2xl mr-3`} />
-					<h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-				</div>{" "}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					{Object.entries(data).map(([key, value]) =>
-						renderField(key, value, title),
-					)}
-				</div>
-			</div>
-		);
-	};
-	// Navigation tabs
-	const renderTabs = () => {
-		const tabs = [
-			{ id: "all", label: "All Sections", icon: "mdi-view-dashboard" },
-			{
-				id: "basicdetails",
-				label: "Basic Details",
-				icon: "mdi-account-outline",
-			},
-			{
-				id: "entitydetails",
-				label: "Entity Details",
-				icon: "mdi-office-building-outline",
-			},
-			{
-				id: "startupdetails",
-				label: "Startup Details",
-				icon: "mdi-rocket-launch-outline",
-			},
-			{
-				id: "cofounderdetails",
-				label: "Co-Founder Details",
-				icon: "mdi-account-group-outline",
-			},
-			{
-				id: "businessidea",
-				label: "Business Idea",
-				icon: "mdi-lightbulb-outline",
-			},
-		];
+      {/* Notification */}
+      {notification.show && (
+        <div
+          className={`mb-4 p-4 rounded-lg ${
+            notification.type === "success"
+              ? "bg-green-50 border border-green-200 text-green-700"
+              : "bg-red-50 border border-red-200 text-red-700"
+          }`}
+        >
+          {notification.message}
+        </div>
+      )}
 
-		return (
-			<div className="flex flex-wrap gap-2 mb-8 justify-center">
-				{tabs.map((tab) => (
-					<button
-						key={tab.id}
-						type="button"
-						onClick={() => setActiveSection(tab.id)}
-						className={`px-4 py-2 rounded-full text-sm font-medium flex items-center transition-colors ${
-							activeSection === tab.id
-								? "bg-purple-600 text-white shadow-md"
-								: "bg-white text-gray-700 hover:bg-purple-100"
-						}`}
-					>
-						<i className={`mdi ${tab.icon} mr-2`} />
-						{tab.label}
-					</button>
-				))}
-			</div>
-		);
-	};
+      {/* Main Container */}
+      <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8 text-white">
+          <h1 className="text-3xl font-bold">
+            {rowData?.entityName ||
+              formData.entityDetails?.entityName ||
+              "Application Details"}
+          </h1>
+          <div className="flex items-center gap-4 mt-3">
+            <span className="text-blue-100">
+              Entity Reg:{" "}
+              <span className="font-mono font-bold">
+                {rowData?.entityRegistrationNumber || "N/A"}
+              </span>
+            </span>
+            <span className="text-blue-100">
+              Full Name:{" "}
+              <span className="font-bold">
+                {rowData?.fullName || formData.basicDetails?.fullName || "N/A"}
+              </span>
+            </span>
+          </div>
+        </div>
 
-	if (loading) {
-		return (
-			<div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-50 via-white to-purple-100">
-				<div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600 mb-4" />
-				<p className="text-purple-800 font-medium">
-					Loading registration data...
-				</p>
-			</div>
-		);
-	}
+        {/* Tabs */}
+        <div className="border-b border-gray-200 bg-gray-50 flex overflow-x-auto justify-between items-center">
+          <div className="flex overflow-x-auto">
+            {["all", "basic", "entity", "startup", "cofounder", "business", "review"].map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveSection(tab)}
+                  className={`px-6 py-3 font-medium text-sm whitespace-nowrap transition-colors ${
+                    activeSection === tab
+                      ? "text-blue-600 border-b-2 border-blue-600 bg-white"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              )
+            )}
+          </div>
+   
+        </div>
 
-	const hasData =
-		formData.basicDetails ||
-		formData.entityDetails ||
-		formData.startupDetails ||
-		formData.cofounderDetails ||
-		formData.businessIdea;
-	return (
-		<div
-			className="min-h-screen py-12 px-4 sm:px-6 lg:px-8"
-			style={{
-				backgroundImage:
-					"linear-gradient(to bottom right, rgba(254, 226, 254, 0.6), rgba(255, 255, 255, 0.8), rgba(236, 222, 253, 0.6)), url('/webb.png')",
-				backgroundSize: "auto",
-				backgroundPosition: "center",
-				backgroundRepeat: "repeat",
-				backgroundAttachment: "fixed",
-			}}
-		>
-			{" "}
-			<link
-				rel="stylesheet"
-				href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/5.3.45/css/materialdesignicons.min.css"
-			/>{" "}
-			{/* Notification Toast */}
-			{notification.show && (
-				<div
-					className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-md flex items-center ${
-						notification.type === "success"
-							? "bg-green-500 text-white"
-							: notification.type === "error"
-								? "bg-red-500 text-white"
-								: notification.type === "warning"
-									? "bg-amber-500 text-white"
-									: "bg-blue-500 text-white"
-					} transform transition-all duration-500 ease-in-out`}
-				>
-					<i
-						className={`mdi mr-2 ${
-							notification.type === "success"
-								? "mdi-check-circle"
-								: notification.type === "error"
-									? "mdi-alert-circle"
-									: notification.type === "warning"
-										? "mdi-alert"
-										: "mdi-information"
-						}`}
-					/>
-					<span>{notification.message}</span>
-				</div>
-			)}
-			<div className="max-w-5xl mx-auto">
-				<div className="text-center mb-10">
-					<h1 className="text-4xl font-bold text-gray-900 mb-2">
-						Startup Registration Response
-					</h1>
-					<p className="text-lg text-gray-600">
-						Complete information from all form steps
-					</p>
-				</div>
-				{hasData && renderTabs()}
-				{renderSection(
-					"Basic Details",
-					formData.basicDetails,
-					"mdi mdi-account-outline",
-				)}
-				{renderSection(
-					"Entity Details",
-					formData.entityDetails,
-					"mdi mdi-office-building-outline",
-				)}
-				{renderSection(
-					"Startup Details",
-					formData.startupDetails,
-					"mdi mdi-rocket-launch-outline",
-				)}
-				{renderSection(
-					"Co-Founder Details",
-					formData.cofounderDetails,
-					"mdi mdi-account-group-outline",
-				)}
-				{renderSection(
-					"Business Idea",
-					formData.businessIdea,
-					"mdi mdi-lightbulb-outline",
-				)}{" "}
-				{!hasData && (
-					<div className="text-center py-16 bg-white rounded-lg shadow-md">
-						<div className="text-6xl text-gray-300 mb-4">
-							<i className="mdi mdi-file-document-outline" />
-						</div>
-						<h3 className="text-2xl font-medium text-gray-600">
-							No form data available
-						</h3>
-						<p className="text-gray-500 mt-2 mb-6">
-							Please complete the registration form to see the responses
-						</p>
-						<a
-							href="/startup-registration"
-							className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-						>
-							<i className="mdi mdi-pencil mr-2" />
-							Start Registration
-						</a>
-					</div>
-				)}
-				{/* Admin Review Section */}
-				{hasData && (
-					<div className="bg-white rounded-lg shadow-md p-6 mb-6 transition-all duration-300 hover:shadow-lg">
-						<div className="flex items-center mb-6 pb-2 border-b border-gray-100">
-							<i className="mdi mdi-shield-account text-purple-600 text-2xl mr-3" />
-							<h2 className="text-xl font-semibold text-gray-800">
-								Admin Review
-							</h2>
-						</div>
+        {/* Content Sections */}
+        <div className="p-6 space-y-6">
+          {/* Basic Details */}
+          {(activeSection === "all" || activeSection === "basic") &&
+            formData.basicDetails && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                  Basic Details
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {formData.basicDetails.fullName && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Full Name
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.basicDetails.fullName}
+                      </p>
+                    </div>
+                  )}
+                  {formData.basicDetails.gender && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Gender
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.basicDetails.gender}
+                      </p>
+                    </div>
+                  )}
+                  {formData.basicDetails.category && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Category
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.basicDetails.category}
+                      </p>
+                    </div>
+                  )}
+                  {formData.basicDetails.dateOfBirth && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Date of Birth
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formatDate(formData.basicDetails.dateOfBirth)}
+                      </p>
+                    </div>
+                  )}
+                  {formData.basicDetails.qualification && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Qualification
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.basicDetails.qualification}
+                      </p>
+                    </div>
+                  )}
+                  {formData.basicDetails.district && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        District
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.basicDetails.district}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
-						<div className="grid grid-cols-1 gap-6">
-							{" "}
-							{/* Recommendation */}
-							<div className="space-y-4">
-								<h3 className="text-lg font-medium text-gray-700">
-									Recommendation Status
-								</h3>
-								<div className="flex items-center space-x-4">
-									<button
-										type="button"
-										onClick={() => {
-											setRecommendation("recommended");
-											setNotification({
-												show: true,
-												message: "Marked as Recommended",
-												type: "success",
-											});
-											setTimeout(
-												() =>
-													setNotification({
-														show: false,
-														message: "",
-														type: "",
-													}),
-												3000,
-											);
-										}}
-										className={`px-4 py-2 rounded-md text-white flex items-center transition-all duration-200 ${
-											recommendation === "recommended"
-												? "bg-green-600 ring-2 ring-offset-2 ring-green-500 scale-105"
-												: "bg-green-500 hover:bg-green-600"
-										}`}
-									>
-										<i
-											className={`mdi ${recommendation === "recommended" ? "mdi-check-bold" : "mdi-check-circle"} mr-2`}
-										/>
-										{recommendation === "recommended"
-											? "Recommended ✓"
-											: "Recommend"}
-									</button>
-									<button
-										type="button"
-										onClick={() => {
-											setRecommendation("not-recommended");
-											setNotification({
-												show: true,
-												message: "Marked as Not Recommended",
-												type: "warning",
-											});
-											setTimeout(
-												() =>
-													setNotification({
-														show: false,
-														message: "",
-														type: "",
-													}),
-												3000,
-											);
-										}}
-										className={`px-4 py-2 rounded-md text-white flex items-center transition-all duration-200 ${
-											recommendation === "not-recommended"
-												? "bg-red-600 ring-2 ring-offset-2 ring-red-500 scale-105"
-												: "bg-red-500 hover:bg-red-600"
-										}`}
-									>
-										<i
-											className={`mdi ${recommendation === "not-recommended" ? "mdi-close-bold" : "mdi-close-circle"} mr-2`}
-										/>
-										{recommendation === "not-recommended"
-											? "Not Recommended ✓"
-											: "Do Not Recommend"}
-									</button>
-								</div>
-							</div>{" "}							{/* Grade Rating */}
-							<div className="space-y-4">
-								<h3 className="text-lg font-medium text-gray-700">
-									Grade{" "}
-									{rating && (
-										<span className={`text-sm ml-2 ${
-											rating === 'A' ? 'text-green-600' : 
-											rating === 'B' ? 'text-green-500' : 
-											rating === 'C' ? 'text-amber-500' : 
-											'text-red-600'
-										}`}>
-											(Grade {rating})
-										</span>
-									)}
-								</h3>
-								<div className="flex items-center space-x-3">
-									<button
-										key="A"
-										type="button"
-										onClick={() => {
-											setRating('A');
-											setNotification({
-												show: true,
-												message: `Grade set to A`,
-												type: "success",
-											});
-											setTimeout(
-												() =>
-													setNotification({
-														show: false,
-														message: "",
-														type: "",
-													}),
-												2000,
-											);
-										}}
-										className={`w-14 h-14 rounded-md border-2 font-bold text-lg focus:outline-none transform transition-all hover:scale-105 ${
-											rating === 'A' 
-												? "bg-green-600 text-white border-green-700 shadow-md" 
-												: "bg-white text-green-600 border-green-500 hover:bg-green-50"
-										}`}
-									>
-										A
-									</button>
-									<button
-										key="B"
-										type="button"
-										onClick={() => {
-											setRating('B');
-											setNotification({
-												show: true,
-												message: `Grade set to B`,
-												type: "info",
-											});
-											setTimeout(
-												() =>
-													setNotification({
-														show: false,
-														message: "",
-														type: "",
-													}),
-												2000,
-											);
-										}}
-										className={`w-14 h-14 rounded-md border-2 font-bold text-lg focus:outline-none transform transition-all hover:scale-105 ${
-											rating === 'B' 
-												? "bg-green-400 text-white border-green-500 shadow-md" 
-												: "bg-white text-green-500 border-green-400 hover:bg-green-50"
-										}`}
-									>
-										B
-									</button>
-									<button
-										key="C"
-										type="button"
-										onClick={() => {
-											setRating('C');
-											setNotification({
-												show: true,
-												message: `Grade set to C`,
-												type: "warning",
-											});
-											setTimeout(
-												() =>
-													setNotification({
-														show: false,
-														message: "",
-														type: "",
-													}),
-												2000,
-											);
-										}}
-										className={`w-14 h-14 rounded-md border-2 font-bold text-lg focus:outline-none transform transition-all hover:scale-105 ${
-											rating === 'C' 
-												? "bg-amber-500 text-white border-amber-600 shadow-md" 
-												: "bg-white text-amber-600 border-amber-400 hover:bg-amber-50"
-										}`}
-									>
-										C
-									</button>
-									<button
-										key="D"
-										type="button"
-										onClick={() => {
-											setRating('D');
-											setNotification({
-												show: true,
-												message: `Grade set to D`,
-												type: "error",
-											});
-											setTimeout(
-												() =>
-													setNotification({
-														show: false,
-														message: "",
-														type: "",
-													}),
-												2000,
-											);
-										}}
-										className={`w-14 h-14 rounded-md border-2 font-bold text-lg focus:outline-none transform transition-all hover:scale-105 ${
-											rating === 'D' 
-												? "bg-red-600 text-white border-red-700 shadow-md" 
-												: "bg-white text-red-600 border-red-400 hover:bg-red-50"
-										}`}
-									>
-										D
-									</button>
-								</div>
-							</div>{" "}
-							{/* Comments */}
-							<div className="space-y-4">
-								<h3 className="text-lg font-medium text-gray-700">Comments</h3>
-								{/* Frequent Comments Dropdown */}
-								<div className="mb-3">
-									<label
-										htmlFor="frequent-comments"
-										className="block text-sm text-gray-600 mb-1"
-									>
-										Quick Comments:
-									</label>
-									<select
-										id="frequent-comments"
-										className="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-										onChange={(e) => {
-											if (e.target.value) {
-												setComments(e.target.value);
-												e.target.value = ""; // Reset dropdown
-											}
-										}}
-									>
-										<option value="">-- Select a pre-written comment --</option>
-										<option value="The business idea shows good potential but requires more market validation.">
-											Business idea needs market validation
-										</option>
-										<option value="The financial projections appear realistic and well-researched.">
-											Realistic financial projections
-										</option>
-										<option value="The proposed solution doesn't clearly address the stated problem.">
-											Solution misaligned with problem
-										</option>
-										<option value="The target market is well-defined and the go-to-market strategy is solid.">
-											Strong target market definition
-										</option>
-										<option value="The team lacks necessary experience in this industry sector.">
-											Team lacks industry experience
-										</option>
-										<option value="The startup demonstrates a clear competitive advantage and unique value proposition.">
-											Clear competitive advantage
-										</option>
-										<option value="The revenue model needs further development and clarification.">
-											Revenue model needs work
-										</option>
-										<option value="Good understanding of market challenges and opportunities.">
-											Good market understanding
-										</option>
-									</select>
-								</div>
-								<textarea
-									className="w-full p-3 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-									rows="4"
-									placeholder="Add your comments about this startup application..."
-									value={comments}
-									onChange={(e) => setComments(e.target.value)}
-								/>
-							</div>{" "}
-							{/* Submit Button */}
-							<div className="mt-4 flex justify-end">
-								<button
-									type="button"
-									onClick={() => {
-										// Set saving state
-										setSaveStatus("saving");
+          {/* Entity Details */}
+          {(activeSection === "all" || activeSection === "entity") &&
+            formData.entityDetails && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                  Entity Details
+                </h2>
+                {formData.entityDetails.hasRegisteredEntity ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {formData.entityDetails.entityName && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                          Entity Name
+                        </p>
+                        <p className="text-sm font-bold text-gray-900 mt-1">
+                          {formData.entityDetails.entityName}
+                        </p>
+                      </div>
+                    )}
+                    {formData.entityDetails.entityType && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                          Entity Type
+                        </p>
+                        <p className="text-sm font-bold text-gray-900 mt-1">
+                          {formData.entityDetails.entityType}
+                        </p>
+                      </div>
+                    )}
+                    {formData.entityDetails.entityRegistrationNumber && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                          Reg. No.
+                        </p>
+                        <p className="text-sm font-mono font-bold text-gray-900 mt-1">
+                          {formData.entityDetails.entityRegistrationNumber}
+                        </p>
+                      </div>
+                    )}
+                    {formData.entityDetails.dateOfRegistration && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                          Reg. Date
+                        </p>
+                        <p className="text-sm font-bold text-gray-900 mt-1">
+                          {formatDate(formData.entityDetails.dateOfRegistration)}
+                        </p>
+                      </div>
+                    )}
+                    {formData.entityDetails.sector && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                          Sector
+                        </p>
+                        <p className="text-sm font-bold text-gray-900 mt-1">
+                          {formData.entityDetails.sector}
+                        </p>
+                      </div>
+                    )}
+                    {formData.entityDetails.stage && (
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                          Stage
+                        </p>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${getStageColor(
+                            formData.entityDetails.stage
+                          )} mt-1`}
+                        >
+                          {formData.entityDetails.stage}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-700">
+                    No registered entity information provided
+                  </div>
+                )}
+              </div>
+            )}
 
-										// Simulate API call with setTimeout
-										setTimeout(() => {
-											// Here you would typically save the data to a backend or localStorage
-											setSaveStatus("success");
-											setNotification({
-												show: true,
-												message: "Review saved successfully!",
-												type: "success",
-											});
+          {/* Startup Details */}
+          {(activeSection === "all" || activeSection === "startup") &&
+            formData.startupDetails && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                  Startup Details
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {formData.startupDetails.teamSize && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Team Size
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.startupDetails.teamSize}
+                      </p>
+                    </div>
+                  )}
+                  {formData.startupDetails.website && (
+                    <div className="bg-gray-50 p-4 rounded-lg col-span-2 md:col-span-1">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Website
+                      </p>
+                      <a
+                        href={formData.startupDetails.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-bold text-blue-600 hover:underline mt-1 break-all"
+                      >
+                        {formData.startupDetails.website}
+                      </a>
+                    </div>
+                  )}
+                  {formData.startupDetails.city && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        City
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.startupDetails.city}
+                      </p>
+                    </div>
+                  )}
+                  {formData.startupDetails.state && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        State
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.startupDetails.state}
+                      </p>
+                    </div>
+                  )}
+                  {formData.startupDetails.pincode && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                        Pincode
+                      </p>
+                      <p className="text-sm font-bold text-gray-900 mt-1">
+                        {formData.startupDetails.pincode}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                {formData.startupDetails.registeredAddress && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-xs text-gray-500 font-semibold uppercase">
+                      Address
+                    </p>
+                    <p className="text-sm font-bold text-gray-900 mt-1">
+                      {formData.startupDetails.registeredAddress}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
-											// Reset status after delay
-											setTimeout(() => {
-												setSaveStatus("idle");
-												setNotification({ show: false, message: "", type: "" });
-											}, 3000);
+          {/* Co-Founder Details */}
+          {(activeSection === "all" || activeSection === "cofounder") &&
+            formData.cofounderDetails && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                  Co-Founder Details
+                </h2>
+                {formData.cofounderDetails.coFounders &&
+                formData.cofounderDetails.coFounders.length > 0 ? (
+                  <div className="space-y-4">
+                    {formData.cofounderDetails.coFounders.map((founder, index) => (
+                      <div
+                        key={index}
+                        className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                      >
+                        <h3 className="font-bold text-gray-900 mb-3">
+                          Co-Founder {index + 1}
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {founder.name && (
+                            <div>
+                              <p className="text-xs text-gray-500 font-semibold uppercase">
+                                Name
+                              </p>
+                              <p className="text-sm font-bold text-gray-900">
+                                {founder.name}
+                              </p>
+                            </div>
+                          )}
+                          {founder.email && (
+                            <div>
+                              <p className="text-xs text-gray-500 font-semibold uppercase">
+                                Email
+                              </p>
+                              <p className="text-sm font-bold text-blue-600">
+                                {founder.email}
+                              </p>
+                            </div>
+                          )}
+                          {founder.phoneNumber && (
+                            <div>
+                              <p className="text-xs text-gray-500 font-semibold uppercase">
+                                Phone
+                              </p>
+                              <p className="text-sm font-bold text-gray-900">
+                                {founder.phoneNumber}
+                              </p>
+                            </div>
+                          )}
+                          {founder.qualification && (
+                            <div>
+                              <p className="text-xs text-gray-500 font-semibold uppercase">
+                                Qualification
+                              </p>
+                              <p className="text-sm font-bold text-gray-900">
+                                {founder.qualification}
+                              </p>
+                            </div>
+                          )}
+                          {founder.linkedinProfile && (
+                            <div className="col-span-2">
+                              <p className="text-xs text-gray-500 font-semibold uppercase">
+                                LinkedIn
+                              </p>
+                              <a
+                                href={founder.linkedinProfile}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm font-bold text-blue-600 hover:underline"
+                              >
+                                View Profile
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-700">
+                    No co-founder information provided
+                  </div>
+                )}
+              </div>
+            )}
 
-											// You can save to localStorage as a demonstration
-											localStorage.setItem(
-												"startupReview",
-												JSON.stringify({
-													recommendation,
-													rating,
-													comments,
-													timestamp: new Date().toISOString(),
-												}),
-											);
-										}, 800);
-									}}
-									className={`px-6 py-2 text-white rounded-md font-medium flex items-center transition-all ${
-										!recommendation
-											? "bg-gray-400 cursor-not-allowed opacity-60"
-											: saveStatus === "saving"
-												? "bg-blue-500 cursor-wait"
-												: saveStatus === "success"
-													? "bg-green-600"
-													: "bg-purple-600 hover:bg-purple-700"
-									}`}
-									disabled={!recommendation || saveStatus === "saving"}
-								>
-									{saveStatus === "saving" ? (
-										<>
-											<i className="mdi mdi-loading mdi-spin mr-2" />
-											Saving...
-										</>
-									) : saveStatus === "success" ? (
-										<>
-											<i className="mdi mdi-check-circle mr-2" />
-											Saved!
-										</>
-									) : (
-										<>
-											<i className="mdi mdi-content-save mr-2" />
-											Save Review
-										</>
-									)}
-								</button>
-							</div>
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+          {/* Business Idea with Admin Ratings */}
+          {(activeSection === "all" || activeSection === "business") &&
+            businessIdeaRatings && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                  Business Idea & Rating
+                </h2>
+
+                {/* Question 1: Problem Statement */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      1. Problem Statement
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-2">
+                      {businessIdeaRatings.questions?.problemStatement}
+                    </p>
+                    <p className="text-sm text-gray-800 italic border-l-4 border-blue-500 pl-3">
+                      {businessIdeaRatings.answers?.problemStatement}
+                    </p>
+                  </div>
+
+                  {/* Rating Buttons for Question 1 */}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => handleAdminRating("problemStatement", num)}
+                          className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
+                            adminRatings.problemStatement === num
+                              ? `${getQuestionRatingColor(num)} shadow-lg`
+                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">
+                      {adminRatings.problemStatement}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* Question 2: Solution */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      2. Solution
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-2">
+                      {businessIdeaRatings.questions?.solution}
+                    </p>
+                    <p className="text-sm text-gray-800 italic border-l-4 border-green-500 pl-3">
+                      {businessIdeaRatings.answers?.solution}
+                    </p>
+                  </div>
+
+                  {/* Rating Buttons for Question 2 */}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => handleAdminRating("solution", num)}
+                          className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
+                            adminRatings.solution === num
+                              ? `${getQuestionRatingColor(num)} shadow-lg`
+                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">
+                      {adminRatings.solution}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* Question 3: Innovation */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      3. Innovation
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-2">
+                      {businessIdeaRatings.questions?.innovation}
+                    </p>
+                    <p className="text-sm text-gray-800 italic border-l-4 border-orange-500 pl-3">
+                      {businessIdeaRatings.answers?.innovation}
+                    </p>
+                  </div>
+
+                  {/* Rating Buttons for Question 3 */}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => handleAdminRating("innovation", num)}
+                          className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
+                            adminRatings.innovation === num
+                              ? `${getQuestionRatingColor(num)} shadow-lg`
+                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">
+                      {adminRatings.innovation}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* Question 4: Target Market */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      4. Target Market
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-2">
+                      {businessIdeaRatings.questions?.targetMarket}
+                    </p>
+                    <p className="text-sm text-gray-800 italic border-l-4 border-purple-500 pl-3">
+                      {businessIdeaRatings.answers?.targetMarket}
+                    </p>
+                  </div>
+
+                  {/* Rating Buttons for Question 4 */}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <button
+                          key={num}
+                          onClick={() => handleAdminRating("targetMarket", num)}
+                          className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
+                            adminRatings.targetMarket === num
+                              ? `${getQuestionRatingColor(num)} shadow-lg`
+                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">
+                      {adminRatings.targetMarket}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* Total Marks Card */}
+                {/* <div className={`${getTotalMarksColor(totalMarks)} rounded-lg p-6 text-center`}>
+                  <p className="text-sm font-semibold uppercase mb-2">Total Marks</p>
+                  <p className="text-4xl font-bold">{totalMarks}</p>
+                  <p className="text-sm mt-1">out of 40</p>
+                </div> */}
+
+                {/* Pitch Deck */}
+                {businessIdeaRatings.pitchDeckName && (
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <p className="text-xs text-blue-600 font-semibold uppercase mb-2">
+                      Pitch Deck
+                    </p>
+                    <p className="text-sm font-bold text-blue-700">
+                      📎 {businessIdeaRatings.pitchDeckName}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+          {/* Admin Review Section */}
+          {(activeSection === "all" || activeSection === "review") && (
+            <div className="space-y-4 border-t border-gray-200 pt-6">
+              <h2 className="text-xl font-bold text-gray-900">
+                Admin Review & Decision
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Recommendation */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Recommendation
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setRecommendation("recommended")}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                        recommendation === "recommended"
+                          ? "bg-green-600 text-white"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-green-50"
+                      }`}
+                    >
+                      <CheckCircle size={16} />
+                      Recommend
+                    </button>
+                    <button
+                      onClick={() => setRecommendation("not-recommended")}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                        recommendation === "not-recommended"
+                          ? "bg-red-600 text-white"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-red-50"
+                      }`}
+                    >
+                      <XCircle size={16} />
+                      Not Recommend
+                    </button>
+                  </div>
+                </div>
+
+                {/* Rating - A B C D Grades */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Rating
+                  </label>
+                  <div className="flex gap-2">
+                    {["A", "B", "C"].map((grade) => (
+                      <button
+                        key={grade}
+                        onClick={() => setRating(grade)}
+                        className={`w-10 h-10 rounded-lg font-bold transition-colors text-sm ${
+                          rating === grade
+                            ? `${
+                                grade === "A"
+                                  ? "bg-green-600 text-white"
+                                  : grade === "B"
+                                  ? "bg-blue-600 text-white"
+                                  : grade === "C"
+                                  ? "bg-yellow-600 text-white"
+                                  : ""
+                              }`
+                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {grade}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+				<div className="text-center border p-4 rounded-lg bg-gray-50">		
+				 <p className="text-sm font-semibold uppercase mb-2 text-black">Total Marks</p>
+                  <p className="text-4xl font-bold text-black">{totalMarks}</p>
+				  </div>	
+              </div>
+
+              {/* Comments */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Comments
+                </label>
+                <textarea
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Add your review comments here..."
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Save Button */}
+              <button
+                onClick={handleSaveReview}
+                disabled={saveStatus === "saving"}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-colors ${
+                  saveStatus === "saving"
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                }`}
+              >
+                <Save size={18} />
+                {saveStatus === "saving"
+                  ? "Saving..."
+                  : saveStatus === "success"
+                  ? "✓ Saved"
+                  : "Save Review"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Response;

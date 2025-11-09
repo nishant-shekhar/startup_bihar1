@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import OTPModal from "./OTPModal";
 import PhoneVerificationModal from "./PhoneVerificationModal";
+import { useLanguage } from "./LanguageContext";
 
 const LoginSchema = Yup.object().shape({
-  founderName: Yup.string().required("Founder name is required"),
+  founderName: Yup.string().required("Applicant name is required"),
   startupName: Yup.string().required("Startup name is required"),
   email: Yup.string()
     .email("Invalid email address")
@@ -25,31 +25,17 @@ const LoginSchema = Yup.object().shape({
 });
 
 const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const { t } = useLanguage();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
   const [userPhone, setUserPhone] = useState("");
   const [formValues, setFormValues] = useState(null);
 
   const handleSubmit = (values, { setSubmitting }) => {
     setFormValues(values);
-    setUserEmail(values.email);
-    setIsEmailModalOpen(true);
+    setUserPhone(values.phoneNumber);
+    setIsPhoneModalOpen(true);
     setSubmitting(false);
-    // TODO: Send email OTP
-  };
-
-  const handleEmailVerify = (otp) => {
-    console.log("Verifying Email OTP:", otp);
-    // TODO: Verify email OTP
-    setIsEmailModalOpen(false);
-
-    // After email verification, open phone verification
-    if (formValues) {
-      setUserPhone(formValues.phoneNumber);
-      setIsPhoneModalOpen(true);
-    }
   };
 
   const handleSignIn = (signInData) => {
@@ -57,7 +43,6 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
     // Mark the registration step as complete with sign-in data
     const registrationData = {
       type: "signin",
-      email: signInData.email,
       signedInAt: new Date().toISOString(),
       ...signInData,
     };
@@ -75,7 +60,6 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
 
   const handlePhoneVerify = (otp) => {
     console.log("Verifying Phone OTP:", otp);
-    // TODO: Verify phone OTP and complete registration
     setIsPhoneModalOpen(false);
 
     if (formValues) {
@@ -122,24 +106,25 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
               {({ isSubmitting, errors, touched }) => (
                 <Form className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Column 1 - Founder Name */}
+                    {/* Column 1 - Applicant Name */}
                     <div>
                       <label
                         htmlFor="founderName"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Name of Founder
+                        {t("userSignup.applicantName")}
                       </label>
                       <div className="relative">
                         <Field
                           type="text"
                           name="founderName"
                           id="founderName"
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.founderName && touched.founderName
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.founderName && touched.founderName
                               ? "border-red-500"
                               : ""
-                            }`}
-                          placeholder="Abhinav Kumar"
+                          }`}
+                          placeholder={t("userSignup.applicantNamePlaceholder")}
                         />
                         <i className="mdi mdi-account-outline text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -156,18 +141,19 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                         htmlFor="startupName"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Name of Startup
+                        {t("userSignup.startupName")}
                       </label>
                       <div className="relative">
                         <Field
                           type="text"
                           name="startupName"
                           id="startupName"
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.startupName && touched.startupName
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.startupName && touched.startupName
                               ? "border-red-500"
                               : ""
-                            }`}
-                          placeholder="My Startup Inc."
+                          }`}
+                          placeholder={t("userSignup.startupNamePlaceholder")}
                         />
                         <i className="mdi mdi-city text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -184,18 +170,19 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                         htmlFor="email"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Email ID
+                        {t("userSignup.email")}
                       </label>
                       <div className="relative">
                         <Field
                           type="email"
                           name="email"
                           id="email"
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.email && touched.email
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.email && touched.email
                               ? "border-red-500"
                               : ""
-                            }`}
-                          placeholder="name@company.com"
+                          }`}
+                          placeholder={t("userSignup.emailPlaceholder")}
                         />
                         <i className="mdi mdi-email-outline text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -206,23 +193,26 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                       />
                     </div>
 
-                    {/* Column 2 - Phone Number */}
+                    {/* Column 1 - Phone Number */}
                     <div>
                       <label
                         htmlFor="phoneNumber"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Phone Number
+                        {t("userSignup.phoneNumber")}
                       </label>
                       <div className="relative">
                         <Field
                           type="tel"
                           name="phoneNumber"
                           id="phoneNumber"
-                          maxLength={10}   // ✅ restricts to 10 digits
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.phoneNumber && touched.phoneNumber ? "border-red-500" : ""
-                            }`}
-                          placeholder="9876543210"
+                          maxLength={10}
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.phoneNumber && touched.phoneNumber
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          placeholder={t("userSignup.phoneNumberPlaceholder")}
                         />
                         <i className="mdi mdi-phone-outline text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -239,17 +229,21 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                         htmlFor="aadharNumber"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Aadhar Number
+                        {t("userSignup.aadharNumber")}
                       </label>
                       <div className="relative">
                         <Field
                           type="text"
                           name="aadharNumber"
                           id="aadharNumber"
-                          maxLength={12}   // ✅ restricts to 12 digits
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.aadharNumber && touched.aadharNumber ? "border-red-500" : ""
-                            }`}
-                          placeholder="123456789012"
+                          maxLength={12}
+                          autoComplete="off"
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.aadharNumber && touched.aadharNumber
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          placeholder={t("userSignup.aadharNumberPlaceholder")}
                         />
                         <i className="mdi mdi-card-account-details-outline text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -260,24 +254,26 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                       />
                     </div>
 
-                    {/* Column 2 - Password */}
+                    {/* Column 1 - Password */}
                     <div>
                       <label
                         htmlFor="password"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Password
+                        {t("userSignup.password")}
                       </label>
                       <div className="relative">
                         <Field
                           type="password"
                           name="password"
                           id="password"
+                          autoComplete="new-password"
                           placeholder="••••••••"
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.password && touched.password
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.password && touched.password
                               ? "border-red-500"
                               : ""
-                            }`}
+                          }`}
                         />
                         <i className="mdi mdi-lock-outline text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -288,24 +284,26 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                       />
                     </div>
 
-                    {/* Column - Confirm Password (last) */}
-                    <div className="md:col-span-2">
+                    {/* Column 2 - Confirm Password */}
+                    <div>
                       <label
                         htmlFor="confirmPassword"
                         className="block mb-2 text-sm font-semibold text-gray-900"
                       >
-                        Confirm Password
+                        {t("userSignup.confirmPassword")}
                       </label>
                       <div className="relative">
                         <Field
                           type="password"
                           name="confirmPassword"
                           id="confirmPassword"
+                          autoComplete="new-password"
                           placeholder="••••••••"
-                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${errors.confirmPassword && touched.confirmPassword
+                          className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+                            errors.confirmPassword && touched.confirmPassword
                               ? "border-red-500"
                               : ""
-                            }`}
+                          }`}
                         />
                         <i className="mdi mdi-lock-check-outline text-gray-400 text-lg absolute left-3 top-1/2 transform -translate-y-1/2"></i>
                       </div>
@@ -329,7 +327,7 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                       </div>
                       <div className="ml-3 text-sm">
                         <label htmlFor="remember" className="text-gray-500">
-                          Remember me
+                          {t("userSignup.rememberMe")}
                         </label>
                       </div>
                     </div>
@@ -339,16 +337,16 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
                     disabled={isSubmitting}
                     className="w-full text-white bg-black hover:bg-black/80 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                   >
-                    Register
+                    {t("userSignup.register")}
                   </button>
                   <p className="text-sm font-light text-gray-500 text-center">
-                    Already have an account?{" "}
+                    {t("userSignup.alreadyHaveAccount")}{" "}
                     <button
                       type="button"
                       onClick={handleSignInClick}
                       className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                     >
-                      Sign in here
+                      {t("userSignup.signInHere")}
                     </button>
                   </p>
                 </Form>
@@ -358,12 +356,6 @@ const UserSignup = ({ onSubmit, onPrevious, initialValues }) => {
         </div>
       </div>
 
-      <OTPModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-        onVerify={handleEmailVerify}
-        email={userEmail}
-      />
       <PhoneVerificationModal
         isOpen={isPhoneModalOpen}
         onClose={() => setIsPhoneModalOpen(false)}

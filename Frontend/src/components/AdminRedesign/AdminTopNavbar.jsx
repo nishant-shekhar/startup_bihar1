@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { FaBell } from 'react-icons/fa';
-import { LogOut } from 'lucide-react'; // Logout icon (already there as SVG, but now optional)
-import { Pencil } from 'lucide-react'; // ✏️ Edit icon from Lucide
-
-
+import { LogOut, Settings, ChevronDown } from 'lucide-react';
 
 const AdminTopNavbar = () => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
- 
   const today = new Date().toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -18,52 +15,94 @@ const AdminTopNavbar = () => {
     console.log("User logged out");
   };
 
- 
-
   return (
-    <div className="h-16 flex items-center justify-between px-6 text-white w-full bg-gray-900">
-      <h2 className="text-xl font-semibold text-white">Welcome! Admin</h2>
+    <div className="h-14 flex items-center justify-between px-6 bg-white border-b border-gray-200 shadow-sm">
+      {/* Left: Welcome Text */}
+      <div>
+        <h2 className="text-sm font-semibold text-gray-900">Welcome, Admin</h2>
+        <p className="text-xs text-gray-500 mt-0.5">Manage your startup ecosystem</p>
+      </div>
 
-      <div className="flex items-center space-x-6 ">
-       
-
-
-        {/* TIMESTAMP */}
-        <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 px-4 py-3 rounded-full">
-          <span className="text-sm text-gray-200">{today}</span>
+      {/* Right: Actions & Profile */}
+      <div className="flex items-center gap-4">
+        
+        {/* DATE */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-600 font-medium hover:bg-gray-100 transition-colors">
+          <span>{today}</span>
         </div>
 
-        {/* NOTIFICATION */}
-        <button className="relative bg-white/10 backdrop-blur-md border border-white/30 rounded-full p-2">
-          <FaBell className="w-8 h-8 text-gray-50 hover:text-purple-500" />
-          <span className="absolute top-0 right-0 w-2 h-2 bg-purple-500 rounded-full"></span>
+        {/* NOTIFICATION BELL */}
+        <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-150 group">
+          <FaBell className="w-4 h-4" />
+          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+          
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            5 new notifications
+          </div>
         </button>
 
-        {/* PROFILE */}
-        <div className="flex items-center gap-3 border bg-white/10 backdrop-blur-md border-white/30 py-1 px-3 rounded-full ">
-          <img
-            src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
-            alt="user"
-            className="w-10 h-10 rounded-full shadow-md"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-gray-200">Mukesh Kumar</span>
-            <p className="text-xs text-gray-400 -mt-1">Admin</p>
+        {/* SETTINGS */}
+        <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-150 group">
+          <Settings className="w-4 h-4" />
+          
+          {/* Tooltip */}
+          <div className="absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            Settings
           </div>
+        </button>
+
+        {/* DIVIDER */}
+        <div className="w-px h-6 bg-gray-200"></div>
+
+        {/* PROFILE DROPDOWN */}
+        <div className="relative">
+          <button
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-gray-50 rounded-lg transition-all duration-150 group"
+          >
+            <img
+              src="https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740"
+              alt="user"
+              className="w-8 h-8 rounded-full object-cover border border-gray-200"
+            />
+            <div className="hidden md:flex flex-col text-left">
+              <span className="text-sm font-medium text-gray-900">Mukesh Kumar</span>
+              <span className="text-xs text-gray-500 -mt-0.5">Admin</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isProfileOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <div className="px-4 py-3 border-b border-gray-100">
+                <p className="text-sm font-medium text-gray-900">Mukesh Kumar</p>
+                <p className="text-xs text-gray-500">admin@startup.gov</p>
+              </div>
+              
+              <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left flex items-center gap-2 transition-colors">
+                <Settings size={16} />
+                Profile Settings
+              </button>
+              
+              <button className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left flex items-center gap-2 transition-colors">
+                <LogOut size={16} />
+                Account Settings
+              </button>
+
+              <div className="border-t border-gray-100 p-1">
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left flex items-center gap-2 transition-colors font-medium"
+                >
+                  <LogOut size={16} />
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* LOGOUT BUTTON */}
-        <button
-          className="group flex items-center justify-start w-11 h-11 bg-purple-500 rounded-full cursor-pointer relative overflow-hidden transition-all duration-200 shadow-lg hover:w-32 hover:rounded-full active:translate-x-1 active:translate-y-1"
-          onClick={handleLogout}
-        >
-          <div className="flex items-center justify-center w-full transition-all duration-300 group-hover:justify-start group-hover:px-3">
-            <LogOut size={16} className="text-white" />
-          </div>
-          <div className="absolute right-5 transform translate-x-full opacity-0 text-white text-lg font-semibold transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
-            Logout
-          </div>
-        </button>
       </div>
     </div>
   );

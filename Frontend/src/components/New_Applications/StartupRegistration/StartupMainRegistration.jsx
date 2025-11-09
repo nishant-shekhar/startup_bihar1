@@ -15,6 +15,8 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+import { LanguageProvider } from "./LanguageContext";
+import LanguageToggle from "./LanguageToggle";
 import UserSignup from "./UserSignup";
 import BasicDetailsStep from "./FormSteps/BasicDetailsStep";
 import EntityDetailsStep from "./FormSteps/EntityDetailsStep";
@@ -122,7 +124,9 @@ const StartupMainForm = () => {
       case 1:
         return <UserSignup {...props} />;
       case 2:
-        return <BasicDetailsStep {...props} />;
+        return (
+          <BasicDetailsStep {...props} userSignupData={formData.userSignup} />
+        );
       case 3:
         return <EntityDetailsStep {...props} />;
       case 4:
@@ -132,7 +136,14 @@ const StartupMainForm = () => {
       case 6:
         return <BusinessIdeaStep {...props} />;
       case 7:
-        return <Preview {...props} formData={formData} onFormSubmit={handleFormSubmit} />;
+        return (
+          <Preview
+            {...props}
+            formData={formData}
+            onFormSubmit={handleFormSubmit}
+            onNavigateToStep={(step) => setCurrentStep(step)}
+          />
+        );
       case 8:
         return <PrintAcknowledgement formData={formData} />;
       case 9:
@@ -147,13 +158,20 @@ const StartupMainForm = () => {
   // helpers for lock/completion states
   const isStepCompleted = (n) => {
     switch (n) {
-      case 1: return formData.userSignup !== null;
-      case 2: return formData.basicDetails !== null;
-      case 3: return formData.entityDetails !== null;
-      case 4: return formData.startupDetails !== null;
-      case 5: return formData.cofounderDetails !== null;
-      case 6: return formData.businessIdea !== null;
-      default: return false;
+      case 1:
+        return formData.userSignup !== null;
+      case 2:
+        return formData.basicDetails !== null;
+      case 3:
+        return formData.entityDetails !== null;
+      case 4:
+        return formData.startupDetails !== null;
+      case 5:
+        return formData.cofounderDetails !== null;
+      case 6:
+        return formData.businessIdea !== null;
+      default:
+        return false;
     }
   };
   const isLocked = (n) => {
@@ -171,7 +189,11 @@ const StartupMainForm = () => {
       {/* Top bar (mobile) */}
       <div className="md:hidden px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <img src="/favicon_full.png" alt="Logo" className="w-8 h-8 rounded-full" />
+          <img
+            src="/favicon_full.png"
+            alt="Logo"
+            className="w-8 h-8 rounded-full"
+          />
           <div className="font-semibold text-gray-800">Startup Bihar</div>
         </div>
         <button
@@ -190,8 +212,14 @@ const StartupMainForm = () => {
           <aside className="hidden md:flex md:w-1/5 bg-white/30 backdrop-blur-md p-6 flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <img src="/favicon_full.png" alt="Logo" className="w-10 h-10 rounded-full" />
-                <h2 className="text-xl font-semibold text-gray-800">Startup Bihar</h2>
+                <img
+                  src="/favicon_full.png"
+                  alt="Logo"
+                  className="w-10 h-10 rounded-full"
+                />
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Startup Bihar
+                </h2>
               </div>
 
               <div className="mb-8">
@@ -219,10 +247,15 @@ const StartupMainForm = () => {
                       }`}
                     >
                       <span className="flex items-center gap-2">
-                        <span className="text-[16px]" style={{ color: locked ? "#D1D5DB" : gray }}>
+                        <span
+                          className="text-[16px]"
+                          style={{ color: locked ? "#D1D5DB" : gray }}
+                        >
                           {locked ? <FaLock /> : icons[index]}
                         </span>
-                        <span className="text-sm font-medium line-clamp-1">{label}</span>
+                        <span className="text-sm font-medium line-clamp-1">
+                          {label}
+                        </span>
                       </span>
                       {completed && !locked && (
                         <span
@@ -232,7 +265,9 @@ const StartupMainForm = () => {
                           <FaCheck />
                         </span>
                       )}
-                      {locked && <span className="text-xs text-gray-400">Locked</span>}
+                      {locked && (
+                        <span className="text-xs text-gray-400">Locked</span>
+                      )}
                     </button>
                   );
                 })}
@@ -262,7 +297,11 @@ const StartupMainForm = () => {
               <div className="absolute left-0 top-0 h-full w-[82%] max-w-xs bg-white shadow-xl p-4 flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <img src="/favicon_full.png" alt="Logo" className="w-8 h-8 rounded-full" />
+                    <img
+                      src="/favicon_full.png"
+                      alt="Logo"
+                      className="w-8 h-8 rounded-full"
+                    />
                     <div className="font-semibold">Startup Bihar</div>
                   </div>
                   <button
@@ -295,19 +334,26 @@ const StartupMainForm = () => {
                         } ${locked ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
                         <span className="flex items-center gap-2">
-                          <span className="text-[16px]" style={{ color: locked ? "#D1D5DB" : gray }}>
+                          <span
+                            className="text-[16px]"
+                            style={{ color: locked ? "#D1D5DB" : gray }}
+                          >
                             {locked ? <FaLock /> : icons[index]}
                           </span>
                           <span className="text-sm">{label}</span>
                         </span>
-                        {completed && !locked && <FaCheck className="text-gray-400" />}
+                        {completed && !locked && (
+                          <FaCheck className="text-gray-400" />
+                        )}
                       </button>
                     );
                   })}
                 </nav>
 
                 <div className="mt-auto pt-4 text-sm text-gray-500 flex items-center justify-between">
-                  <a href="/contact-us" className="hover:text-gray-700">Support</a>
+                  <a href="/contact-us" className="hover:text-gray-700">
+                    Support
+                  </a>
                   <span className="hover:text-gray-700">Sign Out</span>
                 </div>
               </div>
@@ -343,6 +389,10 @@ const StartupMainForm = () => {
 
           {/* Main Renderer */}
           <main className="w-full md:w-4/5 bg-white p-4 md:p-6 flex flex-col">
+            {/* Language Toggle at the top */}
+            <div className="flex justify-end mb-4">
+              <LanguageToggle />
+            </div>
             <div className="flex-1 overflow-y-auto">{renderStep()}</div>
           </main>
         </div>
@@ -351,4 +401,10 @@ const StartupMainForm = () => {
   );
 };
 
-export default StartupMainForm;
+const StartupMainFormWrapper = () => (
+  <LanguageProvider>
+    <StartupMainForm />
+  </LanguageProvider>
+);
+
+export default StartupMainFormWrapper;
