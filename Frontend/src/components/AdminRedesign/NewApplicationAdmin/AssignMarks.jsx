@@ -1,57 +1,166 @@
 // AssignMarks.jsx
-import React, { useState } from 'react';
-import { Search, Edit2, Save, X, CheckCircle, XCircle } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Search,
+  Edit2,
+  Save,
+  X,
+  CheckCircle,
+  XCircle,
+  Calendar,
+  Clock,
+  ArrowLeft,
+} from "lucide-react";
 
 const AssignMarks = () => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [passMarks, setPassMarks] = useState(50);
   const [isEditingPassMarks, setIsEditingPassMarks] = useState(false);
   const [tempPassMarks, setTempPassMarks] = useState(50);
+  const [selectedExamDate, setSelectedExamDate] = useState(null); // New state for selected exam date
 
   // Mock data - candidates who have been assigned exam dates (after expert review approval)
   const [candidatesData, setCandidatesData] = useState([
-    { id: 1, sbNo: 'SB2024001', startupName: 'Tech Innovators Pvt Ltd', applicantName: 'Rajesh Kumar', examDate: '5 Nov 2024', timeSlot: '9:00 AM - 11:00 AM', marks: null, examAssigned: true },
-    { id: 2, sbNo: 'SB2024002', startupName: 'Green Solutions LLP', applicantName: 'Priya Sharma', examDate: '5 Nov 2024', timeSlot: '9:00 AM - 11:00 AM', marks: null, examAssigned: true },
-    { id: 3, sbNo: 'SB2024003', startupName: 'EduTech Solutions', applicantName: 'Amit Verma', examDate: '5 Nov 2024', timeSlot: '2:00 PM - 4:00 PM', marks: null, examAssigned: true },
-    { id: 4, sbNo: 'SB2024004', startupName: 'HealthTech Inc', applicantName: 'Sneha Patel', examDate: '7 Nov 2024', timeSlot: '9:00 AM - 11:00 AM', marks: null, examAssigned: true },
-    { id: 5, sbNo: 'SB2024005', startupName: 'AgriSmart Solutions', applicantName: 'Vikram Singh', examDate: '7 Nov 2024', timeSlot: '9:00 AM - 11:00 AM', marks: null, examAssigned: true },
-    { id: 6, sbNo: 'SB2024006', startupName: 'FinTech Pro', applicantName: 'Anjali Gupta', examDate: '7 Nov 2024', timeSlot: '2:00 PM - 4:00 PM', marks: null, examAssigned: true },
-    { id: 7, sbNo: 'SB2024007', startupName: 'EcoWaste Management', applicantName: 'Rahul Jain', examDate: '7 Nov 2024', timeSlot: '2:00 PM - 4:00 PM', marks: null, examAssigned: true },
-    { id: 8, sbNo: 'SB2024008', startupName: 'Smart Logistics', applicantName: 'Neha Reddy', examDate: '5 Nov 2024', timeSlot: '2:00 PM - 4:00 PM', marks: null, examAssigned: true },
-    { id: 9, sbNo: 'SB2024009', startupName: 'AI Analytics Hub', applicantName: 'Karan Mehta', examDate: '7 Nov 2024', timeSlot: '9:00 AM - 11:00 AM', marks: null, examAssigned: true },
-    { id: 10, sbNo: 'SB2024010', startupName: 'CloudSync Services', applicantName: 'Pooja Iyer', examDate: '7 Nov 2024', timeSlot: '2:00 PM - 4:00 PM', marks: null, examAssigned: true },
+    {
+      id: 1,
+      sbNo: "SB2024001",
+      startupName: "Tech Innovators Pvt Ltd",
+      applicantName: "Rajesh Kumar",
+      examDate: "5 Nov 2024",
+      timeSlot: "9:00 AM - 11:00 AM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 2,
+      sbNo: "SB2024002",
+      startupName: "Green Solutions LLP",
+      applicantName: "Priya Sharma",
+      examDate: "5 Nov 2024",
+      timeSlot: "9:00 AM - 11:00 AM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 3,
+      sbNo: "SB2024003",
+      startupName: "EduTech Solutions",
+      applicantName: "Amit Verma",
+      examDate: "5 Nov 2024",
+      timeSlot: "2:00 PM - 4:00 PM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 4,
+      sbNo: "SB2024004",
+      startupName: "HealthTech Inc",
+      applicantName: "Sneha Patel",
+      examDate: "7 Nov 2024",
+      timeSlot: "9:00 AM - 11:00 AM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 5,
+      sbNo: "SB2024005",
+      startupName: "AgriSmart Solutions",
+      applicantName: "Vikram Singh",
+      examDate: "7 Nov 2024",
+      timeSlot: "9:00 AM - 11:00 AM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 6,
+      sbNo: "SB2024006",
+      startupName: "FinTech Pro",
+      applicantName: "Anjali Gupta",
+      examDate: "7 Nov 2024",
+      timeSlot: "2:00 PM - 4:00 PM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 7,
+      sbNo: "SB2024007",
+      startupName: "EcoWaste Management",
+      applicantName: "Rahul Jain",
+      examDate: "7 Nov 2024",
+      timeSlot: "2:00 PM - 4:00 PM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 8,
+      sbNo: "SB2024008",
+      startupName: "Smart Logistics",
+      applicantName: "Neha Reddy",
+      examDate: "5 Nov 2024",
+      timeSlot: "2:00 PM - 4:00 PM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 9,
+      sbNo: "SB2024009",
+      startupName: "AI Analytics Hub",
+      applicantName: "Karan Mehta",
+      examDate: "7 Nov 2024",
+      timeSlot: "9:00 AM - 11:00 AM",
+      marks: null,
+      examAssigned: true,
+    },
+    {
+      id: 10,
+      sbNo: "SB2024010",
+      startupName: "CloudSync Services",
+      applicantName: "Pooja Iyer",
+      examDate: "7 Nov 2024",
+      timeSlot: "2:00 PM - 4:00 PM",
+      marks: null,
+      examAssigned: true,
+    },
   ]);
 
-  // Filter based on search
-  const filteredData = candidatesData.filter(candidate => 
-    candidate.sbNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    candidate.startupName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    candidate.applicantName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Group candidates by exam date and time slot
+  const examSlots = candidatesData.reduce((acc, candidate) => {
+    const key = `${candidate.examDate}|${candidate.timeSlot}`;
+    if (!acc[key]) {
+      acc[key] = {
+        date: candidate.examDate,
+        timeSlot: candidate.timeSlot,
+        candidates: [],
+      };
+    }
+    acc[key].candidates.push(candidate);
+    return acc;
+  }, {});
+
+  const examSlotsList = Object.values(examSlots);
 
   const handleMarksChange = (id, value) => {
     // Allow empty string or validate the input
-    if (value === '') {
-      setCandidatesData(prev => 
-        prev.map(candidate => 
+    if (value === "") {
+      setCandidatesData((prev) =>
+        prev.map((candidate) =>
           candidate.id === id ? { ...candidate, marks: null } : candidate
         )
       );
       return;
     }
-    
+
     // Parse the value
     const numValue = parseInt(value);
-    
+
     // Only allow if it's a valid number between 0-100
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-      setCandidatesData(prev => 
-        prev.map(candidate => 
+      setCandidatesData((prev) =>
+        prev.map((candidate) =>
           candidate.id === id ? { ...candidate, marks: numValue } : candidate
         )
       );
     }
-    // If trying to enter more than 100, ignore the input
   };
 
   const handleSavePassMarks = () => {
@@ -66,23 +175,315 @@ const AssignMarks = () => {
 
   const getResultStatus = (marks) => {
     if (marks === null || marks === undefined) return null;
-    return marks >= passMarks ? 'pass' : 'fail';
+    return marks >= passMarks ? "pass" : "fail";
   };
 
   const stats = {
     total: candidatesData.length,
-    marked: candidatesData.filter(c => c.marks !== null).length,
-    passed: candidatesData.filter(c => c.marks !== null && c.marks >= passMarks).length,
-    failed: candidatesData.filter(c => c.marks !== null && c.marks < passMarks).length,
+    marked: candidatesData.filter((c) => c.marks !== null).length,
+    passed: candidatesData.filter(
+      (c) => c.marks !== null && c.marks >= passMarks
+    ).length,
+    failed: candidatesData.filter(
+      (c) => c.marks !== null && c.marks < passMarks
+    ).length,
   };
 
+  // If an exam slot is selected, show the candidates for that slot
+  if (selectedExamDate) {
+    const filteredCandidates = selectedExamDate.candidates.filter(
+      (candidate) =>
+        candidate.sbNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        candidate.startupName
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        candidate.applicantName
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    );
+
+    const slotStats = {
+      total: selectedExamDate.candidates.length,
+      marked: selectedExamDate.candidates.filter((c) => c.marks !== null)
+        .length,
+      passed: selectedExamDate.candidates.filter(
+        (c) => c.marks !== null && c.marks >= passMarks
+      ).length,
+      failed: selectedExamDate.candidates.filter(
+        (c) => c.marks !== null && c.marks < passMarks
+      ).length,
+    };
+
+    return (
+      <div className="p-6 min-h-screen">
+        {/* Back Button */}
+        <button
+          onClick={() => {
+            setSelectedExamDate(null);
+            setSearchQuery("");
+          }}
+          className="flex items-center gap-2 px-4 py-2 mb-6 text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors border border-blue-200"
+        >
+          <ArrowLeft size={18} />
+          Back to Exam Dates
+        </button>
+
+        {/* Header Section */}
+        <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-6 text-white">
+            <h1 className="text-2xl font-bold mb-3">
+              Assign Marks - {selectedExamDate.date}
+            </h1>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                <Clock size={16} />
+                <span className="text-sm font-medium">
+                  {selectedExamDate.timeSlot}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
+                <span className="text-sm font-medium">
+                  {selectedExamDate.candidates.length} Candidates
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-4 gap-4 p-6 bg-gray-50">
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <p className="text-xs text-gray-500 font-semibold uppercase">
+                Total
+              </p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {slotStats.total}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg border border-blue-200 p-4">
+              <p className="text-xs text-blue-600 font-semibold uppercase">
+                Marked
+              </p>
+              <p className="text-2xl font-bold text-blue-600 mt-1">
+                {slotStats.marked}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg border border-green-200 p-4">
+              <p className="text-xs text-green-600 font-semibold uppercase">
+                Passed
+              </p>
+              <p className="text-2xl font-bold text-green-600 mt-1">
+                {slotStats.passed}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg border border-red-200 p-4">
+              <p className="text-xs text-red-600 font-semibold uppercase">
+                Failed
+              </p>
+              <p className="text-2xl font-bold text-red-600 mt-1">
+                {slotStats.failed}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Controls Bar */}
+        <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-4 mb-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            {/* Search Bar */}
+            <div className="flex-1 relative w-full lg:w-auto">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Search by SB No, startup name, or applicant name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Pass Marks Section */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-gray-700">
+                Pass Marks:
+              </span>
+              {isEditingPassMarks ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={tempPassMarks}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setTempPassMarks("");
+                        return;
+                      }
+                      const numValue = parseInt(value);
+                      if (
+                        !isNaN(numValue) &&
+                        numValue >= 0 &&
+                        numValue <= 100
+                      ) {
+                        setTempPassMarks(numValue);
+                      }
+                    }}
+                    className="w-20 text-gray-900 px-3 py-2 border border-blue-300 rounded-lg text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSavePassMarks}
+                    className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    title="Save"
+                  >
+                    <Save size={16} />
+                  </button>
+                  <button
+                    onClick={handleCancelPassMarks}
+                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    title="Cancel"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-lg font-bold border border-indigo-200">
+                    {passMarks}
+                  </span>
+                  <button
+                    onClick={() => {
+                      setIsEditingPassMarks(true);
+                      setTempPassMarks(passMarks);
+                    }}
+                    className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    title="Edit Pass Marks"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Results Summary */}
+          <div className="mt-4 text-sm text-gray-600">
+            Showing {filteredCandidates.length} candidate
+            {filteredCandidates.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+
+        {/* Table Container */}
+        <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Sr.No
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    SB No
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Startup Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Applicant Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Marks (Out of 100)
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Result
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredCandidates.length > 0 ? (
+                  filteredCandidates.map((candidate, index) => {
+                    const result = getResultStatus(candidate.marks);
+                    return (
+                      <tr
+                        key={candidate.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-xs text-gray-600 font-medium">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-600 font-mono font-semibold">
+                          {candidate.sbNo}
+                        </td>
+                        <td className="px-4 py-3 text-xs font-medium text-gray-900">
+                          {candidate.startupName}
+                        </td>
+                        <td className="px-4 py-3 text-xs font-medium text-gray-900">
+                          {candidate.applicantName}
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={
+                              candidate.marks === null ? "" : candidate.marks
+                            }
+                            onChange={(e) =>
+                              handleMarksChange(candidate.id, e.target.value)
+                            }
+                            placeholder="Enter"
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          {result === null ? (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-gray-50 text-gray-500 border-gray-200">
+                              Not Marked
+                            </span>
+                          ) : result === "pass" ? (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border bg-green-50 text-green-700 border-green-200">
+                              <CheckCircle size={14} />
+                              PASS
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border bg-red-50 text-red-700 border-red-200">
+                              <XCircle size={14} />
+                              FAIL
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="px-4 py-8 text-center text-sm text-gray-500"
+                    >
+                      No candidates found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default view: Show list of exam dates
   return (
     <div className="p-6 min-h-screen">
       {/* Header Section */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Assign Marks</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Enter marks for candidates who appeared for the exam
+          Select an exam date to view candidates and assign marks
         </p>
       </div>
 
@@ -116,94 +517,15 @@ const AssignMarks = () => {
         </div>
       </div>
 
-      {/* Controls Bar */}
-      <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-4 mb-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-          {/* Search Bar */}
-          <div className="flex-1 relative w-full lg:w-auto">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search by SB No, startup name, or applicant name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Pass Marks Section */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-gray-700">
-              Pass Marks:
-            </span>
-            {isEditingPassMarks ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={tempPassMarks}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '') {
-                      setTempPassMarks('');
-                      return;
-                    }
-                    const numValue = parseInt(value);
-                    if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-                      setTempPassMarks(numValue);
-                    }
-                  }}
-                  className="w-20 text-gray-900 px-3 py-2 border border-blue-300 rounded-lg text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  autoFocus
-                />
-                <button
-                  onClick={handleSavePassMarks}
-                  className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  title="Save"
-                >
-                  <Save size={16} />
-                </button>
-                <button
-                  onClick={handleCancelPassMarks}
-                  className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  title="Cancel"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-lg font-bold border border-indigo-200">
-                  {passMarks}
-                </span>
-                <button
-                  onClick={() => {
-                    setIsEditingPassMarks(true);
-                    setTempPassMarks(passMarks);
-                  }}
-                  className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                  title="Edit Pass Marks"
-                >
-                  <Edit2 size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results Summary */}
-        <div className="mt-4 text-sm text-gray-600">
-          Showing {filteredData.length} candidate
-          {filteredData.length !== 1 ? "s" : ""}
-        </div>
-      </div>
-
-      {/* Table Container */}
+      {/* Exam Dates List */}
       <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900">Exam Dates</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Click on an exam date to assign marks
+          </p>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -212,86 +534,66 @@ const AssignMarks = () => {
                   Sr.No
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  SB No
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Startup Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Applicant Name
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Exam Date
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   Time Slot
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Marks (Out of 100)
+                  Total Candidates
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Result
+                  Marked
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Passed
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  Failed
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredData.length > 0 ? (
-                filteredData.map((candidate, index) => {
-                  const result = getResultStatus(candidate.marks);
+              {examSlotsList.length > 0 ? (
+                examSlotsList.map((slot, index) => {
+                  const slotMarked = slot.candidates.filter(
+                    (c) => c.marks !== null
+                  ).length;
+                  const slotPassed = slot.candidates.filter(
+                    (c) => c.marks !== null && c.marks >= passMarks
+                  ).length;
+                  const slotFailed = slot.candidates.filter(
+                    (c) => c.marks !== null && c.marks < passMarks
+                  ).length;
+
                   return (
                     <tr
-                      key={candidate.id}
-                      className="hover:bg-gray-50 transition-colors"
+                      key={index}
+                      onClick={() => setSelectedExamDate(slot)}
+                      className="hover:bg-blue-50 cursor-pointer transition-colors"
                     >
                       <td className="px-4 py-3 text-xs text-gray-600 font-medium">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-600 font-mono font-semibold">
-                        {candidate.sbNo}
+                      <td className="px-4 py-3 text-xs font-semibold text-gray-900 flex items-center gap-2">
+                        <Calendar size={16} className="text-indigo-600" />
+                        {slot.date}
                       </td>
-                      <td className="px-4 py-3 text-xs font-medium text-gray-900">
-                        {candidate.startupName}
+                      <td className="px-4 py-3 text-xs text-gray-600 flex items-center gap-2">
+                        <Clock size={14} className="text-gray-400" />
+                        {slot.timeSlot}
                       </td>
-                      <td className="px-4 py-3 text-xs font-medium text-gray-900">
-                        {candidate.applicantName}
+                      <td className="px-4 py-3 text-xs font-bold text-gray-900">
+                        {slot.candidates.length}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-600">
-                        {candidate.examDate}
+                      <td className="px-4 py-3 text-xs font-semibold text-blue-600">
+                        {slotMarked}
                       </td>
-                      <td className="px-4 py-3 text-xs text-gray-600">
-                        {candidate.timeSlot}
+                      <td className="px-4 py-3 text-xs font-semibold text-green-600">
+                        {slotPassed}
                       </td>
-                      <td className="px-4 py-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          value={
-                            candidate.marks === null ? "" : candidate.marks
-                          }
-                          onChange={(e) =>
-                            handleMarksChange(candidate.id, e.target.value)
-                          }
-                          placeholder="Enter"
-                          className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400"
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        {result === null ? (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-gray-50 text-gray-500 border-gray-200">
-                            Not Marked
-                          </span>
-                        ) : result === "pass" ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border bg-green-50 text-green-700 border-green-200">
-                            <CheckCircle size={14} />
-                            PASS
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border bg-red-50 text-red-700 border-red-200">
-                            <XCircle size={14} />
-                            FAIL
-                          </span>
-                        )}
+                      <td className="px-4 py-3 text-xs font-semibold text-red-600">
+                        {slotFailed}
                       </td>
                     </tr>
                   );
@@ -299,10 +601,10 @@ const AssignMarks = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan="8"
+                    colSpan="7"
                     className="px-4 py-8 text-center text-sm text-gray-500"
                   >
-                    No candidates found
+                    No exam slots found
                   </td>
                 </tr>
               )}
@@ -313,5 +615,6 @@ const AssignMarks = () => {
     </div>
   );
 };
+77;
 
 export default AssignMarks;
