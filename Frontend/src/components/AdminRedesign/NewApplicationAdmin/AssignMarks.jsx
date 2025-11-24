@@ -429,7 +429,7 @@ const AssignMarks = () => {
                             min="0"
                             max="100"
                             value={
-                              candidate.marks === null ? "" : candidate.marks
+                              candidate.marks === "" ? "" : candidate.marks
                             }
                             onChange={(e) =>
                               handleMarksChange(candidate.id, e.target.value)

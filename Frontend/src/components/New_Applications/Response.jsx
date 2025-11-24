@@ -1,3 +1,4 @@
+// Response.jsx
 import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
@@ -11,6 +12,7 @@ import {
   XCircle,
   Save,
 } from "lucide-react";
+import { mockNewApplicationsList } from "../AdminRedesign/NewApplicationAdmin/mockApplicationData";
 
 const Response = ({ rowData, onBack }) => {
   const [formData, setFormData] = useState({
@@ -25,7 +27,7 @@ const Response = ({ rowData, onBack }) => {
   const [activeSection, setActiveSection] = useState("all");
   const [businessIdeaRatings, setBusinessIdeaRatings] = useState(null);
 
-  // ✅ Admin ratings for each question (1-10 per question, max 40 total)
+
   const [adminRatings, setAdminRatings] = useState({
     problemStatement: 0,
     solution: 0,
@@ -34,7 +36,7 @@ const Response = ({ rowData, onBack }) => {
   });
   const [totalMarks, setTotalMarks] = useState(0);
 
-  // Admin review states
+
   const [recommendation, setRecommendation] = useState(null);
   const [rating, setRating] = useState("B");
   const [comments, setComments] = useState("");
@@ -45,43 +47,44 @@ const Response = ({ rowData, onBack }) => {
   });
   const [saveStatus, setSaveStatus] = useState("idle");
 
-  // ✅ Load all data from localStorage
+
   useEffect(() => {
     try {
-      const basicDetails = localStorage.getItem("basicDetails");
-      const entityDetails = localStorage.getItem("entityDetails");
-      const startupDetails = localStorage.getItem("startupDetails");
-      const cofounderDetails = localStorage.getItem("cofounderDetails");
-      const businessIdea = localStorage.getItem("businessIdea");
-      const businessIdeaRatingsData = localStorage.getItem("businessIdeaRatings");
 
-      const businessIdeaParsed = businessIdea
-        ? JSON.parse(businessIdea)
-        : null;
-      const businessIdeaRatingsParsed = businessIdeaRatingsData
-        ? JSON.parse(businessIdeaRatingsData)
-        : null;
+      const applicationData = mockNewApplicationsList.find(
+        (app) => app.id === rowData?.id
+      );
 
-      setFormData({
-        basicDetails: basicDetails ? JSON.parse(basicDetails) : null,
-        entityDetails: entityDetails ? JSON.parse(entityDetails) : null,
-        startupDetails: startupDetails ? JSON.parse(startupDetails) : null,
-        cofounderDetails: cofounderDetails
-          ? JSON.parse(cofounderDetails)
-          : null,
-        businessIdea: businessIdeaParsed,
-      });
+      if (applicationData) {
+        // Data is directly fetching on the application object
+        setFormData({
+          basicDetails: applicationData.basicDetails || null,
+          entityDetails: applicationData.entityDetails || null,
+          startupDetails: applicationData.startupDetails || null,
+          cofounderDetails: applicationData.cofounderDetails || null,
+          businessIdea: applicationData.businessIdea || null,
+        });
 
-      if (businessIdeaRatingsParsed) {
-        setBusinessIdeaRatings(businessIdeaRatingsParsed);
-      }
+        setBusinessIdeaRatings(applicationData.businessIdeaRatings || null);
 
-      // Load previously saved admin ratings if any
-      const savedAdminRatings = localStorage.getItem("adminBusinessIdeaRatings");
-      if (savedAdminRatings) {
-        const parsed = JSON.parse(savedAdminRatings);
-        setAdminRatings(parsed.ratings || {});
-        setTotalMarks(parsed.totalMarks || 0);
+        
+        const savedAdminRatings = localStorage.getItem(
+          `adminBusinessIdeaRatings_${rowData?.id}`
+        );
+        if (savedAdminRatings) {
+          const parsed = JSON.parse(savedAdminRatings);
+          setAdminRatings(parsed.ratings || {});
+          setTotalMarks(parsed.totalMarks || 0);
+        }
+
+ 
+        const savedReview = localStorage.getItem(`adminReview_${rowData?.id}`);
+        if (savedReview) {
+          const review = JSON.parse(savedReview);
+          setRecommendation(review.recommendation || null);
+          setRating(review.rating || "B");
+          setComments(review.comments || "");
+        }
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -90,12 +93,12 @@ const Response = ({ rowData, onBack }) => {
     }
   }, [rowData]);
 
-  // ✅ Handle admin rating change
+  
   const handleAdminRating = (field, value) => {
     const newRatings = { ...adminRatings, [field]: value };
     setAdminRatings(newRatings);
 
-    // Calculate total
+
     const total =
       newRatings.problemStatement +
       newRatings.solution +
@@ -103,9 +106,9 @@ const Response = ({ rowData, onBack }) => {
       newRatings.targetMarket;
     setTotalMarks(total);
 
-    // Save to localStorage
+  
     localStorage.setItem(
-      "adminBusinessIdeaRatings",
+      `adminBusinessIdeaRatings_${rowData?.id}`,
       JSON.stringify({
         ratings: newRatings,
         totalMarks: total,
@@ -113,7 +116,7 @@ const Response = ({ rowData, onBack }) => {
     );
   };
 
-  // ✅ Get color based on individual question rating (1-10)
+
   const getQuestionRatingColor = (rating) => {
     if (rating === 0) return "bg-gray-200 text-gray-600 border-gray-300";
     if (rating <= 2) return "bg-red-500 text-white border-red-600";
@@ -123,7 +126,7 @@ const Response = ({ rowData, onBack }) => {
     return "bg-green-500 text-white border-green-600";
   };
 
-  // Format date
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
@@ -148,7 +151,7 @@ const Response = ({ rowData, onBack }) => {
     return colors[stage] || "bg-gray-50 text-gray-600 border-gray-200";
   };
 
-  // ✅ Get color for total marks (out of 40)
+
   const getTotalMarksColor = (marks) => {
     const percentage = (marks / 40) * 100;
     if (percentage < 25) return "bg-red-500 text-white";
@@ -172,7 +175,11 @@ const Response = ({ rowData, onBack }) => {
         reviewedAt: new Date().toISOString(),
       };
 
-      localStorage.setItem("adminReview", JSON.stringify(reviewData));
+      // Save review with unique key per application
+      localStorage.setItem(
+        `adminReview_${rowData?.id}`,
+        JSON.stringify(reviewData)
+      );
 
       setSaveStatus("success");
       setNotification({
@@ -183,6 +190,7 @@ const Response = ({ rowData, onBack }) => {
 
       setTimeout(() => {
         setNotification({ show: false, message: "", type: "" });
+        setSaveStatus("idle");
       }, 3000);
     } catch (error) {
       setSaveStatus("error");
@@ -239,7 +247,9 @@ const Response = ({ rowData, onBack }) => {
             <span className="text-blue-100">
               Entity Reg:{" "}
               <span className="font-mono font-bold">
-                {rowData?.entityRegistrationNumber || "N/A"}
+                {rowData?.entityRegistrationNumber ||
+                  formData.entityDetails?.entityRegistrationNumber ||
+                  "N/A"}
               </span>
             </span>
             <span className="text-blue-100">
@@ -254,23 +264,28 @@ const Response = ({ rowData, onBack }) => {
         {/* Tabs */}
         <div className="border-b border-gray-200 bg-gray-50 flex overflow-x-auto justify-between items-center">
           <div className="flex overflow-x-auto">
-            {["all", "basic", "entity", "startup", "cofounder", "business", "review"].map(
-              (tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveSection(tab)}
-                  className={`px-6 py-3 font-medium text-sm whitespace-nowrap transition-colors ${
-                    activeSection === tab
-                      ? "text-blue-600 border-b-2 border-blue-600 bg-white"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              )
-            )}
+            {[
+              "all",
+              "business",
+              "basic",
+              "entity",
+              "startup",
+              "cofounder",
+              "review",
+            ].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveSection(tab)}
+                className={`px-6 py-3 font-medium text-sm whitespace-nowrap transition-colors ${
+                  activeSection === tab
+                    ? "text-blue-600 border-b-2 border-blue-600 bg-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
-   
         </div>
 
         {/* Content Sections */}
@@ -392,7 +407,9 @@ const Response = ({ rowData, onBack }) => {
                           Reg. Date
                         </p>
                         <p className="text-sm font-bold text-gray-900 mt-1">
-                          {formatDate(formData.entityDetails.dateOfRegistration)}
+                          {formatDate(
+                            formData.entityDetails.dateOfRegistration
+                          )}
                         </p>
                       </div>
                     )}
@@ -516,73 +533,75 @@ const Response = ({ rowData, onBack }) => {
                 {formData.cofounderDetails.coFounders &&
                 formData.cofounderDetails.coFounders.length > 0 ? (
                   <div className="space-y-4">
-                    {formData.cofounderDetails.coFounders.map((founder, index) => (
-                      <div
-                        key={index}
-                        className="border border-gray-200 rounded-lg p-4 bg-gray-50"
-                      >
-                        <h3 className="font-bold text-gray-900 mb-3">
-                          Co-Founder {index + 1}
-                        </h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {founder.name && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-semibold uppercase">
-                                Name
-                              </p>
-                              <p className="text-sm font-bold text-gray-900">
-                                {founder.name}
-                              </p>
-                            </div>
-                          )}
-                          {founder.email && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-semibold uppercase">
-                                Email
-                              </p>
-                              <p className="text-sm font-bold text-blue-600">
-                                {founder.email}
-                              </p>
-                            </div>
-                          )}
-                          {founder.phoneNumber && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-semibold uppercase">
-                                Phone
-                              </p>
-                              <p className="text-sm font-bold text-gray-900">
-                                {founder.phoneNumber}
-                              </p>
-                            </div>
-                          )}
-                          {founder.qualification && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-semibold uppercase">
-                                Qualification
-                              </p>
-                              <p className="text-sm font-bold text-gray-900">
-                                {founder.qualification}
-                              </p>
-                            </div>
-                          )}
-                          {founder.linkedinProfile && (
-                            <div className="col-span-2">
-                              <p className="text-xs text-gray-500 font-semibold uppercase">
-                                LinkedIn
-                              </p>
-                              <a
-                                href={founder.linkedinProfile}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm font-bold text-blue-600 hover:underline"
-                              >
-                                View Profile
-                              </a>
-                            </div>
-                          )}
+                    {formData.cofounderDetails.coFounders.map(
+                      (founder, index) => (
+                        <div
+                          key={index}
+                          className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                        >
+                          <h3 className="font-bold text-gray-900 mb-3">
+                            Co-Founder {index + 1}
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {founder.name && (
+                              <div>
+                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                  Name
+                                </p>
+                                <p className="text-sm font-bold text-gray-900">
+                                  {founder.name}
+                                </p>
+                              </div>
+                            )}
+                            {founder.email && (
+                              <div>
+                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                  Email
+                                </p>
+                                <p className="text-sm font-bold text-blue-600">
+                                  {founder.email}
+                                </p>
+                              </div>
+                            )}
+                            {founder.phoneNumber && (
+                              <div>
+                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                  Phone
+                                </p>
+                                <p className="text-sm font-bold text-gray-900">
+                                  {founder.phoneNumber}
+                                </p>
+                              </div>
+                            )}
+                            {founder.qualification && (
+                              <div>
+                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                  Qualification
+                                </p>
+                                <p className="text-sm font-bold text-gray-900">
+                                  {founder.qualification}
+                                </p>
+                              </div>
+                            )}
+                            {founder.linkedinProfile && (
+                              <div className="col-span-2">
+                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                  LinkedIn
+                                </p>
+                                <a
+                                  href={founder.linkedinProfile}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm font-bold text-blue-600 hover:underline"
+                                >
+                                  View Profile
+                                </a>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 ) : (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-700">
@@ -620,7 +639,9 @@ const Response = ({ rowData, onBack }) => {
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                         <button
                           key={num}
-                          onClick={() => handleAdminRating("problemStatement", num)}
+                          onClick={() =>
+                            handleAdminRating("problemStatement", num)
+                          }
                           className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
                             adminRatings.problemStatement === num
                               ? `${getQuestionRatingColor(num)} shadow-lg`
@@ -748,13 +769,6 @@ const Response = ({ rowData, onBack }) => {
                   </div>
                 </div>
 
-                {/* Total Marks Card */}
-                {/* <div className={`${getTotalMarksColor(totalMarks)} rounded-lg p-6 text-center`}>
-                  <p className="text-sm font-semibold uppercase mb-2">Total Marks</p>
-                  <p className="text-4xl font-bold">{totalMarks}</p>
-                  <p className="text-sm mt-1">out of 40</p>
-                </div> */}
-
                 {/* Pitch Deck */}
                 {businessIdeaRatings.pitchDeckName && (
                   <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
@@ -808,7 +822,7 @@ const Response = ({ rowData, onBack }) => {
                   </div>
                 </div>
 
-                {/* Rating - A B C D Grades */}
+                {/* Rating - A B C Grades */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Rating
@@ -838,10 +852,13 @@ const Response = ({ rowData, onBack }) => {
                   </div>
                 </div>
 
-				<div className="text-center border p-4 rounded-lg bg-gray-50">		
-				 <p className="text-sm font-semibold uppercase mb-2 text-black">Total Marks</p>
+                <div className="text-center border p-4 rounded-lg bg-gray-50">
+                  <p className="text-sm font-semibold uppercase mb-2 text-black">
+                    Total Marks
+                  </p>
                   <p className="text-4xl font-bold text-black">{totalMarks}</p>
-				  </div>	
+                  <p className="text-xs text-gray-600 mt-1">out of 40</p>
+                </div>
               </div>
 
               {/* Comments */}
@@ -883,4 +900,4 @@ const Response = ({ rowData, onBack }) => {
   );
 };
 
-export default Response;
+export default Response

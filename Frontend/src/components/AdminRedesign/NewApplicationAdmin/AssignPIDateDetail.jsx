@@ -136,27 +136,29 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
       {/* Candidates Selection Section */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         {/* Action Buttons */}
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-          <div className="flex gap-3">
-            <button
-              onClick={handleSelectAll}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
-            >
-              <CheckSquare size={16} />
-              Select All
-            </button>
-            <button
-              onClick={handleUnselectAll}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm"
-            >
-              <Square size={16} />
-              Unselect All
-            </button>
-          </div>
-          <div className="text-sm font-semibold text-gray-700">
-            {selectedCandidates.length} selected
-          </div>
-        </div>
+       <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-row-reverse">
+  <div className="flex gap-3">
+    <button
+      onClick={handleSelectAll}
+      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
+    >
+      <CheckSquare size={16} />
+      Select All
+    </button>
+
+    <button
+      onClick={handleUnselectAll}
+      className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm"
+    >
+      <Square size={16} />
+      Unselect All
+    </button>
+  </div>
+
+  <div className="text-sm font-semibold text-gray-500">
+    {selectedCandidates.length} selected
+  </div>
+</div>
 
         {/* Candidates Table */}
         <div className="overflow-x-auto">

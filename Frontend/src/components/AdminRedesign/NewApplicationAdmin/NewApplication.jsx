@@ -1,3 +1,4 @@
+// NewApplication.jsx
 import React, { useState, useEffect } from "react";
 import {
   Search,
@@ -9,464 +10,33 @@ import {
   X,
   CheckCircle,
 } from "lucide-react";
+import { mockNewApplicationsList } from "./mockApplicationData";
 
 const NewApplication = ({ onRowClick }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStage, setSelectedStage] = useState("All");
   const [selectedEntity, setSelectedEntity] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState("all"); // New: status filter
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showFilters, setShowFilters] = useState(false);
   const [allData, setAllData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Load data from localStorage on component mount
+  // ✅ Load data from mock file instead of localStorage
   useEffect(() => {
-    const loadDataFromLocalStorage = () => {
-      try {
-        // Mock data for NEW applications (submitted but not yet reviewed) - Complete Form Data
-        const mockNewApplications = [
-          {
-            srNo: 1,
-            id: 1,
-            status: "accepted",
-            submissionDate: "2024-11-01",
-            // Review status - tracks which admins have reviewed
-            reviews: {
-              admin1: true, // Admin 1 has reviewed
-              admin2: true, // Admin 2 has reviewed
-            },
-            // User Signup Data
-            userSignup: {
-              founderName: "Rajesh Kumar",
-              startupName: "Tech Innovators",
-              email: "rajesh.kumar@techinnovators.com",
-              phoneNumber: "9876543210",
-              aadharNumber: "123456789012",
-            },
-            // Basic Details
-            basicDetails: {
-              fullName: "Rajesh Kumar",
-              gender: "Male",
-              category: "General",
-              dateOfBirth: "1995-05-15",
-              qualification: "B.Tech",
-              institution: "IIT Patna",
-              otherInstitution: "",
-              linkedinProfile: "https://linkedin.com/in/rajeshkumar",
-              profilePhoto: "photo1.jpg",
-              state: "Bihar",
-              district: "Patna",
-            },
-            // Entity Details
-            entityDetails: {
-              hasRegisteredEntity: true,
-              entityName: "Tech Innovators Pvt Ltd",
-              entityType: "Private Limited",
-              entityRegistrationNumber: "REG2024001",
-              dateOfRegistration: "2023-06-10",
-              businessAddress: "123 Tech Park, Boring Road, Patna",
-              state: "Bihar",
-              district: "Patna",
-              certificate: "certificate1.pdf",
-            },
-            // Startup Details
-            startupDetails: {
-              teamSize: 8,
-              website: "https://techinnovators.com",
-              sector: "Technology",
-              stage: "Ideation",
-              applicantAddress: "45 Gandhi Maidan, Patna, Bihar",
-              state: "Bihar",
-              district: "Patna",
-              pincode: "800001",
-            },
-            // Co-Founder Details
-            cofounderDetails: {
-              coFounders: [
-                {
-                  name: "Amit Singh",
-                  email: "amit@techinnovators.com",
-                  phoneNumber: "9876543220",
-                  qualification: "MBA",
-                  linkedinProfile: "https://linkedin.com/in/amitsingh",
-                },
-              ],
-            },
-            // Business Idea
-            businessIdea: {
-              problemStatement:
-                "Lack of accessible technology solutions for rural Bihar",
-              solution:
-                "Developing affordable mobile-first applications for agriculture and education",
-              innovation:
-                "AI-powered vernacular language support with offline functionality",
-              businessModel:
-                "Freemium model with premium features and B2B partnerships",
-              pitchDeck: "pitchdeck1.pdf",
-            },
-          },
-          {
-            srNo: 2,
-            id: 2,
-            status: "submitted",
-            submissionDate: "2024-11-02",
-            reviews: {
-              admin1: true, // Admin 1 has reviewed
-              admin2: false, // Admin 2 hasn't reviewed yet
-            },
-            userSignup: {
-              founderName: "Priya Sharma",
-              startupName: "Green Solutions",
-              email: "priya.sharma@greensolutions.in",
-              phoneNumber: "9876543211",
-              aadharNumber: "234567890123",
-            },
-            basicDetails: {
-              fullName: "Priya Sharma",
-              gender: "Female",
-              category: "OBC",
-              dateOfBirth: "1997-08-22",
-              qualification: "M.Sc Environmental Science",
-              institution: "Patna University",
-              otherInstitution: "",
-              linkedinProfile: "https://linkedin.com/in/priyasharma",
-              profilePhoto: "photo2.jpg",
-              state: "Bihar",
-              district: "Gaya",
-            },
-            entityDetails: {
-              hasRegisteredEntity: true,
-              entityName: "Green Solutions LLP",
-              entityType: "LLP",
-              entityRegistrationNumber: "REG2024002",
-              dateOfRegistration: "2023-09-15",
-              businessAddress: "67 Eco Park, Buddha Marg, Gaya",
-              state: "Bihar",
-              district: "Gaya",
-              certificate: "certificate2.pdf",
-            },
-            startupDetails: {
-              teamSize: 5,
-              website: "https://greensolutions.in",
-              sector: "Agriculture",
-              stage: "Validation",
-              applicantAddress: "22 Station Road, Gaya, Bihar",
-              state: "Bihar",
-              district: "Gaya",
-              pincode: "823001",
-            },
-            cofounderDetails: {
-              coFounders: [
-                {
-                  name: "Rahul Verma",
-                  email: "rahul@greensolutions.in",
-                  phoneNumber: "9876543221",
-                  qualification: "B.Sc Agriculture",
-                  linkedinProfile: "https://linkedin.com/in/rahulverma",
-                },
-              ],
-            },
-            businessIdea: {
-              problemStatement:
-                "Inefficient waste management and lack of organic farming practices",
-              solution:
-                "Providing composting solutions and organic farming training to farmers",
-              innovation:
-                "Mobile composting units with IoT monitoring for quality control",
-              businessModel:
-                "Subscription-based service for farmers with equipment rental",
-              pitchDeck: "pitchdeck2.pdf",
-            },
-          },
-          {
-            srNo: 3,
-            id: 3,
-            status: "rejected",
-            submissionDate: "2024-11-03",
-            reviews: {
-              admin1: true, // Admin 1 has reviewed
-              admin2: true, // Admin 2 has reviewed
-            },
-            userSignup: {
-              founderName: "Amit Verma",
-              startupName: "EduTech Solutions",
-              email: "amit.verma@edutech.co.in",
-              phoneNumber: "9876543212",
-              aadharNumber: "345678901234",
-            },
-            basicDetails: {
-              fullName: "Amit Verma",
-              gender: "Male",
-              category: "General",
-              dateOfBirth: "1994-03-10",
-              qualification: "M.Tech",
-              institution: "NIT Patna",
-              otherInstitution: "",
-              linkedinProfile: "https://linkedin.com/in/amitverma",
-              profilePhoto: "photo3.jpg",
-              state: "Bihar",
-              district: "Muzaffarpur",
-            },
-            entityDetails: {
-              hasRegisteredEntity: true,
-              entityName: "EduTech Solutions Pvt Ltd",
-              entityType: "Private Limited",
-              entityRegistrationNumber: "REG2024003",
-              dateOfRegistration: "2022-12-05",
-              businessAddress: "89 University Road, Muzaffarpur",
-              state: "Bihar",
-              district: "Muzaffarpur",
-              certificate: "certificate3.pdf",
-            },
-            startupDetails: {
-              teamSize: 12,
-              website: "https://edutech-solutions.com",
-              sector: "Education",
-              stage: "Early Traction",
-              applicantAddress: "34 College Lane, Muzaffarpur, Bihar",
-              state: "Bihar",
-              district: "Muzaffarpur",
-              pincode: "842001",
-            },
-            cofounderDetails: {
-              coFounders: [
-                {
-                  name: "Neha Gupta",
-                  email: "neha@edutech.co.in",
-                  phoneNumber: "9876543222",
-                  qualification: "B.Ed",
-                  linkedinProfile: "https://linkedin.com/in/nehagupta",
-                },
-                {
-                  name: "Sanjay Kumar",
-                  email: "sanjay@edutech.co.in",
-                  phoneNumber: "9876543223",
-                  qualification: "M.A Education",
-                  linkedinProfile: "https://linkedin.com/in/sanjaykumar",
-                },
-              ],
-            },
-            businessIdea: {
-              problemStatement:
-                "Poor quality education and lack of digital learning tools in rural areas",
-              solution:
-                "Interactive video-based learning platform with local language support",
-              innovation:
-                "Adaptive learning algorithms that adjust to student pace and comprehension",
-              businessModel:
-                "B2C subscription for students and B2B licensing for schools",
-              pitchDeck: "pitchdeck3.pdf",
-            },
-          },
-          {
-            srNo: 4,
-            id: 4,
-            status: "submitted",
-            submissionDate: "2024-11-04",
-            reviews: {
-              admin1: false, // Admin 1 hasn't reviewed yet
-              admin2: false, // Admin 2 hasn't reviewed yet
-            },
-            userSignup: {
-              founderName: "Sneha Patel",
-              startupName: "HealthTech Plus",
-              email: "sneha.patel@healthtechplus.in",
-              phoneNumber: "9876543213",
-              aadharNumber: "456789012345",
-            },
-            basicDetails: {
-              fullName: "Sneha Patel",
-              gender: "Female",
-              category: "General",
-              dateOfBirth: "1996-11-28",
-              qualification: "MBBS",
-              institution: "AIIMS Patna",
-              otherInstitution: "",
-              linkedinProfile: "https://linkedin.com/in/snehapatel",
-              profilePhoto: "photo4.jpg",
-              state: "Bihar",
-              district: "Bhagalpur",
-            },
-            entityDetails: {
-              hasRegisteredEntity: true,
-              entityName: "HealthTech Plus Pvt Ltd",
-              entityType: "Private Limited",
-              entityRegistrationNumber: "REG2024004",
-              dateOfRegistration: "2023-04-20",
-              businessAddress:
-                "156 Medical Complex, Tilka Manjhi Road, Bhagalpur",
-              state: "Bihar",
-              district: "Bhagalpur",
-              certificate: "certificate4.pdf",
-            },
-            startupDetails: {
-              teamSize: 15,
-              website: "https://healthtechplus.in",
-              sector: "Healthcare",
-              stage: "Ideation",
-              applicantAddress: "78 Hospital Road, Bhagalpur, Bihar",
-              state: "Bihar",
-              district: "Bhagalpur",
-              pincode: "812001",
-            },
-            cofounderDetails: {
-              coFounders: [
-                {
-                  name: "Dr. Rajiv Mishra",
-                  email: "rajiv@healthtechplus.in",
-                  phoneNumber: "9876543224",
-                  qualification: "MD",
-                  linkedinProfile: "https://linkedin.com/in/rajivmishra",
-                },
-              ],
-            },
-            businessIdea: {
-              problemStatement:
-                "Limited access to quality healthcare in rural Bihar and long wait times",
-              solution:
-                "Telemedicine platform connecting rural patients with qualified doctors",
-              innovation:
-                "AI-based preliminary diagnosis with regional language support and low bandwidth optimization",
-              businessModel:
-                "Pay-per-consultation for patients and partnerships with government health programs",
-              pitchDeck: "pitchdeck4.pdf",
-            },
-          },
-          {
-            srNo: 5,
-            id: 5,
-            status: "accepted",
-            submissionDate: "2024-11-05",
-            reviews: {
-              admin1: true, // Admin 1 has reviewed
-              admin2: true, // Admin 2 has reviewed
-            },
-            userSignup: {
-              founderName: "Vikram Singh",
-              startupName: "AgriSmart",
-              email: "vikram.singh@agrismart.co.in",
-              phoneNumber: "9876543214",
-              aadharNumber: "567890123456",
-            },
-            basicDetails: {
-              fullName: "Vikram Singh",
-              gender: "Male",
-              category: "SC",
-              dateOfBirth: "1993-07-18",
-              qualification: "B.Sc Agriculture",
-              institution: "Bihar Agricultural University",
-              otherInstitution: "",
-              linkedinProfile: "https://linkedin.com/in/vikramsingh",
-              profilePhoto: "photo5.jpg",
-              state: "Bihar",
-              district: "Darbhanga",
-            },
-            entityDetails: {
-              hasRegisteredEntity: true,
-              entityName: "AgriSmart Solutions Partnership",
-              entityType: "Partnership",
-              entityRegistrationNumber: "REG2024005",
-              dateOfRegistration: "2023-01-12",
-              businessAddress: "234 Krishi Bhawan, NH 57, Darbhanga",
-              state: "Bihar",
-              district: "Darbhanga",
-              certificate: "certificate5.pdf",
-            },
-            startupDetails: {
-              teamSize: 10,
-              website: "https://agrismart.co.in",
-              sector: "Agriculture",
-              stage: "Scaling",
-              applicantAddress: "90 Farmer Colony, Darbhanga, Bihar",
-              state: "Bihar",
-              district: "Darbhanga",
-              pincode: "846004",
-            },
-            cofounderDetails: {
-              coFounders: [
-                {
-                  name: "Ravi Shankar",
-                  email: "ravi@agrismart.co.in",
-                  phoneNumber: "9876543225",
-                  qualification: "M.Sc Agronomy",
-                  linkedinProfile: "https://linkedin.com/in/ravishankar",
-                },
-                {
-                  name: "Pooja Kumari",
-                  email: "pooja@agrismart.co.in",
-                  phoneNumber: "9876543226",
-                  qualification: "B.Tech Agricultural Engineering",
-                  linkedinProfile: "https://linkedin.com/in/poojakumari",
-                },
-              ],
-            },
-            businessIdea: {
-              problemStatement:
-                "Farmers lack real-time information about weather, crop prices, and modern farming techniques",
-              solution:
-                "Mobile app providing weather forecasts, market prices, and farming best practices",
-              innovation:
-                "Satellite imagery integration for crop health monitoring and pest detection",
-              businessModel:
-                "Freemium app with premium features and commission on agricultural product sales",
-              pitchDeck: "pitchdeck5.pdf",
-            },
-          },
-        ];
-
-        // Try to load from localStorage first
-        const userSignup = JSON.parse(
-          localStorage.getItem("userSignup") || "{}"
-        );
-        const basicDetails = JSON.parse(
-          localStorage.getItem("basicDetails") || "{}"
-        );
-        const entityDetails = JSON.parse(
-          localStorage.getItem("entityDetails") || "{}"
-        );
-        const startupDetails = JSON.parse(
-          localStorage.getItem("startupDetails") || "{}"
-        );
-        const cofounderDetails = JSON.parse(
-          localStorage.getItem("cofounderDetails") || "{}"
-        );
-        const businessIdea = JSON.parse(
-          localStorage.getItem("businessIdea") || "{}"
-        );
-
-        // If localStorage has data, add it to the mock data
-        if (basicDetails.fullName && userSignup.startupName) {
-          const transformedData = {
-            srNo: mockNewApplications.length + 1,
-            id: mockNewApplications.length + 1,
-            status: "submitted",
-            submissionDate: new Date().toISOString().split("T")[0],
-            userSignup,
-            basicDetails,
-            entityDetails,
-            startupDetails,
-            cofounderDetails,
-            businessIdea,
-          };
-          setAllData([...mockNewApplications, transformedData]);
-        } else {
-          // Use mock data if no localStorage data
-          setAllData(mockNewApplications);
-        }
-      } catch (error) {
-        console.error("Error loading data from localStorage:", error);
-        setAllData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDataFromLocalStorage();
+    try {
+      // Simply use the imported mock data
+      setAllData(mockNewApplicationsList);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setAllData([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Filter logic - updated to work with new data structure
+  // Filter logic
   const filteredData = allData.filter((item) => {
     const entityName =
       item.entityDetails?.entityName || item.userSignup?.startupName || "";
@@ -487,7 +57,6 @@ const NewApplication = ({ onRowClick }) => {
     const matchesEntity =
       selectedEntity === "All" || entityType === selectedEntity;
 
-    // Status filter: "all" shows all, "accepted" shows accepted, "rejected" shows rejected
     const matchesStatus =
       selectedStatus === "all" ||
       (selectedStatus === "accepted" && status === "accepted") ||
@@ -532,9 +101,7 @@ const NewApplication = ({ onRowClick }) => {
 
   const handleRefresh = () => {
     setLoading(true);
-    // Simply reload component data
     setTimeout(() => {
-      // Trigger re-render by resetting loading state
       setLoading(false);
     }, 500);
   };
@@ -554,7 +121,7 @@ const NewApplication = ({ onRowClick }) => {
   };
 
   return (
-    <div className="p-6  min-h-screen">
+    <div className="p-6 min-h-screen">
       {/* Header Section */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">New Applications</h1>
@@ -898,8 +465,7 @@ const NewApplication = ({ onRowClick }) => {
                     colSpan="9"
                     className="px-4 py-8 text-center text-sm text-gray-500"
                   >
-                    No applications found. Try adjusting your filters or submit
-                    a new application.
+                    No applications found. Try adjusting your filters.
                   </td>
                 </tr>
               )}

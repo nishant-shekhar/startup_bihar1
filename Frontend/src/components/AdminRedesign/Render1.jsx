@@ -10,6 +10,7 @@ import AssignExamDate from './NewApplicationAdmin/AssignExamDate';
 import AssignMarks from './NewApplicationAdmin/AssignMarks';
 import AssignPIDate from './NewApplicationAdmin/AssignPIDate';
 import AssignPIMarks from './NewApplicationAdmin/AssignPIMarks';
+import DataAnylatics from './NewApplicationAdmin/DataAnylatics';
 
 
 const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
@@ -42,6 +43,9 @@ const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
       
       case "Assign PI Marks":
         return <AssignPIMarks />;
+      
+      case "Data Analytics":
+        return <DataAnylatics rowData={selectedRowData} onBack={onBack} />;  
       
       case "Event Management":
         return <div><h1>Event Management Panel</h1></div>;

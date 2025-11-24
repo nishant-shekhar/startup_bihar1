@@ -409,21 +409,6 @@ const DashboardPage = () => {
     </div>
   </div>
 
-  {/* Chart */}
-  {/* <div className="flex-1">
-    <ResponsiveContainer width="100%" height={250}>
-      <BarChart data={data}>
-        <XAxis dataKey="month" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="Approved" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="Rejected" fill="#f87171" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="Ongoing" fill="#fbbf24" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="Received" fill="#34d399" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  </div> */}
 <div className="w-full" style={{ height: "240px" }}>
   <Bar data={chartData} options={chartOptions} />
 </div>

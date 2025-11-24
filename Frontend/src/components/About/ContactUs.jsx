@@ -32,8 +32,10 @@ const ContactUs = () => {
 			id: 3,
 			name: 'Jyoti Kumari',
 			email: 'startup-bihar@gov.in',
-			phone: '9031863179',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fjyoti%20mam.jpeg?alt=media&token=16a2240b-1708-43eb-965e-a433c21c2bb2',
+			phone: 'jyoti950@bihar.gov.in',
+			//image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2Fjyoti%20mam.jpeg?alt=media&token=16a2240b-1708-43eb-965e-a433c21c2bb2',
+			image: 'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=', 
+
 			position: 'Assistant Director',
 			tag: 'Nodal Officer'
 		},

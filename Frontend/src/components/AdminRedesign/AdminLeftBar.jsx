@@ -69,6 +69,15 @@ const AdminLeftbar = ({ changePanel }) => {
         { label: 'Assign Marks', icon: <Award size={16} />, badge: null },
         { label: 'Assign PI Date', icon: <CalendarClock size={16} />, badge: null },
         { label: 'Assign PI Marks', icon: <ClipboardCheck size={16} />, badge: null },
+
+        {
+          label: 'Data Analytics', icon:
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
+            </svg>
+          , badge: null
+        },
+
       ],
     },
     {
@@ -131,7 +140,18 @@ const AdminLeftbar = ({ changePanel }) => {
       </div>
 
       {/* Menu Sections - Compact and subtle */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-5">
+      <style>
+        {`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}
+      </style>
+      <div className="flex-1 overflow-y-auto p-3 space-y-5 hide-scrollbar">
         {categorizedMenu.map(({ category, items }) => (
           <div key={category}>
             <h2 className="text-[10px] uppercase text-gray-400 font-semibold mb-2 pl-2 tracking-wide">
@@ -146,29 +166,27 @@ const AdminLeftbar = ({ changePanel }) => {
                     changePanel(label);
                   }}
                   className={`group flex items-center w-full text-left gap-2.5 px-3 py-2 rounded-lg transition-all duration-150
-                    ${
-                      activeLabel === label
-                        ? 'bg-blue-50 text-blue-600 border border-blue-100'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ${activeLabel === label
+                      ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                 >
                   {/* Icon */}
                   <span className="flex-shrink-0">
                     {icon}
                   </span>
-                  
+
                   {/* Label */}
                   <span className="text-[13px] font-medium flex-1 truncate">
                     {label}
                   </span>
-                  
+
                   {/* Badge - More subtle */}
                   {badge && (
                     <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md min-w-[18px] text-center
-                      ${
-                        activeLabel === label
-                          ? 'bg-blue-100 text-blue-600'
-                          : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
+                      ${activeLabel === label
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                       }`}>
                       {badge}
                     </span>
