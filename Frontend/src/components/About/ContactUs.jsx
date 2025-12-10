@@ -11,12 +11,12 @@ const ContactUs = () => {
 	const leadership = [
 		{
 			id: 0,
-			name: 'Sri Mihir Kumar Singh, I.A.S.',
+			name: 'Sri Kundan Kumar, I.A.S.',
 			email: 'prsecy.ind-bih@nic.in',
 			phone: '0612-2215211',
-			image: 'https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FOfficers%2FACS%20Industry.jpeg?alt=media&token=48a4ed7a-4f70-4113-b59b-de5ecb9aa6c3',
-			position: 'Additional Chief Secretary, Department of Industries, GoB',
-			tag: 'ACS, Industries'
+			image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkiPticRwETbwqYFSc-9QSq31XbbnW7pzyxw&s',
+			position: 'Secretary, Department of Industries, GoB',
+			tag: 'Secretary, Industries'
 		},
 		{
 			id: 1,
