@@ -212,7 +212,7 @@ const NavBarNew = () => {
 											Acceleration Program
 										</a>
 										<a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
-											Early Stage Funding
+											Post-seed Fund Support
 										</a>
 										<a href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf" target="_blank" className="px-4 py-2 text-sm hover:bg-indigo-100 text-gray-800">
 											Exit Policy
@@ -314,7 +314,7 @@ const NavBarNew = () => {
         <hr className="my-2 border-gray-300" />
         <a href="https://bhub.org.in/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">B-Hub</a>
         <a href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Acceleration Program</a>
-        <a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Early Stage Funding</a>
+        <a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Post-seed Fund Support</a>
         <a href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Exit Policy</a>
         <a href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Intellectual Property Rights</a>
         <a href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Matching Loan</a>
