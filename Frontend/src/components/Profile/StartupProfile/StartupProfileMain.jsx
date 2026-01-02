@@ -85,6 +85,9 @@ const StartupProfileMain = () => {
       } else if (newPanel === "SecondTranche") {
         apiUrl = "https://startupbihar.in/api/second-tranche/status";
       }
+      else if (newPanel === "Matchingloan") {
+        apiUrl = "https://startupbihar.in/api/matchingLoan/status";
+      }
 
       if (apiUrl) {
         setDialogStatus({ isVisible: true, title: "Checking Form Status", subtitle: "Wait while we are fetching form status!", buttonVisible: false, status: "checking" });
@@ -159,16 +162,23 @@ const StartupProfileMain = () => {
   const handleFormSubmitSuccess = () => {
     setActivePage("HomeSection");
   };
-  const changePanel = (newPanel) => {
-    if (newPanel === "StartupForm" || newPanel === "SeedFund" || newPanel === "SecondTranche" || newPanel === "PostSeed") {
-      checkFormStatus(newPanel);
-    } else if (COMPONENTS[newPanel]) {
-      setActivePage(newPanel);
-    } else {
-      console.error("Invalid panel name:", newPanel);
-      setActivePage("UserProfile");
-    }
-  };
+ const changePanel = (newPanel) => {
+  if (
+    newPanel === "StartupForm" ||
+    newPanel === "SeedFund" ||
+    newPanel === "SecondTranche" ||
+    newPanel === "PostSeed" ||
+    newPanel === "Matchingloan"
+  ) {
+    checkFormStatus(newPanel);
+  } else if (COMPONENTS[newPanel]) {
+    setActivePage(newPanel);
+  } else {
+    console.error("Invalid panel name:", newPanel);
+    setActivePage("UserProfile");
+  }
+};
+
 
   const ActiveComponent = COMPONENTS[activePage] || HomeSection;
 

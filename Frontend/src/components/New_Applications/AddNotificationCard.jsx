@@ -24,7 +24,7 @@ const AddNotificationCard = ({ onClose, onAdd }) => {
       });
 
       await axios.post(
-        "http://localhost:3007/api/notifications",
+        "https://startupbihar.in/api/notifications",
         values,
         {
           headers: {

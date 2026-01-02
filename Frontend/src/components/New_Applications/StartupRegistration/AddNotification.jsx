@@ -53,7 +53,7 @@ const AddNotification = () => {
 	const fetchNotifications = async () => {
 		try {
 			const response = await axios.get(
-				"http://localhost:3007/api/notifications",
+				"https://startupbihar.in/api/notifications",
 				{
 					headers: {
 						Authorization: `${localStorage.getItem("token")}`,

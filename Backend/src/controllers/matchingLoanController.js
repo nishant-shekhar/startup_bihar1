@@ -1,121 +1,206 @@
-
-
-
-const { PrismaClient } = require('@prisma/client');
-const jwt = require('jsonwebtoken');
+const { PrismaClient } = require("@prisma/client");
+const jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Use environment variable
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 
+/**
+ * ✅ EXISTING: applyForMatchingLoan (keep as-is)
+ * (Your current submit/upsert is working, so not changing it)
+ */
 const applyForMatchingLoan = async (req, res) => {
   try {
-    // Extract the JWT from the request headers
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
 
-    // Verify and decode the JWT to get the user ID and userName
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized: No token provided' });
-    }
-
-    let userId, userName;
+    let userId;
     try {
-      const decoded = jwt.verify(token, JWT_SECRET); // Use your secret key
+      const decoded = jwt.verify(token, JWT_SECRET);
       userId = decoded.user_id;
     } catch (err) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+      return res.status(401).json({ error: "Unauthorized: Invalid token" });
     }
 
-    // Prepare data for the Matching Loan application
+    // Helpers for multer-s3 + disk compatibility
+    const pickName = (f) => f?.filename || f?.originalname || f?.key || null;
+    const pickPath = (f) => f?.path || f?.location || f?.key || null;
+
     const matchingLoanData = {
       fundRaised: parseFloat(req.body.fundRaised),
       investorName: req.body.investorName,
       matchingGrantAmount: parseFloat(req.body.matchingGrantAmount),
-      documentStatus : "created"
-      
+      documentStatus: "created",
     };
 
-    // Handle file uploads safely
+    // Handle files
     if (req.files) {
-      if (req.files.proofOfInvestment && req.files.proofOfInvestment.length > 0) {
-        const proofFile = req.files.proofOfInvestment[0];
-        matchingLoanData.proofOfInvestmentName = proofFile.filename;
-        matchingLoanData.proofOfInvestmentPath = proofFile.path;
+      if (req.files.proofOfInvestment?.length) {
+        const f = req.files.proofOfInvestment[0];
+        matchingLoanData.proofOfInvestmentName = pickName(f);
+        matchingLoanData.proofOfInvestmentPath = pickPath(f);
       }
 
-      if (req.files.accountStatement && req.files.accountStatement.length > 0) {
-        const accountStatementFile = req.files.accountStatement[0];
-        matchingLoanData.accountStatementName = accountStatementFile.filename;
-        matchingLoanData.accountStatementPath = accountStatementFile.path;
+      if (req.files.accountStatement?.length) {
+        const f = req.files.accountStatement[0];
+        matchingLoanData.accountStatementName = pickName(f);
+        matchingLoanData.accountStatementPath = pickPath(f);
       }
 
-      if (req.files.investorUndertaking && req.files.investorUndertaking.length > 0) {
-        const undertakingFile = req.files.investorUndertaking[0];
-        matchingLoanData.investorUndertakingName = undertakingFile.filename;
-        matchingLoanData.investorUndertakingPath = undertakingFile.path;
+      if (req.files.investorUndertaking?.length) {
+        const f = req.files.investorUndertaking[0];
+        matchingLoanData.investorUndertakingName = pickName(f);
+        matchingLoanData.investorUndertakingPath = pickPath(f);
       }
 
-      if (req.files.equityDilutionProof && req.files.equityDilutionProof.length > 0) {
-        const equityProofFile = req.files.equityDilutionProof[0];
-        matchingLoanData.equityDilutionProofName = equityProofFile.filename;
-        matchingLoanData.equityDilutionProofPath = equityProofFile.path;
+      if (req.files.equityDilutionProof?.length) {
+        const f = req.files.equityDilutionProof[0];
+        matchingLoanData.equityDilutionProofName = pickName(f);
+        matchingLoanData.equityDilutionProofPath = pickPath(f);
       }
 
-      if (req.files.utilizationPlan && req.files.utilizationPlan.length > 0) {
-        const utilizationPlanFile = req.files.utilizationPlan[0];
-        matchingLoanData.utilizationPlanName = utilizationPlanFile.filename;
-        matchingLoanData.utilizationPlanPath = utilizationPlanFile.path;
+      if (req.files.utilizationPlan?.length) {
+        const f = req.files.utilizationPlan[0];
+        matchingLoanData.utilizationPlanName = pickName(f);
+        matchingLoanData.utilizationPlanPath = pickPath(f);
       }
 
-      if (req.files.boardResolution && req.files.boardResolution.length > 0) {
-        const boardResolutionFile = req.files.boardResolution[0];
-        matchingLoanData.boardResolutionName = boardResolutionFile.filename;
-        matchingLoanData.boardResolutionPath = boardResolutionFile.path;
+      if (req.files.boardResolution?.length) {
+        const f = req.files.boardResolution[0];
+        matchingLoanData.boardResolutionName = pickName(f);
+        matchingLoanData.boardResolutionPath = pickPath(f);
       }
     }
 
-    // Upsert: Create or update the matching loan application
     const matchingLoan = await prisma.matchingLoan.upsert({
-      where: { userId }, // Check if there's already an application for this user
-      update: {
-        ...matchingLoanData
-      },
-      create: {
-        ...matchingLoanData,
-        userId, // Associate the loan application with the authenticated user
+      where: { userId },
+      update: { ...matchingLoanData },
+      create: { ...matchingLoanData, userId },
+    });
+
+    await prisma.activity.create({
+      data: {
+        user_id: userId,
+        action: "Matching Loan Form Submitted",
+        subtitle: `You have submitted your matching Loan Form`,
       },
     });
 
-    // Record the activity after successful update
-await prisma.activity.create({
-  data: {
-    user_id: userId,
-    action: 'Matching Loan Form Submitted',
-    subtitle: `You have submitted your matching Loan Form`,
-  },
-});
-    // Return the created or updated loan application in the response
     return res.status(200).json({
-      message: matchingLoan ? 'Loan application updated successfully' : 'Loan application created successfully',
+      message: "Loan application updated successfully",
       matchingLoan,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred while processing the request' });
+    return res.status(500).json({ error: "An error occurred while processing the request" });
   }
 };
 
+/**
+ * ✅ NEW: User-side — get by token (like getSeedByToken / getPostSeedByToken)
+ */
+const getMatchingLoanByToken = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Authorization token is required" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id;
+
+    const document = await prisma.matchingLoan.findUnique({
+      where: { userId },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    return res.status(200).json(document);
+  } catch (error) {
+    console.error("Error retrieving matching loan by token:", error);
+    return res.status(500).json({ error: "An error occurred while retrieving the document" });
+  }
+};
+
+/**
+ * ✅ NEW: User-side — status API (like getSeedFundStatus / getPostSeedFundStatus)
+ * This is what your frontend calls in checkFormStatus()
+ */
+
+/**
+ * ✅ NEW: User-side — update only files (like updateSeedFundFiles / updatePostSeedFundFiles)
+ * Important for partial reject: startup reuploads only rejected docs.
+ *
+ * Works for both multer-s3 (location) and disk (path).
+ */
+const updateMatchingLoanFiles = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ error: "Authorization token is required" });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.user_id;
+
+    const pickName = (f) => f?.filename || f?.originalname || f?.key || null;
+    const pickPath = (f) => f?.path || f?.location || f?.key || null;
+
+    const updatedFields = {};
+
+    const mapFile = (field, nameKey, pathKey) => {
+      if (req.files?.[field]?.length) {
+        const f = req.files[field][0];
+        updatedFields[nameKey] = pickName(f);
+        updatedFields[pathKey] = pickPath(f);
+      }
+    };
+
+    mapFile("proofOfInvestment", "proofOfInvestmentName", "proofOfInvestmentPath");
+    mapFile("accountStatement", "accountStatementName", "accountStatementPath");
+    mapFile("investorUndertaking", "investorUndertakingName", "investorUndertakingPath");
+    mapFile("equityDilutionProof", "equityDilutionProofName", "equityDilutionProofPath");
+    mapFile("utilizationPlan", "utilizationPlanName", "utilizationPlanPath");
+    mapFile("boardResolution", "boardResolutionName", "boardResolutionPath");
+
+    if (Object.keys(updatedFields).length === 0) {
+      return res.status(400).json({ error: "No files provided for update" });
+    }
+
+    const updated = await prisma.matchingLoan.update({
+      where: { userId },
+      data: {
+        ...updatedFields,
+        documentStatus: "Updated",
+      },
+    });
+
+    return res.status(200).json({
+      message: "Matching loan files updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    console.error("Error updating matching loan files:", error);
+    return res.status(500).json({ error: "An error occurred while updating the files." });
+  }
+};
+
+/**
+ * ✅ Existing: Admin list — small improvement to match Seed/Post list style
+ * (Add documentStatus + updatedAt)
+ */
 const getAllmatchingWithUserDetails = async (req, res) => {
   try {
     const documents = await prisma.matchingLoan.findMany({
       select: {
-        id:true,
+        id: true,
+        documentStatus: true,
+        updatedAt: true,
         user: {
           select: {
-            user_id: true,             // Fields from the User model
+            user_id: true,
             registration_no: true,
             company_name: true,
+            logo: true,
             document: {
-              select: {                // Fields from the Document model
+              select: {
                 coFounderNames: true,
                 logoPath: true,
                 category: true,
@@ -128,98 +213,176 @@ const getAllmatchingWithUserDetails = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: 'Documents with user and program details retrieved successfully',
+      message: "Documents with user and program details retrieved successfully",
       data: documents,
     });
   } catch (error) {
-    console.error('Error fetching documents with user details:', error);
-    res.status(500).json({ error: 'An error occurred while fetching documents' });
+    console.error("Error fetching documents with user details:", error);
+    res.status(500).json({ error: "An error occurred while fetching documents" });
   }
 };
 
+/**
+ * ✅ Existing: Admin detail by ID (keep)
+ */
 const getmatchingnById = async (req, res) => {
-  let { id } = req.params; // Retrieve id from the request parameters
+  let { id } = req.params;
 
   try {
-  
-    // Check if id is provided
-    if (!id) {
-      return res.status(400).json({ error: 'ID is required' });
-    }
+    if (!id) return res.status(400).json({ error: "ID is required" });
 
-    // Fetch the document from the database
     const document = await prisma.matchingLoan.findUnique({
-      where: { id: id }, // Use the ID to query the database
+      where: { id },
       include: {
         user: {
           select: {
-            user_id: true,          // Include specific fields from the User model
+            user_id: true,
             registration_no: true,
             company_name: true,
             founder_name: true,
             dateOfIncorporation: true,
-            districtRoc:true,
-            cin:true,
-            mobile:true,
-            email:true,
+            districtRoc: true,
+            cin: true,
+            mobile: true,
+            email: true,
           },
         },
       },
     });
 
-    if (!document) {
-      // Return 404 if document is not found
-      return res.status(404).json({ error: 'Document not found' });
-    }
-
-    // Return the document if found
-    return res.status(200).json(document); // Explicitly set status to 200
+    if (!document) return res.status(404).json({ error: "Document not found" });
+    return res.status(200).json(document);
   } catch (error) {
-    // Handle any server error
     console.error(`Error retrieving document with id ${id}:`, error);
-    return res.status(500).json({ error: 'An error occurred while retrieving the document' });
+    return res.status(500).json({ error: "An error occurred while retrieving the document" });
   }
 };
 
+/**
+ * ✅ UPDATED: Admin status update — match Seed/Post pattern
+ * Supports:
+ * - documentStatus (required)
+ * - comment
+ * - optional override of any file path/name fields (useful for admin corrections)
+ */
 const updateMatchingStatus = async (req, res) => {
   const { id } = req.params;
-  const { documentStatus } = req.body;
+
+  const {
+    documentStatus,
+    comment,
+
+    proofOfInvestmentName,
+    proofOfInvestmentPath,
+    accountStatementName,
+    accountStatementPath,
+    investorUndertakingName,
+    investorUndertakingPath,
+    equityDilutionProofName,
+    equityDilutionProofPath,
+    utilizationPlanName,
+    utilizationPlanPath,
+    boardResolutionName,
+    boardResolutionPath,
+  } = req.body;
 
   if (!documentStatus) {
-    return res.status(400).json({ error: 'Document status is required' });
+    return res.status(400).json({ error: "Document status is required" });
   }
 
   try {
-    const document = await prisma.matchingLoan.findUnique({
-      where: { id },
-    });
+    const document = await prisma.matchingLoan.findUnique({ where: { id } });
+    if (!document) return res.status(404).json({ error: "Document not found" });
 
-    if (!document) {
-      return res.status(404).json({ error: 'Document not found' });
-    }
+    const updateData = {
+      documentStatus,
+      comment,
+      ...(proofOfInvestmentName !== undefined && { proofOfInvestmentName }),
+      ...(proofOfInvestmentPath !== undefined && { proofOfInvestmentPath }),
+      ...(accountStatementName !== undefined && { accountStatementName }),
+      ...(accountStatementPath !== undefined && { accountStatementPath }),
+      ...(investorUndertakingName !== undefined && { investorUndertakingName }),
+      ...(investorUndertakingPath !== undefined && { investorUndertakingPath }),
+      ...(equityDilutionProofName !== undefined && { equityDilutionProofName }),
+      ...(equityDilutionProofPath !== undefined && { equityDilutionProofPath }),
+      ...(utilizationPlanName !== undefined && { utilizationPlanName }),
+      ...(utilizationPlanPath !== undefined && { utilizationPlanPath }),
+      ...(boardResolutionName !== undefined && { boardResolutionName }),
+      ...(boardResolutionPath !== undefined && { boardResolutionPath }),
+    };
 
     const updatedDocument = await prisma.matchingLoan.update({
       where: { id },
-      data: { documentStatus },
+      data: updateData,
     });
 
-    res.status(200).json({
-      message: 'Document status updated successfully',
+    return res.status(200).json({
+      message: "Document status updated successfully",
       document: updatedDocument,
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: 'Failed to update document status',
+    console.error("Error updating matching loan status:", error);
+    return res.status(500).json({
+      error: "Failed to update document status",
       details: error.message,
     });
   }
 };
+const getMatchingLoanStatus = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1] || req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized: No token provided" });
+    }
 
+    let userId;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userId = decoded.user_id;
+    } catch (err) {
+      return res.status(401).json({ error: "Unauthorized: Invalid token" });
+    }
+
+    const document = await prisma.matchingLoan.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        documentStatus: true,
+        comment: true,
+      },
+    });
+
+    if (!document) {
+      return res.status(200).json({
+        message: "No matching loan status found for this user",
+        document: { documentStatus: null, comment: null },
+      });
+    }
+
+    return res.status(200).json({
+      message: "Matching Loan Status retrieved successfully",
+      document,
+    });
+  } catch (error) {
+    console.error("Error retrieving matching loan status:", error);
+
+    // ✅ Important: don't throw raw prisma errors to client
+    return res.status(500).json({
+      error: "An error occurred while fetching matching loan status",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
+  }
+};
 module.exports = {
   applyForMatchingLoan,
+
+  // admin
   getmatchingnById,
   getAllmatchingWithUserDetails,
-  updateMatchingStatus
+  updateMatchingStatus,
+
+  // user helpers (NEW)
+  getMatchingLoanStatus,
+  getMatchingLoanByToken,
+  updateMatchingLoanFiles,
 };

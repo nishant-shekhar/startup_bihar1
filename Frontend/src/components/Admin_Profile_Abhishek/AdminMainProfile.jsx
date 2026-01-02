@@ -18,23 +18,24 @@ import RegisterStartup from "./RegisterStartup.jsx";
 import AdminNotification from "./AdminNotification.jsx";
 import UpdateStartup from "./UpdateStartup.jsx";
 import CoWorkingMap from "./CoWorkingMap.jsx";
+import MatchingLoanModuleDetails from "./Matching_Loan/MatchingLoan.jsx";
 
 
 
 const AdminMainProfile = () => {
 	const userRole = localStorage.getItem("admin_role") || "admin";
 	const [activePage, setActivePage] = useState(userRole === "coworking" ? "CoworkingModule" : "StartupProfile");
-		
+
 	const [selectedId, setSelectedId] = useState(""); // Controls selected ID for details
 	const [detailsView, setDetailsView] = useState(false); // Controls if third section is displayed
 	const [hasDetailsPanel, setHasDetailsPanel] = useState(true); // Controls the visibility of the third section
-	
+
 	const designation = localStorage.getItem("admin_designation"); // Coworking center name like "Patna Hub"
 
 
 	// Handles the main content section (second section) based on `activePage`
 	function handlePageChange() {
-		
+
 
 
 		switch (activePage) {
@@ -107,7 +108,7 @@ const AdminMainProfile = () => {
 					<CommonList
 						onSelect={handleSelect}
 						url="https://startupbihar.in/api/matchingLoan/v2"
-						title="Post Seed Application List"
+						title="Matching Loan Application List"
 						type="matchingLoan"
 					/>
 				);
@@ -224,6 +225,8 @@ const AdminMainProfile = () => {
 				return <IPRReimbursementModule id={selectedId} />;
 			case "CoworkingModule":
 				return <CoworkingModule id={selectedId} />;
+			case "MatchingLoan":
+				return <MatchingLoanModuleDetails id={selectedId} />;
 			default:
 				return null;
 		}

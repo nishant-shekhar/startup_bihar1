@@ -66,7 +66,7 @@ const [selectedId, setSelectedId] = useState(null);
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:3007/api/second-tranche/v5`, {
+        const response = await axios.get(`https://startupbihar.in/api/second-tranche/v5`, {
           params: {
             page: currentPage,
             status: statusFilter.value
