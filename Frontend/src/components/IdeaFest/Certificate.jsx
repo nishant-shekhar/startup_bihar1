@@ -190,7 +190,7 @@ const Certificate = () => {
                     
                      <img
                        src={Nitishsign}
-                       alt="Nitish Mishra Signature"
+                       alt="Signature"
                        className="absolute z-10 w-[120px] right-[50px] bottom-[160px]"
                      />
                    </>

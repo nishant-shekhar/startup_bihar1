@@ -156,7 +156,7 @@ const HomePage = () => {
 							className="w-24 h-auto object-cover "
 						/>
 						<h3 className="mt-2 text-sm sm:text-base md:text-lg font-semibold text-center">
-							Shri Nitish Mishra
+							Shri Dr. Dilip Kumar Jaiswal
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
 							Hon'ble Minister, Industry Dept, Bihar
@@ -273,13 +273,13 @@ const HomePage = () => {
 						>
 							Explore Startups
 						</a>
-						<a
+						{/*<a
 							href="https://startup.bihar.gov.in/apply-new"
 							target="blank"
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>
 							Register New Startup <span aria-hidden="true">→</span>
-						</a>
+						</a>*/}
 					</motion.div>
 					{/* Notification Section 	*/}
 					<motion.div
