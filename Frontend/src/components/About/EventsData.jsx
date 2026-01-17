@@ -1,5 +1,14 @@
 
 const EventsData = [
+  {
+    id: 0,
+    imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FEvents%2Favinya%202.jpeg?alt=media&token=02556308-003e-40a7-aac7-778c37f79fba",
+    dateandtime: "Friday, Jan 16, 2026",
+    title: "🚀  Avinya 2.0 | National Startup Day 2026 🚀",
+    tag: "National Startup Day",
+    subtitle: "Avinya 2.0",
+    projectLink: "https://x.com/startup_bihar/status/2012444022632231410",
+  },
 {
     id: 0,
     imgurl: "https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FEvents%2Fspark2point0.jpeg?alt=media&token=b8bb5f69-4707-4aab-8fcf-fbd95301b4f4",
