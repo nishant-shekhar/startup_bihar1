@@ -180,16 +180,16 @@ const HomePage = () => {
 							Govt. of Bihar
 						</h3>
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
-							
+
 						</p>
 					</div>
 
-					
+
 				</div>
 
 				{/* Right-middle image with name and designation */}
 				<div className="absolute right-0 top-40 sm:top-64 transform flex-col items-center scale-75 hidden md:flex">
-					
+
 
 					<div className="flex flex-col items-center justify-center mt-2 h-full">
 						<img
@@ -282,19 +282,38 @@ const HomePage = () => {
 						</a>*/}
 					</motion.div>
 					{/* Notification Section 	*/}
+			<motion.div
+  className="mt-6 flex justify-center sm:flex sm:justify-center"
+  variants={fadeIn}
+>
+  <div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-indigo-700 ring-1 ring-indigo-700/10 hover:ring-indigo-700/20 bg-indigo-50 flex items-center space-x-2">
+    <span>
+      Office Order for Quarterly Opening of New Startup Application Window
+      <a
+        href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FOffice%20Order%20Quaterly%20Schedule.pdf?alt=media&token=58d92eaa-04c6-4936-be86-7c348f7dcb76"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold text-indigo-800 ml-2"
+      >
+        View. <span aria-hidden="true">&rarr;</span>
+      </a>
+    </span>
+  </div>
+</motion.div>
+
 					<motion.div
-						className="mt-6 flex justify-center sm:mb-8 sm:flex sm:justify-center"
+						className="mt-2 flex justify-center sm:mb-8 sm:flex sm:justify-center"
 						variants={fadeIn}
-					>
+>
 						<div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-red-700 ring-1 ring-red-700/10 hover:ring-red-700/20 bg-red-50 flex items-center space-x-2">
 
 							<span className="animate-pulse text-xs  text-white bg-red-600 px-2 py-0.5 rounded-full">
 								New
 							</span>
 							<span>
-								Office Order for Quarterly Opening of New Startup Application Window
+								🚀🚀Evaluation Test Results held on 29th, 30th Dec 2025 and 2nd, 3rd Jan 2026🚀🚀
 								<a
-									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FOffice%20Order%20Quaterly%20Schedule.pdf?alt=media&token=58d92eaa-04c6-4936-be86-7c348f7dcb76"
+									href="https://firebasestorage.googleapis.com/v0/b/odfkaimur.appspot.com/o/StartupBihar%2FNotification%2Ffinal%20Evaluation%20test%20results%20june%20to%20sept25.pdf?alt=media&token=8da2cefa-e884-4a16-b9b7-edf1c6152b28"
 									target="_blank"
 									rel="noopener noreferrer"
 									className="font-semibold text-red-800 ml-2"
@@ -303,8 +322,8 @@ const HomePage = () => {
 								</a>
 							</span>
 						</div>
-					</motion.div>
 
+					</motion.div>
 
 				</motion.div>
 

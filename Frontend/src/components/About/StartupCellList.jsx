@@ -27,6 +27,7 @@ const StartupIncubationCell = () => {
             contactNumber: "9448752350",
             coordinator: "Manish Bibhu , 8294373207",
         },
+      
         {
             id: 3,
             college: "Government Engineering College, Aurangabad",
@@ -436,6 +437,15 @@ const StartupIncubationCell = () => {
             contactNumber: "N/A",
             coordinator: "Kunal Singh ,8002884215",
         },
+          {
+    id: 47,
+    college: "B.D. College, Patna",
+    district: "Patna",
+    facultyIncharge: "Dr. Vishal Vijay, vijayvishal3@gmail.com, 9654788300",
+    email: "startupcellbdcollegepatna@gmail.com",
+    contactNumber: "8789629210",
+    coordinator: "Sachin Raj, 8789629210",
+},
     ];
 
 const downloadExcel = () => {
