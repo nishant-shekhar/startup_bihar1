@@ -19,7 +19,7 @@ export const mockApplicationData = {
     hasRegisteredEntity: true,
     entityName: "Tech Innovators Pvt Ltd",
     entityType: "Private Limited",
-    entityRegistrationNumber: "U72900BR2023PTC123456",
+    entityRegistrationNumber: "REG2024001",
     dateOfRegistration: "2023-01-15",
     businessAddress: "123 Tech Park, Boring Road, Patna",
     state: "Bihar",

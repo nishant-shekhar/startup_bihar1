@@ -1,6 +1,6 @@
 // AssignPIDate.jsx
 import React, { useState } from 'react';
-import { Search, Calendar, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Calendar, Plus, ChevronLeft, ChevronRight, Clock, RefreshCw, Download } from 'lucide-react';
 import AssignPIDateDetail from './AssignPIDateDetail';
 
 const AssignPIDate = () => {
@@ -8,7 +8,8 @@ const AssignPIDate = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddSlotModal, setShowAddSlotModal] = useState(false);
   const [newSlotDate, setNewSlotDate] = useState('');
-  const [newSlotTime, setNewSlotTime] = useState('');
+  const [newSlotStartTime, setNewSlotStartTime] = useState('');
+  const [newSlotEndTime, setNewSlotEndTime] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -67,18 +68,23 @@ const AssignPIDate = () => {
   const currentData = filteredSlots.slice(startIndex, endIndex);
 
   const handleAddSlot = () => {
-    if (newSlotDate && newSlotTime) {
+    if (newSlotDate && newSlotStartTime && newSlotEndTime) {
+      const dateObj = new Date(newSlotDate);
+      const formattedDate = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const timeSlot = `${newSlotStartTime} - ${newSlotEndTime}`;
+      
       const newSlot = {
         id: piSlots.length + 1,
-        date: newSlotDate,
-        timeSlot: newSlotTime,
+        date: formattedDate,
+        timeSlot: timeSlot,
         assignedCount: 0,
         totalCapacity: 20,
         status: 'Active'
       };
       setPiSlots([...piSlots, newSlot]);
       setNewSlotDate('');
-      setNewSlotTime('');
+      setNewSlotStartTime('');
+      setNewSlotEndTime('');
       setShowAddSlotModal(false);
     }
   };
@@ -125,179 +131,274 @@ const AssignPIDate = () => {
   }
 
   return (
-    <div className="p-6 min-h-screen">
-      {/* Header Section */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Assign PI Date</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Assign Personal Interview dates to candidates who passed written exam
-        </p>
-      </div>
+    <>
+      <div className="min-h-screen relative bg-slate-50">
+        {/* Dotted Background Pattern */}
+        <div className="absolute inset-0 z-0 pointer-events-none" 
+          style={{
+            backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
+            backgroundSize: '24px 24px'
+          }}
+        />
 
-      {/* Controls Bar */}
-      <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-4 mb-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-          
-          {/* Search Bar */}
-          <div className="flex-1 relative w-full lg:w-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+      <div className="relative z-10 p-6 lg:p-8 max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Assign PI Date</h1>
+            <p className="text-slate-500 mt-2 text-sm lg:text-base">
+              Assign Personal Interview dates to candidates who passed written exam
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.location.reload()}
+              className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 hover:border-slate-300 rounded-lg shadow-sm transition-all"
+              title='Refresh'
+            >
+              <RefreshCw size={20} />
+            </button>
+            <button className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-200 hover:border-slate-300 rounded-lg shadow-sm transition-all">
+              <Download size={20} />
+            </button>
+            <button
+              onClick={() => setShowAddSlotModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a2845] text-white hover:bg-[#152138] rounded-lg font-medium shadow-md hover:shadow-lg transition-all text-sm"
+            >
+              <Plus size={18} />
+              Add PI Slot
+            </button>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="flex justify-start mb-6">
+          <div className="relative w-full lg:w-96">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search by date or time slot..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all shadow-sm text-slate-900"
             />
           </div>
-
-          {/* Add Slot Button */}
-          <button
-            onClick={() => setShowAddSlotModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
-          >
-            <Plus size={16} />
-            Add PI Slot
-          </button>
         </div>
 
-        {/* Results Summary */}
-        <div className="mt-4 text-sm text-gray-600">
-          Showing {filteredSlots.length} PI slot{filteredSlots.length !== 1 ? 's' : ''}
-        </div>
-      </div>
-
-      {/* Table Container */}
-      <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Sr.No</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Time Slot</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Assigned</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Capacity</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {currentData.length > 0 ? (
-                currentData.map((slot, index) => (
-                  <tr
-                    key={slot.id}
-                    onClick={() => handleSlotClick(slot)}
-                    className="hover:bg-blue-50 cursor-pointer transition-colors"
-                  >
-                    <td className="px-4 py-3 text-xs text-gray-600 font-medium">{startIndex + index + 1}</td>
-                    <td className="px-4 py-3 text-xs font-medium text-gray-900 flex items-center gap-2">
-                      <Calendar size={14} className="text-blue-600" />
-                      {slot.date}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{slot.timeSlot}</td>
-                    <td className="px-4 py-3 text-xs font-semibold text-blue-600">{slot.assignedCount}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{slot.totalCapacity}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                        slot.status === 'Full'
-                          ? 'bg-red-50 text-red-600 border-red-200'
-                          : 'bg-green-50 text-green-600 border-green-200'
-                      }`}>
-                        {slot.status}
-                      </span>
+        {/* Table Container */}
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 tracking-wider">S.No</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Time Slot</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Assigned</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Capacity</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {currentData.length > 0 ? (
+                  currentData.map((slot, index) => (
+                    <tr
+                      key={slot.id}
+                      onClick={() => handleSlotClick(slot)}
+                      className="group hover:bg-slate-50/50 cursor-pointer transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium text-slate-600">{startIndex + index + 1}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={16} className="text-slate-400" />
+                          <span className="text-sm  text-slate-900 group-hover:text-slate-900">{slot.date}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} className="text-slate-400" />
+                          <span className="text-sm text-slate-600">{slot.timeSlot}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-900">{slot.assignedCount}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-600">{slot.totalCapacity}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                          slot.status === 'Full'
+                            ? 'bg-red-50 text-red-600 border-red-200'
+                            : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                        }`}>
+                          {slot.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500">
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                          <Search className="text-slate-300" size={20} />
+                        </div>
+                        <p className="text-sm font-medium text-slate-900">No PI slots found</p>
+                        <p className="text-xs text-slate-500 mt-1">Try adjusting your search query</p>
+                      </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-4 py-8 text-center text-sm text-gray-500">
-                    No PI slots found
-                  </td>
-                </tr>
-              )}
-            </tbody>
+                )}
+              </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredSlots.length > itemsPerPage && (
-          <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 flex items-center justify-between">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <ChevronLeft size={16} />
-              Previous
-            </button>
+          {/* Pagination */}
+          {filteredSlots.length > 0 && (
+            <div className="border-t border-slate-100 bg-white px-6 py-4 flex items-center justify-between">
+              <span className="text-sm text-slate-500">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredSlots.length)} of {filteredSlots.length}
+              </span>
 
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
-            </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 text-slate-500 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-500 transition-colors">
+                  <ChevronLeft size={18} />
+                </button>
 
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
+                          currentPage === page
+                            ? "bg-[#1a2845] text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="p-2 text-slate-500 hover:text-slate-700 disabled:opacity-30 disabled:hover:text-slate-500 transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
+      </div>
       </div>
 
-      {/* Add Slot Modal */}
+      {/* Add Slot Modal - Moved outside to overlay everything */}
       {showAddSlotModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Add New PI Slot</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                <input
-                  type="text"
-                  value={newSlotDate}
-                  onChange={(e) => setNewSlotDate(e.target.value)}
-                  placeholder="e.g., 15 Nov 2024"
-                  className="w-full px-3 py-2 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Time Slot</label>
-                <input
-                  type="text"
-                  value={newSlotTime}
-                  onChange={(e) => setNewSlotTime(e.target.value)}
-                  placeholder="e.g., 1st Slot (10:00 AM - 12:00 PM)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-[99999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 relative z-[100000]">
+              <h2 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <Calendar size={22} className="text-slate-900" />
+                Add New PI Slot
+              </h2>
+              <p className="text-sm text-slate-500 mb-6">Create a new personal interview time slot</p>
 
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleAddSlot}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Add Slot
-              </button>
-              <button
-                onClick={() => {
-                  setShowAddSlotModal(false);
-                  setNewSlotDate('');
-                  setNewSlotTime('');
-                }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    PI Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={newSlotDate}
+                    onChange={(e) => setNewSlotDate(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-slate-200 text-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all"
+                  />
+                </div>
+
+                <div className="border-t border-slate-100 pt-4">
+                  <label className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                    <Clock size={16} className="text-slate-600" />
+                    Time Slot <span className="text-red-500">*</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-2">
+                      Start Time
+                    </label>
+                    <input
+                      type="time"
+                      value={newSlotStartTime}
+                      onChange={(e) => setNewSlotStartTime(e.target.value)}
+                      className="w-full px-3 py-2.5 border border-slate-200 text-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-2">
+                      End Time
+                    </label>
+                    <input
+                      type="time"
+                      value={newSlotEndTime}
+                      onChange={(e) => setNewSlotEndTime(e.target.value)}
+                      className="w-full px-3 py-2.5 border border-slate-200 text-slate-900 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {newSlotStartTime && newSlotEndTime && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1.5">Preview</p>
+                    <p className="text-sm font-semibold text-slate-900">{newSlotStartTime} - {newSlotEndTime}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button
+                  onClick={() => {
+                    setShowAddSlotModal(false);
+                    setNewSlotDate('');
+                    setNewSlotStartTime('');
+                    setNewSlotEndTime('');
+                  }}
+                  className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 hover:border-slate-300 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddSlot}
+                  disabled={!newSlotDate || !newSlotStartTime || !newSlotEndTime}
+                  className={`px-5 py-2.5 rounded-lg font-medium transition-all shadow-sm ${
+                    !newSlotDate || !newSlotStartTime || !newSlotEndTime
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-slate-900 text-white hover:bg-black shadow-md hover:shadow-lg'
+                  }`}
+                >
+                  Add Slot
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
+    </>
   );
 };
 

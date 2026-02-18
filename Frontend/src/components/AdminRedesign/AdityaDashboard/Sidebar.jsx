@@ -9,7 +9,7 @@ const Sidebar = ({ activePage, setActivePage }) => {
   ];
 
   return (
-    <div className="w-64 h-screen bg-gray-100 shadow-lg p-4 ">
+    <div className="w-64 h-screen bg-gray-100  p-4 ">
       {/* 🔥 Header with Logo + Text */}
       <div className="flex items-center gap-3 p-3 mb-6  rounded-full bg-white/10 backdrop-blur-md ">
         <img src="/4.png" alt="Startup Bihar Logo" className="w-8 h-8 object-contain" />

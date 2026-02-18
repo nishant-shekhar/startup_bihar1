@@ -16,8 +16,8 @@ const AdminTopNavbar = ({ toggleSidebar }) => {
   };
 
   return (
-    <div className="h-14 flex items-center justify-between px-6 bg-white border-b border-gray-200 shadow-sm">
-      {/* Left: Welcome Text */}
+    <div className="h-14 flex items-center justify-between px-6 bg-white border-b border-gray-50">
+      {/* Left: Mobile Menu Button */}
       <div className="flex items-center gap-4">
         <button
           onClick={toggleSidebar}
@@ -25,10 +25,10 @@ const AdminTopNavbar = ({ toggleSidebar }) => {
         >
           <Menu size={24} />
         </button>
-        <div>
-          <h2 className="text-sm font-semibold text-gray-900">Welcome, Admin</h2>
+        {/* <div>
+          <h2 className="text-sm font-semibold text-gray-900">Startup Admin</h2>
           <p className="text-xs text-gray-500 mt-0.5">Manage your startup ecosystem</p>
-        </div>
+        </div> */}
       </div>
 
       {/* Right: Actions & Profile */}

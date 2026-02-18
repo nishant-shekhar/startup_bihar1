@@ -26,8 +26,8 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
 
   const getStageColor = (stage) => {
     const colors = {
-      Ideation: "bg-purple-50 text-purple-600 border-purple-200",
-      Validation: "bg-blue-50 text-blue-600 border-blue-200",
+      Ideation: "bg-blue-50 text-blue-600 border-blue-200",
+      Validation: "bg-indigo-50 text-indigo-600 border-indigo-200",
       "Early Traction": "bg-green-50 text-green-600 border-green-200",
       Scaling: "bg-orange-50 text-orange-600 border-orange-200",
     };
@@ -44,17 +44,17 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
   ];
 
   const InfoField = ({ label, value, icon: Icon }) => (
-    <div className="bg-gray-50 p-4 rounded-lg">
+    <div className="bg-white border border-gray-200 p-4 rounded-lg">
       <div className="flex items-center gap-2 text-gray-600 mb-2">
-        {Icon && <Icon size={16} />}
-        <span className="text-sm font-semibold">{label}</span>
+        {Icon && <Icon size={16} className="text-gray-400" />}
+        <span className="text-sm font-medium text-gray-700">{label}</span>
       </div>
-      <p className="text-base text-gray-900 break-words">{value || "N/A"}</p>
+      <p className="text-sm text-gray-900 break-words">{value || "N/A"}</p>
     </div>
   );
 
   const SectionTitle = ({ title }) => (
-    <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+    <h3 className="text-base font-semibold text-gray-900 mb-4">
       {title}
     </h3>
   );
@@ -71,36 +71,36 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
       </button>
 
       {/* Main Content Container */}
-      <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8 text-white">
+        <div className="bg-gray-50 border-b border-gray-200 px-6 py-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-2xl font-bold text-gray-900">
                 {rowData.userSignup?.startupName ||
                   rowData.entityDetails?.entityName ||
                   "N/A"}
               </h1>
-              <p className="text-blue-100 mt-2">
+              <p className="text-gray-600 mt-2 text-sm">
                 Founded by{" "}
                 {rowData.userSignup?.founderName ||
                   rowData.basicDetails?.fullName ||
                   "N/A"}
               </p>
-              <div className="flex items-center gap-4 mt-4 text-sm">
+              <div className="flex items-center gap-6 mt-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
-                  <Calendar size={16} />
+                  <Calendar size={16} className="text-gray-400" />
                   <span>Submitted: {rowData.submissionDate || "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Tag size={16} />
+                  <Tag size={16} className="text-gray-400" />
                   <span>ID: {rowData.id || "N/A"}</span>
                 </div>
               </div>
             </div>
             <div>
               <span
-                className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold border ${getStageColor(
+                className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold border ${getStageColor(
                   rowData.startupDetails?.stage
                 )}`}
               >
@@ -111,7 +111,7 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="border-b border-gray-200 bg-gray-50">
+        <div className="border-b border-gray-200 bg-white">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -134,7 +134,7 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-6 bg-gray-50">
           {/* User Registration Tab */}
           {activeTab === "userSignup" && rowData.userSignup && (
             <div className="space-y-6">
@@ -411,9 +411,9 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
                     (cofounder, index) => (
                       <div
                         key={index}
-                        className="border border-gray-200 rounded-lg p-6 bg-gray-50"
+                        className="border border-gray-200 rounded-lg p-6 bg-white"
                       >
-                        <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <User size={18} />
                           Co-Founder {index + 1}
                         </h4>
@@ -476,9 +476,9 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
             <div className="space-y-6">
               <SectionTitle title="Business Concept" />
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText size={18} />
+              <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FileText size={18} className="text-gray-400" />
                   Problem Statement
                 </h4>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -486,9 +486,9 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
                 </p>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText size={18} />
+              <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FileText size={18} className="text-gray-400" />
                   Solution
                 </h4>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -496,9 +496,9 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
                 </p>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FileText size={18} />
+              <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <FileText size={18} className="text-gray-400" />
                   Innovation
                 </h4>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -506,9 +506,9 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
                 </p>
               </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Briefcase size={18} />
+              <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Briefcase size={18} className="text-gray-400" />
                   Business Model
                 </h4>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
@@ -517,12 +517,12 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
               </div>
 
               {rowData.businessIdea.pitchDeck && (
-                <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                  <h4 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
-                    <FileText size={18} />
+                <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FileText size={18} className="text-gray-400" />
                     Pitch Deck
                   </h4>
-                  <div className="flex items-center gap-2 text-blue-700">
+                  <div className="flex items-center gap-2 text-blue-600">
                     <FileText size={16} />
                     <a href="#" className="hover:underline font-medium">
                       {rowData.businessIdea.pitchDeck}
@@ -535,8 +535,8 @@ const NewApplicationDetail = ({ rowData, onBack }) => {
         </div>
 
         {/* Actions Section */}
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">
+        <div className="border-t border-gray-200 p-6 bg-white">
+          <h2 className="text-base font-semibold text-gray-900 mb-4">
             Application Actions
           </h2>
           <div className="flex flex-wrap gap-3">

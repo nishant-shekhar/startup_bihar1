@@ -30,25 +30,27 @@ const MainAdmin = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-gray-100">
-      <div className="w-full">
-        <AdminTopNavbar toggleSidebar={toggleSidebar} />
+    <div className="flex h-screen w-screen bg-gray-100">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Left Sidebar - Full Height */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 text-white transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+      >
+        <AdminLeftbar changePanel={handlePanelChange} />
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Mobile Overlay */}
-        {isSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm transition-opacity"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
-
-        <div
-          className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-800 text-white shadow-lg transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-        >
-          <AdminLeftbar changePanel={handlePanelChange} />
+      {/* Right Section - Top Navbar + Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="w-full">
+          <AdminTopNavbar toggleSidebar={toggleSidebar} />
         </div>
 
         <div className="flex-1 text-white overflow-y-auto">

@@ -76,25 +76,25 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
       'C': 'bg-yellow-50 text-yellow-600 border-yellow-200',
       'D': 'bg-red-50 text-red-600 border-red-200',
     };
-    return colors[grade] || 'bg-gray-50 text-gray-600 border-gray-200';
+    return colors[grade] || 'bg-slate-50 text-slate-600 border-slate-200';
   };
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="p-6 min-h-screen bg-slate-50">
       {/* Success Message Overlay */}
       {showSuccessMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md mx-4 text-center shadow-2xl">
+          <div className="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
             <div className="mb-4 flex justify-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle className="text-green-600" size={32} />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">PI Dates Assigned Successfully!</h2>
-            <p className="text-gray-600 mb-1">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">PI Dates Assigned Successfully!</h2>
+            <p className="text-slate-600 mb-1">
               {selectedCandidates.length} candidate{selectedCandidates.length !== 1 ? 's' : ''} assigned to
             </p>
-            <p className="text-lg font-semibold text-indigo-600">
+            <p className="text-lg font-semibold text-slate-900">
               {slotData.date} - {slotData.timeSlot}
             </p>
           </div>
@@ -102,45 +102,39 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
       )}
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl p-6 mb-6 shadow-lg">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-white/90 hover:text-white mb-4 transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back to PI Slots</span>
-        </button>
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Assign Candidates to PI</h1>
-            <p className="text-white/90 text-sm">Select candidates who passed written exam for this PI slot</p>
-          </div>
-          <div className="flex flex-wrap gap-4 mt-4">
-            <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
-              <Calendar size={16} />
-              <span className="text-sm font-medium">{slotData.date}</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
-              <Clock size={16} />
-              <span className="text-sm font-medium">{slotData.timeSlot}</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/20 px-3 py-2 rounded-lg">
-              <span className="text-sm font-medium">
-                Capacity: {slotData.assignedCount}/{slotData.totalCapacity}
-              </span>
-            </div>
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 px-4 py-2 mb-6 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors border border-slate-300 hover:text-slate-900"
+      >
+        <ArrowLeft size={18} />
+        Back to PI Slots
+      </button>
+
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm mb-6">
+        <div className="bg-[#1a2845] px-6 py-8 text-white border-b border-blue-900/30">
+          <h1 className="text-3xl font-bold">Personal Interview Assignment</h1>
+          <p className="text-blue-300 mt-2">
+            {slotData.date}
+          </p>
+          <div className="mt-3 flex items-center gap-2 flex-wrap">
+            <span className="bg-blue-900/30 border border-blue-700/50 px-3 py-1 rounded-full text-sm font-medium">
+              Time: {slotData.timeSlot}
+            </span>
+            <span className="bg-blue-900/30 border border-blue-700/50 px-3 py-1 rounded-full text-sm font-medium">
+              Capacity: {slotData.assignedCount}/{slotData.totalCapacity}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Candidates Selection Section */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         {/* Action Buttons */}
-       <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-row-reverse">
+       <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-200 flex items-center justify-between flex-row-reverse">
   <div className="flex gap-3">
     <button
       onClick={handleSelectAll}
-      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm"
+      className="flex items-center gap-2 px-4 py-2 bg-[#1a2845] text-white rounded-lg font-medium hover:bg-[#152138] transition-colors text-sm"
     >
       <CheckSquare size={16} />
       Select All
@@ -148,14 +142,13 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
 
     <button
       onClick={handleUnselectAll}
-      className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm"
+      className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors text-sm"
     >
-      <Square size={16} />
       Unselect All
     </button>
   </div>
 
-  <div className="text-sm font-semibold text-gray-500">
+  <div className="text-sm font-semibold text-slate-700">
     {selectedCandidates.length} selected
   </div>
 </div>
@@ -164,31 +157,31 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-12">
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-12">
                   <input
                     type="checkbox"
                     checked={availableCandidates.length > 0 && selectedCandidates.length === availableCandidates.length}
                     onChange={(e) => e.target.checked ? handleSelectAll() : handleUnselectAll()}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-500"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Sr.No</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">SB No</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Applicant Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Mobile</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Written Marks</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Grade</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Stage</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 tracking-wider">S.No</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Registration No</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Applicant Name</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Mobile</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Written Marks</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Grade</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Stage</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-200">
               {availableCandidates.length > 0 ? (
                 availableCandidates.map((candidate, index) => (
                   <tr
                     key={candidate.id}
-                    className={`hover:bg-blue-50 transition-colors ${
-                      selectedCandidates.includes(candidate.id) ? 'bg-blue-50' : ''
+                    className={`hover:bg-slate-50 transition-colors ${
+                      selectedCandidates.includes(candidate.id) ? 'bg-slate-50' : ''
                     }`}
                   >
                     <td className="px-4 py-3">
@@ -196,25 +189,25 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
                         type="checkbox"
                         checked={selectedCandidates.includes(candidate.id)}
                         onChange={() => handleToggleCandidate(candidate.id)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-500"
                       />
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600 font-medium">{index + 1}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600 font-mono font-semibold">{candidate.sbNo}</td>
-                    <td className="px-4 py-3 text-xs font-medium text-gray-900">{candidate.name}</td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{candidate.mobile}</td>
-                    <td className="px-4 py-3 text-xs font-bold text-blue-600">{candidate.writtenMarks}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600 font-medium">{index + 1}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600 font-mono font-semibold">{candidate.sbNo}</td>
+                    <td className="px-4 py-3 text-xs font-medium text-slate-900">{candidate.name}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600">{candidate.mobile}</td>
+                    <td className="px-4 py-3 text-xs  text-slate-900">{candidate.writtenMarks}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${getGradeColor(candidate.grade)}`}>
                         {candidate.grade}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">{candidate.stage}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600">{candidate.stage}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="px-4 py-8 text-center text-sm text-gray-500">
+                  <td colSpan="8" className="px-4 py-8 text-center text-sm text-slate-500">
                     All candidates have been assigned to other slots
                   </td>
                 </tr>
@@ -224,17 +217,17 @@ const AssignPIDateDetail = ({ slotData, assignedCandidates, onBack, onSave }) =>
         </div>
 
         {/* Save Button */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-200 flex justify-end gap-3">
           <button
             onClick={onBack}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            className="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg font-medium hover:bg-slate-200 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saveStatus === 'saving' || selectedCandidates.length === 0}
-            className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-2 bg-[#1a2845] text-white rounded-lg font-medium hover:bg-[#152138] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save size={16} />
             {saveStatus === 'saving' ? 'Saving...' : `Save Assignment (${selectedCandidates.length})`}

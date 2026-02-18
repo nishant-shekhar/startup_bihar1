@@ -118,7 +118,7 @@ const Response = ({ rowData, onBack }) => {
 
 
   const getQuestionRatingColor = (rating) => {
-    if (rating === 0) return "bg-gray-200 text-gray-600 border-gray-300";
+    if (rating === 0) return "bg-slate-200 text-slate-600 border-slate-300";
     if (rating <= 2) return "bg-red-500 text-white border-red-600";
     if (rating <= 4) return "bg-orange-500 text-white border-orange-600";
     if (rating <= 6) return "bg-yellow-500 text-white border-yellow-600";
@@ -148,7 +148,7 @@ const Response = ({ rowData, onBack }) => {
       "Early Traction": "bg-yellow-50 text-yellow-600 border-yellow-200",
       Scaling: "bg-cyan-50 text-cyan-600 border-cyan-200",
     };
-    return colors[stage] || "bg-gray-50 text-gray-600 border-gray-200";
+    return colors[stage] || "bg-slate-50 text-slate-600 border-slate-200";
   };
 
 
@@ -205,17 +205,17 @@ const Response = ({ rowData, onBack }) => {
   if (loading) {
     return (
       <div className="p-6 text-center">
-        <p className="text-gray-500">Loading application details...</p>
+        <p className="text-slate-500">Loading application details...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="p-6 min-h-screen bg-slate-50">
       {/* Back Button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 px-4 py-2 mb-6 text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors border border-blue-200"
+        className="flex items-center gap-2 px-4 py-2 mb-6 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors border border-slate-300 hover:text-slate-900"
       >
         <ArrowLeft size={18} />
         Back to Applications
@@ -235,34 +235,33 @@ const Response = ({ rowData, onBack }) => {
       )}
 
       {/* Main Container */}
-      <div className="bg-white rounded-xl border border-gray-200 drop-shadow-[0_4px_12px_rgba(0,0,0,0.1)] overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         {/* Header Section */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-8 text-white">
+        <div className="bg-[#1a2845] px-6 py-8 text-white border-b border-blue-900/30">
           <h1 className="text-3xl font-bold">
             {rowData?.entityName ||
               formData.entityDetails?.entityName ||
               "Application Details"}
           </h1>
-          <div className="flex items-center gap-4 mt-3">
-            <span className="text-blue-100">
-              Entity Reg:{" "}
-              <span className="font-mono font-bold">
-                {rowData?.entityRegistrationNumber ||
-                  formData.entityDetails?.entityRegistrationNumber ||
-                  "N/A"}
-              </span>
+          <p className="text-blue-300 mt-2">
+            Applicant: {rowData?.fullName || formData.basicDetails?.fullName || "N/A"}
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="bg-blue-900/30 border border-blue-700/50 px-3 py-1 rounded-full text-sm font-medium">
+              Entity Reg: {rowData?.entityRegistrationNumber ||
+                formData.entityDetails?.entityRegistrationNumber ||
+                "N/A"}
             </span>
-            <span className="text-blue-100">
-              Full Name:{" "}
-              <span className="font-bold">
-                {rowData?.fullName || formData.basicDetails?.fullName || "N/A"}
+            {formData.entityDetails?.stage && (
+              <span className="bg-blue-900/30 border border-blue-700/50 px-3 py-1 rounded-full text-sm font-medium">
+                {formData.entityDetails.stage}
               </span>
-            </span>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 bg-gray-50 flex overflow-x-auto justify-between items-center">
+        <div className="border-b border-slate-200 bg-white flex overflow-x-auto justify-between items-center">
           <div className="flex overflow-x-auto">
             {[
               "all",
@@ -279,7 +278,7 @@ const Response = ({ rowData, onBack }) => {
                 className={`px-6 py-3 font-medium text-sm whitespace-nowrap transition-colors ${
                   activeSection === tab
                     ? "text-blue-600 border-b-2 border-blue-600 bg-white"
-                    : "text-gray-600 hover:text-gray-900"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -289,71 +288,71 @@ const Response = ({ rowData, onBack }) => {
         </div>
 
         {/* Content Sections */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 bg-slate-50/50">
           {/* Basic Details */}
           {(activeSection === "all" || activeSection === "basic") &&
             formData.basicDetails && (
               <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-slate-900 pb-3 border-b border-slate-200">
                   Basic Details
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {formData.basicDetails.fullName && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Full Name
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.basicDetails.fullName}
                       </p>
                     </div>
                   )}
                   {formData.basicDetails.gender && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Gender
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.basicDetails.gender}
                       </p>
                     </div>
                   )}
                   {formData.basicDetails.category && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Category
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.basicDetails.category}
                       </p>
                     </div>
                   )}
                   {formData.basicDetails.dateOfBirth && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Date of Birth
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formatDate(formData.basicDetails.dateOfBirth)}
                       </p>
                     </div>
                   )}
                   {formData.basicDetails.qualification && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Qualification
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.basicDetails.qualification}
                       </p>
                     </div>
                   )}
                   {formData.basicDetails.district && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         District
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.basicDetails.district}
                       </p>
                     </div>
@@ -366,47 +365,47 @@ const Response = ({ rowData, onBack }) => {
           {(activeSection === "all" || activeSection === "entity") &&
             formData.entityDetails && (
               <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-slate-900 pb-3 border-b border-slate-200">
                   Entity Details
                 </h2>
                 {formData.entityDetails.hasRegisteredEntity ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {formData.entityDetails.entityName && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                      <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">
                           Entity Name
                         </p>
-                        <p className="text-sm font-bold text-gray-900 mt-1">
+                        <p className="text-sm font-bold text-slate-900 mt-1">
                           {formData.entityDetails.entityName}
                         </p>
                       </div>
                     )}
                     {formData.entityDetails.entityType && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                      <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">
                           Entity Type
                         </p>
-                        <p className="text-sm font-bold text-gray-900 mt-1">
+                        <p className="text-sm font-bold text-slate-900 mt-1">
                           {formData.entityDetails.entityType}
                         </p>
                       </div>
                     )}
                     {formData.entityDetails.entityRegistrationNumber && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                      <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">
                           Reg. No.
                         </p>
-                        <p className="text-sm font-mono font-bold text-gray-900 mt-1">
+                        <p className="text-sm font-mono font-bold text-slate-900 mt-1">
                           {formData.entityDetails.entityRegistrationNumber}
                         </p>
                       </div>
                     )}
                     {formData.entityDetails.dateOfRegistration && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                      <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">
                           Reg. Date
                         </p>
-                        <p className="text-sm font-bold text-gray-900 mt-1">
+                        <p className="text-sm font-bold text-slate-900 mt-1">
                           {formatDate(
                             formData.entityDetails.dateOfRegistration
                           )}
@@ -414,18 +413,18 @@ const Response = ({ rowData, onBack }) => {
                       </div>
                     )}
                     {formData.entityDetails.sector && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                      <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">
                           Sector
                         </p>
-                        <p className="text-sm font-bold text-gray-900 mt-1">
+                        <p className="text-sm font-bold text-slate-900 mt-1">
                           {formData.entityDetails.sector}
                         </p>
                       </div>
                     )}
                     {formData.entityDetails.stage && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-xs text-gray-500 font-semibold uppercase">
+                      <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                        <p className="text-xs text-slate-500 font-semibold uppercase">
                           Stage
                         </p>
                         <span
@@ -450,23 +449,23 @@ const Response = ({ rowData, onBack }) => {
           {(activeSection === "all" || activeSection === "startup") &&
             formData.startupDetails && (
               <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-slate-900 pb-3 border-b border-slate-200">
                   Startup Details
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {formData.startupDetails.teamSize && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Team Size
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.startupDetails.teamSize}
                       </p>
                     </div>
                   )}
                   {formData.startupDetails.website && (
-                    <div className="bg-gray-50 p-4 rounded-lg col-span-2 md:col-span-1">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg col-span-2 md:col-span-1">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Website
                       </p>
                       <a
@@ -480,42 +479,42 @@ const Response = ({ rowData, onBack }) => {
                     </div>
                   )}
                   {formData.startupDetails.city && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         City
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.startupDetails.city}
                       </p>
                     </div>
                   )}
                   {formData.startupDetails.state && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         State
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.startupDetails.state}
                       </p>
                     </div>
                   )}
                   {formData.startupDetails.pincode && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-xs text-gray-500 font-semibold uppercase">
+                    <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                      <p className="text-xs text-slate-500 font-semibold uppercase">
                         Pincode
                       </p>
-                      <p className="text-sm font-bold text-gray-900 mt-1">
+                      <p className="text-sm font-bold text-slate-900 mt-1">
                         {formData.startupDetails.pincode}
                       </p>
                     </div>
                   )}
                 </div>
                 {formData.startupDetails.registeredAddress && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-xs text-gray-500 font-semibold uppercase">
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                    <p className="text-xs text-slate-500 font-semibold uppercase">
                       Address
                     </p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">
+                    <p className="text-sm font-bold text-slate-900 mt-1">
                       {formData.startupDetails.registeredAddress}
                     </p>
                   </div>
@@ -527,7 +526,7 @@ const Response = ({ rowData, onBack }) => {
           {(activeSection === "all" || activeSection === "cofounder") &&
             formData.cofounderDetails && (
               <div className="space-y-4">
-                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-slate-900 pb-3 border-b border-slate-200">
                   Co-Founder Details
                 </h2>
                 {formData.cofounderDetails.coFounders &&
@@ -537,25 +536,25 @@ const Response = ({ rowData, onBack }) => {
                       (founder, index) => (
                         <div
                           key={index}
-                          className="border border-gray-200 rounded-lg p-4 bg-gray-50"
+                          className="border border-slate-200 rounded-lg p-4 bg-white"
                         >
-                          <h3 className="font-bold text-gray-900 mb-3">
+                          <h3 className="font-bold text-slate-900 mb-3">
                             Co-Founder {index + 1}
                           </h3>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {founder.name && (
                               <div>
-                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                <p className="text-xs text-slate-500 font-semibold uppercase">
                                   Name
                                 </p>
-                                <p className="text-sm font-bold text-gray-900">
+                                <p className="text-sm font-bold text-slate-900">
                                   {founder.name}
                                 </p>
                               </div>
                             )}
                             {founder.email && (
                               <div>
-                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                <p className="text-xs text-slate-500 font-semibold uppercase">
                                   Email
                                 </p>
                                 <p className="text-sm font-bold text-blue-600">
@@ -565,27 +564,27 @@ const Response = ({ rowData, onBack }) => {
                             )}
                             {founder.phoneNumber && (
                               <div>
-                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                <p className="text-xs text-slate-500 font-semibold uppercase">
                                   Phone
                                 </p>
-                                <p className="text-sm font-bold text-gray-900">
+                                <p className="text-sm font-bold text-slate-900">
                                   {founder.phoneNumber}
                                 </p>
                               </div>
                             )}
                             {founder.qualification && (
                               <div>
-                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                <p className="text-xs text-slate-500 font-semibold uppercase">
                                   Qualification
                                 </p>
-                                <p className="text-sm font-bold text-gray-900">
+                                <p className="text-sm font-bold text-slate-900">
                                   {founder.qualification}
                                 </p>
                               </div>
                             )}
                             {founder.linkedinProfile && (
                               <div className="col-span-2">
-                                <p className="text-xs text-gray-500 font-semibold uppercase">
+                                <p className="text-xs text-slate-500 font-semibold uppercase">
                                   LinkedIn
                                 </p>
                                 <a
@@ -615,20 +614,20 @@ const Response = ({ rowData, onBack }) => {
           {(activeSection === "all" || activeSection === "business") &&
             businessIdeaRatings && (
               <div className="space-y-6">
-                <h2 className="text-xl font-bold text-gray-900 pb-3 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-slate-900 pb-3 border-b border-slate-200">
                   Business Idea & Rating
                 </h2>
 
                 {/* Question 1: Problem Statement */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-white border border-slate-200 p-4 rounded-lg">
                   <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    <h3 className="font-semibold text-slate-900 mb-2">
                       1. Problem Statement
                     </h3>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-xs text-slate-600 mb-2">
                       {businessIdeaRatings.questions?.problemStatement}
                     </p>
-                    <p className="text-sm text-gray-800 italic border-l-4 border-blue-500 pl-3">
+                    <p className="text-sm text-slate-800 italic border-l-4 border-slate-400 pl-3">
                       {businessIdeaRatings.answers?.problemStatement}
                     </p>
                   </div>
@@ -644,30 +643,30 @@ const Response = ({ rowData, onBack }) => {
                           }
                           className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
                             adminRatings.problemStatement === num
-                              ? `${getQuestionRatingColor(num)} shadow-lg`
-                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                              ? `${getQuestionRatingColor(num)} `
+                              : "bg-white border-slate-300 text-slate-600 hover:border-slate-400"
                           }`}
                         >
                           {num}
                         </button>
                       ))}
                     </div>
-                    <span className="text-sm font-bold text-gray-700">
+                    <span className="text-sm font-bold text-slate-700">
                       {adminRatings.problemStatement}/10
                     </span>
                   </div>
                 </div>
 
                 {/* Question 2: Solution */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-white border border-slate-200 p-4 rounded-lg">
                   <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    <h3 className="font-semibold text-slate-900 mb-2">
                       2. Solution
                     </h3>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-xs text-slate-600 mb-2">
                       {businessIdeaRatings.questions?.solution}
                     </p>
-                    <p className="text-sm text-gray-800 italic border-l-4 border-green-500 pl-3">
+                    <p className="text-sm text-slate-800 italic border-l-4 border-slate-400 pl-3">
                       {businessIdeaRatings.answers?.solution}
                     </p>
                   </div>
@@ -681,30 +680,30 @@ const Response = ({ rowData, onBack }) => {
                           onClick={() => handleAdminRating("solution", num)}
                           className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
                             adminRatings.solution === num
-                              ? `${getQuestionRatingColor(num)} shadow-lg`
-                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                              ? `${getQuestionRatingColor(num)} `
+                              : "bg-white border-slate-300 text-slate-600 hover:border-slate-400"
                           }`}
                         >
                           {num}
                         </button>
                       ))}
                     </div>
-                    <span className="text-sm font-bold text-gray-700">
+                    <span className="text-sm font-bold text-slate-700">
                       {adminRatings.solution}/10
                     </span>
                   </div>
                 </div>
 
                 {/* Question 3: Innovation */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-white border border-slate-200 p-4 rounded-lg">
                   <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    <h3 className="font-semibold text-slate-900 mb-2">
                       3. Innovation
                     </h3>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-xs text-slate-600 mb-2">
                       {businessIdeaRatings.questions?.innovation}
                     </p>
-                    <p className="text-sm text-gray-800 italic border-l-4 border-orange-500 pl-3">
+                    <p className="text-sm text-slate-800 italic border-l-4 border-slate-400 pl-3">
                       {businessIdeaRatings.answers?.innovation}
                     </p>
                   </div>
@@ -718,30 +717,30 @@ const Response = ({ rowData, onBack }) => {
                           onClick={() => handleAdminRating("innovation", num)}
                           className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
                             adminRatings.innovation === num
-                              ? `${getQuestionRatingColor(num)} shadow-lg`
-                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                              ? `${getQuestionRatingColor(num)}`
+                              : "bg-white border-slate-300 text-slate-600 hover:border-slate-400"
                           }`}
                         >
                           {num}
                         </button>
                       ))}
                     </div>
-                    <span className="text-sm font-bold text-gray-700">
+                    <span className="text-sm font-bold text-slate-700">
                       {adminRatings.innovation}/10
                     </span>
                   </div>
                 </div>
 
                 {/* Question 4: Target Market */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="bg-white border border-slate-200 p-4 rounded-lg">
                   <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                    <h3 className="font-semibold text-slate-900 mb-2">
                       4. Target Market
                     </h3>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-xs text-slate-600 mb-2">
                       {businessIdeaRatings.questions?.targetMarket}
                     </p>
-                    <p className="text-sm text-gray-800 italic border-l-4 border-purple-500 pl-3">
+                    <p className="text-sm text-slate-800 italic border-l-4 border-slate-400 pl-3">
                       {businessIdeaRatings.answers?.targetMarket}
                     </p>
                   </div>
@@ -755,15 +754,15 @@ const Response = ({ rowData, onBack }) => {
                           onClick={() => handleAdminRating("targetMarket", num)}
                           className={`w-6 h-6 rounded text-xs font-bold transition-all border ${
                             adminRatings.targetMarket === num
-                              ? `${getQuestionRatingColor(num)} shadow-lg`
-                              : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
+                              ? `${getQuestionRatingColor(num)} `
+                              : "bg-white border-slate-300 text-slate-600 hover:border-slate-400"
                           }`}
                         >
                           {num}
                         </button>
                       ))}
                     </div>
-                    <span className="text-sm font-bold text-gray-700">
+                    <span className="text-sm font-bold text-slate-700">
                       {adminRatings.targetMarket}/10
                     </span>
                   </div>
@@ -771,11 +770,11 @@ const Response = ({ rowData, onBack }) => {
 
                 {/* Pitch Deck */}
                 {businessIdeaRatings.pitchDeckName && (
-                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                    <p className="text-xs text-blue-600 font-semibold uppercase mb-2">
+                  <div className="bg-white border border-slate-200 p-4 rounded-lg">
+                    <p className="text-xs text-slate-600 font-semibold uppercase mb-2">
                       Pitch Deck
                     </p>
-                    <p className="text-sm font-bold text-blue-700">
+                    <p className="text-sm font-bold text-slate-700">
                       📎 {businessIdeaRatings.pitchDeckName}
                     </p>
                   </div>
@@ -785,15 +784,15 @@ const Response = ({ rowData, onBack }) => {
 
           {/* Admin Review Section */}
           {(activeSection === "all" || activeSection === "review") && (
-            <div className="space-y-4 border-t border-gray-200 pt-6">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="space-y-4 border-t border-slate-200 pt-6">
+              <h2 className="text-xl font-bold text-slate-900">
                 Admin Review & Decision
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Recommendation */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Recommendation
                   </label>
                   <div className="flex gap-2">
@@ -802,7 +801,7 @@ const Response = ({ rowData, onBack }) => {
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                         recommendation === "recommended"
                           ? "bg-green-600 text-white"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-green-50"
+                          : "bg-white border border-slate-300 text-slate-700 hover:bg-green-50"
                       }`}
                     >
                       <CheckCircle size={16} />
@@ -813,7 +812,7 @@ const Response = ({ rowData, onBack }) => {
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                         recommendation === "not-recommended"
                           ? "bg-red-600 text-white"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-red-50"
+                          : "bg-white border border-slate-300 text-slate-700 hover:bg-red-50"
                       }`}
                     >
                       <XCircle size={16} />
@@ -824,7 +823,7 @@ const Response = ({ rowData, onBack }) => {
 
                 {/* Rating - A B C Grades */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Rating
                   </label>
                   <div className="flex gap-2">
@@ -843,7 +842,7 @@ const Response = ({ rowData, onBack }) => {
                                   ? "bg-yellow-600 text-white"
                                   : ""
                               }`
-                            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
+                            : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
                         }`}
                       >
                         {grade}
@@ -852,18 +851,18 @@ const Response = ({ rowData, onBack }) => {
                   </div>
                 </div>
 
-                <div className="text-center border p-4 rounded-lg bg-gray-50">
-                  <p className="text-sm font-semibold uppercase mb-2 text-black">
+                <div className="text-center border border-slate-200 p-4 rounded-lg bg-white">
+                  <p className="text-sm font-semibold uppercase mb-2 text-slate-900">
                     Total Marks
                   </p>
-                  <p className="text-4xl font-bold text-black">{totalMarks}</p>
-                  <p className="text-xs text-gray-600 mt-1">out of 40</p>
+                  <p className="text-4xl font-bold text-slate-900">{totalMarks}</p>
+                  <p className="text-xs text-slate-600 mt-1">out of 40</p>
                 </div>
               </div>
 
               {/* Comments */}
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Comments
                 </label>
                 <textarea
@@ -871,7 +870,7 @@ const Response = ({ rowData, onBack }) => {
                   onChange={(e) => setComments(e.target.value)}
                   placeholder="Add your review comments here..."
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
 
@@ -881,8 +880,8 @@ const Response = ({ rowData, onBack }) => {
                 disabled={saveStatus === "saving"}
                 className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-colors ${
                   saveStatus === "saving"
-                    ? "bg-gray-400 text-white cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
+                    ? "bg-slate-400 text-white cursor-not-allowed"
+                    : "bg-[#1a2845] text-white hover:bg-[#0f1829]"
                 }`}
               >
                 <Save size={18} />

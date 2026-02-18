@@ -11,6 +11,7 @@ import AssignMarks from './NewApplicationAdmin/AssignMarks';
 import AssignPIDate from './NewApplicationAdmin/AssignPIDate';
 import AssignPIMarks from './NewApplicationAdmin/AssignPIMarks';
 import DataAnylatics from './NewApplicationAdmin/DataAnylatics';
+import AIReviewSection from './NewApplicationAdmin/AIReviewSection';
 
 
 const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
@@ -22,7 +23,7 @@ const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
       case "Second Tranche Module":
         return <Table />;
       
-      case "New Application":
+      case "Startup Application":
         return selectedRowData ? (
           <Response rowData={selectedRowData} onBack={onBack} />
         ) : (
@@ -45,7 +46,15 @@ const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
         return <AssignPIMarks />;
       
       case "Data Analytics":
-        return <DataAnylatics rowData={selectedRowData} onBack={onBack} />;  
+        return <DataAnylatics rowData={selectedRowData} onBack={onBack} />; 
+
+      case "AI Review":
+        return (
+          <div className="p-6 h-full overflow-y-auto">
+             <h1 className="text-2xl font-bold text-gray-800 mb-4">AI Enhanced Review</h1>
+             <AIReviewSection />
+          </div>
+        );
       
       case "Event Management":
         return <div><h1>Event Management Panel</h1></div>;
@@ -56,7 +65,7 @@ const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
   };
 
   return (
-    <div className="flex items-center justify-center h-full px-5">
+    <div className="flex items-center justify-center h-full">
       <div className="w-full h-full">
         {renderContent()}
       </div>
