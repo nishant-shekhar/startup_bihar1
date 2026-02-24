@@ -72,7 +72,7 @@ const FifthPage = () => {
                 Startup Cells
               </dt>
               <dd className="text-2xl sm:text-3xl font-bold leading-9 tracking-tight text-white">
-                {inView && <CountUp end={46} duration={4} />}
+                {inView && <CountUp end={47} duration={4} />}
               </dd>
             </div>
           </dl>

@@ -12,6 +12,7 @@ import AssignPIDate from './NewApplicationAdmin/AssignPIDate';
 import AssignPIMarks from './NewApplicationAdmin/AssignPIMarks';
 import DataAnylatics from './NewApplicationAdmin/DataAnylatics';
 import AIReviewSection from './NewApplicationAdmin/AIReviewSection';
+import AIReviewOldStyle from './NewApplicationAdmin/AIReviewOldStyle';
 
 
 const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
@@ -53,6 +54,13 @@ const Render1 = ({ activePanel, selectedRowData, onRowClick, onBack }) => {
           <div className="p-6 h-full overflow-y-auto">
              <h1 className="text-2xl font-bold text-gray-800 mb-4">AI Enhanced Review</h1>
              <AIReviewSection />
+          </div>
+        );
+        case "AI Review Old Style":
+        return (
+          <div className="p-6 h-full overflow-y-auto">
+             <h1 className="text-2xl font-bold text-gray-800 mb-4">AI Enhanced Review Old Style</h1>
+             <AIReviewOldStyle />
           </div>
         );
       
