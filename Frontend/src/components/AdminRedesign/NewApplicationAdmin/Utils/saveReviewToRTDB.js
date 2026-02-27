@@ -5,19 +5,33 @@ import { rtdb } from "../firebase";
 const safeKey = (s) =>
   String(s || "")
     .trim()
-    .replace(/[.#$[\]/\s]/g, "_") // RTDB disallowed chars + spaces
+    .replace(/[.#$[\]/\s]/g, "_")
     .slice(0, 120);
+
+const normYesNo = (v) => {
+  const s = String(v ?? "").trim().toLowerCase();
+  if (["yes", "y", "true", "1"].includes(s)) return "Yes";
+  if (["no", "n", "false", "0"].includes(s)) return "No";
+  return String(v ?? "").trim();
+};
 
 export async function saveStartupReviewToRTDB({
   sbNo,
   entityName,
   stage,
+
+  // ✅ NEW: store selection/filter fields
+  isRegisteredEntity,
+  founderQualification, // Excel: Higher Education (UI name: Founder Qualification)
+  natureOfEntity,
+  dateOfRegistration,
+  roc,
+
   answers,
-  apiResult, // full JSON from backend: { sb_no, schema, response, meta, ... }
+  apiResult,
 }) {
   if (!sbNo) throw new Error("sbNo missing");
   const key = safeKey(sbNo);
-
   const now = Date.now();
 
   const payload = {
@@ -25,7 +39,13 @@ export async function saveStartupReviewToRTDB({
     entity_name: String(entityName || ""),
     stage: String(stage || ""),
 
-    // Inputs
+    // ✅ NEW (top-level, easy to query/filter)
+    isRegisteredEntity: normYesNo(isRegisteredEntity),
+    founderQualification: String(founderQualification || ""),
+    natureOfEntity: String(natureOfEntity || ""),
+    dateOfRegistration: String(dateOfRegistration || ""),
+    roc: String(roc || ""),
+
     answers: {
       innovation_note: String(answers?.innovation_note || ""),
       uniqueness_note: String(answers?.uniqueness_note || ""),
@@ -35,28 +55,31 @@ export async function saveStartupReviewToRTDB({
       success_stories_and_growth_plan: String(answers?.success_stories_and_growth_plan || ""),
     },
 
-    // Entire API object (keeps every detail)
     api: apiResult || null,
 
-    // Audit
     updatedAt_ms: now,
     updatedAt: serverTimestamp(),
   };
 
-  // Path: StartupReviews/{sbNo}
   const base = ref(rtdb, `StartupReviews/${key}`);
-
-  // Write full record
   await set(base, payload);
 
-  // Optional: maintain a lightweight index for lists
+  // ✅ Index must also carry these if you want fast list filtering without reading full record
   const idx = ref(rtdb, `StartupReviewsIndex/${key}`);
   await update(idx, {
     sb_no: String(sbNo),
     entity_name: String(entityName || ""),
     stage: String(stage || ""),
+
+    isRegisteredEntity: normYesNo(isRegisteredEntity),
+    founderQualification: String(founderQualification || ""),
+    natureOfEntity: String(natureOfEntity || ""),
+    dateOfRegistration: String(dateOfRegistration || ""),
+    roc: String(roc || ""),
+
     decision: apiResult?.response?.decision || "",
     overall_final: apiResult?.response?.scores?.overall_final ?? apiResult?.response?.overall_score ?? null,
+
     updatedAt_ms: now,
     updatedAt: serverTimestamp(),
   });

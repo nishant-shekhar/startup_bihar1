@@ -95,6 +95,10 @@ const STD_COLS = {
   entityName: "Name Of StartUp",
   stage: "Current Stage",
   isRegisteredEntity: "Is Registered Entity",
+  founderQualification: "Higher Education",     // Excel header stays same
+  natureOfEntity: "Nature Of Entity",
+  dateOfRegistration: "Date Of Registration",
+  roc: "roc",
 
   innovation_note: "A Brief Note on innovation in idea",
   uniqueness_note: "A Brief Note on Uniqueness in idea",
@@ -102,6 +106,8 @@ const STD_COLS = {
   wealth_potential_note: "A Brief Note on Potential of generating wealth through Startup",
   product_development_capability_note: "A Brief Note on Capability of development of products",
   success_stories_and_growth_plan: "Success Stories of Idea prototype and Growth plan",
+
+
 };
 
 const pick = (row, key) => row?.[key] ?? "";
@@ -964,7 +970,10 @@ const AIReviewOldStyle = () => {
 const entityName = asStr(pick(row, STD_COLS.entityName)) || "Unknown Startup";
 const stage = asStr(pick(row, STD_COLS.stage)) || "Ideation";
 const isRegisteredEntity = asStr(pick(row, STD_COLS.isRegisteredEntity)) || "";
-
+const founderQualification = asStr(pick(row, STD_COLS.founderQualification)) || "";
+const natureOfEntity = asStr(pick(row, STD_COLS.natureOfEntity)) || "";
+const dateOfRegistration = asStr(pick(row, STD_COLS.dateOfRegistration)) || "";
+const roc = asStr(pick(row, STD_COLS.roc)) || "";
 // Only the 6-point fields (fixed headings)
 const innovation_note = asStr(pick(row, STD_COLS.innovation_note));
 const uniqueness_note = asStr(pick(row, STD_COLS.uniqueness_note));
@@ -1001,6 +1010,10 @@ if (!anyAnswerPresent) {
   sbNo: String(regNo),
   stage: String(stage), // ✅ required for stage-caps in backend v2
   isRegisteredEntity: String(isRegisteredEntity), // optional, but keep for storage/audit
+  founderQualification: String(founderQualification || ""), // renamed conceptually
+  natureOfEntity: String(natureOfEntity || ""),
+  dateOfRegistration: String(dateOfRegistration || ""),
+  roc: String(roc || ""),
   entityName: String(entityName), // optional, but helpful
   answers: {
     innovation_note,
@@ -1022,20 +1035,29 @@ if (!anyAnswerPresent) {
             apiResponseFull = apiResult.response;
             serverMeta = apiResult.meta || null;
 try {
-  await saveStartupReviewToRTDB({
-    sbNo: String(regNo),
-    entityName,
-    stage,
-    answers: {
-      innovation_note,
-      uniqueness_note,
-      employment_potential_note,
-      wealth_potential_note,
-      product_development_capability_note,
-      success_stories_and_growth_plan,
-    },
-    apiResult, // full object from backend
-  });
+  await await saveStartupReviewToRTDB({
+  sbNo: String(regNo),
+  entityName,
+  stage,
+
+  // ✅ store for SSU selection filters
+  isRegisteredEntity: String(isRegisteredEntity || ""),
+
+  founderQualification: String(founderQualification || ""), // renamed conceptually
+  natureOfEntity: String(natureOfEntity || ""),
+  dateOfRegistration: String(dateOfRegistration || ""),
+  roc: String(roc || ""),
+
+  answers: {
+    innovation_note,
+    uniqueness_note,
+    employment_potential_note,
+    wealth_potential_note,
+    product_development_capability_note,
+    success_stories_and_growth_plan,
+  },
+  apiResult,
+});
 } catch (e) {
   console.error("RTDB save failed for", regNo, e);
 }
@@ -1101,6 +1123,10 @@ try {
   entityName,
   stage,
   isRegisteredEntity,
+  founderQualification,
+  natureOfEntity,
+  dateOfRegistration,
+  roc,
 
   innovation_note,
   uniqueness_note,
@@ -1171,6 +1197,12 @@ const downloadReport = () => {
       "Stage (Excel)": item.stage,
       "Stage (Server Normalized)": r.stage || "",
 
+      "Is Registered Entity": item.inputData?.isRegisteredEntity || "",
+"Founder Qualification": item.inputData?.founderQualification || "",
+"Nature Of Entity": item.inputData?.natureOfEntity || "",
+"Date Of Registration": item.inputData?.dateOfRegistration || "",
+"ROC": item.inputData?.roc || "",
+
       // ---------- Decision ----------
       "Decision": prettifyDecision(r.decision || item.decision),
       "Business Type": prettifyBusinessType(r.business_type || item.business_type),
@@ -1209,6 +1241,8 @@ const downloadReport = () => {
       // ---------- AI Assistance Risk (NEW) ----------
       "AI Assistance Risk": aiRisk.label || "",
       "AI Assistance Risk Score (0..1)": Number(aiRisk.score ?? ""),
+
+
 
       // ---------- Qualifiers ----------
       "Qualifier - Technology Leverage": Boolean(r.qualifiers?.technology_leverage),

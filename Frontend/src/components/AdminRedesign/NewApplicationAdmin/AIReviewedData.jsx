@@ -24,17 +24,16 @@ import {
   Gauge,
 } from "lucide-react";
 
-import { ref, onValue, update, set } from "firebase/database";
-import { rtdb } from "./firebase"; // adjust if your firebase export is elsewhere
+import { ref, onValue, update } from "firebase/database";
+import { rtdb } from "./firebase"; // ✅ adjust if your firebase export is elsewhere
 
 // -------------------------
 // CONFIG (SET THESE)
 // -------------------------
-// 1) This should match where saveStartupReviewToRTDB() writes.
-// Example possibilities: "startup_reviews_old", "StartupReviews", "AIReviews/old", etc.
+// Must match where saveStartupReviewToRTDB() writes reviewed objects.
 const REVIEWS_PATH = "StartupReviews";
 
-// 2) Where SSU shortlist selections should be stored.
+// Where SSU shortlist selections should be stored.
 const SHORTLIST_PATH = "ssu_shortlists";
 
 // -------------------------
@@ -109,9 +108,18 @@ const asText = (v) => {
 
 const safeKey = (k) => String(k || "").replace(/[.#$/\[\]]/g, "_");
 
+const passEnum = (val, f) => (f === "all" ? true : String(val || "").toLowerCase() === String(f).toLowerCase());
+
 // -------------------------
-// Detail Modal (OldStyle-like, but reads RTDB reviewed objects)
+// Detail Modal (OldStyle-like, reads RTDB reviewed objects)
 // -------------------------
+const Meta = ({ label, value }) => (
+  <div>
+    <div className="text-[11px] text-gray-500 uppercase tracking-wider">{label}</div>
+    <div className="text-sm text-gray-200 mt-1">{value}</div>
+  </div>
+);
+
 const DetailModal = ({ entry, onClose }) => {
   if (!entry) return null;
 
@@ -119,7 +127,6 @@ const DetailModal = ({ entry, onClose }) => {
   const regNo = entry?.sb_no || entry?.regNo || "—";
   const stage = entry?.stage || entry?.input?.stage || "—";
 
-  // Your RTDB objects often look like: { answers: {...}, api: { response: {...}, meta: {...} }, ... } :contentReference[oaicite:1]{index=1}
   const answers = entry?.answers || entry?.inputData?.answers || entry?.inputData || {};
   const apiResponse = entry?.api?.response || entry?.apiResponse || entry?.apiResult?.response || {};
 
@@ -138,6 +145,13 @@ const DetailModal = ({ entry, onClose }) => {
   const specificity = realism?.specificity_score ?? entry?.specificity_score;
   const aiRisk = realism?.ai_assistance_risk || {};
   const ev = realism?.evidence_signals || {};
+
+  // ✅ entity meta
+  const isRegisteredEntity = entry?.isRegisteredEntity || entry?._raw?.isRegisteredEntity || "";
+  const founderQualification = entry?.founderQualification || entry?._raw?.founderQualification || "";
+  const natureOfEntity = entry?.natureOfEntity || entry?._raw?.natureOfEntity || "";
+  const dateOfRegistration = entry?.dateOfRegistration || entry?._raw?.dateOfRegistration || "";
+  const roc = entry?.roc || entry?._raw?.roc || "";
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -223,6 +237,22 @@ const DetailModal = ({ entry, onClose }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* LEFT */}
             <div className="space-y-8">
+              {/* Entity Profile */}
+              <section>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Info size={16} /> Entity Profile
+                </h3>
+
+                <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Meta label="Registered Entity" value={isRegisteredEntity || "—"} />
+                  <Meta label="Founder Qualification" value={founderQualification || "—"} />
+                  <Meta label="Nature Of Entity" value={natureOfEntity || "—"} />
+                  <Meta label="Date Of Registration" value={dateOfRegistration || "—"} />
+                  <Meta label="ROC" value={roc || "—"} />
+                </div>
+              </section>
+
+              {/* Data analyzed */}
               <section>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Database size={16} /> Data Analyzed (6-point)
@@ -261,68 +291,9 @@ const DetailModal = ({ entry, onClose }) => {
                 </div>
               </section>
 
-            
+         
 
-              {/* Scores & penalties */}
-              <section>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Gauge size={16} /> Scoring Breakdown
-                </h3>
-
-                <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-300">Overall (Final)</div>
-                    <div className={`text-sm font-mono ${getScoreColor(overallFinal)}`}>{Number(overallFinal).toFixed(1)}/10</div>
-                  </div>
-
-                  {overallLLM != null ? (
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-500">Overall (LLM before penalties)</div>
-                      <div className="text-sm font-mono text-gray-400">{Number(overallLLM).toFixed(1)}/10</div>
-                    </div>
-                  ) : null}
-
-                  <div className="pt-2 border-t border-[#2d2d3f]">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <Info size={14} /> Penalties Applied
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {Object.entries(penalties || {}).map(([k, v]) => (
-                        <div key={k} className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-300 font-mono">{k}</span>
-                            <span className="text-xs font-bold text-rose-300 font-mono">{Number(v || 0).toFixed(1)}</span>
-                          </div>
-                        </div>
-                      ))}
-                      {!Object.keys(penalties || {}).length ? (
-                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f] text-xs text-gray-500">
-                          No penalties available.
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-[#2d2d3f]">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Stage Caps</div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-300 font-mono">cap_overall_final</span>
-                          <span className="text-xs font-bold text-gray-200 font-mono">{caps?.cap_overall_final ?? "—"}</span>
-                        </div>
-                      </div>
-                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-300 font-mono">cap_execution_growth</span>
-                          <span className="text-xs font-bold text-gray-200 font-mono">{caps?.cap_execution_growth ?? "—"}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-                {(apiResponse?.pitch_questions || []).length ? (
+              {(apiResponse?.pitch_questions || []).length ? (
                 <section>
                   <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <TrendingUp size={16} /> Pitch Questions
@@ -339,7 +310,6 @@ const DetailModal = ({ entry, onClose }) => {
                   </div>
                 </section>
               ) : null}
-
             </div>
 
             {/* RIGHT */}
@@ -439,7 +409,7 @@ const DetailModal = ({ entry, onClose }) => {
                 </section>
               ) : null}
 
-                <section>
+              <section>
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <TrendingUp size={16} /> Detailed Evaluation
                 </h3>
@@ -462,10 +432,73 @@ const DetailModal = ({ entry, onClose }) => {
                       <p className="text-xs text-gray-400 leading-relaxed border-l-2 border-indigo-500/20 pl-3">{rating.reason}</p>
                     </div>
                   ))}
+                  {!((apiResponse?.ratings || []).length) ? (
+                    <div className="text-sm text-gray-500 bg-[#1a1a2e] p-4 rounded-xl border border-[#2d2d3f]">
+                      No detailed ratings found in this record.
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+                   {/* Scoring breakdown */}
+              <section>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <Gauge size={16} /> Scoring Breakdown
+                </h3>
+
+                <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-300">Overall (Final)</div>
+                    <div className={`text-sm font-mono ${getScoreColor(overallFinal)}`}>{Number(overallFinal).toFixed(1)}/10</div>
+                  </div>
+
+                  {overallLLM != null ? (
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-500">Overall (LLM before penalties)</div>
+                      <div className="text-sm font-mono text-gray-400">{Number(overallLLM).toFixed(1)}/10</div>
+                    </div>
+                  ) : null}
+
+                  <div className="pt-2 border-t border-[#2d2d3f]">
+                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <Info size={14} /> Penalties Applied
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(penalties || {}).map(([k, v]) => (
+                        <div key={k} className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-300 font-mono">{k}</span>
+                            <span className="text-xs font-bold text-rose-300 font-mono">{Number(v || 0).toFixed(1)}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {!Object.keys(penalties || {}).length ? (
+                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f] text-xs text-gray-500">
+                          No penalties available.
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#2d2d3f]">
+                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Stage Caps</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-300 font-mono">cap_overall_final</span>
+                          <span className="text-xs font-bold text-gray-200 font-mono">{caps?.cap_overall_final ?? "—"}</span>
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-300 font-mono">cap_execution_growth</span>
+                          <span className="text-xs font-bold text-gray-200 font-mono">{caps?.cap_execution_growth ?? "—"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
 
-            
               {/* Quick actions */}
               <section className="rounded-2xl border border-[#2d2d3f] bg-[#13131f]/40 p-4 flex items-center justify-between gap-3">
                 <div className="text-sm text-gray-300 flex items-center gap-2">
@@ -481,6 +514,13 @@ const DetailModal = ({ entry, onClose }) => {
                         `Entity: ${entityName}`,
                         `Decision: ${prettifyDecision(decision)}`,
                         `Overall Final: ${Number(overallFinal).toFixed(1)}`,
+                        "",
+                        "Entity Profile:",
+                        `- Registered: ${isRegisteredEntity || "—"}`,
+                        `- Founder Qualification: ${founderQualification || "—"}`,
+                        `- Nature Of Entity: ${natureOfEntity || "—"}`,
+                        `- Date Of Registration: ${dateOfRegistration || "—"}`,
+                        `- ROC: ${roc || "—"}`,
                         "",
                         "Summary:",
                         apiResponse?.summary || "",
@@ -528,6 +568,10 @@ const AIReviewedData = () => {
   const [aiRiskFilter, setAiRiskFilter] = useState("all");
   const [stageFilter, setStageFilter] = useState("all");
   const [registeredEntityFilter, setRegisteredEntityFilter] = useState("all"); // yes/no/all
+
+  const [founderQualFilter, setFounderQualFilter] = useState("all");
+  const [natureFilter, setNatureFilter] = useState("all");
+
   const [minFinal, setMinFinal] = useState(0);
   const [maxFinal, setMaxFinal] = useState(10);
   const [minQualifiers, setMinQualifiers] = useState(0);
@@ -551,11 +595,9 @@ const AIReviewedData = () => {
         const val = snap.val() || {};
         const rows = [];
 
-        // supports both { sb: {...} } or nested objects
         Object.entries(val).forEach(([k, v]) => {
           if (!v || typeof v !== "object") return;
 
-          // normalize shape
           const sbNo = v.sb_no || v.sbNo || k;
           const entityName = v.entity_name || v.entityName || "Unknown Startup";
           const stage = v.stage || v.input?.stage || v.api?.stage_norm || v.api?.response?.stage || "";
@@ -568,14 +610,12 @@ const AIReviewedData = () => {
           const overallFinal = scores?.overall_final ?? apiResponse?.overall_score ?? 0;
           const overallLLM = scores?.overall_llm ?? null;
 
-          // IMPORTANT: You said registered entity isn't in reviewed data yet, but you will store it.
-          // Keep both possible placements:
-          const isRegisteredEntity =
-            v?.isRegisteredEntity ??
-            v?.inputData?.isRegisteredEntity ??
-            v?.input?.isRegisteredEntity ??
-            v?.meta?.isRegisteredEntity ??
-            "";
+          // ✅ entity meta (top-level saved by saveStartupReviewToRTDB)
+          const isRegisteredEntity = v?.isRegisteredEntity ?? "";
+          const founderQualification = v?.founderQualification ?? "";
+          const natureOfEntity = v?.natureOfEntity ?? "";
+          const dateOfRegistration = v?.dateOfRegistration ?? "";
+          const roc = v?.roc ?? "";
 
           rows.push({
             _key: k,
@@ -583,7 +623,11 @@ const AIReviewedData = () => {
             entity_name: entityName,
             stage: stage,
 
-            isRegisteredEntity: isRegisteredEntity,
+            isRegisteredEntity,
+            founderQualification,
+            natureOfEntity,
+            dateOfRegistration,
+            roc,
 
             decision: apiResponse?.decision || "",
             business_type: apiResponse?.business_type || "",
@@ -603,12 +647,10 @@ const AIReviewedData = () => {
             summary: apiResponse?.summary || v?.comment || "",
             updatedAt: v?.updatedAt || v?.updatedAt_ms || null,
 
-            // keep full object for modal
             _raw: v,
           });
         });
 
-        // default sort: final desc
         setAllRows(rows);
         setLoading(false);
       },
@@ -621,6 +663,25 @@ const AIReviewedData = () => {
 
     return () => unsub();
   }, []);
+
+  // dynamic options for dropdown filters
+  const founderQualOptions = useMemo(() => {
+    const setx = new Set();
+    allRows.forEach((r) => {
+      const v = String(r.founderQualification || "").trim();
+      if (v) setx.add(v);
+    });
+    return ["all", ...Array.from(setx).sort()];
+  }, [allRows]);
+
+  const natureOptions = useMemo(() => {
+    const setx = new Set();
+    allRows.forEach((r) => {
+      const v = String(r.natureOfEntity || "").trim();
+      if (v) setx.add(v);
+    });
+    return ["all", ...Array.from(setx).sort()];
+  }, [allRows]);
 
   // -------------------------
   // Derived: filtered + sorted
@@ -641,13 +702,15 @@ const AIReviewedData = () => {
         row.ai_risk,
         row.summary,
         row.isRegisteredEntity,
+        row.founderQualification,
+        row.natureOfEntity,
+        row.dateOfRegistration,
+        row.roc,
       ]
         .map((x) => String(x || "").toLowerCase())
         .join(" | ");
       return hay.includes(query);
     };
-
-    const passEnum = (val, f) => (f === "all" ? true : String(val || "").toLowerCase() === String(f).toLowerCase());
 
     const passRegistered = (row) => {
       if (registeredEntityFilter === "all") return true;
@@ -672,6 +735,9 @@ const AIReviewedData = () => {
 
       if (!passRegistered(row)) return false;
 
+      if (!passEnum(row.founderQualification, founderQualFilter)) return false;
+      if (!passEnum(row.natureOfEntity, natureFilter)) return false;
+
       const f = Number(row.overall_final || 0);
       if (f < Number(minFinal)) return false;
       if (f > Number(maxFinal)) return false;
@@ -686,7 +752,6 @@ const AIReviewedData = () => {
       const av = a?.[sortKey];
       const bv = b?.[sortKey];
 
-      // numeric preferred
       const an = Number(av);
       const bn = Number(bv);
       const aNumOk = !Number.isNaN(an) && av !== "" && av != null;
@@ -711,6 +776,8 @@ const AIReviewedData = () => {
     aiRiskFilter,
     stageFilter,
     registeredEntityFilter,
+    founderQualFilter,
+    natureFilter,
     minFinal,
     maxFinal,
     minQualifiers,
@@ -797,7 +864,12 @@ const AIReviewedData = () => {
         "Registration No": row.sb_no,
         "Entity Name": row.entity_name,
         "Stage": row.stage,
+
         "Is Registered Entity": row.isRegisteredEntity || "",
+        "Founder Qualification": row.founderQualification || "",
+        "Nature Of Entity": row.natureOfEntity || "",
+        "Date Of Registration": row.dateOfRegistration || "",
+        "ROC": row.roc || "",
 
         "Decision": prettifyDecision(row.decision),
         "Business Type": prettifyBusinessType(row.business_type),
@@ -840,7 +912,6 @@ const AIReviewedData = () => {
     XLSX.writeFile(wb, `SSU_Selected_Startups_${Date.now()}.xlsx`);
   };
 
-  // Writes shortlist markers for selected sb_nos
   const shortlistSelectedToRTDB = async () => {
     const picked = viewRows.filter((r) => selectedIds.has(String(r.sb_no)));
     if (!picked.length) return;
@@ -854,14 +925,19 @@ const AIReviewedData = () => {
         entity_name: r.entity_name || "",
         decision: r.decision || "",
         overall_final: Number(r.overall_final || 0),
+
         isRegisteredEntity: r.isRegisteredEntity || "",
+        founderQualification: r.founderQualification || "",
+        natureOfEntity: r.natureOfEntity || "",
+        dateOfRegistration: r.dateOfRegistration || "",
+        roc: r.roc || "",
+
         taggedAt: now,
       };
     });
 
     try {
       await update(ref(rtdb), batch);
-      // optional: keep selection, but usually SSU wants it cleared after tagging
       clearSelection();
       alert(`Shortlisted: ${picked.length}`);
     } catch (e) {
@@ -870,8 +946,6 @@ const AIReviewedData = () => {
     }
   };
 
-  // Upload shortlist Excel and push to SHORTLIST_PATH.
-  // Accepted columns (any one works): "Acknowledgment No" OR "sb_no" OR "Registration No"
   const handleShortlistUpload = async (file) => {
     if (!file) return;
 
@@ -932,6 +1006,8 @@ const AIReviewedData = () => {
     setAiRiskFilter("all");
     setStageFilter("all");
     setRegisteredEntityFilter("all");
+    setFounderQualFilter("all");
+    setNatureFilter("all");
     setMinFinal(0);
     setMaxFinal(10);
     setMinQualifiers(0);
@@ -962,9 +1038,7 @@ const AIReviewedData = () => {
                   RTDB
                 </span>
               </h2>
-              <p className="text-gray-400 text-sm">
-                Filter + sort reviewed startups, select, shortlist, and export. Click any row for full AI evaluation.
-              </p>
+              <p className="text-gray-400 text-sm">Filter + sort reviewed startups, select, shortlist, and export. Click any row for full AI evaluation.</p>
             </div>
           </div>
 
@@ -987,13 +1061,7 @@ const AIReviewedData = () => {
               <Upload size={16} />
               {shortlistUploadBusy ? "Uploading..." : "Upload Shortlist"}
             </button>
-            <input
-              ref={shortlistInputRef}
-              type="file"
-              accept=".xlsx,.xls"
-              className="hidden"
-              onChange={(e) => handleShortlistUpload(e.target.files?.[0])}
-            />
+            <input ref={shortlistInputRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={(e) => handleShortlistUpload(e.target.files?.[0])} />
           </div>
         </div>
 
@@ -1006,7 +1074,7 @@ const AIReviewedData = () => {
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search SB No, Entity, summary, stage, evidence, AI-risk..."
+                placeholder="Search SB No, Entity, summary, stage, evidence, AI-risk, qualification, nature..."
                 className="w-full bg-transparent outline-none text-sm text-gray-200 placeholder:text-gray-600"
               />
               {q ? (
@@ -1024,55 +1092,23 @@ const AIReviewedData = () => {
               <Select label="AI-risk" value={aiRiskFilter} onChange={setAiRiskFilter} options={["all", "low", "medium", "high"]} />
               <Select label="Stage" value={stageFilter} onChange={setStageFilter} options={["all", "IDEATION", "PROTOTYPE", "MVP", "VALIDATION", "REVENUE", "SCALE", "validation", "mvp"]} />
               <Select label="Registered" value={registeredEntityFilter} onChange={setRegisteredEntityFilter} options={["all", "yes", "no"]} />
+              <Select label="Founder Qualification" value={founderQualFilter} onChange={setFounderQualFilter} options={founderQualOptions} />
+              <Select label="Nature Of Entity" value={natureFilter} onChange={setNatureFilter} options={natureOptions} />
             </div>
           </div>
 
           {/* numeric filters */}
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-3">
-            <Range
-              icon={<Gauge size={16} className="text-indigo-300" />}
-              title="Final Score Range"
-              leftLabel={`Min: ${to2(minFinal)}`}
-              rightLabel={`Max: ${to2(maxFinal)}`}
-            >
+            <Range icon={<Gauge size={16} className="text-indigo-300" />} title="Final Score Range" leftLabel={`Min: ${to2(minFinal)}`} rightLabel={`Max: ${to2(maxFinal)}`}>
               <div className="flex items-center gap-3">
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={minFinal}
-                  onChange={(e) => setMinFinal(clamp010(e.target.value))}
-                  className="flex-1 accent-indigo-500"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={maxFinal}
-                  onChange={(e) => setMaxFinal(clamp010(e.target.value))}
-                  className="flex-1 accent-emerald-500"
-                />
+                <input type="range" min="0" max="10" step="0.1" value={minFinal} onChange={(e) => setMinFinal(clamp010(e.target.value))} className="flex-1 accent-indigo-500" />
+                <input type="range" min="0" max="10" step="0.1" value={maxFinal} onChange={(e) => setMaxFinal(clamp010(e.target.value))} className="flex-1 accent-emerald-500" />
               </div>
             </Range>
 
-            <Range
-              icon={<Filter size={16} className="text-indigo-300" />}
-              title="Minimum Qualifiers"
-              leftLabel={`≥ ${minQualifiers}`}
-              rightLabel={`${viewRows.length} results`}
-            >
+            <Range icon={<Filter size={16} className="text-indigo-300" />} title="Minimum Qualifiers" leftLabel={`≥ ${minQualifiers}`} rightLabel={`${viewRows.length} results`}>
               <div className="flex items-center gap-3">
-                <input
-                  type="range"
-                  min="0"
-                  max="8"
-                  step="1"
-                  value={minQualifiers}
-                  onChange={(e) => setMinQualifiers(Number(e.target.value))}
-                  className="flex-1 accent-indigo-500"
-                />
+                <input type="range" min="0" max="8" step="1" value={minQualifiers} onChange={(e) => setMinQualifiers(Number(e.target.value))} className="flex-1 accent-indigo-500" />
                 <input
                   value={String(minQualifiers)}
                   onChange={(e) => setMinQualifiers(Number(e.target.value || 0))}
@@ -1101,9 +1137,7 @@ const AIReviewedData = () => {
                   onClick={shortlistSelectedToRTDB}
                   disabled={!selectedCount}
                   className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    selectedCount
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      : "bg-[#1e1e2d] text-gray-500 cursor-not-allowed border border-[#2d2d3f]"
+                    selectedCount ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-[#1e1e2d] text-gray-500 cursor-not-allowed border border-[#2d2d3f]"
                   }`}
                 >
                   <CheckCircle2 size={14} />
@@ -1114,9 +1148,7 @@ const AIReviewedData = () => {
                   onClick={exportSelectedExcel}
                   disabled={!selectedCount}
                   className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                    selectedCount
-                      ? "bg-indigo-600 hover:bg-indigo-700 text-white"
-                      : "bg-[#1e1e2d] text-gray-500 cursor-not-allowed border border-[#2d2d3f]"
+                    selectedCount ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-[#1e1e2d] text-gray-500 cursor-not-allowed border border-[#2d2d3f]"
                   }`}
                 >
                   <Download size={14} />
@@ -1163,6 +1195,12 @@ const AIReviewedData = () => {
                   <Th label="Registered" onClick={() => toggleSort("isRegisteredEntity")}>
                     <SortIcon col="isRegisteredEntity" />
                   </Th>
+
+                  <Th label="Founder Qualification" onClick={() => toggleSort("founderQualification")}>
+                    <SortIcon col="founderQualification" />
+                  </Th>
+
+               
 
                   <Th label="Decision" onClick={() => toggleSort("decision")}>
                     <SortIcon col="decision" />
@@ -1217,7 +1255,7 @@ const AIReviewedData = () => {
               <tbody className="divide-y divide-[#2d2d3f]">
                 {loading ? (
                   <tr>
-                    <td colSpan={16} className="px-6 py-10">
+                    <td colSpan={21} className="px-6 py-10">
                       <div className="flex items-center gap-3 text-gray-500">
                         <div className="h-4 w-4 rounded-full border-2 border-[#2d2d3f] border-t-indigo-500 animate-spin" />
                         Loading reviewed data from RTDB...
@@ -1233,10 +1271,9 @@ const AIReviewedData = () => {
                       transition={{ duration: 0.2 }}
                       className="hover:bg-[#1a1a2e] cursor-pointer group"
                       onClick={(e) => {
-                        // prevent row-open when clicking checkbox
                         const tag = e?.target?.tagName?.toLowerCase();
                         if (tag === "input" || tag === "button" || tag === "svg" || tag === "path") return;
-                        setSelectedEntry(row._raw ? { ...row._raw, sb_no: row.sb_no, entity_name: row.entity_name, stage: row.stage } : row);
+                        setSelectedEntry(row._raw ? { ...row._raw, ...row } : row);
                       }}
                       title="Click to view detailed analysis"
                     >
@@ -1264,6 +1301,9 @@ const AIReviewedData = () => {
                           {String(row.isRegisteredEntity || "—")}
                         </span>
                       </td>
+
+                      <td className="px-6 py-4 text-sm text-gray-300 max-w-[220px] truncate">{row.founderQualification || "—"}</td>
+                     
 
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getDecisionPill(row.decision)}`}>
@@ -1302,9 +1342,7 @@ const AIReviewedData = () => {
                         )}
                       </td>
 
-                      <td className="px-6 py-4 text-center font-mono text-gray-300">
-                        {row.specificity_score == null ? "—" : Number(row.specificity_score).toFixed(2)}
-                      </td>
+                      <td className="px-6 py-4 text-center font-mono text-gray-300">{row.specificity_score == null ? "—" : Number(row.specificity_score).toFixed(2)}</td>
 
                       <td className="px-6 py-4">
                         {row.ai_risk ? (
@@ -1325,7 +1363,7 @@ const AIReviewedData = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={16} className="px-6 py-10">
+                    <td colSpan={21} className="px-6 py-10">
                       <div className="text-gray-500">No results for current filters.</div>
                     </td>
                   </tr>
@@ -1337,8 +1375,7 @@ const AIReviewedData = () => {
           {/* footer stats */}
           <div className="px-5 py-3 border-t border-[#2d2d3f] bg-[#0f0f16] text-xs text-gray-500 flex items-center justify-between">
             <div>
-              Showing <span className="text-gray-300 font-mono">{viewRows.length}</span> /{" "}
-              <span className="text-gray-300 font-mono">{allRows.length}</span> reviewed entries
+              Showing <span className="text-gray-300 font-mono">{viewRows.length}</span> / <span className="text-gray-300 font-mono">{allRows.length}</span> reviewed entries
             </div>
             <div className="text-gray-500">
               Sort: <span className="text-gray-300 font-mono">{sortKey}</span> ({sortDir})
@@ -1346,9 +1383,7 @@ const AIReviewedData = () => {
           </div>
         </div>
 
-        <AnimatePresence>
-          {selectedEntry && <DetailModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />}
-        </AnimatePresence>
+        <AnimatePresence>{selectedEntry && <DetailModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />}</AnimatePresence>
       </div>
 
       <style jsx>{`
