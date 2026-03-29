@@ -20,6 +20,8 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const seatMapRoutes = require('./routes/seatMapRoutes');
+const migrationRoutes = require("./routes/migrationRoutes");
+
 
 // Prisma or other setup
 const { PrismaClient } = require('@prisma/client');
@@ -52,6 +54,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/staff', staffRoutes);
 app.use("/api/seatMap", seatMapRoutes);
+app.use("/api/migration", migrationRoutes);
 
 // (3) Serve your built frontend (dist folder)
 app.use(express.static(path.join(__dirname, 'dist')));

@@ -29,6 +29,9 @@ import UserSignup from './components/New_Applications/StartupRegistration/UserSi
 import Response from './components/New_Applications/Response';
 import IdeaFestHome from './components/IdeaFest/IdeaFestHome';
 import Certificate from './components/IdeaFest/Certificate';
+import Migration from './components/AdminRedesign/NewApplicationAdmin/Migration/Migration';
+import StartupMainFormWrapper from './components/New_Registration/registration/RegistrationLayout';
+
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -52,6 +55,7 @@ const App = () => {
 				<Route path="/IncubationCell" element={<IncubationNodalList />} />
 				<Route path="/Mentors" element={<Mentors />} />
 				<Route path="/newapplicationdashboard" element={<MainAdmin />} />
+				
 				<Route path="/Events" element={<Events />} />
 				<Route path="/pdf-viewer" element={<PdfViewer />} />
 				<Route
@@ -94,7 +98,7 @@ const App = () => {
 				<Route path="/NewStartupForm" element={<StartupDetailsForm />} />
 				<Route path="/SR" element={<UserSignup />} />
 				<Route path="/rv" element={<Response />} />
-				<Route path="/newtest" element={<StartupMainForm />} />
+				<Route path="/applicationtesting" element={<StartupMainFormWrapper />} />
 				<Route path="/ideafest" element={<IdeaFestHome />} />
 						<Route path="/certificate/:id" element={<Certificate />} />
 				
