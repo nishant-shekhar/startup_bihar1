@@ -8,16 +8,20 @@ import { FaCheckCircle, FaLock, FaShieldAlt } from "react-icons/fa";
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
 
+const DEFAULT_APPLICATION_TYPE = "funding_with_recognition";
+
 const getValidationSchema = (isLoggedIn) => {
   if (isLoggedIn) {
     return Yup.object().shape({
       startupName: Yup.string().trim().required("Startup name is required"),
+      applicationType: Yup.string().required("Please select application type"),
     });
   }
 
   return Yup.object().shape({
     founderName: Yup.string().trim().required("Applicant name is required"),
     startupName: Yup.string().trim().required("Startup name is required"),
+    applicationType: Yup.string().required("Please select application type"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
@@ -49,7 +53,7 @@ export default function UserSignup({
   const [userPhone, setUserPhone] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
-  const [updatingName, setUpdatingName] = useState(false);
+  const [updatingDetails, setUpdatingDetails] = useState(false);
 
   const validationSchema = useMemo(
     () => getValidationSchema(isLoggedIn),
@@ -86,20 +90,21 @@ export default function UserSignup({
 
     if (isLoggedIn) {
       try {
-        setUpdatingName(true);
+        setUpdatingDetails(true);
 
         const result = await onSubmit?.({
+          type: "updateStartupDetails",
           startupName: values.startupName?.trim() || "",
-          type: "updateStartupName",
+          applicationType: values.applicationType || DEFAULT_APPLICATION_TYPE,
         });
 
         if (result?.ok === false) {
-          setSubmitError(result.error || "Could not update startup name.");
+          setSubmitError(result.error || "Could not update details.");
         }
       } catch (error) {
-        setSubmitError(error.message || "Could not update startup name.");
+        setSubmitError(error.message || "Could not update details.");
       } finally {
-        setUpdatingName(false);
+        setUpdatingDetails(false);
         setSubmitting(false);
       }
       return;
@@ -110,7 +115,11 @@ export default function UserSignup({
 
       await sendOtp(values.phoneNumber);
 
-      setFormValues(values);
+      setFormValues({
+        ...values,
+        applicationType:
+          values.applicationType || DEFAULT_APPLICATION_TYPE,
+      });
       setUserPhone(values.phoneNumber);
       setIsPhoneModalOpen(true);
     } catch (error) {
@@ -130,6 +139,8 @@ export default function UserSignup({
         type: "registration",
         registeredAt: new Date().toISOString(),
         ...formValues,
+        applicationType:
+          formValues.applicationType || DEFAULT_APPLICATION_TYPE,
       });
 
       if (result?.ok === false) {
@@ -141,6 +152,8 @@ export default function UserSignup({
   const signupInitialValues = {
     founderName: initialValues?.founderName || "",
     startupName: initialValues?.startupName || "",
+    applicationType:
+      initialValues?.applicationType || DEFAULT_APPLICATION_TYPE,
     email: initialValues?.email || "",
     phoneNumber: initialValues?.phoneNumber || "",
     aadharNumber: initialValues?.aadharNumber || "",
@@ -160,7 +173,8 @@ export default function UserSignup({
               Register your startup
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-500">
-              Start with founder and startup details. Login is available from this same screen for returning applicants.
+              Start with founder and startup details. Login is available from
+              this same screen for returning applicants.
             </p>
           </div>
 
@@ -185,14 +199,16 @@ export default function UserSignup({
                 Registration details locked
               </div>
               <div className="mt-1">
-                This application has already been submitted. Registration details cannot be edited now.
+                This application has already been submitted. Registration
+                details cannot be edited now.
               </div>
             </div>
           ) : isLoggedIn ? (
             <div className="mb-6 rounded-[24px] border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-800 shadow-sm">
               <div className="font-semibold">You are already logged in.</div>
               <div className="mt-1">
-                New registration is disabled. Only startup name can be updated here.
+                New registration is disabled. Startup name and application type
+                can be updated here.
               </div>
             </div>
           ) : (
@@ -202,7 +218,8 @@ export default function UserSignup({
                   Registration note
                 </div>
                 <div className="mt-2 text-sm text-slate-600">
-                  A secure password is required. Returning applicants can log in using registration number, email or mobile number.
+                  A secure password is required. Returning applicants can log in
+                  using registration number, email or mobile number.
                 </div>
               </div>
 
@@ -212,7 +229,8 @@ export default function UserSignup({
                   Verification note
                 </div>
                 <div className="mt-2 text-sm text-slate-500">
-                  Your mobile number will be verified through OTP before registration is saved.
+                  Your mobile number will be verified through OTP before
+                  registration is saved.
                 </div>
               </div>
             </div>
@@ -245,6 +263,21 @@ export default function UserSignup({
                     disabled={isReadOnly}
                   />
 
+                  <SelectField
+                    name="applicationType"
+                    label="Application Type"
+                    errors={errors}
+                    touched={touched}
+                    disabled={isReadOnly}
+                  >
+                    <option value="funding_with_recognition">
+                      Startup Funding with Recognition
+                    </option>
+                    <option value="recognition_only">
+                      Startup Recognition Only
+                    </option>
+                  </SelectField>
+
                   <InputField
                     name="email"
                     type="email"
@@ -276,8 +309,6 @@ export default function UserSignup({
                     touched={touched}
                     disabled={isReadOnly || isLoggedIn}
                   />
-
-                  <div className="hidden md:block" />
 
                   {!isLoggedIn ? (
                     <>
@@ -319,11 +350,11 @@ export default function UserSignup({
                   </div>
                 ) : null}
 
-                {updatingName ? (
+                {updatingDetails ? (
                   <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
                     <div className="flex items-center gap-3">
                       <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                      Updating startup name. Please wait...
+                      Updating details. Please wait...
                     </div>
                   </div>
                 ) : null}
@@ -332,22 +363,22 @@ export default function UserSignup({
                   <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 md:flex-row md:items-center md:justify-between">
                     <div className="text-sm text-slate-500">
                       {isLoggedIn
-                        ? "You can update only the startup name."
+                        ? "You can update the startup name and application type."
                         : "Your details will be saved as a draft after phone verification."}
                     </div>
 
                     <button
                       type="submit"
-                      disabled={isSubmitting || sendingOtp || updatingName}
+                      disabled={isSubmitting || sendingOtp || updatingDetails}
                       className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isSubmitting || sendingOtp || updatingName ? (
+                      {isSubmitting || sendingOtp || updatingDetails ? (
                         <>
                           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                           {isLoggedIn ? "Updating..." : "Sending OTP..."}
                         </>
                       ) : isLoggedIn ? (
-                        "Update Startup Name"
+                        "Update Details"
                       ) : (
                         t("userSignup.register")
                       )}
@@ -404,6 +435,45 @@ function InputField({
         }`}
         placeholder={placeholder}
       />
+      <ErrorMessage
+        name={name}
+        component="p"
+        className="mt-2 text-sm text-red-500"
+      />
+    </div>
+  );
+}
+
+function SelectField({
+  name,
+  label,
+  children,
+  errors,
+  touched,
+  disabled = false,
+}) {
+  const hasError = errors[name] && touched[name];
+
+  return (
+    <div>
+      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+        {label}
+      </label>
+      <Field
+        as="select"
+        id={name}
+        name={name}
+        disabled={disabled}
+        className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition ${
+          disabled
+            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+            : hasError
+            ? "border-red-400 bg-red-50"
+            : "border-slate-200 bg-white/85 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+        }`}
+      >
+        {children}
+      </Field>
       <ErrorMessage
         name={name}
         component="p"

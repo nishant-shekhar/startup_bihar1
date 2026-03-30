@@ -622,32 +622,37 @@ function RegistrationLayoutInner() {
       let nextStep = step + 1;
 
       if (step === 1) {
-        if (isLoggedIn && formData.applicationId && formData.userSignup) {
-          const updatedSignup = {
-            ...formData.userSignup,
-            startupName:
-              rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
-            founderName: formData.userSignup.founderName,
-            email: formData.userSignup.email,
-            phoneNumber: formData.userSignup.phoneNumber,
-            aadharNumber: formData.userSignup.aadharNumber,
-            passwordHash: formData.userSignup.passwordHash,
-          };
+       if (isLoggedIn && formData.applicationId && formData.userSignup) {
+  const updatedSignup = {
+    ...formData.userSignup,
+    startupName:
+      rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
+    applicationType:
+      rawStepData.applicationType ||
+      formData.userSignup.applicationType ||
+      "funding_with_recognition",
+    founderName: formData.userSignup.founderName,
+    email: formData.userSignup.email,
+    phoneNumber: formData.userSignup.phoneNumber,
+    aadharNumber: formData.userSignup.aadharNumber,
+    passwordHash: formData.userSignup.passwordHash,
+  };
 
-          nextFormData = {
-            ...nextFormData,
-            userSignup: updatedSignup,
-          };
+  nextFormData = {
+    ...nextFormData,
+    userSignup: updatedSignup,
+  };
 
-          sectionKey = "userSignup";
-          persistAuth({
-            ...(authState || {}),
-            applicationId: formData.applicationId,
-            founderName: updatedSignup.founderName,
-            startupName: updatedSignup.startupName,
-            email: updatedSignup.email,
-            phoneNumber: updatedSignup.phoneNumber,
-          });
+  sectionKey = "userSignup";
+  persistAuth({
+    ...(authState || {}),
+    applicationId: formData.applicationId,
+    founderName: updatedSignup.founderName,
+    startupName: updatedSignup.startupName,
+    email: updatedSignup.email,
+    phoneNumber: updatedSignup.phoneNumber,
+  });
+
         } else {
           openWorkingDialog(
             "Checking your details",
@@ -675,20 +680,22 @@ function RegistrationLayoutInner() {
           sectionKey = "userSignup";
 
           nextFormData = {
-            ...nextFormData,
-            applicationId,
-            userSignup: {
-              founderName: rawStepData.founderName,
-              startupName: rawStepData.startupName,
-              email: normalizeEmail(rawStepData.email),
-              phoneNumber: normalizePhone(rawStepData.phoneNumber),
-              aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
-              phoneVerified: true,
-              registrationType: rawStepData.type || "registration",
-              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
-              passwordHash,
-            },
-          };
+  ...nextFormData,
+  applicationId,
+  userSignup: {
+    founderName: rawStepData.founderName,
+    startupName: rawStepData.startupName,
+    applicationType:
+      rawStepData.applicationType || "funding_with_recognition",
+    email: normalizeEmail(rawStepData.email),
+    phoneNumber: normalizePhone(rawStepData.phoneNumber),
+    aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
+    phoneVerified: true,
+    registrationType: rawStepData.type || "registration",
+    registeredAt: rawStepData.registeredAt || new Date().toISOString(),
+    passwordHash,
+  },
+};
 
           persistAuth({
             applicationId,
@@ -1317,6 +1324,7 @@ function RegistrationLayoutInner() {
                     <div className="text-2xl font-bold tracking-tight text-slate-900">
   Startup Bihar
 </div>
+
                     <div className="mt-1 text-sm text-slate-500">
                       {isLoggedIn ? "Logged in application" : "New registration"}
                     </div>

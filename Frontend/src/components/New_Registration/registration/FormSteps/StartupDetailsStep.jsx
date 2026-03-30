@@ -1,7 +1,6 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import stateDistrictData from "./stateDistrictData.json";
 import { useLanguage } from "../../shared/LanguageContext";
 import { FaLock } from "react-icons/fa";
 
@@ -12,8 +11,6 @@ export default function StartupDetailsStep({
   isReadOnly = false,
 }) {
   const { t } = useLanguage();
-
-  const stateOptions = Object.keys(stateDistrictData);
 
   const validationSchema = Yup.object().shape({
     teamSize: Yup.number()
@@ -29,13 +26,6 @@ export default function StartupDetailsStep({
       ),
     sector: Yup.string().required("Sector is required"),
     stage: Yup.string().required("Stage is required"),
-    applicantAddress: Yup.string().required("Applicant address is required"),
-    state: Yup.string().required("State is required"),
-    district: Yup.string().required("District is required"),
-    blockName: Yup.string().trim().required("Block name is required"),
-    pincode: Yup.string()
-      .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
-      .required("Pincode is required"),
   });
 
   const ensureScheme = (value) => {
@@ -55,7 +45,7 @@ export default function StartupDetailsStep({
             Startup details
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Add team, sector, stage and address details.
+            Add team, sector and stage details.
           </p>
         </div>
 
@@ -77,28 +67,18 @@ export default function StartupDetailsStep({
             website: "",
             sector: "",
             stage: "",
-            applicantAddress: "",
-            state: "",
-            district: "",
-            blockName: "",
-            pincode: "",
           }
         }
         validationSchema={validationSchema}
         onSubmit={(values) => {
           onSubmit({
             ...values,
-            blockName: values.blockName?.trim() || "",
             website: values.website ? ensureScheme(values.website) : "",
           });
         }}
         enableReinitialize
       >
-        {(formik) => {
-          const availableDistricts = formik.values.state
-            ? stateDistrictData[formik.values.state] || []
-            : [];
-
+        {() => {
           return (
             <Form className="space-y-6">
               <div className="rounded-[32px] border border-white/80 bg-white/72 p-5 shadow-[0_16px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-8">
@@ -107,7 +87,7 @@ export default function StartupDetailsStep({
                     Startup profile
                   </div>
                   <div className="mt-1 text-sm text-slate-600">
-                    Add operational details of the startup, including sector, stage and applicant location.
+                    Add operational details of the startup, including sector and stage.
                   </div>
                 </div>
 
@@ -195,77 +175,6 @@ export default function StartupDetailsStep({
                     </option>
                     <option value="Scaling">{t("startupDetails.scaling")}</option>
                   </SelectField>
-
-                  <div className="md:col-span-2">
-                    <label
-                      htmlFor="applicantAddress"
-                      className="mb-2 block text-sm font-semibold text-slate-800"
-                    >
-                      {t("startupDetails.applicantAddress")}
-                    </label>
-                    <Field
-                      as="textarea"
-                      id="applicantAddress"
-                      name="applicantAddress"
-                      rows={4}
-                      disabled={isReadOnly}
-                      className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
-                        isReadOnly
-                          ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
-                          : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
-                      }`}
-                    />
-                    <ErrorMessage
-                      name="applicantAddress"
-                      component="p"
-                      className="mt-2 text-sm text-red-500"
-                    />
-                  </div>
-
-                  <SelectField
-                    name="state"
-                    label={t("startupDetails.state")}
-                    disabled={isReadOnly}
-                    onChange={(e) => {
-                      formik.setFieldValue("state", e.target.value);
-                      formik.setFieldValue("district", "");
-                      formik.setFieldValue("blockName", "");
-                    }}
-                  >
-                    <option value="">{t("common.select")}</option>
-                    {stateOptions.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </SelectField>
-
-                  <SelectField
-                    name="district"
-                    label={t("startupDetails.district")}
-                    disabled={!formik.values.state || isReadOnly}
-                  >
-                    <option value="">{t("startupDetails.selectDistrict")}</option>
-                    {availableDistricts.map((district) => (
-                      <option key={district} value={district}>
-                        {district}
-                      </option>
-                    ))}
-                  </SelectField>
-
-                  <InputField
-                    name="blockName"
-                    label="Block Name"
-                    placeholder="Enter block name"
-                    disabled={isReadOnly}
-                  />
-
-                  <InputField
-                    name="pincode"
-                    label={t("startupDetails.pincode")}
-                    placeholder="800001"
-                    disabled={isReadOnly}
-                  />
                 </div>
 
                 <div className="mt-8 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between">

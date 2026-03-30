@@ -22,26 +22,30 @@ export default function BusinessIdeaStep({
     innovation: Yup.string().required("Innovation is required"),
     businessModel: Yup.string().required("Business model is required"),
     pitchDeck: Yup.mixed()
-      .nullable()
-      .test("fileSize", FILE_SIZE_ERROR, (value) => {
-        if (!value) return true;
-        return value.size <= MAX_PITCH_DECK_SIZE;
-      })
-      .test("fileType", "Only PDF, PPT, and PPTX files are allowed", (value) => {
-        if (!value) return true;
-        const allowedTypes = [
-          "application/pdf",
-          "application/vnd.ms-powerpoint",
-          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        ];
-        const fileName = value?.name?.toLowerCase() || "";
-        return (
-          allowedTypes.includes(value.type) ||
-          fileName.endsWith(".pdf") ||
-          fileName.endsWith(".ppt") ||
-          fileName.endsWith(".pptx")
-        );
-      }),
+  .test("pitchDeckRequired", "Pitch deck is required", function (value) {
+    const hasNewFile = !!value;
+    const hasExistingFile = !!this.parent?.pitchDeckMeta?.downloadURL;
+    return hasNewFile || hasExistingFile;
+  })
+  .test("fileSize", FILE_SIZE_ERROR, (value) => {
+    if (!value) return true;
+    return value.size <= MAX_PITCH_DECK_SIZE;
+  })
+  .test("fileType", "Only PDF, PPT, and PPTX files are allowed", (value) => {
+    if (!value) return true;
+    const allowedTypes = [
+      "application/pdf",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ];
+    const fileName = value?.name?.toLowerCase() || "";
+    return (
+      allowedTypes.includes(value.type) ||
+      fileName.endsWith(".pdf") ||
+      fileName.endsWith(".ppt") ||
+      fileName.endsWith(".pptx")
+    );
+  }),
     pitchDeckMeta: Yup.mixed().nullable(),
   });
 

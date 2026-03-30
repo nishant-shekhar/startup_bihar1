@@ -13,22 +13,30 @@ export default function CoFounderDetailsStep({
 }) {
   const { t } = useLanguage();
 
+  const coFounderSchema = Yup.object().shape({
+    name: Yup.string().required("Name is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    phoneNumber: Yup.string()
+      .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
+      .required("Phone number is required"),
+    qualification: Yup.string().required("Qualification is required"),
+    linkedinProfile: Yup.string()
+      .nullable()
+      .test("valid-linkedin", "Enter a valid URL", (value) => {
+        return !value || /^https?:\/\//.test(value);
+      }),
+  });
+
   const validationSchema = Yup.object().shape({
-    coFounders: Yup.array().of(
-      Yup.object().shape({
-        name: Yup.string().required("Name is required"),
-        email: Yup.string().email("Invalid email").required("Email is required"),
-        phoneNumber: Yup.string()
-          .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
-          .required("Phone number is required"),
-        qualification: Yup.string().required("Qualification is required"),
-        linkedinProfile: Yup.string()
-          .nullable()
-          .test("valid-linkedin", "Enter a valid URL", (value) => {
-            return !value || /^https?:\/\//.test(value);
-          }),
-      })
-    ),
+    isSoleFounder: Yup.boolean(),
+    coFounders: Yup.array().when("isSoleFounder", {
+      is: true,
+      then: () => Yup.array().default([]),
+      otherwise: () =>
+        Yup.array()
+          .of(coFounderSchema)
+          .min(1, "Please add at least one co-founder or select sole founder"),
+    }),
   });
 
   return (
@@ -42,7 +50,7 @@ export default function CoFounderDetailsStep({
             Co-founder details
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Add one or more co-founders if applicable.
+            Add co-founder details, or continue as a sole founder.
           </p>
         </div>
 
@@ -60,6 +68,7 @@ export default function CoFounderDetailsStep({
       <Formik
         initialValues={
           initialValues || {
+            isSoleFounder: false,
             coFounders: [
               {
                 name: "",
@@ -72,7 +81,12 @@ export default function CoFounderDetailsStep({
           }
         }
         validationSchema={validationSchema}
-        onSubmit={onSubmit}
+        onSubmit={(values) => {
+          onSubmit({
+            ...values,
+            coFounders: values.isSoleFounder ? [] : values.coFounders,
+          });
+        }}
         enableReinitialize
       >
         {(formik) => (
@@ -87,124 +101,167 @@ export default function CoFounderDetailsStep({
                 </div>
               </div>
 
-              <FieldArray name="coFounders">
-                {({ push, remove }) => (
-                  <div className="space-y-5">
-                    {formik.values.coFounders.map((_, index) => (
-                      <div
-                        key={index}
-                        className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5"
-                      >
-                        <div className="mb-4 flex items-center justify-between gap-3">
-                          <div className="text-lg font-semibold text-slate-800">
-                            {t("cofounderDetails.cofounderLabel")} {index + 1}
-                          </div>
+              <div className="mb-6 rounded-[24px] border border-slate-200 bg-slate-50/80 p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <Field
+                    type="checkbox"
+                    name="isSoleFounder"
+                    disabled={isReadOnly}
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400"
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      formik.setFieldValue("isSoleFounder", checked);
 
-                          {index > 0 && !isReadOnly ? (
-                            <button
-                              type="button"
-                              onClick={() => remove(index)}
-                              className="rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
-                            >
-                              {t("cofounderDetails.remove")}
-                            </button>
-                          ) : index > 0 && isReadOnly ? (
-                            <div className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500">
-                              Locked
-                            </div>
-                          ) : null}
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                          <NestedInput
-                            name={`coFounders.${index}.name`}
-                            label={t("cofounderDetails.name")}
-                            placeholder="Full name"
-                            disabled={isReadOnly}
-                          />
-
-                          <NestedInput
-                            name={`coFounders.${index}.email`}
-                            type="email"
-                            label={t("cofounderDetails.email")}
-                            placeholder="name@example.com"
-                            disabled={isReadOnly}
-                          />
-
-                          <NestedInput
-                            name={`coFounders.${index}.phoneNumber`}
-                            label={t("cofounderDetails.phoneNumber")}
-                            placeholder="9876543210"
-                            disabled={isReadOnly}
-                          />
-
-                          <div>
-                            <label
-                              htmlFor={`coFounders.${index}.qualification`}
-                              className="mb-2 block text-sm font-semibold text-slate-800"
-                            >
-                              {t("cofounderDetails.qualification")}
-                            </label>
-                            <Field
-                              as="select"
-                              id={`coFounders.${index}.qualification`}
-                              name={`coFounders.${index}.qualification`}
-                              disabled={isReadOnly}
-                              className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
-                                isReadOnly
-                                  ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
-                                  : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
-                              }`}
-                            >
-                              <option value="">{t("common.select")}</option>
-                              {qualificationOptions.map((qual) => (
-                                <option key={qual} value={qual}>
-                                  {qual}
-                                </option>
-                              ))}
-                            </Field>
-                            <ErrorMessage
-                              name={`coFounders.${index}.qualification`}
-                              component="p"
-                              className="mt-2 text-sm text-red-500"
-                            />
-                          </div>
-
-                          <div className="md:col-span-2">
-                            <NestedInput
-                              name={`coFounders.${index}.linkedinProfile`}
-                              label={t("cofounderDetails.linkedinProfile")}
-                              placeholder={t("cofounderDetails.linkedinPlaceholder")}
-                              disabled={isReadOnly}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {!isReadOnly ? (
-                      <div className="flex justify-center">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            push({
-                              name: "",
-                              email: "",
-                              phoneNumber: "",
-                              qualification: "",
-                              linkedinProfile: "",
-                            })
-                          }
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                        >
-                          <FaPlus />
-                          {t("cofounderDetails.addCofounder")}
-                        </button>
-                      </div>
-                    ) : null}
+                      if (checked) {
+                        formik.setFieldValue("coFounders", []);
+                      } else if (!formik.values.coFounders.length) {
+                        formik.setFieldValue("coFounders", [
+                          {
+                            name: "",
+                            email: "",
+                            phoneNumber: "",
+                            qualification: "",
+                            linkedinProfile: "",
+                          },
+                        ]);
+                      }
+                    }}
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-slate-800">
+                      I am the sole founder of this startup
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      Select this if there are no co-founders to add.
+                    </div>
                   </div>
-                )}
-              </FieldArray>
+                </label>
+              </div>
+
+              {!formik.values.isSoleFounder ? (
+                <FieldArray name="coFounders">
+                  {({ push, remove }) => (
+                    <div className="space-y-5">
+                      {formik.values.coFounders.map((_, index) => (
+                        <div
+                          key={index}
+                          className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5"
+                        >
+                          <div className="mb-4 flex items-center justify-between gap-3">
+                            <div className="text-lg font-semibold text-slate-800">
+                              {t("cofounderDetails.cofounderLabel")} {index + 1}
+                            </div>
+
+                            {index > 0 && !isReadOnly ? (
+                              <button
+                                type="button"
+                                onClick={() => remove(index)}
+                                className="rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                              >
+                                {t("cofounderDetails.remove")}
+                              </button>
+                            ) : index > 0 && isReadOnly ? (
+                              <div className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-medium text-slate-500">
+                                Locked
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <NestedInput
+                              name={`coFounders.${index}.name`}
+                              label={t("cofounderDetails.name")}
+                              placeholder="Full name"
+                              disabled={isReadOnly}
+                            />
+
+                            <NestedInput
+                              name={`coFounders.${index}.email`}
+                              type="email"
+                              label={t("cofounderDetails.email")}
+                              placeholder="name@example.com"
+                              disabled={isReadOnly}
+                            />
+
+                            <NestedInput
+                              name={`coFounders.${index}.phoneNumber`}
+                              label={t("cofounderDetails.phoneNumber")}
+                              placeholder="9876543210"
+                              disabled={isReadOnly}
+                            />
+
+                            <div>
+                              <label
+                                htmlFor={`coFounders.${index}.qualification`}
+                                className="mb-2 block text-sm font-semibold text-slate-800"
+                              >
+                                {t("cofounderDetails.qualification")}
+                              </label>
+                              <Field
+                                as="select"
+                                id={`coFounders.${index}.qualification`}
+                                name={`coFounders.${index}.qualification`}
+                                disabled={isReadOnly}
+                                className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+                                  isReadOnly
+                                    ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+                                    : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                                }`}
+                              >
+                                <option value="">{t("common.select")}</option>
+                                {qualificationOptions.map((qual) => (
+                                  <option key={qual} value={qual}>
+                                    {qual}
+                                  </option>
+                                ))}
+                              </Field>
+                              <ErrorMessage
+                                name={`coFounders.${index}.qualification`}
+                                component="p"
+                                className="mt-2 text-sm text-red-500"
+                              />
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <NestedInput
+                                name={`coFounders.${index}.linkedinProfile`}
+                                label={t("cofounderDetails.linkedinProfile")}
+                                placeholder={t("cofounderDetails.linkedinPlaceholder")}
+                                disabled={isReadOnly}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {!isReadOnly ? (
+                        <div className="flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              push({
+                                name: "",
+                                email: "",
+                                phoneNumber: "",
+                                qualification: "",
+                                linkedinProfile: "",
+                              })
+                            }
+                            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <FaPlus />
+                            {t("cofounderDetails.addCofounder")}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </FieldArray>
+              ) : (
+                <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-800">
+                  You have marked this startup as a sole-founder venture. No co-founder details are required.
+                </div>
+              )}
 
               <div className="mt-8 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between">
                 <button

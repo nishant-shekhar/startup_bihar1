@@ -73,7 +73,7 @@
       "proprietorship": "Proprietorship",
       "registrationNumber": "Registration No. (Pvt. Ltd. / Partnership/LLP/OPC)",
       "dateOfRegistration": "Date of Registration",
-      "businessAddress": "Business Operating Address",
+      "businessAddress": "Registered Address",
       "businessAddressPlaceholder": "Enter complete business address",
       "state": "State",
       "district": "District",
@@ -128,7 +128,7 @@
     },
     "businessIdea": {
       "title": "Describe Your Business Idea",
-      "problemStatement": "What is the problem statement that you are addressing",
+      "problemStatement": "What is the problem statement that you are addressing?",
       "problemStatementPlaceholder": "Describe the specific problem or challenge you are addressing",
       "solution": "What is your solution to that problem?",
       "solutionPlaceholder": "Explain how your product or service solves this problem",
@@ -282,7 +282,7 @@
     },
     "businessIdea": {
       "title": "अपने व्यवसाय विचार का वर्णन करें",
-      "problemStatement": "आप किस समस्या का समाधान कर रहे हैं",
+      "problemStatement": "आप किस समस्या का समाधान कर रहे हैं?",
       "problemStatementPlaceholder": "आप जिस विशिष्ट समस्या या चुनौती का समाधान कर रहे हैं उसका वर्णन करें",
       "solution": "उस समस्या का आपका समाधान क्या है?",
       "solutionPlaceholder": "समझाएं कि आपका उत्पाद या सेवा इस समस्या को कैसे हल करती है",

@@ -40,7 +40,7 @@ const defaultTimelineSteps = [
   },
   {
     key: "writtenExam",
-    title: "Written Assessment",
+    title: "Written Assessment Test",
     icon: <FaPen />,
     description: "Assessment stage, if applicable.",
   },

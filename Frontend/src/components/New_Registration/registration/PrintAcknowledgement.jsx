@@ -2,6 +2,13 @@ import React, { useMemo, useRef } from "react";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 
+const formatApplicationType = (value) => {
+  if (value === "recognition_only") return "Startup Recognition Only";
+  if (value === "funding_with_recognition")
+    return "Startup Funding with Recognition";
+  return value || "-";
+};
+
 export default function PrintAcknowledgement({ formData }) {
   const printRef = useRef(null);
 
@@ -143,10 +150,15 @@ export default function PrintAcknowledgement({ formData }) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <InfoCard label="Startup Name" value={formData?.userSignup?.startupName || "-"} />
           <InfoCard label="Founder Name" value={formData?.userSignup?.founderName || "-"} />
+          <InfoCard
+            label="Application Type"
+            value={formatApplicationType(formData?.userSignup?.applicationType)}
+          />
           <InfoCard label="Email" value={formData?.userSignup?.email || "-"} />
           <InfoCard label="Phone" value={formData?.userSignup?.phoneNumber || "-"} />
           <InfoCard label="Submitted At" value={submittedAt} />
-          <InfoCard label="Application ID" value={formData?.applicationId || "-"} />
+          <InfoCard label="Registration ID" value={formData?.applicationId || "-"} />
+          <InfoCard label="Status" value={formData?.status || "Submitted"} />
         </div>
 
         <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">

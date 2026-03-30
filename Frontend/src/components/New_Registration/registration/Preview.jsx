@@ -25,6 +25,13 @@ const safe = (value) => {
 
 const yesNo = (value) => (value ? "Yes" : "No");
 
+const formatApplicationType = (value) => {
+  if (value === "recognition_only") return "Startup Recognition Only";
+  if (value === "funding_with_recognition")
+    return "Startup Funding with Recognition";
+  return safe(value);
+};
+
 const surfaceCard =
   "rounded-[32px] border border-white/80 bg-white/78 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6";
 
@@ -53,6 +60,7 @@ function buildRows(formData) {
     ["Application ID", formData?.applicationId],
     ["Founder Name", formData?.userSignup?.founderName],
     ["Startup Name", formData?.userSignup?.startupName],
+    ["Application Type", formatApplicationType(formData?.userSignup?.applicationType)],
     ["Email", formData?.userSignup?.email],
     ["Phone Number", formData?.userSignup?.phoneNumber],
     ["Aadhar Number", formData?.userSignup?.aadharNumber],
@@ -69,8 +77,11 @@ function buildRows(formData) {
     ["Institution", formData?.basicDetails?.institution],
     ["Other Institution", formData?.basicDetails?.otherInstitution],
     ["LinkedIn", formData?.basicDetails?.linkedinProfile],
+    ["Applicant Address", formData?.basicDetails?.applicantAddress],
     ["State", formData?.basicDetails?.state],
     ["District", formData?.basicDetails?.district],
+    ["Block Name", formData?.basicDetails?.blockName],
+    ["Pincode", formData?.basicDetails?.pincode],
     ["Profile Photo", formData?.basicDetails?.profilePhotoMeta?.fileName],
     ["Profile Photo Link", formData?.basicDetails?.profilePhotoMeta?.downloadURL],
   ]);
@@ -93,21 +104,21 @@ function buildRows(formData) {
     ["Website", formData?.startupDetails?.website],
     ["Sector", formData?.startupDetails?.sector],
     ["Stage", formData?.startupDetails?.stage],
-    ["Applicant Address", formData?.startupDetails?.applicantAddress],
-    ["State", formData?.startupDetails?.state],
-    ["District", formData?.startupDetails?.district],
-    ["Pincode", formData?.startupDetails?.pincode],
   ]);
 
-  (formData?.cofounderDetails?.coFounders || []).forEach((coFounder, index) => {
-    addSection(`Co-Founder ${index + 1}`, [
-      ["Name", coFounder?.name],
-      ["Email", coFounder?.email],
-      ["Phone Number", coFounder?.phoneNumber],
-      ["Qualification", coFounder?.qualification],
-      ["LinkedIn", coFounder?.linkedinProfile],
-    ]);
-  });
+  if (formData?.cofounderDetails?.isSoleFounder) {
+    addSection("Co-Founder Details", [["Sole Founder", "Yes"]]);
+  } else {
+    (formData?.cofounderDetails?.coFounders || []).forEach((coFounder, index) => {
+      addSection(`Co-Founder ${index + 1}`, [
+        ["Name", coFounder?.name],
+        ["Email", coFounder?.email],
+        ["Phone Number", coFounder?.phoneNumber],
+        ["Qualification", coFounder?.qualification],
+        ["LinkedIn", coFounder?.linkedinProfile],
+      ]);
+    });
+  }
 
   addSection("Business Idea", [
     ["Problem Statement", formData?.businessIdea?.problemStatement],
@@ -267,6 +278,7 @@ export default function Preview({
 }) {
   const canEdit = !isSubmitted;
   const coFounders = formData?.cofounderDetails?.coFounders || [];
+  const isSoleFounder = !!formData?.cofounderDetails?.isSoleFounder;
 
   return (
     <div className="mx-auto w-full max-w-6xl">
@@ -338,6 +350,10 @@ export default function Preview({
           <InfoRow label="Application ID" value={formData?.applicationId} />
           <InfoRow label="Founder Name" value={formData?.userSignup?.founderName} />
           <InfoRow label="Startup Name" value={formData?.userSignup?.startupName} />
+          <InfoRow
+            label="Application Type"
+            value={formatApplicationType(formData?.userSignup?.applicationType)}
+          />
           <InfoRow label="Email" value={formData?.userSignup?.email} />
           <InfoRow label="Phone Number" value={formData?.userSignup?.phoneNumber} />
           <InfoRow label="Aadhar Number" value={formData?.userSignup?.aadharNumber} />
@@ -348,7 +364,7 @@ export default function Preview({
         <Section
           icon={<FaUser />}
           title="Basic Details"
-          subtitle="Personal details, education, and profile photo"
+          subtitle="Personal details, education, profile photo, and address"
           step={2}
           onEdit={onNavigateToStep}
           canEdit={canEdit}
@@ -361,8 +377,11 @@ export default function Preview({
           <InfoRow label="Institution" value={formData?.basicDetails?.institution} />
           <InfoRow label="Other Institution" value={formData?.basicDetails?.otherInstitution} />
           <InfoRow label="LinkedIn Profile" value={formData?.basicDetails?.linkedinProfile} />
+          <InfoRow label="Applicant Address" value={formData?.basicDetails?.applicantAddress} />
           <InfoRow label="State" value={formData?.basicDetails?.state} />
           <InfoRow label="District" value={formData?.basicDetails?.district} />
+          <InfoRow label="Block Name" value={formData?.basicDetails?.blockName} />
+          <InfoRow label="Pincode" value={formData?.basicDetails?.pincode} />
           <LinkRow label="Profile Photo" meta={formData?.basicDetails?.profilePhotoMeta} />
         </Section>
 
@@ -397,7 +416,7 @@ export default function Preview({
         <Section
           icon={<FaRocket />}
           title="Startup Details"
-          subtitle="Venture profile, sector, stage, and address"
+          subtitle="Venture profile, sector, and stage"
           step={4}
           onEdit={onNavigateToStep}
           canEdit={canEdit}
@@ -406,10 +425,6 @@ export default function Preview({
           <InfoRow label="Website" value={formData?.startupDetails?.website} />
           <InfoRow label="Sector" value={formData?.startupDetails?.sector} />
           <InfoRow label="Stage" value={formData?.startupDetails?.stage} />
-          <InfoRow label="Applicant Address" value={formData?.startupDetails?.applicantAddress} />
-          <InfoRow label="State" value={formData?.startupDetails?.state} />
-          <InfoRow label="District" value={formData?.startupDetails?.district} />
-          <InfoRow label="Pincode" value={formData?.startupDetails?.pincode} />
         </Section>
 
         <Section
@@ -420,7 +435,11 @@ export default function Preview({
           onEdit={onNavigateToStep}
           canEdit={canEdit}
         >
-          {coFounders.length === 0 ? (
+          {isSoleFounder ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              This startup has been marked as a sole-founder venture.
+            </div>
+          ) : coFounders.length === 0 ? (
             <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
               No co-founder details added.
             </div>

@@ -101,9 +101,22 @@ export default function BasicDetailsStep({
       otherwise: (schema) => schema.notRequired(),
     }),
     linkedinProfile: Yup.string().url("Enter a valid URL").nullable(),
+
+    applicantAddress: Yup.string().required("Applicant address is required"),
     state: Yup.string().required("State is required"),
     district: Yup.string().required("District is required"),
-    profilePhoto: Yup.mixed().nullable(),
+    blockName: Yup.string().trim().required("Block name is required"),
+    pincode: Yup.string()
+      .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
+      .required("Pincode is required"),
+
+    profilePhoto: Yup.mixed()
+      .test("profile-photo-required", "Profile photo is required", function (value) {
+        const hasNewFile = !!value;
+        const hasExistingFile = !!this.parent?.profilePhotoMeta?.downloadURL;
+        return hasNewFile || hasExistingFile;
+      })
+      .required("Profile photo is required"),
     profilePhotoMeta: Yup.mixed().nullable(),
   });
 
@@ -137,6 +150,7 @@ export default function BasicDetailsStep({
 
       formik.setFieldValue("profilePhoto", file);
       formik.setFieldTouched("profilePhoto", true, false);
+      formik.validateField("profilePhoto");
     } catch (error) {
       console.error("Error cropping image:", error);
     }
@@ -153,7 +167,7 @@ export default function BasicDetailsStep({
             Applicant basic details
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Add founder profile, education and location details.
+            Add founder profile, education and applicant address details.
           </p>
         </div>
 
@@ -181,8 +195,11 @@ export default function BasicDetailsStep({
             linkedinProfile: "",
             profilePhoto: null,
             profilePhotoMeta: null,
+            applicantAddress: "",
             state: "",
             district: "",
+            blockName: "",
+            pincode: "",
           }
         }
         validationSchema={validationSchema}
@@ -240,7 +257,7 @@ export default function BasicDetailsStep({
 
                   <div className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
                     {!isReadOnly ? <FaUpload className="text-slate-500" /> : <FaLock className="text-slate-500" />}
-                    {t("basicDetails.uploadPhoto")}
+                    {t("basicDetails.uploadPhoto")} <span className="text-red-500">*</span>
                   </div>
 
                   <div className="mt-1 text-xs text-slate-500">Max file size: 1 MB</div>
@@ -250,6 +267,12 @@ export default function BasicDetailsStep({
                       Uploaded: {formik.values.profilePhotoMeta.fileName}
                     </div>
                   ) : null}
+
+                  <ErrorMessage
+                    name="profilePhoto"
+                    component="p"
+                    className="mt-2 text-sm text-red-500"
+                  />
                 </div>
 
                 {showCropper && !isReadOnly && (
@@ -385,6 +408,15 @@ export default function BasicDetailsStep({
                     disabled={isReadOnly}
                   />
 
+                  <div className="md:col-span-2">
+                    <TextAreaField
+                      name="applicantAddress"
+                      label="Applicant Address"
+                      rows={4}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+
                   <SelectField
                     name="state"
                     label={t("basicDetails.state")}
@@ -392,6 +424,7 @@ export default function BasicDetailsStep({
                     onChange={(e) => {
                       formik.setFieldValue("state", e.target.value);
                       formik.setFieldValue("district", "");
+                      formik.setFieldValue("blockName", "");
                     }}
                   >
                     <option value="">{t("common.select")}</option>
@@ -418,6 +451,20 @@ export default function BasicDetailsStep({
                       </option>
                     ))}
                   </SelectField>
+
+                  <InputField
+                    name="blockName"
+                    label="Block Name"
+                    placeholder="Enter block name"
+                    disabled={isReadOnly}
+                  />
+
+                  <InputField
+                    name="pincode"
+                    label="Pincode"
+                    placeholder="800001"
+                    disabled={isReadOnly}
+                  />
                 </div>
 
                 <div className="mt-8 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between">
@@ -528,6 +575,33 @@ function ReadOnlyField({ name, label, helper }) {
         className="block w-full cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-500"
       />
       {helper ? <p className="mt-2 text-xs text-slate-500">{helper}</p> : null}
+      <ErrorMessage
+        name={name}
+        component="p"
+        className="mt-2 text-sm text-red-500"
+      />
+    </div>
+  );
+}
+
+function TextAreaField({ name, label, rows = 4, disabled = false }) {
+  return (
+    <div>
+      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+        {label}
+      </label>
+      <Field
+        as="textarea"
+        id={name}
+        name={name}
+        rows={rows}
+        disabled={disabled}
+        className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+          disabled
+            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+            : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+        }`}
+      />
       <ErrorMessage
         name={name}
         component="p"
