@@ -2,7 +2,11 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useLanguage } from "../../shared/LanguageContext";
-import { FaLock, FaUpload } from "react-icons/fa";
+import { FaLock, FaUpload, FaFileAlt, FaExternalLinkAlt } from "react-icons/fa";
+
+const MAX_PITCH_DECK_SIZE = 5 * 1024 * 1024;
+const FILE_SIZE_ERROR =
+  "File size is greater than 5 MB. Please upload a file up to 5 MB only.";
 
 export default function BusinessIdeaStep({
   onSubmit,
@@ -17,7 +21,27 @@ export default function BusinessIdeaStep({
     solution: Yup.string().required("Solution is required"),
     innovation: Yup.string().required("Innovation is required"),
     businessModel: Yup.string().required("Business model is required"),
-    pitchDeck: Yup.mixed().nullable(),
+    pitchDeck: Yup.mixed()
+      .nullable()
+      .test("fileSize", FILE_SIZE_ERROR, (value) => {
+        if (!value) return true;
+        return value.size <= MAX_PITCH_DECK_SIZE;
+      })
+      .test("fileType", "Only PDF, PPT, and PPTX files are allowed", (value) => {
+        if (!value) return true;
+        const allowedTypes = [
+          "application/pdf",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ];
+        const fileName = value?.name?.toLowerCase() || "";
+        return (
+          allowedTypes.includes(value.type) ||
+          fileName.endsWith(".pdf") ||
+          fileName.endsWith(".ppt") ||
+          fileName.endsWith(".pptx")
+        );
+      }),
     pitchDeckMeta: Yup.mixed().nullable(),
   });
 
@@ -32,7 +56,7 @@ export default function BusinessIdeaStep({
             Describe your business idea
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Add the core idea, innovation, business model, and pitch deck.
+            Add the core idea, innovation, business model, and upload a pitch deck up to 5 MB.
           </p>
         </div>
 
@@ -70,7 +94,7 @@ export default function BusinessIdeaStep({
                   Business concept
                 </div>
                 <div className="mt-1 text-sm text-slate-600">
-                  Clearly explain the problem, your solution, innovation, and revenue approach.
+                  Clearly explain the problem, your solution, innovation, revenue approach, and pitch presentation.
                 </div>
               </div>
 
@@ -103,7 +127,7 @@ export default function BusinessIdeaStep({
                   disabled={isReadOnly}
                 />
 
-                <div>
+                <div className="rounded-[26px] border border-slate-200 bg-slate-50/70 p-4">
                   <label
                     htmlFor="pitchDeck"
                     className="mb-2 block text-sm font-semibold text-slate-800"
@@ -117,42 +141,81 @@ export default function BusinessIdeaStep({
                     type="file"
                     accept=".pdf,.ppt,.pptx"
                     disabled={isReadOnly}
-                    onChange={(event) => {
+                    onChange={async (event) => {
                       if (isReadOnly) return;
-                      formik.setFieldValue(
-                        "pitchDeck",
-                        event.currentTarget.files?.[0] || null
-                      );
+
+                      const file = event.currentTarget.files?.[0] || null;
+
+                      await formik.setFieldTouched("pitchDeck", true, false);
+
+                      if (!file) {
+                        await formik.setFieldValue("pitchDeck", null, false);
+                        await formik.setFieldError("pitchDeck", undefined);
+                        return;
+                      }
+
+                      if (file.size > MAX_PITCH_DECK_SIZE) {
+                        event.target.value = "";
+                        await formik.setFieldValue("pitchDeck", null, false);
+                        await formik.setFieldError("pitchDeck", FILE_SIZE_ERROR);
+                        return;
+                      }
+
+                      await formik.setFieldError("pitchDeck", undefined);
+                      await formik.setFieldValue("pitchDeck", file, true);
                     }}
                     className={`block w-full rounded-2xl border px-4 py-3 ${
                       isReadOnly
                         ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
-                        : "border-slate-200 bg-white/85 text-slate-700"
+                        : "border-slate-200 bg-white text-slate-700"
                     }`}
                   />
 
-                  <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                    {!isReadOnly ? <FaUpload /> : <FaLock />}
-                    Accepted formats: PDF, PPT, PPTX
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm">
+                      {!isReadOnly ? <FaUpload /> : <FaLock />}
+                      Accepted: PDF, PPT, PPTX
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm">
+                      Max size: 5 MB
+                    </span>
                   </div>
 
                   {formik.values.pitchDeck?.name ? (
-                    <div className="mt-2 text-sm text-slate-500">
-                      Selected: <span className="font-medium">{formik.values.pitchDeck.name}</span>
+                    <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                      Selected file:{" "}
+                      <span className="font-semibold">{formik.values.pitchDeck.name}</span>
                     </div>
                   ) : null}
 
                   {formik.values.pitchDeckMeta?.fileName ? (
-                    <div className="mt-2 text-xs text-slate-500">
-                      Uploaded: {formik.values.pitchDeckMeta.fileName}
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                          <FaFileAlt className="text-slate-500" />
+                          <span className="break-all">{formik.values.pitchDeckMeta.fileName}</span>
+                        </div>
+
+                        {formik.values.pitchDeckMeta?.downloadURL ? (
+                          <a
+                            href={formik.values.pitchDeckMeta.downloadURL}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                          >
+                            <FaExternalLinkAlt />
+                            Open current file
+                          </a>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
 
-                  <ErrorMessage
-                    name="pitchDeck"
-                    component="p"
-                    className="mt-2 text-sm text-red-500"
-                  />
+                  {formik.touched.pitchDeck && formik.errors.pitchDeck ? (
+                    <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                      {formik.errors.pitchDeck}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 

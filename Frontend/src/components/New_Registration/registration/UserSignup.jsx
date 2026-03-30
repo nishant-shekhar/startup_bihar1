@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import PhoneVerificationModal from "./modals/PhoneVerificationModal";
@@ -8,23 +8,33 @@ import { FaCheckCircle, FaLock, FaShieldAlt } from "react-icons/fa";
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
 
-const SignupSchema = Yup.object().shape({
-  founderName: Yup.string().required("Applicant name is required"),
-  startupName: Yup.string().required("Startup name is required"),
-  email: Yup.string().email("Invalid email address").required("Email is required"),
-  phoneNumber: Yup.string()
-    .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits")
-    .required("Phone number is required"),
-  aadharNumber: Yup.string()
-    .matches(/^[0-9]{12}$/, "Aadhar number must be exactly 12 digits")
-    .required("Aadhar number is required"),
-  password: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("Password is required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Passwords must match")
-    .required("Confirm password is required"),
-});
+const getValidationSchema = (isLoggedIn) => {
+  if (isLoggedIn) {
+    return Yup.object().shape({
+      startupName: Yup.string().trim().required("Startup name is required"),
+    });
+  }
+
+  return Yup.object().shape({
+    founderName: Yup.string().trim().required("Applicant name is required"),
+    startupName: Yup.string().trim().required("Startup name is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
+    phoneNumber: Yup.string()
+      .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits")
+      .required("Phone number is required"),
+    aadharNumber: Yup.string()
+      .matches(/^[0-9]{12}$/, "Aadhar number must be exactly 12 digits")
+      .required("Aadhar number is required"),
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match")
+      .required("Confirm password is required"),
+  });
+};
 
 export default function UserSignup({
   onSubmit,
@@ -39,6 +49,12 @@ export default function UserSignup({
   const [userPhone, setUserPhone] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [updatingName, setUpdatingName] = useState(false);
+
+  const validationSchema = useMemo(
+    () => getValidationSchema(isLoggedIn),
+    [isLoggedIn]
+  );
 
   const sendOtp = async (phoneNumber) => {
     const res = await fetch(`${API_BASE}/otp-auth/send-otp`, {
@@ -69,16 +85,23 @@ export default function UserSignup({
     }
 
     if (isLoggedIn) {
-      const result = await onSubmit?.({
-        ...values,
-        type: "updateStartupName",
-      });
+      try {
+        setUpdatingName(true);
 
-      if (result?.ok === false) {
-        setSubmitError(result.error || "Could not update startup name.");
+        const result = await onSubmit?.({
+          startupName: values.startupName?.trim() || "",
+          type: "updateStartupName",
+        });
+
+        if (result?.ok === false) {
+          setSubmitError(result.error || "Could not update startup name.");
+        }
+      } catch (error) {
+        setSubmitError(error.message || "Could not update startup name.");
+      } finally {
+        setUpdatingName(false);
+        setSubmitting(false);
       }
-
-      setSubmitting(false);
       return;
     }
 
@@ -115,16 +138,15 @@ export default function UserSignup({
     }
   };
 
-  const signupInitialValues =
-    initialValues || {
-      founderName: "",
-      startupName: "",
-      email: "",
-      phoneNumber: "",
-      aadharNumber: "",
-      password: "",
-      confirmPassword: "",
-    };
+  const signupInitialValues = {
+    founderName: initialValues?.founderName || "",
+    startupName: initialValues?.startupName || "",
+    email: initialValues?.email || "",
+    phoneNumber: initialValues?.phoneNumber || "",
+    aadharNumber: initialValues?.aadharNumber || "",
+    password: "",
+    confirmPassword: "",
+  };
 
   return (
     <>
@@ -148,7 +170,9 @@ export default function UserSignup({
                 <FaCheckCircle />
                 Logged in
               </div>
-              <div className="mt-1 text-emerald-700">{loginIdentity || "Authenticated applicant"}</div>
+              <div className="mt-1 text-emerald-700">
+                {loginIdentity || "Authenticated applicant"}
+              </div>
             </div>
           ) : null}
         </div>
@@ -196,7 +220,7 @@ export default function UserSignup({
 
           <Formik
             initialValues={signupInitialValues}
-            validationSchema={SignupSchema}
+            validationSchema={validationSchema}
             onSubmit={handleSubmit}
             enableReinitialize
           >
@@ -286,6 +310,24 @@ export default function UserSignup({
                   </div>
                 ) : null}
 
+                {sendingOtp ? (
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                      Sending OTP to your mobile number. Please wait...
+                    </div>
+                  </div>
+                ) : null}
+
+                {updatingName ? (
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                      Updating startup name. Please wait...
+                    </div>
+                  </div>
+                ) : null}
+
                 {!isReadOnly ? (
                   <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 md:flex-row md:items-center md:justify-between">
                     <div className="text-sm text-slate-500">
@@ -296,14 +338,19 @@ export default function UserSignup({
 
                     <button
                       type="submit"
-                      disabled={isSubmitting || sendingOtp}
-                      className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={isSubmitting || sendingOtp || updatingName}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isSubmitting || sendingOtp
-                        ? "Sending OTP..."
-                        : isLoggedIn
-                        ? "Update Startup Name"
-                        : t("userSignup.register")}
+                      {isSubmitting || sendingOtp || updatingName ? (
+                        <>
+                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          {isLoggedIn ? "Updating..." : "Sending OTP..."}
+                        </>
+                      ) : isLoggedIn ? (
+                        "Update Startup Name"
+                      ) : (
+                        t("userSignup.register")
+                      )}
                     </button>
                   </div>
                 ) : null}

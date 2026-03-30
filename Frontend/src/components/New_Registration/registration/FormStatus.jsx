@@ -85,6 +85,42 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
   const [timelineDocs, setTimelineDocs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const subtitle = useMemo(() => {
+  if (!applicationId) {
+    return "Status will be available after your application ID is created.";
+  }
+
+  if (application?.status === "submitted") {
+    return "Your application has been submitted and is under review.";
+  }
+
+  if (application?.businessIdea) {
+    return "Final submission pending. Please review and submit your application.";
+  }
+
+  if (application?.cofounderDetails) {
+    return "Business idea completed. Final review is pending before submission.";
+  }
+
+  if (application?.startupDetails) {
+    return "Co-founder details pending.";
+  }
+
+  if (application?.entityDetails) {
+    return "Startup details pending.";
+  }
+
+  if (application?.basicDetails) {
+    return "Entity details pending.";
+  }
+
+  if (application?.userSignup) {
+    return "Basic details pending.";
+  }
+
+  return "Registration started. Complete the form step by step.";
+}, [application, applicationId]);
+
   useEffect(() => {
     const loadStatus = async () => {
       if (!applicationId) {
@@ -204,9 +240,7 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
             <h2 className="text-3xl font-bold text-slate-800">
               Application Status
             </h2>
-            <p className="mt-1 text-slate-500">
-              Track your Startup Bihar application in real time
-            </p>
+            <p className="mt-1 text-slate-500">{subtitle}</p>
           </div>
 
           <div className="rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 text-white shadow-lg">

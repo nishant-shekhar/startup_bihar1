@@ -97,11 +97,11 @@ const NavBarNew = () => {
 									Startups List</Link>
 							</ScrollLink>
 
-							
-							
-						
-					
-							
+
+
+
+
+
 							<Link
 								to="/PublicDashboard"
 								smooth={true}
@@ -111,7 +111,7 @@ const NavBarNew = () => {
 							>
 								Dashboard
 							</Link>
-							
+
 
 							<Link
 								to="/about-us"
@@ -150,7 +150,7 @@ const NavBarNew = () => {
 							>
 								Events
 							</Link>
-								<ScrollLink
+							<ScrollLink
 								to="notification"
 								smooth={true}
 								offset={-50}
@@ -233,7 +233,7 @@ const NavBarNew = () => {
 									</div>
 								)}
 							</div>
-							
+
 
 
 
@@ -261,27 +261,27 @@ const NavBarNew = () => {
 					</nav>
 
 					{/* Mobile Menu */}
-				{mobileMenu && (
-  <div className="flex flex-col lg:hidden p-4 bg-white shadow-md space-y-2">
-  
-    
+					{mobileMenu && (
+						<div className="flex flex-col lg:hidden p-4 bg-white shadow-md space-y-2">
 
-  
-    <RouterLink to="/PublicDashboard" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      Dashboard
-    </RouterLink>
-	
 
-    <RouterLink to="/about-us" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      About Us
-    </RouterLink>
-    <RouterLink to="/contact-us" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      Startup Team
-    </RouterLink>
-    <RouterLink to="/Events" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
-      Events
-    </RouterLink>
-		<ScrollLink
+
+
+							<RouterLink to="/PublicDashboard" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
+								Dashboard
+							</RouterLink>
+
+
+							<RouterLink to="/about-us" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
+								About Us
+							</RouterLink>
+							<RouterLink to="/contact-us" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
+								Startup Team
+							</RouterLink>
+							<RouterLink to="/Events" onClick={toggleMenu} className="text-sm font-semibold text-gray-800 py-2 hover:text-gray-500">
+								Events
+							</RouterLink>
+							<ScrollLink
 								to="notification"
 								smooth={true}
 								offset={-50}
@@ -294,38 +294,38 @@ const NavBarNew = () => {
 
 
 
-    {/* Startup Ecosystem dropdown for mobile */}
-    <details className="group">
-      <summary className="text-sm font-semibold text-gray-800 py-2 cursor-pointer list-none flex justify-between items-center">
-        Startup Ecosystem
-        <span className="ml-1 transition-transform group-open:rotate-180">
-          <FiChevronDown />
-        </span>
-      </summary>
-      <div className="pl-4 flex flex-col space-y-1 mt-1">
-        <a href="https://iciitp.com/zerolab/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Zero Lab</a>
-        <RouterLink to="/ecosystem#bfsc-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">BSFT</RouterLink>
-        <RouterLink to="/ecosystem#psc-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">PSC</RouterLink>
-        <RouterLink to="/ecosystem#smic-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">SMIC</RouterLink>
-        <RouterLink to="/ecosystem#ssu-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">SSU</RouterLink>
-        <RouterLink to="/StartupCell" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">Startup Cell</RouterLink>
-        <RouterLink to="/IncubationCell" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">Incubation Cell</RouterLink>
-        <RouterLink to="/Mentors" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">Mentors</RouterLink>
-        <hr className="my-2 border-gray-300" />
-        <a href="https://bhub.org.in/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">B-Hub</a>
-        <a href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Acceleration Program</a>
-        <a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Post-seed Fund Support</a>
-        <a href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Exit Policy</a>
-        <a href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Intellectual Property Rights</a>
-        <a href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Matching Loan</a>
-        <a href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Second Tranche</a>
-        <a href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Documents for Seed Fund</a>
-      </div>
-    </details>
-	
+							{/* Startup Ecosystem dropdown for mobile */}
+							<details className="group">
+								<summary className="text-sm font-semibold text-gray-800 py-2 cursor-pointer list-none flex justify-between items-center">
+									Startup Ecosystem
+									<span className="ml-1 transition-transform group-open:rotate-180">
+										<FiChevronDown />
+									</span>
+								</summary>
+								<div className="pl-4 flex flex-col space-y-1 mt-1">
+									<a href="https://iciitp.com/zerolab/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Zero Lab</a>
+									<RouterLink to="/ecosystem#bfsc-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">BSFT</RouterLink>
+									<RouterLink to="/ecosystem#psc-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">PSC</RouterLink>
+									<RouterLink to="/ecosystem#smic-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">SMIC</RouterLink>
+									<RouterLink to="/ecosystem#ssu-image" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">SSU</RouterLink>
+									<RouterLink to="/StartupCell" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">Startup Cell</RouterLink>
+									<RouterLink to="/IncubationCell" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">Incubation Cell</RouterLink>
+									<RouterLink to="/Mentors" onClick={toggleMenu} className="text-sm text-gray-800 hover:text-indigo-600">Mentors</RouterLink>
+									<hr className="my-2 border-gray-300" />
+									<a href="https://bhub.org.in/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">B-Hub</a>
+									<a href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Acceleration Program</a>
+									<a href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Post-seed Fund Support</a>
+									<a href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Exit Policy</a>
+									<a href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Intellectual Property Rights</a>
+									<a href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Matching Loan</a>
+									<a href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Second Tranche</a>
+									<a href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-800 hover:text-indigo-600">Documents for Seed Fund</a>
+								</div>
+							</details>
 
-  </div>
-)}
+
+						</div>
+					)}
 
 				</header>
 			</div>

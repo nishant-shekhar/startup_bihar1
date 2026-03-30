@@ -32,6 +32,7 @@ export default function StartupDetailsStep({
     applicantAddress: Yup.string().required("Applicant address is required"),
     state: Yup.string().required("State is required"),
     district: Yup.string().required("District is required"),
+    blockName: Yup.string().trim().required("Block name is required"),
     pincode: Yup.string()
       .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
       .required("Pincode is required"),
@@ -79,6 +80,7 @@ export default function StartupDetailsStep({
             applicantAddress: "",
             state: "",
             district: "",
+            blockName: "",
             pincode: "",
           }
         }
@@ -86,6 +88,7 @@ export default function StartupDetailsStep({
         onSubmit={(values) => {
           onSubmit({
             ...values,
+            blockName: values.blockName?.trim() || "",
             website: values.website ? ensureScheme(values.website) : "",
           });
         }}
@@ -226,6 +229,7 @@ export default function StartupDetailsStep({
                     onChange={(e) => {
                       formik.setFieldValue("state", e.target.value);
                       formik.setFieldValue("district", "");
+                      formik.setFieldValue("blockName", "");
                     }}
                   >
                     <option value="">{t("common.select")}</option>
@@ -248,6 +252,13 @@ export default function StartupDetailsStep({
                       </option>
                     ))}
                   </SelectField>
+
+                  <InputField
+                    name="blockName"
+                    label="Block Name"
+                    placeholder="Enter block name"
+                    disabled={isReadOnly}
+                  />
 
                   <InputField
                     name="pincode"

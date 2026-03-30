@@ -115,8 +115,12 @@ export default function PrintAcknowledgement({ formData }) {
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-2xl font-bold text-slate-900">Startup Bihar</div>
-            <div className="mt-1 text-sm text-slate-500">
+            <img
+              src="/startup_bihar_logo2.png"
+              alt="Startup Bihar"
+              className="h-16 w-auto object-contain"
+            />
+            <div className="mt-2 text-sm text-slate-500">
               Department of Industries, Government of Bihar
             </div>
             <div className="mt-4 text-lg font-semibold text-slate-800">
@@ -129,7 +133,7 @@ export default function PrintAcknowledgement({ formData }) {
               Registration No.
             </div>
             <div className="mt-1 text-base font-bold text-slate-900">
-              {formData?.applicationId }
+              {formData?.applicationId}
             </div>
           </div>
         </div>

@@ -10,7 +10,6 @@ import {
   FaEye,
   FaClipboardCheck,
   FaLock,
-  FaPrint,
   FaBars,
   FaTimes,
   FaSignOutAlt,
@@ -29,10 +28,12 @@ import {
   limit,
   getDocs,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { getDatabase, ref as rtdbRef, get } from "firebase/database";
+import app, { db, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 import { LanguageProvider } from "../shared/LanguageContext";
 import LanguageToggle from "../shared/LanguageToggle";
+import { useNavigate } from "react-router-dom";
 
 import UserSignup from "./UserSignup";
 import BasicDetailsStep from "./FormSteps/BasicDetailsStep";
@@ -43,9 +44,12 @@ import BusinessIdeaStep from "./FormSteps/BusinessIdeaStep";
 import Preview from "./Preview";
 import PrintAcknowledgement from "./PrintAcknowledgement";
 import FormStatus from "./FormStatus";
+import PhoneVerificationModal from "./modals/PhoneVerificationModal";
+import WorkingDialog from "./WorkingDialog";
 
 const STORAGE_KEY = "startupRegistrationDraft";
 const AUTH_KEY = "startupRegistrationAuth";
+const rtdb = getDatabase(app);
 
 const stepLabels = [
   "Register",
@@ -67,7 +71,7 @@ const icons = [
   <FaChartBar />,
   <FaWallet />,
   <FaEye />,
-  <FaPrint />,
+  <FaClipboardCheck />,
   <FaClipboardCheck />,
 ];
 
@@ -100,6 +104,20 @@ const getCurrentYearMonth = () => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   return `${year}${month}`;
+};
+
+const formatDeadline = (timestamp) => {
+  if (!timestamp) return "";
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 };
 
 async function sha256(text) {
@@ -147,6 +165,19 @@ function RegistrationLayoutInner() {
   const [saveMessage, setSaveMessage] = useState("");
   const [formData, setFormData] = useState(initialFormData);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [submissionWindow, setSubmissionWindow] = useState({
+    checked: false,
+    isOpen: true,
+    lastDate: null,
+    message: "",
+  });
+
+  const [workingDialog, setWorkingDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+  });
+  const navigate = useNavigate();
 
   const [authState, setAuthState] = useState(() => {
     try {
@@ -163,9 +194,39 @@ function RegistrationLayoutInner() {
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
+  const [showForgotPhoneModal, setShowForgotPhoneModal] = useState(false);
+  const [forgotPhone, setForgotPhone] = useState("");
+  const [forgotPasswordError, setForgotPasswordError] = useState("");
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+
+  const [showResetOtpModal, setShowResetOtpModal] = useState(false);
+  const [resetAccount, setResetAccount] = useState(null);
+
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [resetPasswordError, setResetPasswordError] = useState("");
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
+
   const appId = formData.applicationId;
   const isSubmitted = formData.status === "submitted";
   const isLoggedIn = !!authState?.applicationId;
+
+  const openWorkingDialog = useCallback((title, message) => {
+    setWorkingDialog({
+      open: true,
+      title,
+      message,
+    });
+  }, []);
+
+  const closeWorkingDialog = useCallback(() => {
+    setWorkingDialog({
+      open: false,
+      title: "",
+      message: "",
+    });
+  }, []);
 
   const persistLocalDraft = useCallback((data) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -215,6 +276,56 @@ function RegistrationLayoutInner() {
     return 1;
   }, []);
 
+  const refreshSubmissionWindow = useCallback(async () => {
+    try {
+      const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
+      const value = snap.exists() ? snap.val() : null;
+
+      const now = Date.now();
+      const isOpenFlag = value?.isOpen !== false;
+      const lastDate = Number(value?.lastDate || 0);
+      const deadlinePassed = lastDate > 0 ? now > lastDate : false;
+      const allowed = isOpenFlag && !deadlinePassed;
+
+      let message = "";
+      if (!isOpenFlag && lastDate) {
+        message = `Submission closed on ${formatDeadline(lastDate)}`;
+      } else if (!isOpenFlag) {
+        message = "Submission is currently closed.";
+      } else if (deadlinePassed) {
+        message = `Submission closed on ${formatDeadline(lastDate)}`;
+      }
+
+      const nextState = {
+        checked: true,
+        isOpen: allowed,
+        lastDate: lastDate || null,
+        message,
+      };
+
+      setSubmissionWindow(nextState);
+      return nextState;
+    } catch (error) {
+      console.error("Failed to fetch submission window", error);
+      const nextState = {
+        checked: true,
+        isOpen: false,
+        lastDate: null,
+        message: "Unable to verify submission window right now.",
+      };
+      setSubmissionWindow(nextState);
+      return nextState;
+    }
+  }, []);
+
+  const checkSubmissionWindow = useCallback(async () => {
+    const state = await refreshSubmissionWindow();
+    if (!state.isOpen) {
+      return { allowed: false, message: state.message || "Submission is currently closed." };
+    }
+    return { allowed: true };
+  }, [refreshSubmissionWindow]);
+
   const loadApplicationById = useCallback(
     async (applicationId) => {
       const docRef = doc(db, "startupApplications", applicationId);
@@ -231,6 +342,10 @@ function RegistrationLayoutInner() {
   );
 
   useEffect(() => {
+    refreshSubmissionWindow();
+  }, [refreshSubmissionWindow]);
+
+  useEffect(() => {
     const loadDraft = async () => {
       setIsInitialLoading(true);
 
@@ -243,13 +358,21 @@ function RegistrationLayoutInner() {
 
         if (savedAuth?.applicationId) {
           try {
+            openWorkingDialog(
+              "Loading your application",
+              "Please wait while we restore your saved details."
+            );
+
             const loaded = await loadApplicationById(savedAuth.applicationId);
             if (loaded) {
+              closeWorkingDialog();
               setIsInitialLoading(false);
               return;
             }
           } catch (error) {
             console.error("Failed to load authenticated application", error);
+          } finally {
+            closeWorkingDialog();
           }
         }
 
@@ -266,7 +389,7 @@ function RegistrationLayoutInner() {
     };
 
     loadDraft();
-  }, [getStepFromData, loadApplicationById]);
+  }, [getStepFromData, loadApplicationById, openWorkingDialog, closeWorkingDialog]);
 
   const saveSectionToFirestore = useCallback(
     async ({ applicationId, sectionKey, payload, nextStep, preserveStatus }) => {
@@ -274,6 +397,10 @@ function RegistrationLayoutInner() {
 
       setIsSaving(true);
       setSaveMessage("Saving...");
+      openWorkingDialog(
+        "Saving your details",
+        "Please wait while we securely save this step."
+      );
 
       try {
         const docRef = doc(db, "startupApplications", applicationId);
@@ -296,90 +423,104 @@ function RegistrationLayoutInner() {
         console.error(`Failed to save ${sectionKey}`, error);
         setSaveMessage("Save failed");
       } finally {
+        closeWorkingDialog();
         setIsSaving(false);
         setTimeout(() => setSaveMessage(""), 1500);
       }
     },
-    [currentStep]
+    [currentStep, openWorkingDialog, closeWorkingDialog]
   );
 
-  const checkIdentifierExists = useCallback(async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
-    const existing = [];
+  const checkIdentifierExists = useCallback(
+    async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
+      const existing = [];
 
-    const appsRef = collection(db, "startupApplications");
+      const appsRef = collection(db, "startupApplications");
 
-    const normalizedEmail = normalizeEmail(email);
-    const normalizedPhone = normalizePhone(phoneNumber);
-    const normalizedAadhar = normalizeAadhar(aadharNumber);
-    const currentId = normalizeApplicationId(currentApplicationId);
+      const normalizedEmail = normalizeEmail(email);
+      const normalizedPhone = normalizePhone(phoneNumber);
+      const normalizedAadhar = normalizeAadhar(aadharNumber);
+      const currentId = normalizeApplicationId(currentApplicationId);
 
-    if (normalizedEmail) {
-      const emailQ = query(
-        appsRef,
-        where("userSignup.email", "==", normalizedEmail),
-        limit(5)
-      );
-      const emailSnap = await getDocs(emailQ);
-      const emailMatch = emailSnap.docs.find((d) => d.id !== currentId);
-      if (emailMatch) existing.push("email");
-    }
+      if (normalizedEmail) {
+        const emailQ = query(
+          appsRef,
+          where("userSignup.email", "==", normalizedEmail),
+          limit(5)
+        );
+        const emailSnap = await getDocs(emailQ);
+        const emailMatch = emailSnap.docs.find((d) => d.id !== currentId);
+        if (emailMatch) existing.push("email");
+      }
 
-    if (normalizedPhone) {
-      const phoneQ = query(
-        appsRef,
-        where("userSignup.phoneNumber", "==", normalizedPhone),
-        limit(5)
-      );
-      const phoneSnap = await getDocs(phoneQ);
-      const phoneMatch = phoneSnap.docs.find((d) => d.id !== currentId);
-      if (phoneMatch) existing.push("mobile");
-    }
+      if (normalizedPhone) {
+        const phoneQ = query(
+          appsRef,
+          where("userSignup.phoneNumber", "==", normalizedPhone),
+          limit(5)
+        );
+        const phoneSnap = await getDocs(phoneQ);
+        const phoneMatch = phoneSnap.docs.find((d) => d.id !== currentId);
+        if (phoneMatch) existing.push("mobile");
+      }
 
-    if (normalizedAadhar) {
-      const aadharQ = query(
-        appsRef,
-        where("userSignup.aadharNumber", "==", normalizedAadhar),
-        limit(5)
-      );
-      const aadharSnap = await getDocs(aadharQ);
-      const aadharMatch = aadharSnap.docs.find((d) => d.id !== currentId);
-      if (aadharMatch) existing.push("aadhar");
-    }
+      if (normalizedAadhar) {
+        const aadharQ = query(
+          appsRef,
+          where("userSignup.aadharNumber", "==", normalizedAadhar),
+          limit(5)
+        );
+        const aadharSnap = await getDocs(aadharQ);
+        const aadharMatch = aadharSnap.docs.find((d) => d.id !== currentId);
+        if (aadharMatch) existing.push("aadhar");
+      }
 
-    if (normalizedAadhar) {
-      const blockedRef = doc(db, "aadharBlocked", normalizedAadhar);
-      const blockedSnap = await getDoc(blockedRef);
-      if (blockedSnap.exists() && !existing.includes("aadhar")) {
-        const blockedForApplicationId = blockedSnap.data()?.applicationId || "";
-        if (blockedForApplicationId !== currentId) {
-          existing.push("aadhar");
+      if (normalizedAadhar) {
+        const blockedRef = doc(db, "aadharBlocked", normalizedAadhar);
+        const blockedSnap = await getDoc(blockedRef);
+        if (blockedSnap.exists() && !existing.includes("aadhar")) {
+          const blockedForApplicationId = blockedSnap.data()?.applicationId || "";
+          if (blockedForApplicationId !== currentId) {
+            existing.push("aadhar");
+          }
         }
       }
-    }
 
-    return existing;
-  }, []);
+      return existing;
+    },
+    []
+  );
 
-  const blockAadharAfterRegistration = useCallback(async ({ aadharNumber, applicationId, founderName, startupName, email, phoneNumber }) => {
-    const normalizedAadhar = normalizeAadhar(aadharNumber);
-    if (!normalizedAadhar || !applicationId) return;
+  const blockAadharAfterRegistration = useCallback(
+    async ({
+      aadharNumber,
+      applicationId,
+      founderName,
+      startupName,
+      email,
+      phoneNumber,
+    }) => {
+      const normalizedAadhar = normalizeAadhar(aadharNumber);
+      if (!normalizedAadhar || !applicationId) return;
 
-    await setDoc(
-      doc(db, "aadharBlocked", normalizedAadhar),
-      {
-        aadharNumber: normalizedAadhar,
-        applicationId,
-        founderName: founderName || "",
-        startupName: startupName || "",
-        email: normalizeEmail(email || ""),
-        phoneNumber: normalizePhone(phoneNumber || ""),
-        blockedAt: serverTimestamp(),
-        source: "startupRegistration",
-        active: true,
-      },
-      { merge: true }
-    );
-  }, []);
+      await setDoc(
+        doc(db, "aadharBlocked", normalizedAadhar),
+        {
+          aadharNumber: normalizedAadhar,
+          applicationId,
+          founderName: founderName || "",
+          startupName: startupName || "",
+          email: normalizeEmail(email || ""),
+          phoneNumber: normalizePhone(phoneNumber || ""),
+          blockedAt: serverTimestamp(),
+          source: "startupRegistration",
+          active: true,
+        },
+        { merge: true }
+      );
+    },
+    []
+  );
 
   const transformStepDataForStorage = useCallback(
     async (stepData, step, applicationId) => {
@@ -389,6 +530,11 @@ function RegistrationLayoutInner() {
         if (stepData.profilePhoto instanceof File) {
           const ext =
             stepData.profilePhoto.name?.split(".").pop()?.toLowerCase() || "jpg";
+
+          openWorkingDialog(
+            "Uploading profile photo",
+            "Please wait while we upload your profile photo."
+          );
 
           profilePhotoMeta = await uploadFileAndGetMeta(
             stepData.profilePhoto,
@@ -407,6 +553,11 @@ function RegistrationLayoutInner() {
         let certificateMeta = stepData.certificateMeta || null;
 
         if (stepData.certificate instanceof File) {
+          openWorkingDialog(
+            "Uploading certificate",
+            "Please wait while we upload your entity certificate."
+          );
+
           certificateMeta = await uploadFileAndGetMeta(
             stepData.certificate,
             `startupApplications/${applicationId}/entity/certificate-${Date.now()}-${stepData.certificate.name}`
@@ -424,6 +575,26 @@ function RegistrationLayoutInner() {
         let pitchDeckMeta = stepData.pitchDeckMeta || null;
 
         if (stepData.pitchDeck instanceof File) {
+          if (stepData.pitchDeck.size > 5 * 1024 * 1024) {
+            throw new Error("Pitch deck must be 5 MB or less.");
+          }
+
+          openWorkingDialog(
+            "Uploading pitch deck",
+            "Please wait while we upload your pitch deck."
+          );
+
+          const existingPitchDeckPath =
+            formData?.businessIdea?.pitchDeckMeta?.storagePath || "";
+
+          if (existingPitchDeckPath) {
+            try {
+              await deleteObject(ref(storage, existingPitchDeckPath));
+            } catch (error) {
+              console.warn("Could not delete previous pitch deck from storage", error);
+            }
+          }
+
           pitchDeckMeta = await uploadFileAndGetMeta(
             stepData.pitchDeck,
             `startupApplications/${applicationId}/business/pitchdeck-${Date.now()}-${stepData.pitchDeck.name}`
@@ -439,7 +610,7 @@ function RegistrationLayoutInner() {
 
       return stepData;
     },
-    [uploadFileAndGetMeta]
+    [uploadFileAndGetMeta, openWorkingDialog, formData]
   );
 
   const handleStepSubmit = useCallback(
@@ -451,11 +622,11 @@ function RegistrationLayoutInner() {
       let nextStep = step + 1;
 
       if (step === 1) {
-        // Logged-in user: allow only startup name update, not re-registration
         if (isLoggedIn && formData.applicationId && formData.userSignup) {
           const updatedSignup = {
             ...formData.userSignup,
-            startupName: rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
+            startupName:
+              rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
             founderName: formData.userSignup.founderName,
             email: formData.userSignup.email,
             phoneNumber: formData.userSignup.phoneNumber,
@@ -478,6 +649,11 @@ function RegistrationLayoutInner() {
             phoneNumber: updatedSignup.phoneNumber,
           });
         } else {
+          openWorkingDialog(
+            "Checking your details",
+            "Please wait while we validate your registration information."
+          );
+
           const exists = await checkIdentifierExists({
             email: rawStepData.email,
             phoneNumber: rawStepData.phoneNumber,
@@ -485,6 +661,7 @@ function RegistrationLayoutInner() {
           });
 
           if (exists.length > 0) {
+            closeWorkingDialog();
             return {
               ok: false,
               error: `${exists.join(", ")} already exist.`,
@@ -497,21 +674,21 @@ function RegistrationLayoutInner() {
 
           sectionKey = "userSignup";
 
-nextFormData = {
-  ...nextFormData,
-  applicationId,
-  userSignup: {
-    founderName: rawStepData.founderName,
-    startupName: rawStepData.startupName,
-    email: normalizeEmail(rawStepData.email),
-    phoneNumber: normalizePhone(rawStepData.phoneNumber),
-    aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
-    phoneVerified: true,
-    registrationType: rawStepData.type || "registration",
-    registeredAt: rawStepData.registeredAt || new Date().toISOString(),
-    passwordHash,
-  },
-};
+          nextFormData = {
+            ...nextFormData,
+            applicationId,
+            userSignup: {
+              founderName: rawStepData.founderName,
+              startupName: rawStepData.startupName,
+              email: normalizeEmail(rawStepData.email),
+              phoneNumber: normalizePhone(rawStepData.phoneNumber),
+              aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
+              phoneVerified: true,
+              registrationType: rawStepData.type || "registration",
+              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
+              passwordHash,
+            },
+          };
 
           persistAuth({
             applicationId,
@@ -565,7 +742,6 @@ nextFormData = {
         });
       }
 
-      // Block Aadhar only for first successful registration
       if (
         step === 1 &&
         !isLoggedIn &&
@@ -582,6 +758,7 @@ nextFormData = {
         });
       }
 
+      closeWorkingDialog();
       setCurrentStep(nextStep);
       return { ok: true };
     },
@@ -597,14 +774,26 @@ nextFormData = {
       persistAuth,
       checkIdentifierExists,
       blockAadharAfterRegistration,
+      openWorkingDialog,
+      closeWorkingDialog,
     ]
   );
 
   const handleFinalSubmit = useCallback(async () => {
     if (!formData.applicationId || isSubmitted) return;
 
+    const windowCheck = await checkSubmissionWindow();
+    if (!windowCheck.allowed) {
+      setSaveMessage(windowCheck.message || "Submission is currently closed.");
+      return;
+    }
+
     setIsSaving(true);
     setSaveMessage("Submitting...");
+    openWorkingDialog(
+      "Submitting your application",
+      "Please wait while we finalize and submit your application."
+    );
 
     try {
       const docRef = doc(db, "startupApplications", formData.applicationId);
@@ -638,14 +827,24 @@ nextFormData = {
       persistLocalDraft(updated);
       setCurrentStep(8);
       setSaveMessage("Submitted");
+      await refreshSubmissionWindow();
     } catch (error) {
       console.error("Final submit failed", error);
       setSaveMessage("Submit failed");
     } finally {
+      closeWorkingDialog();
       setIsSaving(false);
       setTimeout(() => setSaveMessage(""), 1800);
     }
-  }, [formData, persistLocalDraft, isSubmitted]);
+  }, [
+    formData,
+    persistLocalDraft,
+    isSubmitted,
+    openWorkingDialog,
+    closeWorkingDialog,
+    checkSubmissionWindow,
+    refreshSubmissionWindow,
+  ]);
 
   const handlePrevious = (step) => {
     if (step > 1) {
@@ -658,6 +857,20 @@ nextFormData = {
     }
   };
 
+  const resetForgotPasswordFlow = () => {
+    setShowForgotPhoneModal(false);
+    setForgotPhone("");
+    setForgotPasswordError("");
+    setForgotPasswordLoading(false);
+    setShowResetOtpModal(false);
+    setResetAccount(null);
+    setShowResetPasswordModal(false);
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setResetPasswordError("");
+    setResetPasswordLoading(false);
+  };
+
   const handleLogout = () => {
     persistAuth(null);
     localStorage.removeItem(STORAGE_KEY);
@@ -665,6 +878,7 @@ nextFormData = {
     setCurrentStep(1);
     setMobileNavOpen(false);
     setShowLoginModal(false);
+    resetForgotPasswordFlow();
   };
 
   const findApplicationForLogin = async (identifier) => {
@@ -717,6 +931,10 @@ nextFormData = {
 
     try {
       setLoginLoading(true);
+      openWorkingDialog(
+        "Checking your account",
+        "Please wait while we verify your login details."
+      );
 
       const application = await findApplicationForLogin(identifier);
 
@@ -756,7 +974,112 @@ nextFormData = {
       console.error("Login failed", error);
       setLoginError("Login failed. Please try again.");
     } finally {
+      closeWorkingDialog();
       setLoginLoading(false);
+    }
+  };
+
+  const handleForgotPasswordStart = async () => {
+    const phone = normalizePhone(forgotPhone);
+
+    setForgotPasswordError("");
+
+    if (phone.length !== 10) {
+      setForgotPasswordError("Enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    try {
+      setForgotPasswordLoading(true);
+      openWorkingDialog(
+        "Checking mobile number",
+        "Please wait while we look for your application."
+      );
+
+      const application = await findApplicationForLogin(phone);
+
+      if (!application) {
+        setForgotPasswordError("No application found for this mobile number.");
+        return;
+      }
+
+      setResetAccount({
+        applicationId: application.applicationId || application.id,
+        phoneNumber: application?.userSignup?.phoneNumber || phone,
+        userSignup: application?.userSignup || {},
+      });
+
+      setShowForgotPhoneModal(false);
+      setShowResetOtpModal(true);
+    } catch (error) {
+      console.error("Forgot password lookup failed", error);
+      setForgotPasswordError("Unable to continue. Please try again.");
+    } finally {
+      closeWorkingDialog();
+      setForgotPasswordLoading(false);
+    }
+  };
+
+  const handleResetOtpVerified = () => {
+    setShowResetOtpModal(false);
+    setShowResetPasswordModal(true);
+  };
+
+  const handleResetPasswordSubmit = async () => {
+    setResetPasswordError("");
+
+    if (newPassword.length < 6) {
+      setResetPasswordError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setResetPasswordError("Passwords do not match.");
+      return;
+    }
+
+    if (!resetAccount?.applicationId) {
+      setResetPasswordError("Reset session expired. Please try again.");
+      return;
+    }
+
+    try {
+      setResetPasswordLoading(true);
+      openWorkingDialog(
+        "Updating password",
+        "Please wait while we securely update your password."
+      );
+
+      const passwordHash = await sha256(newPassword);
+
+      await setDoc(
+        doc(db, "startupApplications", resetAccount.applicationId),
+        {
+          applicationId: resetAccount.applicationId,
+          userSignup: {
+            ...(resetAccount.userSignup || {}),
+            phoneNumber: normalizePhone(resetAccount?.userSignup?.phoneNumber || ""),
+            email: normalizeEmail(resetAccount?.userSignup?.email || ""),
+            aadharNumber: normalizeAadhar(resetAccount?.userSignup?.aadharNumber || ""),
+            passwordHash,
+            passwordResetAt: new Date().toISOString(),
+          },
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      setShowResetPasswordModal(false);
+      setShowLoginModal(true);
+      setLoginIdentifier(resetAccount.phoneNumber || "");
+      setLoginPassword("");
+      resetForgotPasswordFlow();
+    } catch (error) {
+      console.error("Password reset failed", error);
+      setResetPasswordError("Could not update password. Please try again.");
+    } finally {
+      closeWorkingDialog();
+      setResetPasswordLoading(false);
     }
   };
 
@@ -814,8 +1137,10 @@ nextFormData = {
   };
 
   const progressPercent = useMemo(() => {
-    const completed = [1, 2, 3, 4, 5, 6].filter((n) => isStepCompleted(n)).length;
-    return Math.round((completed / 6) * 100);
+    const completedSteps = [1, 2, 3, 4, 5, 6].filter((n) => isStepCompleted(n)).length;
+    const totalSteps = 7;
+    const finalSubmitDone = formData.status === "submitted" ? 1 : 0;
+    return Math.round(((completedSteps + finalSubmitDone) / totalSteps) * 100);
   }, [formData]);
 
   const renderStep = () => {
@@ -832,7 +1157,12 @@ nextFormData = {
             {...commonProps}
             initialValues={formData.userSignup}
             isLoggedIn={isLoggedIn}
-            loginIdentity={authState?.applicationId || authState?.email || authState?.phoneNumber || ""}
+            loginIdentity={
+              authState?.applicationId ||
+              authState?.email ||
+              authState?.phoneNumber ||
+              ""
+            }
           />
         );
 
@@ -882,6 +1212,7 @@ nextFormData = {
           <Preview
             formData={formData}
             isSubmitted={isSubmitted}
+            submissionWindow={submissionWindow}
             onPrevious={() => handlePrevious(7)}
             onFormSubmit={handleFinalSubmit}
             onNavigateToStep={(step) => {
@@ -960,10 +1291,11 @@ nextFormData = {
             ) : (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-white/70 text-slate-700 shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm"
                 title="Login"
               >
                 <FaUserCircle />
+                <span>Login</span>
               </button>
             )}
 
@@ -983,8 +1315,8 @@ nextFormData = {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-2xl font-bold tracking-tight text-slate-900">
-                      Startup Bihar
-                    </div>
+  Startup Bihar
+</div>
                     <div className="mt-1 text-sm text-slate-500">
                       {isLoggedIn ? "Logged in application" : "New registration"}
                     </div>
@@ -1001,10 +1333,11 @@ nextFormData = {
                   ) : (
                     <button
                       onClick={() => setShowLoginModal(true)}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
                       title="Login"
                     >
                       <FaUserCircle />
+                      <span>Login</span>
                     </button>
                   )}
                 </div>
@@ -1027,12 +1360,18 @@ nextFormData = {
                       (isSaving
                         ? "Saving..."
                         : isSubmitted
-                        ? "Submitted"
-                        : isLoggedIn
-                        ? "Authenticated"
-                        : "Guest mode")}
+                          ? "Submitted"
+                          : isLoggedIn
+                            ? "Final submission pending"
+                            : "Guest mode")}
                   </div>
                 </div>
+
+                {!isSubmitted && submissionWindow.message ? (
+                  <div className="mt-4 rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    {submissionWindow.message}
+                  </div>
+                ) : null}
 
                 {authState?.applicationId ? (
                   <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
@@ -1063,13 +1402,12 @@ nextFormData = {
                       key={label}
                       onClick={() => !locked && handleTabClick(index)}
                       disabled={locked}
-                      className={`flex w-full items-center justify-between rounded-[22px] px-4 py-3 text-left transition ${
-                        active
+                      className={`flex w-full items-center justify-between rounded-[22px] px-4 py-3 text-left transition ${active
                           ? "border border-slate-200 bg-white shadow-sm"
                           : locked
-                          ? "cursor-not-allowed opacity-50"
-                          : "hover:bg-white/70"
-                      }`}
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:bg-white/70"
+                        }`}
                     >
                       <span className="flex items-center gap-3">
                         <span style={{ color: locked ? "#CBD5E1" : gray }}>
@@ -1106,6 +1444,12 @@ nextFormData = {
                     </button>
                   </div>
 
+                  {!isSubmitted && submissionWindow.message ? (
+                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                      {submissionWindow.message}
+                    </div>
+                  ) : null}
+
                   <nav className="mt-4 space-y-2">
                     {stepLabels.map((label, index) => {
                       const stepNumber = index + 1;
@@ -1117,9 +1461,8 @@ nextFormData = {
                           key={label}
                           onClick={() => !locked && handleTabClick(index)}
                           disabled={locked}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left ${
-                            active ? "bg-slate-100" : "hover:bg-slate-50"
-                          } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
+                          className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left ${active ? "bg-slate-100" : "hover:bg-slate-50"
+                            } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
                         >
                           <span className="text-sm text-slate-700">{label}</span>
                           {isStepCompleted(stepNumber) && !locked && (
@@ -1143,15 +1486,26 @@ nextFormData = {
                     Application ID: {appId || "Will be created on register"}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
+<div className="hidden md:flex items-center gap-3">
+                <div
+  className="flex items-center gap-3 cursor-pointer"
+  onClick={() => navigate("/")}
+>
+  <img
+    src="/startup_bihar_logo1.png"
+    alt="Startup Bihar"
+    className="h-10 w-auto object-contain"
+  />
+  </div>
+ <div className="flex items-center gap-3">
                   {!isLoggedIn ? (
                     <button
                       type="button"
                       onClick={() => setShowLoginModal(true)}
-                      className="hidden rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
+                      className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
                     >
-                      Login
+                      <FaUserCircle />
+                      <span>Login</span>
                     </button>
                   ) : (
                     <button
@@ -1165,6 +1519,9 @@ nextFormData = {
 
                   <LanguageToggle />
                 </div>
+</div>
+
+               
               </div>
 
               <div className="md:hidden border-b border-slate-200/60 px-3 py-2">
@@ -1179,13 +1536,12 @@ nextFormData = {
                         key={label}
                         onClick={() => !locked && handleTabClick(index)}
                         disabled={locked}
-                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs ${
-                          active
+                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs ${active
                             ? "border-slate-900 bg-slate-900 text-white"
                             : locked
-                            ? "border-slate-200 text-slate-400"
-                            : "border-slate-300 text-slate-700"
-                        }`}
+                              ? "border-slate-200 text-slate-400"
+                              : "border-slate-300 text-slate-700"
+                          }`}
                       >
                         {label}
                       </button>
@@ -1193,6 +1549,12 @@ nextFormData = {
                   })}
                 </div>
               </div>
+
+              {!isSubmitted && submissionWindow.message ? (
+                <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 md:px-8">
+                  {submissionWindow.message}
+                </div>
+              ) : null}
 
               <div className="flex-1 overflow-y-auto p-4 md:p-8">{renderStep()}</div>
             </main>
@@ -1270,6 +1632,22 @@ nextFormData = {
                 />
               </div>
 
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLoginModal(false);
+                    setLoginError("");
+                    setForgotPasswordError("");
+                    setForgotPhone("");
+                    setShowForgotPhoneModal(true);
+                  }}
+                  className="text-sm font-medium text-slate-700 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
               {loginError ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {loginError}
@@ -1303,6 +1681,231 @@ nextFormData = {
           </div>
         </div>
       )}
+
+      {showForgotPhoneModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/35 p-4">
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              if (!forgotPasswordLoading) {
+                resetForgotPasswordFlow();
+                setShowLoginModal(true);
+              }
+            }}
+          />
+
+          <div className="relative z-10 w-full max-w-md rounded-[32px] border border-white/80 bg-white/90 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl">
+            <div className="mb-6 flex items-start justify-between gap-3">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  <FaShieldAlt />
+                  Reset Password
+                </div>
+                <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+                  Verify mobile number
+                </h3>
+                <p className="mt-2 text-sm text-slate-500">
+                  Enter the mobile number used in your application.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!forgotPasswordLoading) {
+                    resetForgotPasswordFlow();
+                    setShowLoginModal(true);
+                  }
+                }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-800">
+                  Mobile Number
+                </label>
+                <input
+                  value={forgotPhone}
+                  onChange={(e) => setForgotPhone(normalizePhone(e.target.value))}
+                  placeholder="9876543210"
+                  maxLength={10}
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !forgotPasswordLoading) {
+                      handleForgotPasswordStart();
+                    }
+                  }}
+                />
+              </div>
+
+              {forgotPasswordError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {forgotPasswordError}
+                </div>
+              ) : null}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!forgotPasswordLoading) {
+                      resetForgotPasswordFlow();
+                      setShowLoginModal(true);
+                    }
+                  }}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+                >
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleForgotPasswordStart}
+                  disabled={forgotPasswordLoading}
+                  className="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <PhoneVerificationModal
+        isOpen={showResetOtpModal}
+        onClose={() => {
+          if (!resetPasswordLoading) {
+            setShowResetOtpModal(false);
+            setShowForgotPhoneModal(true);
+          }
+        }}
+        onVerified={handleResetOtpVerified}
+        phoneNumber={resetAccount?.phoneNumber || ""}
+        title="Verify Mobile Number"
+        subtitle="We sent a verification code to"
+        verifyButtonText="Verify OTP"
+        verifyingText="Verifying OTP"
+        resendingText="Sending OTP"
+        successMessage="OTP verified successfully."
+      />
+
+      {showResetPasswordModal && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4">
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              if (!resetPasswordLoading) {
+                setShowResetPasswordModal(false);
+                setShowLoginModal(true);
+              }
+            }}
+          />
+
+          <div className="relative z-10 w-full max-w-md rounded-[32px] border border-white/80 bg-white/90 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl">
+            <div className="mb-6 flex items-start justify-between gap-3">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  <FaShieldAlt />
+                  Create New Password
+                </div>
+                <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+                  Set a new password
+                </h3>
+                <p className="mt-2 text-sm text-slate-500">
+                  Your mobile number is verified. Create a new password to continue.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!resetPasswordLoading) {
+                    setShowResetPasswordModal(false);
+                    setShowLoginModal(true);
+                  }
+                }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-800">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-800">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !resetPasswordLoading) {
+                      handleResetPasswordSubmit();
+                    }
+                  }}
+                />
+              </div>
+
+              {resetPasswordError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {resetPasswordError}
+                </div>
+              ) : null}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!resetPasswordLoading) {
+                      setShowResetPasswordModal(false);
+                      setShowLoginModal(true);
+                    }
+                  }}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetPasswordSubmit}
+                  disabled={resetPasswordLoading}
+                  className="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
+                >
+                  {resetPasswordLoading ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <WorkingDialog
+        open={workingDialog.open}
+        title={workingDialog.title}
+        message={workingDialog.message}
+      />
     </div>
   );
 }
