@@ -5,6 +5,9 @@ import PhoneVerificationModal from "./modals/PhoneVerificationModal";
 import { useLanguage } from "../shared/LanguageContext";
 import { FaCheckCircle, FaLock, FaShieldAlt } from "react-icons/fa";
 
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
+
 const SignupSchema = Yup.object().shape({
   founderName: Yup.string().required("Applicant name is required"),
   startupName: Yup.string().required("Startup name is required"),
@@ -35,6 +38,27 @@ export default function UserSignup({
   const [formValues, setFormValues] = useState(null);
   const [userPhone, setUserPhone] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+
+  const sendOtp = async (phoneNumber) => {
+    const res = await fetch(`${API_BASE}/otp-auth/send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mobile: phoneNumber,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || "Failed to send OTP");
+    }
+
+    return data;
+  };
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitError("");
@@ -44,7 +68,6 @@ export default function UserSignup({
       return;
     }
 
-    // Logged in: no register again, only update startup name
     if (isLoggedIn) {
       const result = await onSubmit?.({
         ...values,
@@ -59,18 +82,23 @@ export default function UserSignup({
       return;
     }
 
-    setFormValues(values);
-    setUserPhone(values.phoneNumber);
-    setIsPhoneModalOpen(true);
-    setSubmitting(false);
+    try {
+      setSendingOtp(true);
+
+      await sendOtp(values.phoneNumber);
+
+      setFormValues(values);
+      setUserPhone(values.phoneNumber);
+      setIsPhoneModalOpen(true);
+    } catch (error) {
+      setSubmitError(error.message || "Could not send OTP.");
+    } finally {
+      setSendingOtp(false);
+      setSubmitting(false);
+    }
   };
 
-  const handlePhoneVerify = async (otp) => {
-    if (otp !== "123456") {
-      alert("Use 123456 for now");
-      return;
-    }
-
+  const handlePhoneVerified = async () => {
     setIsPhoneModalOpen(false);
     setSubmitError("");
 
@@ -160,10 +188,7 @@ export default function UserSignup({
                   Verification note
                 </div>
                 <div className="mt-2 text-sm text-slate-500">
-                  Phone OTP is temporarily fixed for testing.
-                </div>
-                <div className="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-sm font-bold text-indigo-700 shadow-sm">
-                  OTP: 123456
+                  Your mobile number will be verified through OTP before registration is saved.
                 </div>
               </div>
             </div>
@@ -266,16 +291,16 @@ export default function UserSignup({
                     <div className="text-sm text-slate-500">
                       {isLoggedIn
                         ? "You can update only the startup name."
-                        : "Your details will be saved as a draft after verification."}
+                        : "Your details will be saved as a draft after phone verification."}
                     </div>
 
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || sendingOtp}
                       className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isSubmitting
-                        ? "Please wait..."
+                      {isSubmitting || sendingOtp
+                        ? "Sending OTP..."
                         : isLoggedIn
                         ? "Update Startup Name"
                         : t("userSignup.register")}
@@ -292,7 +317,7 @@ export default function UserSignup({
         <PhoneVerificationModal
           isOpen={isPhoneModalOpen}
           onClose={() => setIsPhoneModalOpen(false)}
-          onVerify={handlePhoneVerify}
+          onVerified={handlePhoneVerified}
           phoneNumber={userPhone}
         />
       ) : null}

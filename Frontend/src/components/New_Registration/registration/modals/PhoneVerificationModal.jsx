@@ -1,93 +1,237 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-const PhoneVerificationModal = ({ isOpen, onClose, onVerify, phoneNumber }) => {
-	const [otp, setOTP] = useState(["", "", "", "", "", ""]);
+const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
 
-	if (!isOpen) return null;
+const PhoneVerificationModal = ({
+  isOpen,
+  onClose,
+  onVerified,
+  phoneNumber,
+}) => {
+  const [otp, setOTP] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [cooldown, setCooldown] = useState(0);
 
-	const handleChange = (element, index) => {
-		if (isNaN(element.value)) return;
+  const inputRefs = useRef([]);
 
-		setOTP([...otp.map((d, idx) => (idx === index ? element.value : d))]);
+  useEffect(() => {
+    if (!isOpen) return;
 
-		// Focus next input
-		if (element.value && element.nextSibling) {
-			element.nextSibling.focus();
-		}
-	};
+    setOTP(["", "", "", "", "", ""]);
+    setError("");
+    setMessage("");
+    setCooldown(0);
 
-	const handleKeyDown = (e, index) => {
-		// Handle backspace
-		if (e.key === "Backspace" && !otp[index] && index > 0) {
-			const prev = e.target.previousSibling;
-			if (prev) {
-				prev.focus();
-			}
-		}
-	};
+    const timer = setTimeout(() => {
+      inputRefs.current[0]?.focus();
+    }, 100);
 
-	const handleSubmit = () => {
-		const otpString = otp.join("");
-		if (otpString.length === 6) {
-			onVerify(otpString);
-		}
-	};
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center">
-			<div
-				className="absolute inset-0 bg-black bg-opacity-50"
-				onClick={onClose}
-			></div>
-			<div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 animate-fadeIn">
-				<div className="text-center mb-8">
-					<div className="mb-4">
-						<span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-black/5">
-							<i className="mdi mdi-phone text-3xl text-black"></i>
-						</span>
-					</div>
-					<h3 className="text-2xl font-bold text-gray-900 mb-2">
-						Verify Your Phone
-					</h3>
-					<p className="text-gray-600">
-						We've sent a verification code to
-						<br />
-						<span className="font-medium text-gray-900">{phoneNumber}</span>
-					</p>
-				</div>
+  useEffect(() => {
+    if (!cooldown) return;
+    const timer = setTimeout(() => setCooldown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
-				<div className="flex justify-center gap-2 mb-6">
-					{otp.map((digit, index) => (
-						<input
-							key={index}
-							type="text"
-							maxLength="1"
-							value={digit}
-							onChange={(e) => handleChange(e.target, index)}
-							onKeyDown={(e) => handleKeyDown(e, index)}
-							className="w-12 h-12 text-center text-xl font-semibold border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
-						/>
-					))}
-				</div>
+  if (!isOpen) return null;
 
-				<button
-					onClick={handleSubmit}
-					className="w-full py-3 bg-black text-white rounded-lg hover:bg-black/80 transition-colors font-medium"
-				>
-					Verify Phone
-				</button>
+  const handleChange = (value, index) => {
+    if (!/^\d?$/.test(value)) return;
 
-				<div className="text-center mt-6">
-					<p className="text-gray-600">
-						Didn't receive the code?{" "}
-						<button className="text-black font-medium hover:underline">
-							Resend
-						</button>
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+    const nextOtp = [...otp];
+    nextOtp[index] = value;
+    setOTP(nextOtp);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+
+    e.preventDefault();
+
+    const nextOtp = ["", "", "", "", "", ""];
+    for (let i = 0; i < pasted.length; i += 1) {
+      nextOtp[i] = pasted[i];
+    }
+    setOTP(nextOtp);
+
+    const focusIndex = Math.min(pasted.length, 5);
+    inputRefs.current[focusIndex]?.focus();
+  };
+
+  const handleSubmit = async () => {
+    const otpString = otp.join("");
+
+    if (otpString.length !== 6) {
+      setError("Enter the 6-digit OTP.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setMessage("");
+
+      const res = await fetch(`${API_BASE}/otp-auth/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobile: phoneNumber,
+          otp: otpString,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.message || "OTP verification failed.");
+        return;
+      }
+
+      setMessage("Phone verified successfully.");
+      onVerified?.();
+    } catch (err) {
+      setError("Unable to verify OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (cooldown > 0) return;
+
+    try {
+      setResending(true);
+      setError("");
+      setMessage("");
+
+      const res = await fetch(`${API_BASE}/otp-auth/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobile: phoneNumber,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.message || "Could not resend OTP.");
+        return;
+      }
+
+      setMessage("OTP resent successfully.");
+      setCooldown(60);
+      setOTP(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } catch (err) {
+      setError("Unable to resend OTP. Please try again.");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        className="absolute inset-0 bg-black bg-opacity-50"
+        onClick={loading || resending ? undefined : onClose}
+      />
+      <div className="relative mx-4 w-full max-w-md rounded-2xl bg-white p-8 animate-fadeIn">
+        <div className="mb-8 text-center">
+          <div className="mb-4">
+            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black/5">
+              <i className="mdi mdi-phone text-3xl text-black"></i>
+            </span>
+          </div>
+          <h3 className="mb-2 text-2xl font-bold text-gray-900">
+            Verify Your Phone
+          </h3>
+          <p className="text-gray-600">
+            We sent a verification code to
+            <br />
+            <span className="font-medium text-gray-900">{phoneNumber}</span>
+          </p>
+        </div>
+
+        <div className="mb-6 flex justify-center gap-2" onPaste={handlePaste}>
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
+              type="text"
+              inputMode="numeric"
+              maxLength="1"
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              className="h-12 w-12 rounded-xl border border-gray-300 text-center text-xl font-semibold outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            />
+          ))}
+        </div>
+
+        {error ? (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+
+        {message ? (
+          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            {message}
+          </div>
+        ) : null}
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="w-full rounded-lg bg-black py-3 font-medium text-white transition-colors hover:bg-black/80 disabled:opacity-60"
+        >
+          {loading ? "Verifying..." : "Verify Phone"}
+        </button>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Didn't receive the code?{" "}
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resending || cooldown > 0}
+              className="font-medium text-black hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {resending
+                ? "Sending..."
+                : cooldown > 0
+                ? `Resend in ${cooldown}s`
+                : "Resend"}
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default PhoneVerificationModal;

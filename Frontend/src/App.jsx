@@ -98,7 +98,7 @@ const App = () => {
 				<Route path="/NewStartupForm" element={<StartupDetailsForm />} />
 				<Route path="/SR" element={<UserSignup />} />
 				<Route path="/rv" element={<Response />} />
-				<Route path="/applicationtesting" element={<StartupMainFormWrapper />} />
+				<Route path="/startupregistration" element={<StartupMainFormWrapper />} />
 				<Route path="/ideafest" element={<IdeaFestHome />} />
 						<Route path="/certificate/:id" element={<Certificate />} />
 				

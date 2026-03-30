@@ -497,21 +497,21 @@ function RegistrationLayoutInner() {
 
           sectionKey = "userSignup";
 
-          nextFormData = {
-            ...nextFormData,
-            applicationId,
-            userSignup: {
-              founderName: rawStepData.founderName,
-              startupName: rawStepData.startupName,
-              email: normalizeEmail(rawStepData.email),
-              phoneNumber: normalizePhone(rawStepData.phoneNumber),
-              aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
-              phoneVerified: true,
-              registrationType: rawStepData.type || "registration",
-              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
-              passwordHash,
-            },
-          };
+nextFormData = {
+  ...nextFormData,
+  applicationId,
+  userSignup: {
+    founderName: rawStepData.founderName,
+    startupName: rawStepData.startupName,
+    email: normalizeEmail(rawStepData.email),
+    phoneNumber: normalizePhone(rawStepData.phoneNumber),
+    aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
+    phoneVerified: true,
+    registrationType: rawStepData.type || "registration",
+    registeredAt: rawStepData.registeredAt || new Date().toISOString(),
+    passwordHash,
+  },
+};
 
           persistAuth({
             applicationId,
