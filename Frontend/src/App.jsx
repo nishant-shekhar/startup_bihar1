@@ -31,6 +31,7 @@ import IdeaFestHome from './components/IdeaFest/IdeaFestHome';
 import Certificate from './components/IdeaFest/Certificate';
 import Migration from './components/AdminRedesign/NewApplicationAdmin/Migration/Migration';
 import StartupMainFormWrapper from './components/New_Registration/registration/RegistrationLayout';
+import Block from './components/New_Registration/admin/Block';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);

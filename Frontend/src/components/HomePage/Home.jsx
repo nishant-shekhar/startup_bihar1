@@ -268,18 +268,18 @@ const HomePage = () => {
 						variants={fadeIn}
 					>
 						<a
-							href="/AllStartups"
+							href="/startupregistration"
 							className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 						>
-							Explore Startups
+							Register New Startup <span aria-hidden="true">→</span>
 						</a>
-						{/*<a
-							href="https://startup.bihar.gov.in/apply-new"
-							target="blank"
+						{<a
+							href="/AllStartups"
+							
 							className="text-sm font-semibold leading-6 text-gray-900"
 						>
-							Register New Startup <span aria-hidden="true">→</span>
-						</a>*/}
+							Explore Startups
+						</a>}
 					</motion.div>
 					{/* Notification Section 	*/}
 			<motion.div
