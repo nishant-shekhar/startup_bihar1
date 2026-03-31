@@ -28,9 +28,17 @@ import {
   limit,
   getDocs,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { getDatabase, ref as rtdbRef, get } from "firebase/database";
-import app, { db, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
+import app, {
+  db,
+  storage,
+} from "../../AdminRedesign/NewApplicationAdmin/firebase";
 import { LanguageProvider } from "../shared/LanguageContext";
 import LanguageToggle from "../shared/LanguageToggle";
 import { useNavigate } from "react-router-dom";
@@ -321,7 +329,10 @@ function RegistrationLayoutInner() {
   const checkSubmissionWindow = useCallback(async () => {
     const state = await refreshSubmissionWindow();
     if (!state.isOpen) {
-      return { allowed: false, message: state.message || "Submission is currently closed." };
+      return {
+        allowed: false,
+        message: state.message || "Submission is currently closed.",
+      };
     }
     return { allowed: true };
   }, [refreshSubmissionWindow]);
@@ -431,96 +442,100 @@ function RegistrationLayoutInner() {
     [currentStep, openWorkingDialog, closeWorkingDialog]
   );
 
-  const checkIdentifierExists = useCallback(
-    async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
-      const existing = [];
+ const checkIdentifierExists = useCallback(
+  async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
+    const existing = [];
+    const currentId = normalizeApplicationId(currentApplicationId);
 
-      const appsRef = collection(db, "startupApplications");
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedPhone = normalizePhone(phoneNumber);
+    const normalizedAadhar = normalizeAadhar(aadharNumber);
 
-      const normalizedEmail = normalizeEmail(email);
-      const normalizedPhone = normalizePhone(phoneNumber);
-      const normalizedAadhar = normalizeAadhar(aadharNumber);
-      const currentId = normalizeApplicationId(currentApplicationId);
-
-      if (normalizedEmail) {
-        const emailQ = query(
-          appsRef,
-          where("userSignup.email", "==", normalizedEmail),
-          limit(5)
-        );
-        const emailSnap = await getDocs(emailQ);
-        const emailMatch = emailSnap.docs.find((d) => d.id !== currentId);
-        if (emailMatch) existing.push("email");
-      }
-
-      if (normalizedPhone) {
-        const phoneQ = query(
-          appsRef,
-          where("userSignup.phoneNumber", "==", normalizedPhone),
-          limit(5)
-        );
-        const phoneSnap = await getDocs(phoneQ);
-        const phoneMatch = phoneSnap.docs.find((d) => d.id !== currentId);
-        if (phoneMatch) existing.push("mobile");
-      }
-
-      if (normalizedAadhar) {
-        const aadharQ = query(
-          appsRef,
-          where("userSignup.aadharNumber", "==", normalizedAadhar),
-          limit(5)
-        );
-        const aadharSnap = await getDocs(aadharQ);
-        const aadharMatch = aadharSnap.docs.find((d) => d.id !== currentId);
-        if (aadharMatch) existing.push("aadhar");
-      }
-
-      if (normalizedAadhar) {
-        const blockedRef = doc(db, "aadharBlocked", normalizedAadhar);
-        const blockedSnap = await getDoc(blockedRef);
-        if (blockedSnap.exists() && !existing.includes("aadhar")) {
-          const blockedForApplicationId = blockedSnap.data()?.applicationId || "";
-          if (blockedForApplicationId !== currentId) {
-            existing.push("aadhar");
-          }
+    if (normalizedEmail) {
+      const blockedEmailSnap = await getDoc(doc(db, "emailBlocked", normalizedEmail));
+      if (blockedEmailSnap.exists()) {
+        const blockedForApplicationId = blockedEmailSnap.data()?.applicationId || "";
+        if (blockedForApplicationId !== currentId) {
+          existing.push("email");
         }
       }
+    }
 
-      return existing;
-    },
-    []
-  );
+    if (normalizedPhone) {
+      const blockedPhoneSnap = await getDoc(doc(db, "phoneBlocked", normalizedPhone));
+      if (blockedPhoneSnap.exists()) {
+        const blockedForApplicationId = blockedPhoneSnap.data()?.applicationId || "";
+        if (blockedForApplicationId !== currentId) {
+          existing.push("mobile");
+        }
+      }
+    }
 
-  const blockAadharAfterRegistration = useCallback(
-    async ({
-      aadharNumber,
-      applicationId,
-      founderName,
-      startupName,
-      email,
-      phoneNumber,
-    }) => {
-      const normalizedAadhar = normalizeAadhar(aadharNumber);
-      if (!normalizedAadhar || !applicationId) return;
+    if (normalizedAadhar) {
+      const blockedAadharSnap = await getDoc(doc(db, "aadharBlocked", normalizedAadhar));
+      if (blockedAadharSnap.exists()) {
+        const blockedForApplicationId = blockedAadharSnap.data()?.applicationId || "";
+        if (blockedForApplicationId !== currentId) {
+          existing.push("aadhar");
+        }
+      }
+    }
 
-      await setDoc(
-        doc(db, "aadharBlocked", normalizedAadhar),
-        {
-          aadharNumber: normalizedAadhar,
-          applicationId,
-          founderName: founderName || "",
-          startupName: startupName || "",
-          email: normalizeEmail(email || ""),
-          phoneNumber: normalizePhone(phoneNumber || ""),
-          blockedAt: serverTimestamp(),
-          source: "startupRegistration",
-          active: true,
-        },
-        { merge: true }
-      );
-    },
-    []
-  );
+    return existing;
+  },
+  []
+);
+
+const blockAadharAfterRegistration = useCallback(
+  async ({ aadharNumber, applicationId }) => {
+    const normalizedAadhar = normalizeAadhar(aadharNumber);
+    if (!normalizedAadhar || !applicationId) return;
+
+    await setDoc(
+      doc(db, "aadharBlocked", normalizedAadhar),
+      {
+        applicationId,
+        blockedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  },
+  []
+);
+
+const blockPhoneAfterRegistration = useCallback(
+  async ({ phoneNumber, applicationId }) => {
+    const normalizedPhone = normalizePhone(phoneNumber);
+    if (!normalizedPhone || !applicationId) return;
+
+    await setDoc(
+      doc(db, "phoneBlocked", normalizedPhone),
+      {
+        applicationId,
+        blockedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  },
+  []
+);
+
+const blockEmailAfterRegistration = useCallback(
+  async ({ email, applicationId }) => {
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail || !applicationId) return;
+
+    await setDoc(
+      doc(db, "emailBlocked", normalizedEmail),
+      {
+        applicationId,
+        blockedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  },
+  []
+);
 
   const transformStepDataForStorage = useCallback(
     async (stepData, step, applicationId) => {
@@ -622,37 +637,36 @@ function RegistrationLayoutInner() {
       let nextStep = step + 1;
 
       if (step === 1) {
-       if (isLoggedIn && formData.applicationId && formData.userSignup) {
-  const updatedSignup = {
-    ...formData.userSignup,
-    startupName:
-      rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
-    applicationType:
-      rawStepData.applicationType ||
-      formData.userSignup.applicationType ||
-      "funding_with_recognition",
-    founderName: formData.userSignup.founderName,
-    email: formData.userSignup.email,
-    phoneNumber: formData.userSignup.phoneNumber,
-    aadharNumber: formData.userSignup.aadharNumber,
-    passwordHash: formData.userSignup.passwordHash,
-  };
+        if (isLoggedIn && formData.applicationId && formData.userSignup) {
+          const updatedSignup = {
+            ...formData.userSignup,
+            startupName:
+              rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
+            applicationType:
+              rawStepData.applicationType ||
+              formData.userSignup.applicationType ||
+              "funding_with_recognition",
+            founderName: formData.userSignup.founderName,
+            email: formData.userSignup.email,
+            phoneNumber: formData.userSignup.phoneNumber,
+            aadharNumber: formData.userSignup.aadharNumber,
+            passwordHash: formData.userSignup.passwordHash,
+          };
 
-  nextFormData = {
-    ...nextFormData,
-    userSignup: updatedSignup,
-  };
+          nextFormData = {
+            ...nextFormData,
+            userSignup: updatedSignup,
+          };
 
-  sectionKey = "userSignup";
-  persistAuth({
-    ...(authState || {}),
-    applicationId: formData.applicationId,
-    founderName: updatedSignup.founderName,
-    startupName: updatedSignup.startupName,
-    email: updatedSignup.email,
-    phoneNumber: updatedSignup.phoneNumber,
-  });
-
+          sectionKey = "userSignup";
+          persistAuth({
+            ...(authState || {}),
+            applicationId: formData.applicationId,
+            founderName: updatedSignup.founderName,
+            startupName: updatedSignup.startupName,
+            email: updatedSignup.email,
+            phoneNumber: updatedSignup.phoneNumber,
+          });
         } else {
           openWorkingDialog(
             "Checking your details",
@@ -669,7 +683,7 @@ function RegistrationLayoutInner() {
             closeWorkingDialog();
             return {
               ok: false,
-              error: `${exists.join(", ")} already exist.`,
+              error: `The following already exist or are blocked: ${exists.join(", ")}.`,
               existingFields: exists,
             };
           }
@@ -680,22 +694,22 @@ function RegistrationLayoutInner() {
           sectionKey = "userSignup";
 
           nextFormData = {
-  ...nextFormData,
-  applicationId,
-  userSignup: {
-    founderName: rawStepData.founderName,
-    startupName: rawStepData.startupName,
-    applicationType:
-      rawStepData.applicationType || "funding_with_recognition",
-    email: normalizeEmail(rawStepData.email),
-    phoneNumber: normalizePhone(rawStepData.phoneNumber),
-    aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
-    phoneVerified: true,
-    registrationType: rawStepData.type || "registration",
-    registeredAt: rawStepData.registeredAt || new Date().toISOString(),
-    passwordHash,
-  },
-};
+            ...nextFormData,
+            applicationId,
+            userSignup: {
+              founderName: rawStepData.founderName,
+              startupName: rawStepData.startupName,
+              applicationType:
+                rawStepData.applicationType || "funding_with_recognition",
+              email: normalizeEmail(rawStepData.email),
+              phoneNumber: normalizePhone(rawStepData.phoneNumber),
+              aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
+              phoneVerified: true,
+              registrationType: rawStepData.type || "registration",
+              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
+              passwordHash,
+            },
+          };
 
           persistAuth({
             applicationId,
@@ -749,20 +763,21 @@ function RegistrationLayoutInner() {
         });
       }
 
-      if (
-        step === 1 &&
-        !isLoggedIn &&
-        nextFormData?.userSignup?.aadharNumber &&
-        nextFormData?.applicationId
-      ) {
-        await blockAadharAfterRegistration({
-          aadharNumber: nextFormData.userSignup.aadharNumber,
-          applicationId: nextFormData.applicationId,
-          founderName: nextFormData.userSignup.founderName,
-          startupName: nextFormData.userSignup.startupName,
-          email: nextFormData.userSignup.email,
-          phoneNumber: nextFormData.userSignup.phoneNumber,
-        });
+      if (step === 1 && !isLoggedIn && nextFormData?.applicationId && nextFormData?.userSignup) {
+       await Promise.all([
+  blockAadharAfterRegistration({
+    aadharNumber: nextFormData.userSignup.aadharNumber,
+    applicationId: nextFormData.applicationId,
+  }),
+  blockPhoneAfterRegistration({
+    phoneNumber: nextFormData.userSignup.phoneNumber,
+    applicationId: nextFormData.applicationId,
+  }),
+  blockEmailAfterRegistration({
+    email: nextFormData.userSignup.email,
+    applicationId: nextFormData.applicationId,
+  }),
+]);
       }
 
       closeWorkingDialog();
@@ -781,6 +796,8 @@ function RegistrationLayoutInner() {
       persistAuth,
       checkIdentifierExists,
       blockAadharAfterRegistration,
+      blockPhoneAfterRegistration,
+      blockEmailAfterRegistration,
       openWorkingDialog,
       closeWorkingDialog,
     ]
@@ -1322,8 +1339,8 @@ function RegistrationLayoutInner() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-2xl font-bold tracking-tight text-slate-900">
-  Startup Bihar
-</div>
+                      Startup Bihar
+                    </div>
 
                     <div className="mt-1 text-sm text-slate-500">
                       {isLoggedIn ? "Logged in application" : "New registration"}
@@ -1368,10 +1385,10 @@ function RegistrationLayoutInner() {
                       (isSaving
                         ? "Saving..."
                         : isSubmitted
-                          ? "Submitted"
-                          : isLoggedIn
-                            ? "Final submission pending"
-                            : "Guest mode")}
+                        ? "Submitted"
+                        : isLoggedIn
+                        ? "Final submission pending"
+                        : "Guest mode")}
                   </div>
                 </div>
 
@@ -1410,12 +1427,13 @@ function RegistrationLayoutInner() {
                       key={label}
                       onClick={() => !locked && handleTabClick(index)}
                       disabled={locked}
-                      className={`flex w-full items-center justify-between rounded-[22px] px-4 py-3 text-left transition ${active
+                      className={`flex w-full items-center justify-between rounded-[22px] px-4 py-3 text-left transition ${
+                        active
                           ? "border border-slate-200 bg-white shadow-sm"
                           : locked
-                            ? "cursor-not-allowed opacity-50"
-                            : "hover:bg-white/70"
-                        }`}
+                          ? "cursor-not-allowed opacity-50"
+                          : "hover:bg-white/70"
+                      }`}
                     >
                       <span className="flex items-center gap-3">
                         <span style={{ color: locked ? "#CBD5E1" : gray }}>
@@ -1469,8 +1487,9 @@ function RegistrationLayoutInner() {
                           key={label}
                           onClick={() => !locked && handleTabClick(index)}
                           disabled={locked}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left ${active ? "bg-slate-100" : "hover:bg-slate-50"
-                            } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
+                          className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left ${
+                            active ? "bg-slate-100" : "hover:bg-slate-50"
+                          } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
                         >
                           <span className="text-sm text-slate-700">{label}</span>
                           {isStepCompleted(stepNumber) && !locked && (
@@ -1494,42 +1513,42 @@ function RegistrationLayoutInner() {
                     Application ID: {appId || "Will be created on register"}
                   </div>
                 </div>
-<div className="hidden md:flex items-center gap-3">
-                <div
-  className="flex items-center gap-3 cursor-pointer"
-  onClick={() => navigate("/")}
->
-  <img
-    src="/startup_bihar_logo1.png"
-    alt="Startup Bihar"
-    className="h-10 w-auto object-contain"
-  />
-  </div>
- <div className="flex items-center gap-3">
-                  {!isLoggedIn ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowLoginModal(true)}
-                      className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
-                    >
-                      <FaUserCircle />
-                      <span>Login</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="hidden rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
-                    >
-                      Logout
-                    </button>
-                  )}
 
-                  <LanguageToggle />
+                <div className="hidden md:flex items-center gap-3">
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => navigate("/")}
+                  >
+                    <img
+                      src="/startup_bihar_logo1.png"
+                      alt="Startup Bihar"
+                      className="h-10 w-auto object-contain"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {!isLoggedIn ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginModal(true)}
+                        className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
+                      >
+                        <FaUserCircle />
+                        <span>Login</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="hidden rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
+                      >
+                        Logout
+                      </button>
+                    )}
+
+                    <LanguageToggle />
+                  </div>
                 </div>
-</div>
-
-               
               </div>
 
               <div className="md:hidden border-b border-slate-200/60 px-3 py-2">
@@ -1544,12 +1563,13 @@ function RegistrationLayoutInner() {
                         key={label}
                         onClick={() => !locked && handleTabClick(index)}
                         disabled={locked}
-                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs ${active
+                        className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-xs ${
+                          active
                             ? "border-slate-900 bg-slate-900 text-white"
                             : locked
-                              ? "border-slate-200 text-slate-400"
-                              : "border-slate-300 text-slate-700"
-                          }`}
+                            ? "border-slate-200 text-slate-400"
+                            : "border-slate-300 text-slate-700"
+                        }`}
                       >
                         {label}
                       </button>

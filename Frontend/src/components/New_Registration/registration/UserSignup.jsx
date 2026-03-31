@@ -3,7 +3,13 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import PhoneVerificationModal from "./modals/PhoneVerificationModal";
 import { useLanguage } from "../shared/LanguageContext";
-import { FaCheckCircle, FaLock, FaShieldAlt } from "react-icons/fa";
+import {
+  FaCheckCircle,
+  FaLock,
+  FaShieldAlt,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
@@ -413,28 +419,51 @@ function InputField({
   touched,
   disabled = false,
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   const hasError = errors[name] && touched[name];
+  const isPasswordField = type === "password";
 
   return (
     <div>
-      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-semibold text-slate-800"
+      >
         {label}
       </label>
-      <Field
-        id={name}
-        name={name}
-        type={type}
-        maxLength={maxLength}
-        disabled={disabled}
-        className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition ${
-          disabled
-            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
-            : hasError
-            ? "border-red-400 bg-red-50"
-            : "border-slate-200 bg-white/85 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
-        }`}
-        placeholder={placeholder}
-      />
+
+      <div className="relative">
+        <Field
+          id={name}
+          name={name}
+          type={isPasswordField && showPassword ? "text" : type}
+          maxLength={maxLength}
+          disabled={disabled}
+          className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition ${
+            isPasswordField ? "pr-12" : ""
+          } ${
+            disabled
+              ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+              : hasError
+              ? "border-red-400 bg-red-50"
+              : "border-slate-200 bg-white/85 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+          }`}
+          placeholder={placeholder}
+        />
+
+        {isPasswordField ? (
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            disabled={disabled}
+            className="absolute inset-y-0 right-3 flex items-center text-slate-500 transition hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        ) : null}
+      </div>
+
       <ErrorMessage
         name={name}
         component="p"
@@ -456,7 +485,10 @@ function SelectField({
 
   return (
     <div>
-      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-semibold text-slate-800"
+      >
         {label}
       </label>
       <Field
