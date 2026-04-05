@@ -7,7 +7,7 @@ import FifthPage from "./FifthPage";
 import MovingPage from "./MovinPage/MovingPage";
 import SixthPage from "./SixthPage";
 import Countdown from "react-countdown";
-import Footer from "./footer";
+import Footer from "./Footer";
 import CountdownTimer from "./CountdownTimer";
 import CountUp from 'react-countup';
 import DashboardPagePublic from "../Profile/PublicProfile/DashboardPage";
@@ -282,27 +282,10 @@ const HomePage = () => {
 						</a>}
 					</motion.div>
 					{/* Notification Section 	*/}
-			<motion.div
-  className="mt-6 flex justify-center sm:flex sm:justify-center"
-  variants={fadeIn}
->
-  <div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-indigo-700 ring-1 ring-indigo-700/10 hover:ring-indigo-700/20 bg-indigo-50 flex items-center space-x-2">
-    <span>
-      Office Order for Quarterly Opening of New Startup Application Window
-      <a
-        href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FOffice%20Order%20Quaterly%20Schedule.pdf?alt=media&token=58d92eaa-04c6-4936-be86-7c348f7dcb76"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-semibold text-indigo-800 ml-2"
-      >
-        View. <span aria-hidden="true">&rarr;</span>
-      </a>
-    </span>
-  </div>
-</motion.div>
+		
 
 					<motion.div
-						className="mt-2 flex justify-center sm:mb-8 sm:flex sm:justify-center"
+						className="mt-8 flex justify-center sm:mb-12 sm:flex sm:justify-center"
 						variants={fadeIn}
 >
 						<div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-red-700 ring-1 ring-red-700/10 hover:ring-red-700/20 bg-red-50 flex items-center space-x-2">

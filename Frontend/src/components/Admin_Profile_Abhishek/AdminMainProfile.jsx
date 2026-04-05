@@ -19,6 +19,7 @@ import AdminNotification from "./AdminNotification.jsx";
 import UpdateStartup from "./UpdateStartup.jsx";
 import CoWorkingMap from "./CoWorkingMap.jsx";
 import MatchingLoanModuleDetails from "./Matching_Loan/MatchingLoan.jsx";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -31,7 +32,7 @@ const AdminMainProfile = () => {
 	const [hasDetailsPanel, setHasDetailsPanel] = useState(true); // Controls the visibility of the third section
 
 	const designation = localStorage.getItem("admin_designation"); // Coworking center name like "Patna Hub"
-
+	const navigate = useNavigate();
 
 	// Handles the main content section (second section) based on `activePage`
 	function handlePageChange() {
@@ -82,7 +83,11 @@ const AdminMainProfile = () => {
 
 					/>
 				);
+case "NewApplicationDashboard":
+				return (
+					          navigate("/newapplicationdata")
 
+				);
 			case "PostSeedFundModule":
 				return (
 					<CommonList

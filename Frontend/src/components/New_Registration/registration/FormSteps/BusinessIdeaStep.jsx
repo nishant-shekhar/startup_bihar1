@@ -5,6 +5,8 @@ import { useLanguage } from "../../shared/LanguageContext";
 import { FaLock, FaUpload, FaFileAlt, FaExternalLinkAlt } from "react-icons/fa";
 
 const MAX_PITCH_DECK_SIZE = 5 * 1024 * 1024;
+const MAX_TEXTAREA_CHARACTERS = 750;
+
 const FILE_SIZE_ERROR =
   "File size is greater than 5 MB. Please upload a file up to 5 MB only.";
 
@@ -17,35 +19,59 @@ export default function BusinessIdeaStep({
   const { t } = useLanguage();
 
   const validationSchema = Yup.object().shape({
-    problemStatement: Yup.string().required("Problem statement is required"),
-    solution: Yup.string().required("Solution is required"),
-    innovation: Yup.string().required("Innovation is required"),
-    businessModel: Yup.string().required("Business model is required"),
+    problemStatement: Yup.string()
+      .max(
+        MAX_TEXTAREA_CHARACTERS,
+        `Problem statement cannot exceed ${MAX_TEXTAREA_CHARACTERS} characters`
+      )
+      .required("Problem statement is required"),
+
+    solution: Yup.string()
+      .max(
+        MAX_TEXTAREA_CHARACTERS,
+        `Solution cannot exceed ${MAX_TEXTAREA_CHARACTERS} characters`
+      )
+      .required("Solution is required"),
+
+    innovation: Yup.string()
+      .max(
+        MAX_TEXTAREA_CHARACTERS,
+        `Innovation cannot exceed ${MAX_TEXTAREA_CHARACTERS} characters`
+      )
+      .required("Innovation is required"),
+
+    businessModel: Yup.string()
+      .max(
+        MAX_TEXTAREA_CHARACTERS,
+        `Business model cannot exceed ${MAX_TEXTAREA_CHARACTERS} characters`
+      )
+      .required("Business model is required"),
+
     pitchDeck: Yup.mixed()
-  .test("pitchDeckRequired", "Pitch deck is required", function (value) {
-    const hasNewFile = !!value;
-    const hasExistingFile = !!this.parent?.pitchDeckMeta?.downloadURL;
-    return hasNewFile || hasExistingFile;
-  })
-  .test("fileSize", FILE_SIZE_ERROR, (value) => {
-    if (!value) return true;
-    return value.size <= MAX_PITCH_DECK_SIZE;
-  })
-  .test("fileType", "Only PDF, PPT, and PPTX files are allowed", (value) => {
-    if (!value) return true;
-    const allowedTypes = [
-      "application/pdf",
-      "application/vnd.ms-powerpoint",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ];
-    const fileName = value?.name?.toLowerCase() || "";
-    return (
-      allowedTypes.includes(value.type) ||
-      fileName.endsWith(".pdf") ||
-      fileName.endsWith(".ppt") ||
-      fileName.endsWith(".pptx")
-    );
-  }),
+      .test("pitchDeckRequired", "Pitch deck is required", function (value) {
+        const hasNewFile = !!value;
+        const hasExistingFile = !!this.parent?.pitchDeckMeta?.downloadURL;
+        return hasNewFile || hasExistingFile;
+      })
+      .test("fileSize", FILE_SIZE_ERROR, (value) => {
+        if (!value) return true;
+        return value.size <= MAX_PITCH_DECK_SIZE;
+      })
+      .test("fileType", "Only PDF, PPT, and PPTX files are allowed", (value) => {
+        if (!value) return true;
+        const allowedTypes = [
+          "application/pdf",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ];
+        const fileName = value?.name?.toLowerCase() || "";
+        return (
+          allowedTypes.includes(value.type) ||
+          fileName.endsWith(".pdf") ||
+          fileName.endsWith(".ppt") ||
+          fileName.endsWith(".pptx")
+        );
+      }),
     pitchDeckMeta: Yup.mixed().nullable(),
   });
 
@@ -108,6 +134,7 @@ export default function BusinessIdeaStep({
                   label={t("businessIdea.problemStatement")}
                   placeholder={t("businessIdea.problemStatementPlaceholder")}
                   disabled={isReadOnly}
+                  maxLength={MAX_TEXTAREA_CHARACTERS}
                 />
 
                 <TextAreaField
@@ -115,6 +142,7 @@ export default function BusinessIdeaStep({
                   label={t("businessIdea.solution")}
                   placeholder={t("businessIdea.solutionPlaceholder")}
                   disabled={isReadOnly}
+                  maxLength={MAX_TEXTAREA_CHARACTERS}
                 />
 
                 <TextAreaField
@@ -122,6 +150,7 @@ export default function BusinessIdeaStep({
                   label={t("businessIdea.innovation")}
                   placeholder={t("businessIdea.innovationPlaceholder")}
                   disabled={isReadOnly}
+                  maxLength={MAX_TEXTAREA_CHARACTERS}
                 />
 
                 <TextAreaField
@@ -129,6 +158,7 @@ export default function BusinessIdeaStep({
                   label={t("businessIdea.businessModel")}
                   placeholder={t("businessIdea.businessModelPlaceholder")}
                   disabled={isReadOnly}
+                  maxLength={MAX_TEXTAREA_CHARACTERS}
                 />
 
                 <div className="rounded-[26px] border border-slate-200 bg-slate-50/70 p-4">
@@ -253,30 +283,52 @@ export default function BusinessIdeaStep({
   );
 }
 
-function TextAreaField({ name, label, placeholder, disabled = false }) {
+function TextAreaField({
+  name,
+  label,
+  placeholder,
+  disabled = false,
+  maxLength = 600,
+}) {
   return (
-    <div>
-      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
-        {label}
-      </label>
-      <Field
-        as="textarea"
-        id={name}
-        name={name}
-        rows={4}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
-          disabled
-            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
-            : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
-        }`}
-      />
-      <ErrorMessage
-        name={name}
-        component="p"
-        className="mt-2 text-sm text-red-500"
-      />
-    </div>
+    <Field name={name}>
+      {({ field, form }) => {
+        const currentLength = field.value?.length || 0;
+
+        return (
+          <div>
+            <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+              {label}
+            </label>
+
+            <textarea
+              {...field}
+              id={name}
+              rows={4}
+              placeholder={placeholder}
+              disabled={disabled}
+              maxLength={maxLength}
+              className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+                disabled
+                  ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+                  : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+              }`}
+            />
+
+            <div className="mt-1 flex items-center justify-end">
+              <span className="text-xs text-slate-400">
+                {currentLength}/{maxLength} characters
+              </span>
+            </div>
+
+            <ErrorMessage
+              name={name}
+              component="p"
+              className="mt-2 text-sm text-red-500"
+            />
+          </div>
+        );
+      }}
+    </Field>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "../../assets/logo.png";
 import NavBarNew from "../HomePage/NavBarNew";
-import Footer from "../HomePage/footer";
+import Footer from "../HomePage/Footer";
 
 const AboutUs = () => {
 	return (

@@ -35,6 +35,7 @@ const LeftBar = ({ changePanel }) => {
   const menuItems = [
     { label: "Notifications", panel: "AdminNotification" },
     { label: "Startup Profile", panel: "StartupProfile" },
+    { label: "New Application Dashboard", panel: "NewApplicationDashboard" },
 
     { label: "Seed Fund Module", panel: "SeedFundModule" },
     { label: "Second Tranche Module", panel: "SecondTrancheModule" },
@@ -68,6 +69,7 @@ const LeftBar = ({ changePanel }) => {
     "Startup List",
 	],
 	"IT": [
+	  "New Application Dashboard",
 	  "Seed Fund Module",
 	  "Second Tranche Module",
 	  "Post Seed Fund Module",

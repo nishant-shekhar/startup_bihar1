@@ -1,6 +1,6 @@
 import React from 'react'
 import NavBarNew from '../HomePage/NavBarNew'
-import Footer from '../HomePage/footer'
+import Footer from '../HomePage/Footer'
 import contacts from './data'
 import ContactCard from './ContactCard'
 

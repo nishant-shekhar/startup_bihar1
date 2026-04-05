@@ -1,9 +1,9 @@
 import React from 'react';
 
-import topImage from "/Users/nishantshekhar/VSCodeProjects/startup_bihar1/Frontend/src/assets/top_right.png";
-import bottomImage from "/Users/nishantshekhar/VSCodeProjects/startup_bihar1/Frontend/src/assets/bottom_left.png";
+import topImage from "../../assets//top_right.png";
+import bottomImage from "../../assets/bottom_left.png";
 import NavBarNew from '../HomePage/NavBarNew';
-import Footer from '../HomePage/footer';
+import Footer from '../HomePage/Footer';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 

@@ -6,7 +6,7 @@ import FifthPage from "./images/PSC.png";
 
 import NavBarNew from "../HomePage/NavBarNew";
 import SixthPage from "./images/SSU.png";
-import Footer from "../HomePage/footer";
+import Footer from "../HomePage/Footer";
 import { Link } from "react-router-dom";
 
 

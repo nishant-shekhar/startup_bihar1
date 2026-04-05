@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import stateDistrictData from "./stateDistrictData.json";
@@ -13,29 +13,54 @@ export default function EntityDetailsStep({
 }) {
   const { t } = useLanguage();
   const biharDistricts = stateDistrictData["Bihar"] || [];
+
+  const defaultValues = useMemo(
+    () => ({
+      hasRegisteredEntity: false,
+      entityName: "",
+      entityType: "",
+      entityRegistrationNumber: "",
+      dateOfRegistration: "",
+      businessAddress: "",
+      state: "Bihar",
+      district: "",
+      certificate: null,
+      certificateMeta: null,
+    }),
+    []
+  );
+
+  const mergedInitialValues = useMemo(() => {
+    return {
+      ...defaultValues,
+      ...(initialValues || {}),
+      state: "Bihar",
+    };
+  }, [defaultValues, initialValues]);
+
   const [hasRegisteredEntity, setHasRegisteredEntity] = useState(
-    initialValues?.hasRegisteredEntity ?? false
+    mergedInitialValues.hasRegisteredEntity ?? false
   );
 
   useEffect(() => {
-    setHasRegisteredEntity(initialValues?.hasRegisteredEntity ?? false);
-  }, [initialValues?.hasRegisteredEntity]);
+    setHasRegisteredEntity(mergedInitialValues.hasRegisteredEntity ?? false);
+  }, [mergedInitialValues.hasRegisteredEntity]);
 
   const today = new Date().toISOString().split("T")[0];
 
-  const getValidationSchema = () => {
+  const validationSchema = useMemo(() => {
     if (!hasRegisteredEntity) {
       return Yup.object().shape({
         hasRegisteredEntity: Yup.boolean(),
-        entityName: Yup.string().notRequired(),
-        entityType: Yup.string().notRequired(),
-        entityRegistrationNumber: Yup.string().notRequired(),
-        dateOfRegistration: Yup.string().notRequired(),
-        businessAddress: Yup.string().notRequired(),
-        state: Yup.string().notRequired(),
-        district: Yup.string().notRequired(),
-        certificate: Yup.mixed().nullable().notRequired(),
-        certificateMeta: Yup.mixed().nullable().notRequired(),
+        entityName: Yup.string().nullable(),
+        entityType: Yup.string().nullable(),
+        entityRegistrationNumber: Yup.string().nullable(),
+        dateOfRegistration: Yup.string().nullable(),
+        businessAddress: Yup.string().nullable(),
+        state: Yup.string().nullable(),
+        district: Yup.string().nullable(),
+        certificate: Yup.mixed().nullable(),
+        certificateMeta: Yup.mixed().nullable(),
       });
     }
 
@@ -55,21 +80,14 @@ export default function EntityDetailsStep({
       certificate: Yup.mixed().nullable(),
       certificateMeta: Yup.mixed().nullable(),
     });
-  };
+  }, [hasRegisteredEntity]);
 
   const handleSubmit = (values) => {
     if (!hasRegisteredEntity) {
       onSubmit({
+        ...values,
         hasRegisteredEntity: false,
-        entityName: "",
-        entityType: "",
-        entityRegistrationNumber: "",
-        dateOfRegistration: "",
-        businessAddress: "",
-        state: "",
-        district: "",
-        certificate: null,
-        certificateMeta: null,
+        state: "Bihar",
       });
       return;
     }
@@ -77,6 +95,7 @@ export default function EntityDetailsStep({
     onSubmit({
       ...values,
       hasRegisteredEntity: true,
+      state: "Bihar",
     });
   };
 
@@ -101,27 +120,16 @@ export default function EntityDetailsStep({
               <FaLock />
               Step locked
             </div>
-            <div className="mt-1">This section is read-only after final submission.</div>
+            <div className="mt-1">
+              This section is read-only after final submission.
+            </div>
           </div>
         ) : null}
       </div>
 
       <Formik
-        initialValues={
-          initialValues || {
-            hasRegisteredEntity: false,
-            entityName: "",
-            entityType: "",
-            entityRegistrationNumber: "",
-            dateOfRegistration: "",
-            businessAddress: "",
-            state: "Bihar",
-            district: "",
-            certificate: null,
-            certificateMeta: null,
-          }
-        }
-        validationSchema={getValidationSchema()}
+        initialValues={mergedInitialValues}
+        validationSchema={validationSchema}
         onSubmit={handleSubmit}
         enableReinitialize
       >
@@ -143,11 +151,13 @@ export default function EntityDetailsStep({
                     <span className="text-sm font-medium text-slate-700">
                       {hasRegisteredEntity ? t("common.yes") : t("common.no")}
                     </span>
+
                     <button
                       type="button"
                       disabled={isReadOnly}
                       onClick={() => {
                         if (isReadOnly) return;
+
                         const next = !hasRegisteredEntity;
                         setHasRegisteredEntity(next);
                         formik.setFieldValue("hasRegisteredEntity", next);
@@ -244,6 +254,7 @@ export default function EntityDetailsStep({
                     >
                       {t("entityDetails.certificate")}
                     </label>
+
                     <input
                       id="certificate"
                       name="certificate"
@@ -263,16 +274,22 @@ export default function EntityDetailsStep({
                           : "border-slate-200 bg-white/85 text-slate-700"
                       }`}
                     />
+
                     {formik.values.certificate?.name ? (
                       <div className="mt-2 text-sm text-slate-500">
-                        Selected: <span className="font-medium">{formik.values.certificate.name}</span>
+                        Selected:{" "}
+                        <span className="font-medium">
+                          {formik.values.certificate.name}
+                        </span>
                       </div>
                     ) : null}
+
                     {formik.values.certificateMeta?.fileName ? (
                       <div className="mt-2 text-xs text-slate-500">
                         Uploaded: {formik.values.certificateMeta.fileName}
                       </div>
                     ) : null}
+
                     <ErrorMessage
                       name="certificate"
                       component="p"
@@ -334,7 +351,10 @@ function InputField({
 }) {
   return (
     <div>
-      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-semibold text-slate-800"
+      >
         {label}
       </label>
       <Field
@@ -362,7 +382,10 @@ function InputField({
 function SelectField({ name, label, children, disabled = false, ...rest }) {
   return (
     <div>
-      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-semibold text-slate-800"
+      >
         {label}
       </label>
       <Field
@@ -391,7 +414,10 @@ function SelectField({ name, label, children, disabled = false, ...rest }) {
 function ReadOnlyField({ name, label, value }) {
   return (
     <div>
-      <label htmlFor={name} className="mb-2 block text-sm font-semibold text-slate-800">
+      <label
+        htmlFor={name}
+        className="mb-2 block text-sm font-semibold text-slate-800"
+      >
         {label}
       </label>
       <input

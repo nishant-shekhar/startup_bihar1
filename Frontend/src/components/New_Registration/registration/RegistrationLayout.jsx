@@ -34,7 +34,14 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-import { getDatabase, ref as rtdbRef, get } from "firebase/database";
+import {
+  getDatabase,
+  ref as rtdbRef,
+  get,
+  set,
+  remove,
+  serverTimestamp as rtdbServerTimestamp,
+} from "firebase/database";
 import app, {
   db,
   storage,
@@ -107,12 +114,7 @@ const normalizePhone = (value = "") => value.replace(/\D/g, "").slice(0, 10);
 const normalizeApplicationId = (value = "") => value.trim().toUpperCase();
 const normalizeAadhar = (value = "") => value.replace(/\D/g, "").slice(0, 12);
 
-const getCurrentYearMonth = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  return `${year}${month}`;
-};
+
 
 const formatDeadline = (timestamp) => {
   if (!timestamp) return "";
@@ -136,8 +138,48 @@ async function sha256(text) {
     .join("");
 }
 
+const buildYearMonthFromTimestamp = (timestamp) => {
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Invalid server timestamp received.");
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}${month}`;
+};
+
+const getServerNowFromRTDB = async () => {
+  const tempKey = `ts_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  const tempRef = rtdbRef(rtdb, `tempServerTime/${tempKey}`);
+
+  await set(tempRef, {
+    ts: rtdbServerTimestamp(),
+  });
+
+  const snap = await get(tempRef);
+
+  let serverNow = null;
+  if (snap.exists()) {
+    serverNow = snap.val()?.ts ?? null;
+  }
+
+  try {
+    await remove(tempRef);
+  } catch (error) {
+    console.warn("Could not clean up temp server time node", error);
+  }
+
+  if (!serverNow || Number.isNaN(Number(serverNow))) {
+    throw new Error("Could not fetch trusted server time.");
+  }
+
+  return Number(serverNow);
+};
+
 async function generateIncrementalApplicationId() {
-  const yearMonth = getCurrentYearMonth();
+  const serverNow = await getServerNowFromRTDB();
+  const yearMonth = buildYearMonthFromTimestamp(serverNow);
   const counterRef = doc(db, "applicationCounters", yearMonth);
 
   const nextNumber = await runTransaction(db, async (transaction) => {
@@ -147,6 +189,7 @@ async function generateIncrementalApplicationId() {
       transaction.set(counterRef, {
         yearMonth,
         lastNumber: 1,
+        serverNow,
         updatedAt: serverTimestamp(),
       });
       return 1;
@@ -157,6 +200,7 @@ async function generateIncrementalApplicationId() {
 
     transaction.update(counterRef, {
       lastNumber: updated,
+      serverNow,
       updatedAt: serverTimestamp(),
     });
 
@@ -284,47 +328,48 @@ function RegistrationLayoutInner() {
     return 1;
   }, []);
 
-  const refreshSubmissionWindow = useCallback(async () => {
-    try {
-      const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
-      const value = snap.exists() ? snap.val() : null;
+ const refreshSubmissionWindow = useCallback(async () => {
+  try {
+    const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
+    const value = snap.exists() ? snap.val() : null;
 
-      const now = Date.now();
-      const isOpenFlag = value?.isOpen !== false;
-      const lastDate = Number(value?.lastDate || 0);
-      const deadlinePassed = lastDate > 0 ? now > lastDate : false;
-      const allowed = isOpenFlag && !deadlinePassed;
+    const serverNow = await getServerNowFromRTDB();
+    const isOpenFlag = value?.isOpen !== false;
+    const lastDate = Number(value?.lastDate || 0);
+    const deadlinePassed = lastDate > 0 ? serverNow > lastDate : false;
+    const allowed = isOpenFlag && !deadlinePassed;
 
-      let message = "";
-      if (!isOpenFlag && lastDate) {
-        message = `Submission closed on ${formatDeadline(lastDate)}`;
-      } else if (!isOpenFlag) {
-        message = "Submission is currently closed.";
-      } else if (deadlinePassed) {
-        message = `Submission closed on ${formatDeadline(lastDate)}`;
-      }
-
-      const nextState = {
-        checked: true,
-        isOpen: allowed,
-        lastDate: lastDate || null,
-        message,
-      };
-
-      setSubmissionWindow(nextState);
-      return nextState;
-    } catch (error) {
-      console.error("Failed to fetch submission window", error);
-      const nextState = {
-        checked: true,
-        isOpen: false,
-        lastDate: null,
-        message: "Unable to verify submission window right now.",
-      };
-      setSubmissionWindow(nextState);
-      return nextState;
+    let message = "";
+    if (!isOpenFlag && lastDate) {
+      message = `Submission closed on ${formatDeadline(lastDate)}`;
+    } else if (!isOpenFlag) {
+      message = "Submission is currently closed.";
+    } else if (deadlinePassed) {
+      message = `Submission closed on ${formatDeadline(lastDate)}`;
     }
-  }, []);
+
+    const nextState = {
+      checked: true,
+      isOpen: allowed,
+      lastDate: lastDate || null,
+      serverNow,
+      message,
+    };
+
+    setSubmissionWindow(nextState);
+    return nextState;
+  } catch (error) {
+    console.error("Failed to fetch submission window", error);
+    const nextState = {
+      checked: true,
+      isOpen: false,
+      lastDate: null,
+      message: "Unable to verify submission window right now.",
+    };
+    setSubmissionWindow(nextState);
+    return nextState;
+  }
+}, []);
 
   const checkSubmissionWindow = useCallback(async () => {
     const state = await refreshSubmissionWindow();
@@ -565,26 +610,39 @@ const blockEmailAfterRegistration = useCallback(
       }
 
       if (step === 3) {
-        let certificateMeta = stepData.certificateMeta || null;
+  if (!stepData?.hasRegisteredEntity) {
+    return {
+      ...stepData,
+      hasRegisteredEntity: false,
+      state: "Bihar",
+      certificate: null,
+      // keep old certificateMeta and old field values intact in Firestore
+      // do not force-clear anything here
+    };
+  }
 
-        if (stepData.certificate instanceof File) {
-          openWorkingDialog(
-            "Uploading certificate",
-            "Please wait while we upload your entity certificate."
-          );
+  let certificateMeta = stepData.certificateMeta || null;
 
-          certificateMeta = await uploadFileAndGetMeta(
-            stepData.certificate,
-            `startupApplications/${applicationId}/entity/certificate-${Date.now()}-${stepData.certificate.name}`
-          );
-        }
+  if (stepData.certificate instanceof File) {
+    openWorkingDialog(
+      "Uploading certificate",
+      "Please wait while we upload your entity certificate."
+    );
 
-        return {
-          ...stepData,
-          certificate: null,
-          certificateMeta,
-        };
-      }
+    certificateMeta = await uploadFileAndGetMeta(
+      stepData.certificate,
+      `startupApplications/${applicationId}/entity/certificate-${Date.now()}-${stepData.certificate.name}`
+    );
+  }
+
+  return {
+    ...stepData,
+    hasRegisteredEntity: true,
+    state: "Bihar",
+    certificate: null,
+    certificateMeta,
+  };
+}
 
       if (step === 6) {
         let pitchDeckMeta = stepData.pitchDeckMeta || null;
@@ -735,9 +793,16 @@ const blockEmailAfterRegistration = useCallback(
           sectionKey = "basicDetails";
           nextFormData.basicDetails = stepData;
         } else if (step === 3) {
-          sectionKey = "entityDetails";
-          nextFormData.entityDetails = stepData;
-        } else if (step === 4) {
+  sectionKey = "entityDetails";
+
+  const previousEntityDetails = nextFormData.entityDetails || {};
+
+  nextFormData.entityDetails = {
+    ...previousEntityDetails,
+    ...stepData,
+    state: "Bihar",
+  };
+} else if (step === 4) {
           sectionKey = "startupDetails";
           nextFormData.startupDetails = stepData;
         } else if (step === 5) {

@@ -32,6 +32,7 @@ import Certificate from './components/IdeaFest/Certificate';
 import Migration from './components/AdminRedesign/NewApplicationAdmin/Migration/Migration';
 import StartupMainFormWrapper from './components/New_Registration/registration/RegistrationLayout';
 import Block from './components/New_Registration/admin/Block';
+import NewApplicationDashboard from './components/New_Registration/admin/MainAdmin';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -88,6 +89,14 @@ const App = () => {
 					element={
 						<PrivateRoute role="admin">
 							<MainAdmin />
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path="/NewApplicationData"
+					element={
+						<PrivateRoute role="admin">
+							<NewApplicationDashboard />
 						</PrivateRoute>
 					}
 				/>

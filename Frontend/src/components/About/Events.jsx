@@ -1,11 +1,10 @@
 // Events.jsx
 import React from "react";
 import NavBarNew from '../HomePage/NavBarNew';
-import Footer from '../HomePage/footer';
+import Footer from '../HomePage/Footer';
 import EventsData from "./EventsData";
-import topImage from "/Users/nishantshekhar/VSCodeProjects/startup_bihar1/Frontend/src/assets/top_right.png"
-import bottomImage from "/Users/nishantshekhar/VSCodeProjects/startup_bihar1/Frontend/src/assets/bottom_left.png"
-
+import topImage from "../../assets//top_right.png";
+import bottomImage from "../../assets/bottom_left.png";
 
 const EventCard = ({ imgurl, dateandtime, title, tag, subtitle, projectLink }) => {
 
