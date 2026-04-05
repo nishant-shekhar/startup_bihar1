@@ -55,52 +55,74 @@ const institutionOptions = [
 /* ========================= District Map ========================= */
 
 const districtBlockMap = {
-  "Araria": ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
-  "Arwal": ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
-  "Aurangabad": ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
-  "Banka": ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
-  "Begusarai": ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
-  "Bhabhua": ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
-  "Bhagalpur": ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
-  "Bhojpur": ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
-  "Buxar": ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
-  "Darbhanga": ["Alinagar", "Bahadurpur", "Baheri", "Benipur", "Biraul", "Darbhanga", "Gaura Bauram", "Ghanshyampur", "Hanuman Nagar", "Hayaghat", "Jale", "Keoti", "Kiratpur", "Kusheswar Asthan", "Kusheswar Asthan East", "Manigachhi", "Singhwara", "Tardih"],
+  Araria: ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
+  Arwal: ["Arwal", "Sonbhadra Banshi Surypur", "Kaler", "Karpi", "Kurtha"],
+  Aurangabad: ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
+  Banka: ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
+  Begusarai: ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
+  Bhabhua: ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
+  Bhagalpur: ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
+  Bhojpur: ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
+  Buxar: ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
+  Darbhanga: ["Alinagar", "Bahadurpur", "Baheri", "Benipur", "Biraul", "Darbhanga", "Gaura Bauram", "Ghanshyampur", "Hanuman Nagar", "Hayaghat", "Jale", "Keoti", "Kiratpur", "Kusheswar Asthan", "Kusheswar Asthan East", "Manigachhi", "Singhwara", "Tardih"],
   "East Champaran": ["Adapur", "Areraj", "Banjariya", "Chakia", "Chhauradano", "Chiraiya", "Dhaka", "Ghorasahan", "Harsiddhi", "Kalyanpur", "Kesaria", "Kotwa", "Madhuban", "Mehsi", "Motihari", "Paharpur", "Pakaridayal", "Patahi", "Phenhara", "Piprakothi", "Ramgarhwa", "Raxaul", "Sangrampur", "Sugauli", "Tetaria", "Turkauliya", "Bankatwa"],
-  "Gaya": ["Amas", "Atri", "Banke Bazar", "Barachatty", "Belaganj", "Bodh Gaya", "Dobhi", "Dumariya", "Fatehpur", "Gaya Sadar", "Guraru", "Gurua", "Imamganj", "Khizar Sarai", "Konch", "Manpur", "Mohanpur", "Mohra", "Paraiya", "Sherghatty", "Tankuppa", "Tekari", "Wazirganj"],
-  "Gopalganj": ["Bhore", "Gopalganj", "Manjha", "Uchkagaon", "Kuchaikot", "Kateya", "Vijaipur", "Barauli", "Hathua", "Baikunthpur", "Phulwaria", "Thawe", "Panchdevari", "Sidhwalia"],
-  "Jamui": ["Barhat", "Chakai", "Gidhaur", "Isalmanagar Aliganj", "Jamui", "Jhajha", "Khaira", "Laxmipur", "Sikandra", "Sono"],
-  "Jehanabad": ["Jehanabad", "Ghoshi", "Hulasgunj", "Kako", "Makhdumpur", "Modanganj", "Ratni Faridpur"],
-  "Katihar": ["Amdabad", "Azamnagar", "Balrampur", "Barari", "Barsoi", "Dandkhora", "Falka", "Hasanganj", "Kadwa", "Katihar", "Korha", "Kursela", "Manihari", "Mansahi", "Pranpur", "Sameli"],
-  "Khagaria": ["Allouli Beldaur", "Beldaur", "Chautham", "Gogari", "Khagaria", "Mansi", "Parbatta"],
-  "Kishanganj": ["Bahadurganj", "Dighalbank", "Kishanganj", "Kochadhaman", "Pothia", "Terhagachh", "Thakurganj"],
-  "Lakhisarai": ["Barahia", "Channan", "Halsi", "Lakhisarai", "Piparia", "Ramgarh Chowk", "Suryagarha"],
-  "Madhepura": ["Alamnagar", "Bihariganj", "Chausa", "Ghailadh", "Gamharia", "Gualpara", "Kumarkhand", "Madhepura", "Murliganj", "Puraini", "Shankarpur", "Singheshwarsthan", "Uda Kishanganj"],
-  "Madhubani": ["Khutauna", "Phulparas", "Laukahi", "Ghoghardiha", "Rahika", "Pandaul", "Rajnagar", "Khajauli", "Kaluahi", "Babubarhi", "Madhwapur", "Harlakhi", "Bisfi", "Benipatti", "Lakhnaur", "Madhepur", "Jhanjharpur", "Andharathari", "Basopatti", "Ladania", "Jainagar"],
-  "Munger": ["Munger Sadar", "Dharahara", "Bariyarpur", "Jamalpur", "Tetia Bamber", "Haveli Kharagpur", "Tarapur", "Asarganj", "Sangrampur"],
-  "Muzaffarpur": ["Sahebganj", "Motipur", "Paroo", "Saraiya", "Kurhani", "Kanti", "Marwan", "Minapur", "Musahari", "Bochahan", "Aurai", "Katara", "Gaighat", "Muraul", "Sakra", "Bandra"],
-  "Nalanda": ["Ekangarsarai", "Biharsarif", "Asthawan", "Noorsarai", "Sarmera", "Rahui", "Harnaut", "Hilsa", "Islampur", "Ben", "Bind", "Parwalpur", "Katrisarai", "Karai Parsurai", "Nagarnarusa", "Chandi", "Tharthari", "Giriyak", "Rajgir", "Silao"],
-  "Nawada": ["Rajauli", "Akbarpur", "Sirdala", "Kowakole", "Pakaribarawan", "Warsaliganj", "Kashichak", "Nawada", "Nardiganj", "Roh", "Meskaur", "Govindpur", "Narhat", "Hisua"],
-  "Patna": ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
-  "Purnia": ["Amour", "Baisa", "Baisi", "Banmankhi", "Barhara Kothi", "Bhawanipur", "Dagarua", "Dhamdaha", "Jalalgarh", "Krityanandnagar", "Kasba", "Purnia", "Rupouli", "Srinagar"],
-  "Rohtas": ["Akorhigola", "Bikramganj", "Chenari", "Dawath", "Dehri", "Dinara", "Karakata", "Kargahar", "Kochas", "Nasriganj", "Nauhatta", "Nokha", "Rajpur", "Rohtas", "Sanjhauli", "Sasaram", "Sheosagar", "Surajpura", "Tilouthu"],
-  "Saharsa": ["Kahra", "Sattar Katiya", "Saur Bazar", "Patarghat", "Mahishi", "Sonbarsa", "Nauhatta", "Salkhua", "Banma Itahri", "Simri Bakhtiyarpur"],
-  "Samastipur": ["Kalyanpur", "Warisnagar", "Khanpur", "Samastipur", "Pusa", "Tajpur", "Morwa", "Sarairanjan", "Patori", "Mohanpur", "Mohiuddinnagar", "Vidyapatinagar", "Dalsingsarai", "Ujiyarpur", "Bibhutipur", "Rosera", "Shivajinagar", "Singhia", "Hasanpur", "Bithan"],
-  "Saran": ["Baniyapur", "Lahladpur", "Jalalpur", "Nagra", "Ekma", "Manjhi", "Rivilganj", "Chapra", "Maker", "Garkha", "Marhourah", "Amnour", "Mashrakh", "Panapur", "Taraiyan", "Ishupur", "Parsa", "Dariyapur", "Dighwara", "Sonepur"],
-  "Sheikhpura": ["Sheikhpura", "Barbigha", "Shekhopur Sarai", "Ariari", "Chewara", "Ghat Kusumba"],
-  "Sheohar": ["Sheohar", "Dumari", "Piprahi", "Purnahiya", "Tariyani"],
-  "Sitamarhi": ["Belsand", "Parsauni", "Runnisaidpur", "Dumra", "Riga", "Bairgania", "Majorganj", "Suppi", "Bathnaha", "Sonbarsa", "Parihar", "Sursand", "Bajpatti", "Pupri", "Choraut", "Nanpur", "Bokhra"],
-  "Siwan": ["Jiradei", "Andar", "Siswan", "Guthani", "Pachrukhi", "Darauli", "Goreakothi", "Bhagwanpur", "Hussainganj", "Mairwa", "Duraudha", "Siwan", "Barharia", "Raghunathpur", "Basantpur", "Maharajganj", "Lakri Nabiganj", "Hasanpura", "Nautan"],
-  "Supaul": ["Nirmali", "Marauna", "Supaul", "Kishanpur", "Saraigarh", "Pipra", "Basantpur", "Raghopur", "Pratapganj", "Triveniganj", "Chhatapur"],
-  "Vaishali": ["Hajipur", "Raghopur", "Bidupur", "Lalganj", "Vaishali", "Bhagwanpur", "Patedhi Belsar", "Mahnar", "Sahdei", "Mahua", "Chehrakala", "Jandaha", "Garaul", "Patepur", "Rajapakar", "Desri"],
+  Gaya: ["Amas", "Atri", "Banke Bazar", "Barachatty", "Belaganj", "Bodh Gaya", "Dobhi", "Dumariya", "Fatehpur", "Gaya Sadar", "Guraru", "Gurua", "Imamganj", "Khizar Sarai", "Konch", "Manpur", "Mohanpur", "Mohra", "Paraiya", "Sherghatty", "Tankuppa", "Tekari", "Wazirganj"],
+  Gopalganj: ["Bhore", "Gopalganj", "Manjha", "Uchkagaon", "Kuchaikot", "Kateya", "Vijaipur", "Barauli", "Hathua", "Baikunthpur", "Phulwaria", "Thawe", "Panchdevari", "Sidhwalia"],
+  Jamui: ["Barhat", "Chakai", "Gidhaur", "Isalmanagar Aliganj", "Jamui", "Jhajha", "Khaira", "Laxmipur", "Sikandra", "Sono"],
+  Jehanabad: ["Jehanabad", "Ghoshi", "Hulasgunj", "Kako", "Makhdumpur", "Modanganj", "Ratni Faridpur"],
+  Katihar: ["Amdabad", "Azamnagar", "Balrampur", "Barari", "Barsoi", "Dandkhora", "Falka", "Hasanganj", "Kadwa", "Katihar", "Korha", "Kursela", "Manihari", "Mansahi", "Pranpur", "Sameli"],
+  Khagaria: ["Allouli Beldaur", "Beldaur", "Chautham", "Gogari", "Khagaria", "Mansi", "Parbatta"],
+  Kishanganj: ["Bahadurganj", "Dighalbank", "Kishanganj", "Kochadhaman", "Pothia", "Terhagachh", "Thakurganj"],
+  Lakhisarai: ["Barahia", "Channan", "Halsi", "Lakhisarai", "Piparia", "Ramgarh Chowk", "Suryagarha"],
+  Madhepura: ["Alamnagar", "Bihariganj", "Chausa", "Ghailadh", "Gamharia", "Gualpara", "Kumarkhand", "Madhepura", "Murliganj", "Puraini", "Shankarpur", "Singheshwarsthan", "Uda Kishanganj"],
+  Madhubani: ["Khutauna", "Phulparas", "Laukahi", "Ghoghardiha", "Rahika", "Pandaul", "Rajnagar", "Khajauli", "Kaluahi", "Babubarhi", "Madhwapur", "Harlakhi", "Bisfi", "Benipatti", "Lakhnaur", "Madhepur", "Jhanjharpur", "Andharathari", "Basopatti", "Ladania", "Jainagar"],
+  Munger: ["Munger Sadar", "Dharahara", "Bariyarpur", "Jamalpur", "Tetia Bamber", "Haveli Kharagpur", "Tarapur", "Asarganj", "Sangrampur"],
+  Muzaffarpur: ["Sahebganj", "Motipur", "Paroo", "Saraiya", "Kurhani", "Kanti", "Marwan", "Minapur", "Musahari", "Bochahan", "Aurai", "Katara", "Gaighat", "Muraul", "Sakra", "Bandra"],
+  Nalanda: ["Ekangarsarai", "Biharsarif", "Asthawan", "Noorsarai", "Sarmera", "Rahui", "Harnaut", "Hilsa", "Islampur", "Ben", "Bind", "Parwalpur", "Katrisarai", "Karai Parsurai", "Nagarnarusa", "Chandi", "Tharthari", "Giriyak", "Rajgir", "Silao"],
+  Nawada: ["Rajauli", "Akbarpur", "Sirdala", "Kowakole", "Pakaribarawan", "Warsaliganj", "Kashichak", "Nawada", "Nardiganj", "Roh", "Meskaur", "Govindpur", "Narhat", "Hisua"],
+  Patna: ["Athmalgola", "Bakhtiarpur", "Barh", "Belchhi", "Bihta", "Bikram", "Danapur", "Daniyawan", "Dhanarua", "Dulhin Bazar", "Fatuha", "Ghoswari", "Khusrupur", "Maner", "Masaudhi", "Mokama", "Naubatpur", "Paliganj", "Pandarak", "Patna Sadar", "Phulwari Sharif", "Punpun", "Sampatchak"],
+  Purnia: ["Amour", "Baisa", "Baisi", "Banmankhi", "Barhara Kothi", "Bhawanipur", "Dagarua", "Dhamdaha", "Jalalgarh", "Krityanandnagar", "Kasba", "Purnia", "Rupouli", "Srinagar"],
+  Rohtas: ["Akorhigola", "Bikramganj", "Chenari", "Dawath", "Dehri", "Dinara", "Karakata", "Kargahar", "Kochas", "Nasriganj", "Nauhatta", "Nokha", "Rajpur", "Rohtas", "Sanjhauli", "Sasaram", "Sheosagar", "Surajpura", "Tilouthu"],
+  Saharsa: ["Kahra", "Sattar Katiya", "Saur Bazar", "Patarghat", "Mahishi", "Sonbarsa", "Nauhatta", "Salkhua", "Banma Itahri", "Simri Bakhtiyarpur"],
+  Samastipur: ["Kalyanpur", "Warisnagar", "Khanpur", "Samastipur", "Pusa", "Tajpur", "Morwa", "Sarairanjan", "Patori", "Mohanpur", "Mohiuddinnagar", "Vidyapatinagar", "Dalsingsarai", "Ujiyarpur", "Bibhutipur", "Rosera", "Shivajinagar", "Singhia", "Hasanpur", "Bithan"],
+  Saran: ["Baniyapur", "Lahladpur", "Jalalpur", "Nagra", "Ekma", "Manjhi", "Rivilganj", "Chapra", "Maker", "Garkha", "Marhourah", "Amnour", "Mashrakh", "Panapur", "Taraiyan", "Ishupur", "Parsa", "Dariyapur", "Dighwara", "Sonepur"],
+  Sheikhpura: ["Sheikhpura", "Barbigha", "Shekhopur Sarai", "Ariari", "Chewara", "Ghat Kusumba"],
+  Sheohar: ["Sheohar", "Dumari", "Piprahi", "Purnahiya", "Tariyani"],
+  Sitamarhi: ["Belsand", "Parsauni", "Runnisaidpur", "Dumra", "Riga", "Bairgania", "Majorganj", "Suppi", "Bathnaha", "Sonbarsa", "Parihar", "Sursand", "Bajpatti", "Pupri", "Choraut", "Nanpur", "Bokhra"],
+  Siwan: ["Jiradei", "Andar", "Siswan", "Guthani", "Pachrukhi", "Darauli", "Goreakothi", "Bhagwanpur", "Hussainganj", "Mairwa", "Duraudha", "Siwan", "Barharia", "Raghunathpur", "Basantpur", "Maharajganj", "Lakri Nabiganj", "Hasanpura", "Nautan"],
+  Supaul: ["Nirmali", "Marauna", "Supaul", "Kishanpur", "Saraigarh", "Pipra", "Basantpur", "Raghopur", "Pratapganj", "Triveniganj", "Chhatapur"],
+  Vaishali: ["Hajipur", "Raghopur", "Bidupur", "Lalganj", "Vaishali", "Bhagwanpur", "Patedhi Belsar", "Mahnar", "Sahdei", "Mahua", "Chehrakala", "Jandaha", "Garaul", "Patepur", "Rajapakar", "Desri"],
   "West Champaran": ["Bettiah", "Narkatiaganj", "Ramnagar", "Bagaha", "Lauriya", "Chanpatia", "Gaunaha", "Mainatand", "Sikta", "Jogapatti", "Bairiya"],
 };
-
 
 const cutoffDate = (() => {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
   return d;
 })();
+
+const getQualificationInitialValues = (savedQualification = "") => {
+  const trimmed = String(savedQualification || "").trim();
+
+  if (!trimmed) {
+    return {
+      qualification: "",
+      customQualification: "",
+    };
+  }
+
+  if (qualificationOptions.includes(trimmed) && trimmed !== "Other") {
+    return {
+      qualification: trimmed,
+      customQualification: "",
+    };
+  }
+
+  return {
+    qualification: "Other",
+    customQualification: trimmed === "Other" ? "" : trimmed,
+  };
+};
 
 export default function BasicDetailsStep({
   onSubmit,
@@ -112,8 +134,13 @@ export default function BasicDetailsStep({
   const { t } = useLanguage();
   const founderName = userSignupData?.founderName || "";
 
+  const existingProfilePhotoMeta = initialValues?.profilePhotoMeta || null;
+  const qualificationInitials = getQualificationInitialValues(
+    initialValues?.qualification || ""
+  );
+
   const [profileImageUrl, setProfileImageUrl] = useState(
-    initialValues?.profilePhotoMeta?.downloadURL ||
+    existingProfilePhotoMeta?.downloadURL ||
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E"
   );
   const [selectedFile, setSelectedFile] = useState(null);
@@ -125,10 +152,10 @@ export default function BasicDetailsStep({
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (initialValues?.profilePhotoMeta?.downloadURL) {
-      setProfileImageUrl(initialValues.profilePhotoMeta.downloadURL);
+    if (existingProfilePhotoMeta?.downloadURL) {
+      setProfileImageUrl(existingProfilePhotoMeta.downloadURL);
     }
-  }, [initialValues?.profilePhotoMeta?.downloadURL]);
+  }, [existingProfilePhotoMeta?.downloadURL]);
 
   const validationSchema = Yup.object().shape({
     fullName: Yup.string().required("Full name is required"),
@@ -138,6 +165,11 @@ export default function BasicDetailsStep({
       .max(cutoffDate, "You must be at least 18 years old")
       .required("Date of birth is required"),
     qualification: Yup.string().required("Qualification is required"),
+    customQualification: Yup.string().when("qualification", {
+      is: "Other",
+      then: (schema) => schema.trim().required("Please enter qualification"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     institution: Yup.string().required("Institution is required"),
     otherInstitution: Yup.string().when("institution", {
       is: "Other",
@@ -145,7 +177,6 @@ export default function BasicDetailsStep({
       otherwise: (schema) => schema.notRequired(),
     }),
     linkedinProfile: Yup.string().url("Enter a valid URL").nullable(),
-
     applicantAddress: Yup.string().required("Applicant address is required"),
     state: Yup.string().required("State is required"),
     district: Yup.string().required("District is required"),
@@ -153,14 +184,23 @@ export default function BasicDetailsStep({
     pincode: Yup.string()
       .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
       .required("Pincode is required"),
+    profilePhoto: Yup.mixed().test(
+      "profile-photo-required",
+      "Profile photo is required",
+      function (value) {
+        const hasNewFile = value instanceof File;
+        const meta = this.parent?.profilePhotoMeta;
 
-    profilePhoto: Yup.mixed()
-      .test("profile-photo-required", "Profile photo is required", function (value) {
-        const hasNewFile = !!value;
-        const hasExistingFile = !!this.parent?.profilePhotoMeta?.downloadURL;
-        return hasNewFile || hasExistingFile;
-      })
-      .required("Profile photo is required"),
+        const hasExistingPhoto =
+          !!meta &&
+          (typeof meta === "string" ||
+            !!meta.downloadURL ||
+            !!meta.fileName ||
+            !!meta.storagePath);
+
+        return hasNewFile || hasExistingPhoto;
+      }
+    ),
     profilePhotoMeta: Yup.mixed().nullable(),
   });
 
@@ -193,6 +233,7 @@ export default function BasicDetailsStep({
       });
 
       formik.setFieldValue("profilePhoto", file);
+      formik.setFieldValue("profilePhotoMeta", formik.values.profilePhotoMeta || null);
       formik.setFieldTouched("profilePhoto", true, false);
       formik.validateField("profilePhoto");
     } catch (error) {
@@ -228,29 +269,70 @@ export default function BasicDetailsStep({
 
       <Formik
         initialValues={
-          initialValues || {
-            fullName: founderName,
-            gender: "",
-            category: "",
-            dateOfBirth: "",
-            qualification: "",
-            institution: "",
-            otherInstitution: "",
-            linkedinProfile: "",
-            profilePhoto: null,
-            profilePhotoMeta: null,
-            applicantAddress: "",
-            state: "",
-            district: "",
-            blockName: "",
-            pincode: "",
-          }
+          initialValues
+            ? {
+                ...initialValues,
+                fullName: initialValues.fullName || founderName,
+                qualification: qualificationInitials.qualification,
+                customQualification: qualificationInitials.customQualification,
+                gender: initialValues.gender || "",
+                category: initialValues.category || "",
+                dateOfBirth: initialValues.dateOfBirth || "",
+                institution: initialValues.institution || "",
+                otherInstitution: initialValues.otherInstitution || "",
+                linkedinProfile: initialValues.linkedinProfile || "",
+                profilePhoto: null,
+                profilePhotoMeta: existingProfilePhotoMeta,
+                applicantAddress: initialValues.applicantAddress || "",
+                state: initialValues.state || "",
+                district: initialValues.district || "",
+                blockName: initialValues.blockName || "",
+                pincode: initialValues.pincode || "",
+              }
+            : {
+                fullName: founderName,
+                gender: "",
+                category: "",
+                dateOfBirth: "",
+                qualification: "",
+                customQualification: "",
+                institution: "",
+                otherInstitution: "",
+                linkedinProfile: "",
+                profilePhoto: null,
+                profilePhotoMeta: existingProfilePhotoMeta,
+                applicantAddress: "",
+                state: "",
+                district: "",
+                blockName: "",
+                pincode: "",
+              }
         }
         validationSchema={validationSchema}
-        onSubmit={onSubmit}
+        onSubmit={(values) => {
+          const finalQualification =
+            values.qualification === "Other"
+              ? values.customQualification.trim()
+              : values.qualification;
+
+          const finalValues = {
+            ...values,
+            qualification: finalQualification,
+          };
+
+          delete finalValues.customQualification;
+
+          onSubmit(finalValues);
+        }}
         enableReinitialize
       >
         {(formik) => {
+          useEffect(() => {
+            if (existingProfilePhotoMeta) {
+              formik.setFieldValue("profilePhotoMeta", existingProfilePhotoMeta, false);
+            }
+          }, [existingProfilePhotoMeta]);
+
           const availableDistricts = formik.values.state
             ? stateDistrictData[formik.values.state] || []
             : [];
@@ -307,8 +389,13 @@ export default function BasicDetailsStep({
                   />
 
                   <div className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-                    {!isReadOnly ? <FaUpload className="text-slate-500" /> : <FaLock className="text-slate-500" />}
-                    {t("basicDetails.uploadPhoto")} <span className="text-red-500">*</span>
+                    {!isReadOnly ? (
+                      <FaUpload className="text-slate-500" />
+                    ) : (
+                      <FaLock className="text-slate-500" />
+                    )}
+                    {t("basicDetails.uploadPhoto")}{" "}
+                    <span className="text-red-500">*</span>
                   </div>
 
                   <div className="mt-1 text-xs text-slate-500">Max file size: 1 MB</div>
@@ -416,18 +503,76 @@ export default function BasicDetailsStep({
                     disabled={isReadOnly}
                   />
 
-                  <SelectField
-                    name="qualification"
-                    label={t("basicDetails.qualification")}
-                    disabled={isReadOnly}
-                  >
-                    <option value="">{t("common.select")}</option>
-                    {qualificationOptions.map((qual) => (
-                      <option key={qual} value={qual}>
-                        {qual}
-                      </option>
-                    ))}
-                  </SelectField>
+                  <div>
+                    <label
+                      htmlFor="qualification"
+                      className="mb-2 block text-sm font-semibold text-slate-800"
+                    >
+                      {t("basicDetails.qualification")}
+                    </label>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Field
+                        as="select"
+                        id="qualification"
+                        name="qualification"
+                        disabled={isReadOnly}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formik.setFieldValue("qualification", value);
+
+                          if (value !== "Other") {
+                            formik.setFieldValue("customQualification", "");
+                          }
+                        }}
+                        className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+                          isReadOnly
+                            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+                            : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                        }`}
+                      >
+                        <option value="">{t("common.select")}</option>
+                        {qualificationOptions
+                          .filter((qual) => qual !== "Other")
+                          .map((qual) => (
+                            <option key={qual} value={qual}>
+                              {qual}
+                            </option>
+                          ))}
+                        <option value="Other">Other</option>
+                      </Field>
+
+                      {formik.values.qualification === "Other" ? (
+                        <Field
+                          id="customQualification"
+                          name="customQualification"
+                          type="text"
+                          placeholder="Enter qualification"
+                          disabled={isReadOnly}
+                          className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+                            isReadOnly
+                              ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+                              : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                          }`}
+                        />
+                      ) : (
+                        <div />
+                      )}
+                    </div>
+
+                    <ErrorMessage
+                      name="qualification"
+                      component="p"
+                      className="mt-2 text-sm text-red-500"
+                    />
+                    {formik.values.qualification === "Other" && (
+                      <ErrorMessage
+                        name="customQualification"
+                        component="p"
+                        className="mt-2 text-sm text-red-500"
+                      />
+                    )}
+                  </div>
 
                   <SelectField
                     name="institution"

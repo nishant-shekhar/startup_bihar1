@@ -13,7 +13,6 @@ export const qualificationOptions = [
 	"MBA/PGDBA",
 	"MBBS",
 	"MCA",
-	"Others"
 ];
 
 // Common category list
