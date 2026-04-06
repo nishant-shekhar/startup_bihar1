@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Cropper from "react-easy-crop";
@@ -51,8 +51,6 @@ const institutionOptions = [
   "IGIMS Patna",
   "Other",
 ];
-
-/* ========================= District Map ========================= */
 
 const districtBlockMap = {
   Araria: ["Araria", "Bhargama", "Forbesganj", "Jokihat", "Kursakanta", "Narpatganj", "Palasi", "Raniganj", "Sikti"],
@@ -124,6 +122,36 @@ const getQualificationInitialValues = (savedQualification = "") => {
   };
 };
 
+const baseValidationSchema = Yup.object().shape({
+  fullName: Yup.string().required("Full name is required"),
+  gender: Yup.string().required("Gender is required"),
+  category: Yup.string().required("Category is required"),
+  dateOfBirth: Yup.date()
+    .max(cutoffDate, "You must be at least 18 years old")
+    .required("Date of birth is required"),
+  qualification: Yup.string().required("Qualification is required"),
+  customQualification: Yup.string().when("qualification", {
+    is: "Other",
+    then: (schema) => schema.trim().required("Please enter qualification"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  institution: Yup.string().required("Institution is required"),
+  otherInstitution: Yup.string().when("institution", {
+    is: "Other",
+    then: (schema) => schema.required("Please specify institution"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  linkedinProfile: Yup.string().url("Enter a valid URL").nullable(),
+  applicantAddress: Yup.string().required("Applicant address is required"),
+  state: Yup.string().required("State is required"),
+  district: Yup.string().required("District is required"),
+  blockName: Yup.string().trim().required("Block name is required"),
+  pincode: Yup.string()
+    .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
+    .required("Pincode is required"),
+  profilePhotoMeta: Yup.mixed().nullable(),
+});
+
 export default function BasicDetailsStep({
   onSubmit,
   onPrevious,
@@ -135,8 +163,9 @@ export default function BasicDetailsStep({
   const founderName = userSignupData?.founderName || "";
 
   const existingProfilePhotoMeta = initialValues?.profilePhotoMeta || null;
-  const qualificationInitials = getQualificationInitialValues(
-    initialValues?.qualification || ""
+  const qualificationInitials = useMemo(
+    () => getQualificationInitialValues(initialValues?.qualification || ""),
+    [initialValues?.qualification]
   );
 
   const [profileImageUrl, setProfileImageUrl] = useState(
@@ -157,52 +186,48 @@ export default function BasicDetailsStep({
     }
   }, [existingProfilePhotoMeta?.downloadURL]);
 
-  const validationSchema = Yup.object().shape({
-    fullName: Yup.string().required("Full name is required"),
-    gender: Yup.string().required("Gender is required"),
-    category: Yup.string().required("Category is required"),
-    dateOfBirth: Yup.date()
-      .max(cutoffDate, "You must be at least 18 years old")
-      .required("Date of birth is required"),
-    qualification: Yup.string().required("Qualification is required"),
-    customQualification: Yup.string().when("qualification", {
-      is: "Other",
-      then: (schema) => schema.trim().required("Please enter qualification"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    institution: Yup.string().required("Institution is required"),
-    otherInstitution: Yup.string().when("institution", {
-      is: "Other",
-      then: (schema) => schema.required("Please specify institution"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
-    linkedinProfile: Yup.string().url("Enter a valid URL").nullable(),
-    applicantAddress: Yup.string().required("Applicant address is required"),
-    state: Yup.string().required("State is required"),
-    district: Yup.string().required("District is required"),
-    blockName: Yup.string().trim().required("Block name is required"),
-    pincode: Yup.string()
-      .matches(/^[0-9]{6}$/, "Pincode must be 6 digits")
-      .required("Pincode is required"),
-    profilePhoto: Yup.mixed().test(
-      "profile-photo-required",
-      "Profile photo is required",
-      function (value) {
-        const hasNewFile = value instanceof File;
-        const meta = this.parent?.profilePhotoMeta;
-
-        const hasExistingPhoto =
-          !!meta &&
-          (typeof meta === "string" ||
-            !!meta.downloadURL ||
-            !!meta.fileName ||
-            !!meta.storagePath);
-
-        return hasNewFile || hasExistingPhoto;
-      }
-    ),
-    profilePhotoMeta: Yup.mixed().nullable(),
-  });
+  const formInitialValues = useMemo(
+    () =>
+      initialValues
+        ? {
+            ...initialValues,
+            fullName: initialValues.fullName || founderName,
+            qualification: qualificationInitials.qualification,
+            customQualification: qualificationInitials.customQualification,
+            gender: initialValues.gender || "",
+            category: initialValues.category || "",
+            dateOfBirth: initialValues.dateOfBirth || "",
+            institution: initialValues.institution || "",
+            otherInstitution: initialValues.otherInstitution || "",
+            linkedinProfile: initialValues.linkedinProfile || "",
+            profilePhoto: null,
+            profilePhotoMeta: existingProfilePhotoMeta,
+            applicantAddress: initialValues.applicantAddress || "",
+            state: initialValues.state || "",
+            district: initialValues.district || "",
+            blockName: initialValues.blockName || "",
+            pincode: initialValues.pincode || "",
+          }
+        : {
+            fullName: founderName,
+            gender: "",
+            category: "",
+            dateOfBirth: "",
+            qualification: "",
+            customQualification: "",
+            institution: "",
+            otherInstitution: "",
+            linkedinProfile: "",
+            profilePhoto: null,
+            profilePhotoMeta: existingProfilePhotoMeta,
+            applicantAddress: "",
+            state: "",
+            district: "",
+            blockName: "",
+            pincode: "",
+          },
+    [initialValues, founderName, qualificationInitials, existingProfilePhotoMeta]
+  );
 
   const handleFileChange = (event) => {
     if (isReadOnly) return;
@@ -233,12 +258,48 @@ export default function BasicDetailsStep({
       });
 
       formik.setFieldValue("profilePhoto", file);
-      formik.setFieldValue("profilePhotoMeta", formik.values.profilePhotoMeta || null);
       formik.setFieldTouched("profilePhoto", true, false);
       formik.validateField("profilePhoto");
     } catch (error) {
       console.error("Error cropping image:", error);
     }
+  };
+
+  const validateForm = async (values) => {
+    const errors = {};
+
+    try {
+      await baseValidationSchema.validate(values, { abortEarly: false });
+    } catch (validationError) {
+      if (validationError.inner?.length) {
+        validationError.inner.forEach((err) => {
+          if (err.path && !errors[err.path]) {
+            errors[err.path] = err.message;
+          }
+        });
+      } else if (validationError.path) {
+        errors[validationError.path] = validationError.message;
+      }
+    }
+
+    const hasNewFile = values.profilePhoto instanceof File;
+
+    const currentMeta = values.profilePhotoMeta;
+    const fallbackMeta = existingProfilePhotoMeta;
+
+    const hasCurrentMeta =
+      !!currentMeta &&
+      (!!currentMeta.downloadURL || !!currentMeta.fileName || !!currentMeta.storagePath);
+
+    const hasFallbackMeta =
+      !!fallbackMeta &&
+      (!!fallbackMeta.downloadURL || !!fallbackMeta.fileName || !!fallbackMeta.storagePath);
+
+    if (!hasNewFile && !hasCurrentMeta && !hasFallbackMeta) {
+      errors.profilePhoto = "Profile photo is required";
+    }
+
+    return errors;
   };
 
   return (
@@ -268,47 +329,8 @@ export default function BasicDetailsStep({
       </div>
 
       <Formik
-        initialValues={
-          initialValues
-            ? {
-                ...initialValues,
-                fullName: initialValues.fullName || founderName,
-                qualification: qualificationInitials.qualification,
-                customQualification: qualificationInitials.customQualification,
-                gender: initialValues.gender || "",
-                category: initialValues.category || "",
-                dateOfBirth: initialValues.dateOfBirth || "",
-                institution: initialValues.institution || "",
-                otherInstitution: initialValues.otherInstitution || "",
-                linkedinProfile: initialValues.linkedinProfile || "",
-                profilePhoto: null,
-                profilePhotoMeta: existingProfilePhotoMeta,
-                applicantAddress: initialValues.applicantAddress || "",
-                state: initialValues.state || "",
-                district: initialValues.district || "",
-                blockName: initialValues.blockName || "",
-                pincode: initialValues.pincode || "",
-              }
-            : {
-                fullName: founderName,
-                gender: "",
-                category: "",
-                dateOfBirth: "",
-                qualification: "",
-                customQualification: "",
-                institution: "",
-                otherInstitution: "",
-                linkedinProfile: "",
-                profilePhoto: null,
-                profilePhotoMeta: existingProfilePhotoMeta,
-                applicantAddress: "",
-                state: "",
-                district: "",
-                blockName: "",
-                pincode: "",
-              }
-        }
-        validationSchema={validationSchema}
+        initialValues={formInitialValues}
+        validate={validateForm}
         onSubmit={(values) => {
           const finalQualification =
             values.qualification === "Other"
@@ -318,6 +340,7 @@ export default function BasicDetailsStep({
           const finalValues = {
             ...values,
             qualification: finalQualification,
+            profilePhotoMeta: values.profilePhotoMeta || existingProfilePhotoMeta || null,
           };
 
           delete finalValues.customQualification;
@@ -327,12 +350,6 @@ export default function BasicDetailsStep({
         enableReinitialize
       >
         {(formik) => {
-          useEffect(() => {
-            if (existingProfilePhotoMeta) {
-              formik.setFieldValue("profilePhotoMeta", existingProfilePhotoMeta, false);
-            }
-          }, [existingProfilePhotoMeta]);
-
           const availableDistricts = formik.values.state
             ? stateDistrictData[formik.values.state] || []
             : [];
@@ -389,20 +406,15 @@ export default function BasicDetailsStep({
                   />
 
                   <div className="mt-3 flex items-center gap-2 text-sm font-medium text-slate-700">
-                    {!isReadOnly ? (
-                      <FaUpload className="text-slate-500" />
-                    ) : (
-                      <FaLock className="text-slate-500" />
-                    )}
-                    {t("basicDetails.uploadPhoto")}{" "}
-                    <span className="text-red-500">*</span>
+                    {!isReadOnly ? <FaUpload className="text-slate-500" /> : <FaLock className="text-slate-500" />}
+                    {t("basicDetails.uploadPhoto")} <span className="text-red-500">*</span>
                   </div>
 
                   <div className="mt-1 text-xs text-slate-500">Max file size: 1 MB</div>
 
-                  {formik.values.profilePhotoMeta?.fileName ? (
+                  {(formik.values.profilePhotoMeta?.fileName || existingProfilePhotoMeta?.fileName) ? (
                     <div className="mt-2 text-xs text-slate-500">
-                      Uploaded: {formik.values.profilePhotoMeta.fileName}
+                      Uploaded: {formik.values.profilePhotoMeta?.fileName || existingProfilePhotoMeta?.fileName}
                     </div>
                   ) : null}
 
