@@ -5,6 +5,44 @@ import { qualificationOptions } from "./FormFieldUtils";
 import { useLanguage } from "../../shared/LanguageContext";
 import { FaLock, FaPlus } from "react-icons/fa";
 
+const getQualificationInitialValues = (savedQualification = "") => {
+  const trimmed = String(savedQualification || "").trim();
+
+  if (!trimmed) {
+    return {
+      qualification: "",
+      customQualification: "",
+    };
+  }
+
+  if (qualificationOptions.includes(trimmed) && trimmed !== "Other") {
+    return {
+      qualification: trimmed,
+      customQualification: "",
+    };
+  }
+
+  return {
+    qualification: "Other",
+    customQualification: trimmed === "Other" ? "" : trimmed,
+  };
+};
+
+const buildInitialCoFounder = (coFounder = {}) => {
+  const qualificationInitials = getQualificationInitialValues(
+    coFounder?.qualification || ""
+  );
+
+  return {
+    name: coFounder?.name || "",
+    email: coFounder?.email || "",
+    phoneNumber: coFounder?.phoneNumber || "",
+    qualification: qualificationInitials.qualification,
+    customQualification: qualificationInitials.customQualification,
+    linkedinProfile: coFounder?.linkedinProfile || "",
+  };
+};
+
 export default function CoFounderDetailsStep({
   onSubmit,
   onPrevious,
@@ -20,6 +58,11 @@ export default function CoFounderDetailsStep({
       .matches(/^[0-9]{10}$/, "Phone number must be 10 digits")
       .required("Phone number is required"),
     qualification: Yup.string().required("Qualification is required"),
+    customQualification: Yup.string().when("qualification", {
+      is: "Other",
+      then: (schema) => schema.trim().required("Please enter qualification"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
     linkedinProfile: Yup.string()
       .nullable()
       .test("valid-linkedin", "Enter a valid URL", (value) => {
@@ -38,6 +81,22 @@ export default function CoFounderDetailsStep({
           .min(1, "Please add at least one co-founder or select sole founder"),
     }),
   });
+
+  const preparedInitialValues = initialValues
+    ? {
+        isSoleFounder: !!initialValues.isSoleFounder,
+        coFounders: initialValues.isSoleFounder
+          ? []
+          : (initialValues.coFounders || []).length
+          ? initialValues.coFounders.map((coFounder) =>
+              buildInitialCoFounder(coFounder)
+            )
+          : [buildInitialCoFounder()],
+      }
+    : {
+        isSoleFounder: false,
+        coFounders: [buildInitialCoFounder()],
+      };
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -66,26 +125,30 @@ export default function CoFounderDetailsStep({
       </div>
 
       <Formik
-        initialValues={
-          initialValues || {
-            isSoleFounder: false,
-            coFounders: [
-              {
-                name: "",
-                email: "",
-                phoneNumber: "",
-                qualification: "",
-                linkedinProfile: "",
-              },
-            ],
-          }
-        }
+        initialValues={preparedInitialValues}
         validationSchema={validationSchema}
         onSubmit={(values) => {
-          onSubmit({
+          const finalValues = {
             ...values,
-            coFounders: values.isSoleFounder ? [] : values.coFounders,
-          });
+            coFounders: values.isSoleFounder
+              ? []
+              : values.coFounders.map((coFounder) => {
+                  const finalQualification =
+                    coFounder.qualification === "Other"
+                      ? (coFounder.customQualification || "").trim()
+                      : coFounder.qualification;
+
+                  return {
+                    name: coFounder.name,
+                    email: coFounder.email,
+                    phoneNumber: coFounder.phoneNumber,
+                    qualification: finalQualification,
+                    linkedinProfile: coFounder.linkedinProfile,
+                  };
+                }),
+          };
+
+          onSubmit(finalValues);
         }}
         enableReinitialize
       >
@@ -115,15 +178,7 @@ export default function CoFounderDetailsStep({
                       if (checked) {
                         formik.setFieldValue("coFounders", []);
                       } else if (!formik.values.coFounders.length) {
-                        formik.setFieldValue("coFounders", [
-                          {
-                            name: "",
-                            email: "",
-                            phoneNumber: "",
-                            qualification: "",
-                            linkedinProfile: "",
-                          },
-                        ]);
+                        formik.setFieldValue("coFounders", [buildInitialCoFounder()]);
                       }
                     }}
                   />
@@ -197,29 +252,74 @@ export default function CoFounderDetailsStep({
                               >
                                 {t("cofounderDetails.qualification")}
                               </label>
-                              <Field
-                                as="select"
-                                id={`coFounders.${index}.qualification`}
-                                name={`coFounders.${index}.qualification`}
-                                disabled={isReadOnly}
-                                className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
-                                  isReadOnly
-                                    ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
-                                    : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
-                                }`}
-                              >
-                                <option value="">{t("common.select")}</option>
-                                {qualificationOptions.map((qual) => (
-                                  <option key={qual} value={qual}>
-                                    {qual}
-                                  </option>
-                                ))}
-                              </Field>
+
+                              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <Field
+                                  as="select"
+                                  id={`coFounders.${index}.qualification`}
+                                  name={`coFounders.${index}.qualification`}
+                                  disabled={isReadOnly}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    formik.setFieldValue(
+                                      `coFounders.${index}.qualification`,
+                                      value
+                                    );
+
+                                    if (value !== "Other") {
+                                      formik.setFieldValue(
+                                        `coFounders.${index}.customQualification`,
+                                        ""
+                                      );
+                                    }
+                                  }}
+                                  className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+                                    isReadOnly
+                                      ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+                                      : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                                  }`}
+                                >
+                                  <option value="">{t("common.select")}</option>
+                                  {qualificationOptions
+                                    .filter((qual) => qual !== "Other")
+                                    .map((qual) => (
+                                      <option key={qual} value={qual}>
+                                        {qual}
+                                      </option>
+                                    ))}
+                                  <option value="Other">Other</option>
+                                </Field>
+
+                                {formik.values.coFounders[index]?.qualification === "Other" ? (
+                                  <Field
+                                    id={`coFounders.${index}.customQualification`}
+                                    name={`coFounders.${index}.customQualification`}
+                                    type="text"
+                                    placeholder="Enter qualification"
+                                    disabled={isReadOnly}
+                                    className={`block w-full rounded-2xl border px-4 py-3 outline-none transition ${
+                                      isReadOnly
+                                        ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
+                                        : "border-slate-200 bg-white/85 text-slate-900 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                                    }`}
+                                  />
+                                ) : (
+                                  <div />
+                                )}
+                              </div>
+
                               <ErrorMessage
                                 name={`coFounders.${index}.qualification`}
                                 component="p"
                                 className="mt-2 text-sm text-red-500"
                               />
+                              {formik.values.coFounders[index]?.qualification === "Other" && (
+                                <ErrorMessage
+                                  name={`coFounders.${index}.customQualification`}
+                                  component="p"
+                                  className="mt-2 text-sm text-red-500"
+                                />
+                              )}
                             </div>
 
                             <div className="md:col-span-2">
@@ -239,13 +339,7 @@ export default function CoFounderDetailsStep({
                           <button
                             type="button"
                             onClick={() =>
-                              push({
-                                name: "",
-                                email: "",
-                                phoneNumber: "",
-                                qualification: "",
-                                linkedinProfile: "",
-                              })
+                              push(buildInitialCoFounder())
                             }
                             className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                           >
