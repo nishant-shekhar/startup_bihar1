@@ -61,6 +61,7 @@ import PrintAcknowledgement from "./PrintAcknowledgement";
 import FormStatus from "./FormStatus";
 import PhoneVerificationModal from "./modals/PhoneVerificationModal";
 import WorkingDialog from "./WorkingDialog";
+import Notice from "../admin/Notice";
 
 const STORAGE_KEY = "startupRegistrationDraft";
 const AUTH_KEY = "startupRegistrationAuth";
@@ -1462,7 +1463,6 @@ const blockEmailAfterRegistration = useCallback(
                     {submissionWindow.message}
                   </div>
                 ) : null}
-
                 {authState?.applicationId ? (
                   <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
                     <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
@@ -1478,6 +1478,8 @@ const blockEmailAfterRegistration = useCallback(
                     ) : null}
                   </div>
                 ) : null}
+
+                <Notice />
               </div>
 
               <nav className="flex-1 space-y-2 p-4">
@@ -1647,7 +1649,11 @@ const blockEmailAfterRegistration = useCallback(
                 <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 md:px-8">
                   {submissionWindow.message}
                 </div>
+              
               ) : null}
+              <div className="md:hidden px-4 pt-3">
+  <Notice />
+</div>
 
               <div className="flex-1 overflow-y-auto p-4 md:p-8">{renderStep()}</div>
             </main>
