@@ -56,7 +56,7 @@ const getEmail = (row) =>
   normalizeEmail(getCell(row, ["Email-ID", "Email ID", "Email", "E-mail"]));
 
 const getPhone = (row) =>
-  normalizePhone(getCell(row, ['Mobile\n', "Mobile", "Phone", "Phone Number"]));
+  normalizePhone(getCell(row, ['Mobile\n', "Mobile", "Phone", "Phone Number", "Mobile Number"]));
 
 const getAadhar = (row) =>
   normalizeAadhar(getCell(row, ["Aadhar", "Adhar", "Aadhaar", "Aadhar Number"]));

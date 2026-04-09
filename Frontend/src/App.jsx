@@ -101,6 +101,14 @@ const App = () => {
 					}
 				/>
 				<Route
+					path="/block"
+					element={
+						<PrivateRoute role="admin">
+							<Block />
+						</PrivateRoute>
+					}
+				/>
+				<Route
 					path="/Startup/:id"
 					element={<StartupPublicProfile />}
 				/>
