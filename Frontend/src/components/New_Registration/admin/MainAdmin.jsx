@@ -5,6 +5,8 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { ref, get } from "firebase/database";
+import * as XLSX from "xlsx";
 import {
   Search,
   RefreshCw,
@@ -16,10 +18,13 @@ import {
   MessageSquareText,
   ChevronLeft,
   ChevronRight,
+  Download,
+  Bot,
 } from "lucide-react";
-import { db } from "../../AdminRedesign/NewApplicationAdmin/firebase";
+import { db, rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 import FeedbackList from "./FeedBackList";
 import DetailDialog from "./DetailDialog";
+import AIEvaluationModal from "./AIEvaluationModal";
 
 const PAGE_SIZE = 50;
 
@@ -195,11 +200,54 @@ function SummaryCard({ title, value, subtitle, icon: Icon, accent = "amber" }) {
   );
 }
 
+function AIScoreBadge({ score, loading, isDraft }) {
+  if (isDraft) {
+    return (
+      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        Draft
+      </span>
+    );
+  }
+
+  if (loading) {
+    return (
+      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        Loading...
+      </span>
+    );
+  }
+
+  if (score === null || score === undefined || score === "") {
+    return (
+      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        —
+      </span>
+    );
+  }
+
+  const n = Number(score);
+  const tone =
+    n >= 7.5
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : n >= 5.5
+      ? "border-amber-200 bg-amber-50 text-amber-700"
+      : "border-rose-200 bg-rose-50 text-rose-700";
+
+  return (
+    <span
+      className={`inline-flex min-w-[82px] items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}
+    >
+      {n.toFixed(1)}/10
+    </span>
+  );
+}
+
 export default function NewApplicationDashboard() {
   const [applications, setApplications] = useState([]);
   const [selected, setSelected] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -208,6 +256,11 @@ export default function NewApplicationDashboard() {
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [aiScores, setAiScores] = useState({});
+  const [aiScoreLoadingMap, setAiScoreLoadingMap] = useState({});
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalApplication, setAiModalApplication] = useState(null);
 
   const loadApplications = async () => {
     setLoading(true);
@@ -309,10 +362,94 @@ export default function NewApplicationDashboard() {
   const pageStart = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const pageEnd = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchCurrentPageScores = async () => {
+      const pageRows = paginatedRows || [];
+      if (!pageRows.length) return;
+
+      const rowsToFetch = pageRows.filter((item) => {
+        const appId = String(item?._applicationId || "");
+        const isDraft =
+          String(item?._status || "").toLowerCase() === "draft";
+        return appId && !isDraft;
+      });
+
+      if (!rowsToFetch.length) return;
+
+      const loadingPatch = {};
+      rowsToFetch.forEach((item) => {
+        const appId = String(item._applicationId);
+        if (aiScores[appId] === undefined) {
+          loadingPatch[appId] = true;
+        }
+      });
+
+      if (Object.keys(loadingPatch).length) {
+        setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingPatch }));
+      }
+
+      const results = await Promise.all(
+        rowsToFetch.map(async (item) => {
+          const appId = String(item._applicationId);
+
+          if (aiScores[appId] !== undefined) {
+            return { appId, score: aiScores[appId] };
+          }
+
+          try {
+            const snap = await get(ref(rtdb, `/startupAIReview/April/${appId}`));
+
+            if (!snap.exists()) {
+              return { appId, score: null };
+            }
+
+            const val = snap.val() || {};
+            const resultScore = val?.result?.overall_score;
+            const apiScore = val?.api?.response?.overall_score;
+            const rawScore = resultScore ?? apiScore ?? null;
+
+            return {
+              appId,
+              score:
+                rawScore === null || rawScore === undefined || rawScore === ""
+                  ? null
+                  : Number(rawScore),
+            };
+          } catch (error) {
+            return { appId, score: null };
+          }
+        })
+      );
+
+      if (cancelled) return;
+
+      const scorePatch = {};
+      const loadingDonePatch = {};
+
+      results.forEach(({ appId, score }) => {
+        scorePatch[appId] = score;
+        loadingDonePatch[appId] = false;
+      });
+
+      setAiScores((prev) => ({ ...prev, ...scorePatch }));
+      setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingDonePatch }));
+    };
+
+    fetchCurrentPageScores();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [paginatedRows, currentPage]);
+
   const stats = useMemo(() => {
     return {
       total: applications.length,
-      submitted: applications.filter((a) => a._status === "submitted" || a._status === "Submitted").length,
+      submitted: applications.filter(
+        (a) => a._status === "submitted" || a._status === "Submitted"
+      ).length,
       review: applications.filter((a) => a._status === "Under Review").length,
       approved: applications.filter((a) => a._status === "Approved").length,
       registered: applications.filter((a) => a._registeredCompany).length,
@@ -322,6 +459,13 @@ export default function NewApplicationDashboard() {
   const handleRowClick = (item) => {
     setSelected(item);
     setDialogOpen(true);
+  };
+
+  const openAIModal = (item) => {
+    const isDraft = String(item?._status || "").toLowerCase() === "draft";
+    if (isDraft) return;
+    setAiModalApplication(item);
+    setAiModalOpen(true);
   };
 
   const goToPage = (page) => {
@@ -340,6 +484,131 @@ export default function NewApplicationDashboard() {
 
     return pages;
   }, [currentPage, totalPages]);
+
+  const exportApplicationsToExcel = () => {
+    try {
+      setExporting(true);
+
+      const excelRows = filtered.map((item, index) => ({
+        "S. No.": index + 1,
+        "Application ID": safe(item._applicationId),
+        "Startup Name": safe(getStartupName(item)),
+        "Founder Name": safe(getFounderName(item)),
+        "Email": safe(getEmail(item)),
+        "Phone": safe(getPhone(item)),
+        "Status": safe(item._status),
+        "Registered Company": item._registeredCompany ? "Yes" : "No",
+        "Application Type": safe(
+          item?.userSignup?.applicationType || item?.applicationType
+        ),
+        "Sector / Category": safe(getCategory(item)),
+        "Stage": safe(getStage(item)),
+        "Team Size": safe(item?.startupDetails?.teamSize),
+        "Website": safe(item?.startupDetails?.website),
+        "District": safe(getDistrict(item)),
+        "State": safe(item?.basicDetails?.state || item?.entityDetails?.state),
+        "Block Name": safe(item?.basicDetails?.blockName),
+        "Pincode": safe(item?.basicDetails?.pincode),
+        "Applicant Address": safe(item?.basicDetails?.applicantAddress),
+        "Gender": safe(item?.basicDetails?.gender),
+        "Category": safe(item?.basicDetails?.category),
+        "Date of Birth": safe(item?.basicDetails?.dateOfBirth),
+        "Qualification": safe(item?.basicDetails?.qualification),
+        "Institution":
+          item?.basicDetails?.institution === "Other"
+            ? safe(item?.basicDetails?.otherInstitution)
+            : safe(item?.basicDetails?.institution),
+        "LinkedIn Profile": safe(item?.basicDetails?.linkedinProfile),
+        "AI Score":
+          String(item?._status || "").toLowerCase() === "draft"
+            ? "Draft"
+            : aiScores[item._applicationId] ?? "-",
+
+        "Has Registered Entity": item?._registeredCompany ? "Yes" : "No",
+        "Entity Name": safe(item?.entityDetails?.entityName),
+        "Entity Type": safe(item?.entityDetails?.entityType),
+        "Entity Registration Number": safe(
+          item?.entityDetails?.entityRegistrationNumber ||
+            item?.registrationNumber
+        ),
+        "Date of Registration": safe(item?.entityDetails?.dateOfRegistration),
+        "Business Address": safe(item?.entityDetails?.businessAddress),
+
+        "Problem Statement": safe(item?.businessIdea?.problemStatement),
+        "Solution": safe(item?.businessIdea?.solution),
+        "Innovation": safe(item?.businessIdea?.innovation),
+        "Business Model": safe(item?.businessIdea?.businessModel),
+
+        "Pitch Deck File Name": safe(item?.businessIdea?.pitchDeckMeta?.fileName),
+        "Pitch Deck URL": safe(item?.businessIdea?.pitchDeckMeta?.downloadURL),
+
+        "Profile Photo File Name": safe(
+          item?.basicDetails?.profilePhotoMeta?.fileName
+        ),
+        "Profile Photo URL": safe(
+          item?.basicDetails?.profilePhotoMeta?.downloadURL
+        ),
+
+        "Entity Certificate File Name": safe(
+          item?.entityDetails?.certificateMeta?.fileName
+        ),
+        "Entity Certificate URL": safe(
+          item?.entityDetails?.certificateMeta?.downloadURL
+        ),
+
+        "Co-Founder Count": Array.isArray(item?.cofounderDetails?.coFounders)
+          ? item.cofounderDetails.coFounders.length
+          : 0,
+        "Is Sole Founder": item?.cofounderDetails?.isSoleFounder ? "Yes" : "No",
+        "Co-Founders": Array.isArray(item?.cofounderDetails?.coFounders)
+          ? item.cofounderDetails.coFounders
+              .map((cf, idx) => {
+                const parts = [
+                  `#${idx + 1}`,
+                  cf?.name || "-",
+                  cf?.email || "-",
+                  cf?.phoneNumber || "-",
+                  cf?.qualification || "-",
+                ];
+                return parts.join(" | ");
+              })
+              .join(" || ")
+          : "-",
+
+        "Feedback Submitted":
+          item?.websiteFeedback?.submitted === true ? "Yes" : "No",
+        "Feedback Experience": safe(item?.websiteFeedback?.experience),
+        "Feedback Rating": safe(item?.websiteFeedback?.rating),
+        "Feedback Message": safe(item?.websiteFeedback?.message),
+        "Feedback Submitted At": formatDate(item?.websiteFeedback?.submittedAt),
+
+        "Aadhar Number": safe(item?.userSignup?.aadharNumber),
+        "Created At": safe(item._createdAtDisplay),
+        "Firestore Doc ID": safe(item.id),
+      }));
+
+      if (excelRows.length === 0) {
+        alert("No filtered applications available to export.");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+
+      const now = new Date();
+      const datePart = `${now.getFullYear()}-${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+      XLSX.writeFile(workbook, `startup_applications_filtered_${datePart}.xlsx`);
+    } catch (error) {
+      console.error("Excel export failed", error);
+      alert("Failed to export Excel file.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div
@@ -372,6 +641,15 @@ export default function NewApplicationDashboard() {
                 >
                   <RefreshCw size={16} />
                   Refresh
+                </button>
+
+                <button
+                  onClick={exportApplicationsToExcel}
+                  disabled={loading || exporting || filtered.length === 0}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Download size={16} />
+                  {exporting ? "Exporting..." : "Download Excel"}
                 </button>
 
                 <button
@@ -512,13 +790,14 @@ export default function NewApplicationDashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table className="min-w-[1250px] w-full">
+                <table className="min-w-[1350px] w-full">
                   <thead className="bg-slate-50/80">
                     <tr className="text-left text-xs uppercase tracking-[0.14em] text-slate-500">
                       <th className="px-5 py-4 font-semibold">Application ID</th>
                       <th className="px-5 py-4 font-semibold">Startup</th>
                       <th className="px-5 py-4 font-semibold">Founder</th>
                       <th className="px-5 py-4 font-semibold">Status</th>
+                      <th className="px-5 py-4 font-semibold">AI Review</th>
                       <th className="px-5 py-4 font-semibold">Registered Company</th>
                       <th className="px-5 py-4 font-semibold">District</th>
                       <th className="px-5 py-4 font-semibold">Category / Sector</th>
@@ -531,7 +810,7 @@ export default function NewApplicationDashboard() {
                     {loading ? (
                       Array.from({ length: 8 }).map((_, index) => (
                         <tr key={index} className="border-t border-slate-100">
-                          {Array.from({ length: 9 }).map((__, i) => (
+                          {Array.from({ length: 10 }).map((__, i) => (
                             <td key={i} className="px-5 py-4">
                               <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
                             </td>
@@ -540,7 +819,7 @@ export default function NewApplicationDashboard() {
                       ))
                     ) : paginatedRows.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="px-6 py-16 text-center">
+                        <td colSpan={10} className="px-6 py-16 text-center">
                           <div className="mx-auto max-w-md">
                             <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
                               <FileText size={22} />
@@ -555,54 +834,85 @@ export default function NewApplicationDashboard() {
                         </td>
                       </tr>
                     ) : (
-                      paginatedRows.map((item) => (
-                        <tr
-                          key={item.id}
-                          onClick={() => handleRowClick(item)}
-                          className="cursor-pointer border-t border-slate-100 transition hover:bg-amber-50/40"
-                        >
-                          <td className="px-5 py-4 text-sm font-semibold text-slate-900">
-                            {safe(item._applicationId)}
-                          </td>
+                      paginatedRows.map((item) => {
+                        const appId = String(item._applicationId || "");
+                        const isDraft =
+                          String(item._status || "").toLowerCase() === "draft";
+                        const aiScore = aiScores[appId];
+                        const aiLoading = !!aiScoreLoadingMap[appId];
 
-                          <td className="px-5 py-4">
-                            <div className="text-sm font-semibold text-slate-900">
-                              {safe(getStartupName(item))}
-                            </div>
-                            <div className="mt-1 text-xs text-slate-500">
-                              {safe(getEmail(item))}
-                            </div>
-                          </td>
+                        return (
+                          <tr
+                            key={item.id}
+                            onClick={() => handleRowClick(item)}
+                            className="cursor-pointer border-t border-slate-100 transition hover:bg-amber-50/40"
+                          >
+                            <td className="px-5 py-4 text-sm font-semibold text-slate-900">
+                              {safe(item._applicationId)}
+                            </td>
 
-                          <td className="px-5 py-4 text-sm text-slate-700">
-                            {safe(getFounderName(item))}
-                          </td>
+                            <td className="px-5 py-4">
+                              <div className="text-sm font-semibold text-slate-900">
+                                {safe(getStartupName(item))}
+                              </div>
+                              <div className="mt-1 text-xs text-slate-500">
+                                {safe(getEmail(item))}
+                              </div>
+                            </td>
 
-                          <td className="px-5 py-4">
-                            <StatusBadge status={item._status} />
-                          </td>
+                            <td className="px-5 py-4 text-sm text-slate-700">
+                              {safe(getFounderName(item))}
+                            </td>
 
-                          <td className="px-5 py-4">
-                            <RegisteredBadge value={item._registeredCompany} />
-                          </td>
+                            <td className="px-5 py-4">
+                              <StatusBadge status={item._status} />
+                            </td>
 
-                          <td className="px-5 py-4 text-sm text-slate-700">
-                            {safe(getDistrict(item))}
-                          </td>
+                            <td
+                              className="px-5 py-4"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openAIModal(item);
+                              }}
+                            >
+                              <button
+                                type="button"
+                                disabled={isDraft}
+                                className={`inline-flex items-center gap-2 rounded-xl transition ${
+                                  isDraft ? "cursor-not-allowed opacity-80" : "hover:scale-[1.02]"
+                                }`}
+                              >
+                                <Bot size={14} className="text-slate-500" />
+                                <AIScoreBadge
+                                  score={aiScore}
+                                  loading={aiLoading}
+                                  isDraft={isDraft}
+                                />
+                              </button>
+                            </td>
 
-                          <td className="px-5 py-4 text-sm text-slate-700">
-                            {safe(getCategory(item))}
-                          </td>
+                            <td className="px-5 py-4">
+                              <RegisteredBadge value={item._registeredCompany} />
+                            </td>
 
-                          <td className="px-5 py-4 text-sm text-slate-700">
-                            {safe(getStage(item))}
-                          </td>
+                            <td className="px-5 py-4 text-sm text-slate-700">
+                              {safe(getDistrict(item))}
+                            </td>
 
-                          <td className="px-5 py-4 text-sm text-slate-700">
-                            {safe(item._createdAtDisplay)}
-                          </td>
-                        </tr>
-                      ))
+                            <td className="px-5 py-4 text-sm text-slate-700">
+                              {safe(getCategory(item))}
+                            </td>
+
+                            <td className="px-5 py-4 text-sm text-slate-700">
+                              {safe(getStage(item))}
+                            </td>
+
+                            <td className="px-5 py-4 text-sm text-slate-700">
+                              {safe(item._createdAtDisplay)}
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -695,6 +1005,14 @@ export default function NewApplicationDashboard() {
         getDistrict={getDistrict}
         getCategory={getCategory}
         getStage={getStage}
+      />
+
+      <AIEvaluationModal
+        open={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        application={aiModalApplication}
+        startupId={aiModalApplication?._applicationId}
+        startupName={aiModalApplication ? getStartupName(aiModalApplication) : ""}
       />
 
       <FeedbackList

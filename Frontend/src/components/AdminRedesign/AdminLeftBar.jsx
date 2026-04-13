@@ -67,6 +67,8 @@ const AdminLeftbar = ({ changePanel }) => {
         { label: 'Startup Application', icon: <FilePlus size={16} strokeWidth={1.5}/>, badge: '12' },
         { label: 'Expert Review', icon: <UserCheck size={16} strokeWidth={1.5}/>, badge: '5' },
         { label: 'AI Review', icon: <Bot size={16} strokeWidth={1.5}/>, badge: 'Beta' },
+        { label: 'AI Reviewed Data New', icon: <Bot size={16} strokeWidth={1.5}/>, badge: 'Beta' },
+
         { label: 'AI Review Old Style', icon: <Bot size={16} strokeWidth={1.5}/>, badge: 'Beta' },
         { label: 'AI Reviewed Data', icon: <Bot size={16} strokeWidth={1.5}/>, badge: 'Beta' },
         { label: 'Assign Exam Date', icon: <CalendarCheck size={16} strokeWidth={1.5} />, badge: null },
