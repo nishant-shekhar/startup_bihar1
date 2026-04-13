@@ -4,7 +4,8 @@ import {
   ChevronRight,
   Bot,
 } from "lucide-react";
-import AIEvaluationModal from "/Users/nishantshekhar/VSCodeProjects/startup_bihar1/Frontend/src/components/New_Registration/admin/AIEvaluationModal.jsx";
+import AIEvaluationModal from "./AIEvaluationModal";
+
 
 const safe = (value) => {
   if (value === null || value === undefined || value === "") return "-";
