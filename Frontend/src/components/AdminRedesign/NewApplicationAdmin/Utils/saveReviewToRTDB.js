@@ -8,13 +8,6 @@ const safeKey = (s) =>
     .replace(/[.#$[\]/\s]/g, "_")
     .slice(0, 140);
 
-const normYesNo = (v) => {
-  const s = String(v ?? "").trim().toLowerCase();
-  if (["yes", "y", "true", "1", "registered"].includes(s)) return "Yes";
-  if (["no", "n", "false", "0", "unregistered", "not registered"].includes(s)) return "No";
-  return String(v ?? "").trim();
-};
-
 const asStr = (v) => String(v ?? "").trim();
 
 const asNumOrNull = (v) => {
@@ -22,7 +15,14 @@ const asNumOrNull = (v) => {
   return Number.isFinite(n) ? n : null;
 };
 
-const asBool = (v) => Boolean(v);
+const asBool = (v) => {
+  if (typeof v === "boolean") return v;
+  const s = String(v ?? "").trim().toLowerCase();
+  if (["yes", "y", "true", "1", "registered"].includes(s)) return true;
+  if (["no", "n", "false", "0", "unregistered", "not registered"].includes(s))
+    return false;
+  return Boolean(v);
+};
 
 const cleanArray = (arr) =>
   Array.isArray(arr)
@@ -30,6 +30,21 @@ const cleanArray = (arr) =>
         .filter((x) => x !== undefined && x !== null && String(x).trim() !== "")
         .map((x) => (typeof x === "string" ? x.trim() : x))
     : [];
+
+const cleanObject = (obj) => {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return {};
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => v !== undefined)
+  );
+};
+
+const getResponse = (apiResult) =>
+  apiResult?.response && typeof apiResult.response === "object"
+    ? apiResult.response
+    : {};
+
+const getMeta = (apiResult) =>
+  apiResult?.meta && typeof apiResult.meta === "object" ? apiResult.meta : {};
 
 const normalizeParsedCofounders = (arr) => {
   if (!Array.isArray(arr)) return [];
@@ -43,73 +58,292 @@ const normalizeParsedCofounders = (arr) => {
   }));
 };
 
-const getResponse = (apiResult) =>
-  apiResult?.response && typeof apiResult.response === "object" ? apiResult.response : {};
+const mapRatingsByCriterion = (ratings = []) => {
+  const out = {};
+  if (!Array.isArray(ratings)) return out;
 
-const getMeta = (apiResult) =>
-  apiResult?.meta && typeof apiResult.meta === "object" ? apiResult.meta : {};
+  for (const item of ratings) {
+    const key = asStr(item?.criterion_key);
+    if (!key) continue;
 
-const buildQuickSignals = ({ response, hasRegisteredEntity }) => {
-  const qualifiers = response?.qualifiers || {};
-  const missing = response?.missing_flags || {};
-  const team = response?.team_assessment || {};
-  const evidence = response?.evidence_signals || {};
-  const fraud = response?.fraud_risk || {};
-  const derived = team?.derived_team_signals || {};
-  const scores = response?.scores || {};
+    out[key] = {
+      label: asStr(item?.criterion_label),
+      score: asNumOrNull(item?.score),
+      reason: asStr(item?.reason),
+    };
+  }
+
+  return out;
+};
+
+const extractFinalScore = (response) =>
+  asNumOrNull(
+    response?.final_score ??
+      response?.overall_score ??
+      response?.scores?.overall_final ??
+      response?.scores?.final_score
+  );
+
+const extractRubricScore = (response) =>
+  asNumOrNull(
+    response?.rubric_score ??
+      response?.scores?.rubric_score ??
+      response?.calculation_breakdown?.rubric_score
+  );
+
+const extractReadinessModifier = (response) =>
+  asNumOrNull(
+    response?.readiness_modifier ??
+      response?.scores?.readiness_modifier ??
+      response?.calculation_breakdown?.readiness_modifier
+  );
+
+const extractScoreBand = (response) =>
+  asStr(response?.score_band || response?.scores?.score_band);
+
+const extractCalculationBreakdown = (response) => {
+  const breakdown = response?.calculation_breakdown || {};
+  const weighted = breakdown?.weighted_contributions || {};
+  const positive = breakdown?.positive_signals || {};
+  const negative = breakdown?.negative_signals || {};
 
   return {
-    decision: asStr(response?.decision),
-    business_type: asStr(response?.business_type),
-    startup_quality: asStr(response?.startup_quality),
-    differentiation_flag: asStr(response?.differentiation_flag),
-
-    overall_score: asNumOrNull(response?.overall_score),
-    qualifier_count: asNumOrNull(response?.qualifier_count),
-
-    problem_score: asNumOrNull(scores?.problem_clarity),
-    solution_score: asNumOrNull(scores?.solution_strength),
-    innovation_score: asNumOrNull(scores?.innovation_depth),
-    business_model_score: asNumOrNull(scores?.business_model_clarity),
-    execution_score: asNumOrNull(scores?.execution_readiness),
-    team_score: asNumOrNull(scores?.team_capability),
-
-    evidence_score: asNumOrNull(evidence?.evidence_score),
-    evidence_quality: asStr(evidence?.evidence_quality),
-    proof_strength: asNumOrNull(evidence?.proof_strength),
-
-    buzzword_risk: asNumOrNull(fraud?.buzzword_risk),
-    buzzword_risk_label: asStr(fraud?.buzzword_risk_label),
-    possible_claim_inflation: asBool(fraud?.possible_claim_inflation),
-
-    institution_signal: asStr(team?.institution_signal),
-    qualification_bucket: asStr(team?.qualification_bucket),
-    founder_relevance_score: asNumOrNull(team?.founder_relevance_score),
-    cofounder_strength_score: asNumOrNull(team?.cofounder_strength_score),
-    team_completeness_score: asNumOrNull(team?.team_completeness_score),
-    derived_team_capability_score: asNumOrNull(derived?.teamCapabilityScore),
-
-    has_registered_entity: asBool(hasRegisteredEntity),
-
-    has_clear_monetization: asBool(qualifiers?.clear_monetization),
-    has_evidence_or_validation: asBool(qualifiers?.evidence_or_validation),
-    has_go_to_market_clarity: asBool(qualifiers?.go_to_market_clarity),
-    has_defensibility_moat: asBool(qualifiers?.defensibility_moat),
-    has_technology_leverage: asBool(qualifiers?.technology_leverage),
-    has_non_linear_scalability: asBool(qualifiers?.non_linear_scalability),
-    has_large_addressable_market: asBool(qualifiers?.large_addressable_market),
-    has_execution_feasibility: asBool(qualifiers?.execution_feasibility),
-
-    missing_target_customer: asBool(missing?.target_customer_unclear),
-    missing_pricing: asBool(missing?.pricing_unclear),
-    missing_differentiation: asBool(missing?.differentiation_unclear),
-    missing_evidence: asBool(missing?.evidence_missing),
-    missing_execution_plan: asBool(missing?.execution_plan_unclear),
-    missing_scale_path: asBool(missing?.scale_path_unclear),
-    missing_team_strength: asBool(missing?.team_strength_unclear),
+    formula: cleanObject(breakdown?.formula || {}),
+    weightedContributions: cleanObject(weighted),
+    positiveSignals: cleanObject(positive),
+    negativeSignals: cleanObject(negative),
+    positiveTotal: asNumOrNull(breakdown?.positive_total),
+    negativeTotal: asNumOrNull(breakdown?.negative_total),
   };
 };
 
+const buildEvaluation = ({ response, hasRegisteredEntity }) => {
+  const scores = response?.scores || {};
+  const evidence = response?.evidence_signals || {};
+  const fraud = response?.fraud_risk || {};
+  const qualifiers = response?.qualifiers || {};
+  const missing = response?.missing_flags || {};
+  const team = response?.team_assessment || {};
+  const derived = team?.derived_team_signals || {};
+  const registration = response?.registration_status || {};
+  const debug = response?.debug || {};
+
+  return {
+    finalScore: extractFinalScore(response),
+    rubricScore: extractRubricScore(response),
+    readinessModifier: extractReadinessModifier(response),
+    scoreBand: extractScoreBand(response),
+
+    decision: asStr(response?.decision),
+    decisionReason: asStr(response?.decision_reason),
+    startupQuality: asStr(response?.startup_quality),
+    businessType: asStr(response?.business_type),
+    differentiationFlag: asStr(response?.differentiation_flag),
+    qualifierCount: asNumOrNull(response?.qualifier_count),
+    summary: asStr(response?.summary),
+
+    ratings: {
+      problemClarity: {
+        score: asNumOrNull(scores?.problem_clarity),
+        reason: asStr(mapRatingsByCriterion(response?.ratings)?.problem_clarity?.reason),
+      },
+      solutionStrength: {
+        score: asNumOrNull(scores?.solution_strength),
+        reason: asStr(mapRatingsByCriterion(response?.ratings)?.solution_strength?.reason),
+      },
+      innovationDepth: {
+        score: asNumOrNull(scores?.innovation_depth),
+        reason: asStr(mapRatingsByCriterion(response?.ratings)?.innovation_depth?.reason),
+      },
+      businessModelClarity: {
+        score: asNumOrNull(scores?.business_model_clarity),
+        reason: asStr(
+          mapRatingsByCriterion(response?.ratings)?.business_model_clarity?.reason
+        ),
+      },
+      executionReadiness: {
+        score: asNumOrNull(scores?.execution_readiness),
+        reason: asStr(
+          mapRatingsByCriterion(response?.ratings)?.execution_readiness?.reason
+        ),
+      },
+      teamCapability: {
+        score: asNumOrNull(scores?.team_capability),
+        reason: asStr(mapRatingsByCriterion(response?.ratings)?.team_capability?.reason),
+      },
+    },
+
+    strengths: cleanArray(response?.strengths),
+    risksAndGaps: cleanArray(response?.risks_and_gaps),
+    improvementSuggestions: cleanArray(response?.improvement_suggestions),
+    pitchQuestions: cleanArray(response?.pitch_questions),
+
+    qualifiers: {
+      clearMonetization: asBool(qualifiers?.clear_monetization),
+      evidenceOrValidation: asBool(qualifiers?.evidence_or_validation),
+      goToMarketClarity: asBool(qualifiers?.go_to_market_clarity),
+      defensibilityMoat: asBool(qualifiers?.defensibility_moat),
+      technologyLeverage: asBool(qualifiers?.technology_leverage),
+      nonLinearScalability: asBool(qualifiers?.non_linear_scalability),
+      largeAddressableMarket: asBool(qualifiers?.large_addressable_market),
+      executionFeasibility: asBool(qualifiers?.execution_feasibility),
+    },
+
+    missingFlags: {
+      targetCustomerUnclear: asBool(missing?.target_customer_unclear),
+      pricingUnclear: asBool(missing?.pricing_unclear),
+      differentiationUnclear: asBool(missing?.differentiation_unclear),
+      evidenceMissing: asBool(missing?.evidence_missing),
+      executionPlanUnclear: asBool(missing?.execution_plan_unclear),
+      scalePathUnclear: asBool(missing?.scale_path_unclear),
+      teamStrengthUnclear: asBool(missing?.team_strength_unclear),
+    },
+
+    evidence: {
+      evidenceScore: asNumOrNull(evidence?.evidence_score),
+      evidenceQuality: asStr(evidence?.evidence_quality),
+      proofStrength: asNumOrNull(evidence?.proof_strength),
+      numbersCount: asNumOrNull(evidence?.numbers_count),
+      currencyMentions: asNumOrNull(evidence?.currency_mentions),
+      datesCount: asNumOrNull(evidence?.dates_count),
+      tractionHits: cleanArray(evidence?.traction_hits),
+    },
+
+    fraudRisk: {
+      buzzwordCount: asNumOrNull(fraud?.buzzword_count),
+      buzzwordRisk: asNumOrNull(fraud?.buzzword_risk),
+      buzzwordRiskLabel: asStr(fraud?.buzzword_risk_label),
+      proofCount: asNumOrNull(fraud?.proof_count),
+      strongProofCount: asNumOrNull(fraud?.strong_proof_count),
+      weakGenericCount: asNumOrNull(fraud?.weak_generic_count),
+      possibleClaimInflation: asBool(fraud?.possible_claim_inflation),
+    },
+
+    registrationStatus: {
+      isRegistered: asBool(
+        registration?.is_registered ?? hasRegisteredEntity ?? false
+      ),
+      confidenceBoostApplied: asNumOrNull(
+        registration?.confidence_boost_applied
+      ),
+    },
+
+    teamAssessment: {
+      institutionSignal: asStr(team?.institution_signal),
+      institutionReason: asStr(team?.institution_reason),
+      founderRelevanceScore: asNumOrNull(team?.founder_relevance_score),
+      cofounderStrengthScore: asNumOrNull(team?.cofounder_strength_score),
+      teamCompletenessScore: asNumOrNull(team?.team_completeness_score),
+      qualificationBucket: asStr(team?.qualification_bucket),
+      founderQualification: asStr(team?.founder_qualification),
+      founderInstitution: asStr(team?.founder_institution),
+
+      derivedSignals: {
+        teamSize: asNumOrNull(derived?.teamSize),
+        coFounderCount: asNumOrNull(derived?.coFounderCount),
+        qualifiedCofounders: asNumOrNull(derived?.qualifiedCofounders),
+        founderHasLinkedin: asBool(derived?.founderHasLinkedin),
+        teamCapabilityScore: asNumOrNull(derived?.teamCapabilityScore),
+      },
+
+      executionAdjustmentApplied: asNumOrNull(
+        team?.execution_adjustment_applied
+      ),
+      parsedCofounders: normalizeParsedCofounders(team?.parsed_cofounders),
+    },
+
+    calculationBreakdown: extractCalculationBreakdown(response),
+
+    debug: {
+      totalWords: asNumOrNull(debug?.total_words),
+      traditionalRisk: asNumOrNull(debug?.traditional_risk),
+      buzzwordRisk: asNumOrNull(debug?.buzzword_risk),
+      evidenceQuality: asStr(debug?.evidence_quality),
+      evidenceScore: asNumOrNull(debug?.evidence_score),
+      proofStrength: asNumOrNull(debug?.proof_strength),
+      lowEvidencePenaltyApplied: asNumOrNull(debug?.low_evidence_penalty_applied),
+      marketRealismPenaltyApplied: asNumOrNull(
+        debug?.market_realism_penalty_applied
+      ),
+    },
+  };
+};
+
+const buildListIndex = ({
+  applicationId,
+  startupName,
+  founderName,
+  stage,
+  district,
+  state,
+  sectorCategory,
+  teamSize,
+  hasRegisteredEntity,
+  qualification,
+  institution,
+  coFounderCount,
+  isSoleFounder,
+  evaluation,
+  now,
+}) => ({
+  applicationId: asStr(applicationId),
+  startupName: asStr(startupName),
+  founderName: asStr(founderName),
+  stage: asStr(stage),
+  district: asStr(district),
+  state: asStr(state),
+  sectorCategory: asStr(sectorCategory),
+
+  hasRegisteredEntity: asBool(hasRegisteredEntity),
+  qualification: asStr(qualification),
+  institution: asStr(institution),
+  teamSize: asNumOrNull(teamSize),
+  coFounderCount: asNumOrNull(coFounderCount),
+  isSoleFounder: asBool(isSoleFounder),
+
+  finalScore: asNumOrNull(evaluation?.finalScore),
+  rubricScore: asNumOrNull(evaluation?.rubricScore),
+  readinessModifier: asNumOrNull(evaluation?.readinessModifier),
+  scoreBand: asStr(evaluation?.scoreBand),
+
+  decision: asStr(evaluation?.decision),
+  startupQuality: asStr(evaluation?.startupQuality),
+  businessType: asStr(evaluation?.businessType),
+  differentiationFlag: asStr(evaluation?.differentiationFlag),
+
+  problemScore: asNumOrNull(evaluation?.ratings?.problemClarity?.score),
+  solutionScore: asNumOrNull(evaluation?.ratings?.solutionStrength?.score),
+  innovationScore: asNumOrNull(evaluation?.ratings?.innovationDepth?.score),
+  businessModelScore: asNumOrNull(
+    evaluation?.ratings?.businessModelClarity?.score
+  ),
+  executionScore: asNumOrNull(
+    evaluation?.ratings?.executionReadiness?.score
+  ),
+  teamScore: asNumOrNull(evaluation?.ratings?.teamCapability?.score),
+
+  evidenceQuality: asStr(evaluation?.evidence?.evidenceQuality),
+  evidenceScore: asNumOrNull(evaluation?.evidence?.evidenceScore),
+  proofStrength: asNumOrNull(evaluation?.evidence?.proofStrength),
+
+  buzzwordRiskLabel: asStr(evaluation?.fraudRisk?.buzzwordRiskLabel),
+  buzzwordRisk: asNumOrNull(evaluation?.fraudRisk?.buzzwordRisk),
+  possibleClaimInflation: asBool(
+    evaluation?.fraudRisk?.possibleClaimInflation
+  ),
+
+  qualificationBucket: asStr(evaluation?.teamAssessment?.qualificationBucket),
+  institutionSignal: asStr(evaluation?.teamAssessment?.institutionSignal),
+  founderRelevanceScore: asNumOrNull(
+    evaluation?.teamAssessment?.founderRelevanceScore
+  ),
+  teamCompletenessScore: asNumOrNull(
+    evaluation?.teamAssessment?.teamCompletenessScore
+  ),
+
+  updatedAt_ms: now,
+  updatedAt: serverTimestamp(),
+});
 export async function saveStartupReviewToRTDB({
   sbNo,
   entityName,
@@ -179,8 +413,6 @@ export async function saveStartupReviewToRTDB({
 
   return true;
 }
-
-// NEW SAVE FUNCTION FOR STRICT NEW PROMPT
 export async function saveStartupReviewToRTDBNew({
   applicationId,
   startupName,
@@ -201,24 +433,28 @@ export async function saveStartupReviewToRTDBNew({
   gender,
   category,
   dateOfBirth,
+
   qualification,
   institution,
   linkedinProfile,
+  coFounderCount,
+  isSoleFounder,
+  coFounders,
+
   hasRegisteredEntity,
   entityName,
   entityType,
   entityRegistrationNumber,
   dateOfRegistration,
   businessAddress,
+
   pitchDeckFileName,
   pitchDeckURL,
   profilePhotoFileName,
   profilePhotoURL,
   entityCertificateFileName,
   entityCertificateURL,
-  coFounderCount,
-  isSoleFounder,
-  coFounders,
+
   answers,
   apiResult,
   reviewMonth = "April",
@@ -232,42 +468,39 @@ export async function saveStartupReviewToRTDBNew({
   const response = getResponse(apiResult);
   const meta = getMeta(apiResult);
 
-  const scores = response?.scores || {};
-  const teamAssessment = response?.team_assessment || {};
-  const derivedSignals = teamAssessment?.derived_team_signals || {};
-  const evidenceSignals = response?.evidence_signals || {};
-  const fraudRisk = response?.fraud_risk || {};
-  const registrationStatus = response?.registration_status || {};
-  const debug = response?.debug || {};
-
-  const parsedCofounders = normalizeParsedCofounders(teamAssessment?.parsed_cofounders);
-  const quick = buildQuickSignals({ response, hasRegisteredEntity });
-
   const basePath = `startupAIReview/${monthKey}/${key}`;
-  const base = ref(rtdb, basePath);
-  const existingSnap = await get(base);
+  const baseRef = ref(rtdb, basePath);
+
+  const existingSnap = await get(baseRef);
   const existing = existingSnap.exists() ? existingSnap.val() : null;
 
+  const evaluation = buildEvaluation({
+    response,
+    hasRegisteredEntity,
+  });
+
   const payload = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    founderName: asStr(founderName),
-    email: asStr(email),
-    phone: asStr(phone),
-    status: asStr(status),
-    applicationType: asStr(applicationType),
-    sectorCategory: asStr(sectorCategory),
-    stage: asStr(stage),
-    teamSize: asNumOrNull(teamSize),
-    website: asStr(website),
-    district: asStr(district),
-    state: asStr(state),
-    blockName: asStr(blockName),
-    pincode: asStr(pincode),
-    applicantAddress: asStr(applicantAddress),
-    gender: asStr(gender),
-    category: asStr(category),
-    dateOfBirth: asStr(dateOfBirth),
+    application: {
+      applicationId: asStr(applicationId),
+      startupName: asStr(startupName),
+      founderName: asStr(founderName),
+      email: asStr(email),
+      phone: asStr(phone),
+      status: asStr(status),
+      applicationType: asStr(applicationType),
+      sectorCategory: asStr(sectorCategory),
+      stage: asStr(stage),
+      teamSize: asNumOrNull(teamSize),
+      website: asStr(website),
+      district: asStr(district),
+      state: asStr(state),
+      blockName: asStr(blockName),
+      pincode: asStr(pincode),
+      applicantAddress: asStr(applicantAddress),
+      gender: asStr(gender),
+      category: asStr(category),
+      dateOfBirth: asStr(dateOfBirth),
+    },
 
     founderProfile: {
       qualification: asStr(qualification),
@@ -280,7 +513,6 @@ export async function saveStartupReviewToRTDBNew({
 
     entityDetails: {
       hasRegisteredEntity: asBool(hasRegisteredEntity),
-      hasRegisteredEntityLabel: normYesNo(hasRegisteredEntity),
       entityName: asStr(entityName),
       entityType: asStr(entityType),
       entityRegistrationNumber: asStr(entityRegistrationNumber),
@@ -289,12 +521,18 @@ export async function saveStartupReviewToRTDBNew({
     },
 
     files: {
-      pitchDeckFileName: asStr(pitchDeckFileName),
-      pitchDeckURL: asStr(pitchDeckURL),
-      profilePhotoFileName: asStr(profilePhotoFileName),
-      profilePhotoURL: asStr(profilePhotoURL),
-      entityCertificateFileName: asStr(entityCertificateFileName),
-      entityCertificateURL: asStr(entityCertificateURL),
+      pitchDeck: {
+        fileName: asStr(pitchDeckFileName),
+        url: asStr(pitchDeckURL),
+      },
+      profilePhoto: {
+        fileName: asStr(profilePhotoFileName),
+        url: asStr(profilePhotoURL),
+      },
+      entityCertificate: {
+        fileName: asStr(entityCertificateFileName),
+        url: asStr(entityCertificateURL),
+      },
     },
 
     answers: {
@@ -304,247 +542,56 @@ export async function saveStartupReviewToRTDBNew({
       businessModel: asStr(answers?.businessModel),
     },
 
-    review: {
-      sb_no: asStr(response?.sb_no || applicationId),
-      decision: asStr(response?.decision),
-      business_type: asStr(response?.business_type),
-      startup_quality: asStr(response?.startup_quality),
-      differentiation_flag: asStr(response?.differentiation_flag),
-      overall_score: asNumOrNull(response?.overall_score),
-      qualifier_count: asNumOrNull(response?.qualifier_count),
-      summary: asStr(response?.summary),
+    evaluation,
 
-      scores: {
-        problem_clarity: asNumOrNull(scores?.problem_clarity),
-        solution_strength: asNumOrNull(scores?.solution_strength),
-        innovation_depth: asNumOrNull(scores?.innovation_depth),
-        business_model_clarity: asNumOrNull(scores?.business_model_clarity),
-        execution_readiness: asNumOrNull(scores?.execution_readiness),
-        team_capability: asNumOrNull(scores?.team_capability),
-      },
-
-      ratings: cleanArray(response?.ratings),
-
-      qualifiers: {
-        technology_leverage: asBool(response?.qualifiers?.technology_leverage),
-        non_linear_scalability: asBool(response?.qualifiers?.non_linear_scalability),
-        large_addressable_market: asBool(response?.qualifiers?.large_addressable_market),
-        defensibility_moat: asBool(response?.qualifiers?.defensibility_moat),
-        clear_monetization: asBool(response?.qualifiers?.clear_monetization),
-        execution_feasibility: asBool(response?.qualifiers?.execution_feasibility),
-        go_to_market_clarity: asBool(response?.qualifiers?.go_to_market_clarity),
-        evidence_or_validation: asBool(response?.qualifiers?.evidence_or_validation),
-      },
-
-      missing_flags: {
-        target_customer_unclear: asBool(response?.missing_flags?.target_customer_unclear),
-        pricing_unclear: asBool(response?.missing_flags?.pricing_unclear),
-        differentiation_unclear: asBool(response?.missing_flags?.differentiation_unclear),
-        evidence_missing: asBool(response?.missing_flags?.evidence_missing),
-        execution_plan_unclear: asBool(response?.missing_flags?.execution_plan_unclear),
-        scale_path_unclear: asBool(response?.missing_flags?.scale_path_unclear),
-        team_strength_unclear: asBool(response?.missing_flags?.team_strength_unclear),
-      },
-
-      strengths: cleanArray(response?.strengths),
-      risks_and_gaps: cleanArray(response?.risks_and_gaps),
-      pitch_questions: cleanArray(response?.pitch_questions),
-      improvement_suggestions: cleanArray(response?.improvement_suggestions),
-
-      registration_status: {
-        is_registered: asBool(registrationStatus?.is_registered),
-        confidence_boost_applied: asNumOrNull(registrationStatus?.confidence_boost_applied),
-      },
-
-      team_assessment: {
-        institution_signal: asStr(teamAssessment?.institution_signal),
-        institution_reason: asStr(teamAssessment?.institution_reason),
-        founder_relevance_score: asNumOrNull(teamAssessment?.founder_relevance_score),
-        cofounder_strength_score: asNumOrNull(teamAssessment?.cofounder_strength_score),
-        team_completeness_score: asNumOrNull(teamAssessment?.team_completeness_score),
-
-        qualification_bucket: asStr(teamAssessment?.qualification_bucket),
-        founder_qualification: asStr(teamAssessment?.founder_qualification),
-        founder_institution: asStr(teamAssessment?.founder_institution),
-
-        derived_team_signals: {
-          teamSize: asNumOrNull(derivedSignals?.teamSize),
-          coFounderCount: asNumOrNull(derivedSignals?.coFounderCount),
-          qualifiedCofounders: asNumOrNull(derivedSignals?.qualifiedCofounders),
-          founderHasLinkedin: asBool(derivedSignals?.founderHasLinkedin),
-          teamCapabilityScore: asNumOrNull(derivedSignals?.teamCapabilityScore),
-        },
-
-        execution_adjustment_applied: asNumOrNull(teamAssessment?.execution_adjustment_applied),
-        parsed_cofounders: parsedCofounders,
-      },
-
-      evidence_signals: {
-        evidence_score: asNumOrNull(evidenceSignals?.evidence_score),
-        evidence_quality: asStr(evidenceSignals?.evidence_quality),
-        numbers_count: asNumOrNull(evidenceSignals?.numbers_count),
-        currency_mentions: asNumOrNull(evidenceSignals?.currency_mentions),
-        dates_count: asNumOrNull(evidenceSignals?.dates_count),
-        traction_hits: cleanArray(evidenceSignals?.traction_hits),
-        proof_strength: asNumOrNull(evidenceSignals?.proof_strength),
-      },
-
-      fraud_risk: {
-        buzzword_count: asNumOrNull(fraudRisk?.buzzword_count),
-        proof_count: asNumOrNull(fraudRisk?.proof_count),
-        strong_proof_count: asNumOrNull(fraudRisk?.strong_proof_count),
-        weak_generic_count: asNumOrNull(fraudRisk?.weak_generic_count),
-        buzzword_risk: asNumOrNull(fraudRisk?.buzzword_risk),
-        buzzword_risk_label: asStr(fraudRisk?.buzzword_risk_label),
-        possible_claim_inflation: asBool(fraudRisk?.possible_claim_inflation),
-      },
-
-      debug: {
-        total_words: asNumOrNull(debug?.total_words),
-        traditional_risk: asNumOrNull(debug?.traditional_risk),
-        low_evidence_penalty_applied: asNumOrNull(debug?.low_evidence_penalty_applied),
-        market_realism_penalty_applied: asNumOrNull(debug?.market_realism_penalty_applied),
-        buzzword_risk: asNumOrNull(debug?.buzzword_risk),
-      },
-    },
-
-    apiMeta: {
+    meta: {
       model: asStr(meta?.model),
-      total_duration: meta?.total_duration ?? "",
-      elapsed_ms: asNumOrNull(meta?.elapsed_ms),
       schema: asStr(apiResult?.schema),
       stage: asStr(apiResult?.stage),
       reviewedMonth: asStr(reviewMonth),
+      elapsedMs: asNumOrNull(meta?.elapsed_ms),
+      totalDuration: meta?.total_duration ?? "",
+      createdAt: existing?.meta?.createdAt || serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      updatedAt_ms: now,
     },
 
-    quick,
-
-    api: apiResult || null,
-
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-    createdAt: existing?.createdAt || serverTimestamp(),
+    raw: {
+      apiResponse: apiResult || null,
+    },
   };
 
-  await set(base, payload);
+  await set(baseRef, payload);
 
-  const rootIndexUpdates = {};
+  const indexData = buildListIndex({
+    applicationId,
+    startupName,
+    founderName,
+    stage,
+    district,
+    state,
+    sectorCategory,
+    teamSize,
+    hasRegisteredEntity,
+    qualification,
+    institution,
+    coFounderCount,
+    isSoleFounder,
+    evaluation,
+    now,
+  });
 
-  // Main flat index for listings
-  rootIndexUpdates[`startupAIReviewIndex/${monthKey}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    founderName: asStr(founderName),
-    stage: asStr(stage),
-    district: asStr(district),
-    state: asStr(state),
-    sectorCategory: asStr(sectorCategory),
-
-    hasRegisteredEntity: normYesNo(hasRegisteredEntity),
-    qualification: asStr(qualification),
-    institution: asStr(institution),
-    teamSize: asNumOrNull(teamSize),
-    coFounderCount: asNumOrNull(coFounderCount),
-    isSoleFounder: asBool(isSoleFounder),
-
-    decision: asStr(response?.decision),
-    business_type: asStr(response?.business_type),
-    startup_quality: asStr(response?.startup_quality),
-    differentiation_flag: asStr(response?.differentiation_flag),
-    overall_score: asNumOrNull(response?.overall_score),
-
-    problem_clarity: asNumOrNull(scores?.problem_clarity),
-    solution_strength: asNumOrNull(scores?.solution_strength),
-    innovation_depth: asNumOrNull(scores?.innovation_depth),
-    business_model_clarity: asNumOrNull(scores?.business_model_clarity),
-    execution_readiness: asNumOrNull(scores?.execution_readiness),
-    team_capability: asNumOrNull(scores?.team_capability),
-
-    institution_signal: asStr(teamAssessment?.institution_signal),
-    qualification_bucket: asStr(teamAssessment?.qualification_bucket),
-    evidence_quality: asStr(evidenceSignals?.evidence_quality),
-    proof_strength: asNumOrNull(evidenceSignals?.proof_strength),
-    buzzword_risk_label: asStr(fraudRisk?.buzzword_risk_label),
-    possible_claim_inflation: asBool(fraudRisk?.possible_claim_inflation),
-
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  // Secondary indexes for future filters
-  rootIndexUpdates[`startupAIReviewIndexes/byDecision/${monthKey}/${safeKey(quick.decision || "unknown")}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    founderName: asStr(founderName),
-    decision: quick.decision,
-    overall_score: quick.overall_score,
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  rootIndexUpdates[`startupAIReviewIndexes/byQuality/${monthKey}/${safeKey(quick.startup_quality || "unknown")}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    startup_quality: quick.startup_quality,
-    overall_score: quick.overall_score,
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  rootIndexUpdates[`startupAIReviewIndexes/byQualificationBucket/${monthKey}/${safeKey(quick.qualification_bucket || "unknown")}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    qualification_bucket: quick.qualification_bucket || "unknown",
-    overall_score: quick.overall_score,
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  rootIndexUpdates[`startupAIReviewIndexes/byInstitutionSignal/${monthKey}/${safeKey(quick.institution_signal || "unknown")}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    institution_signal: quick.institution_signal || "unknown",
-    overall_score: quick.overall_score,
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  rootIndexUpdates[`startupAIReviewIndexes/byFraudRisk/${monthKey}/${safeKey(quick.buzzword_risk_label || "low")}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    buzzword_risk_label: quick.buzzword_risk_label || "low",
-    possible_claim_inflation: quick.possible_claim_inflation,
-    overall_score: quick.overall_score,
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  rootIndexUpdates[`startupAIReviewIndexes/byRegisteredEntity/${monthKey}/${asBool(hasRegisteredEntity) ? "yes" : "no"}/${key}`] = {
-    applicationId: asStr(applicationId),
-    startupName: asStr(startupName),
-    hasRegisteredEntity: asBool(hasRegisteredEntity),
-    overall_score: quick.overall_score,
-    updatedAt_ms: now,
-    updatedAt: serverTimestamp(),
-  };
-
-  if (quick.possible_claim_inflation) {
-    rootIndexUpdates[`startupAIReviewIndexes/claimInflation/${monthKey}/${key}`] = {
-      applicationId: asStr(applicationId),
-      startupName: asStr(startupName),
-      buzzword_risk: quick.buzzword_risk,
-      overall_score: quick.overall_score,
-      updatedAt_ms: now,
-      updatedAt: serverTimestamp(),
-    };
-  }
-
-  await update(ref(rtdb), rootIndexUpdates);
+  await update(ref(rtdb), {
+    [`startupAIReviewIndex/${monthKey}/${key}`]: indexData,
+  });
 
   return {
     ok: true,
     path: basePath,
+    indexPath: `startupAIReviewIndex/${monthKey}/${key}`,
     applicationId: asStr(applicationId),
     month: monthKey,
+    finalScore: evaluation?.finalScore,
+    decision: evaluation?.decision,
   };
 }

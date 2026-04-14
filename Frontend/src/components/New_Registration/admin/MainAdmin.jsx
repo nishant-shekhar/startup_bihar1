@@ -362,87 +362,85 @@ export default function NewApplicationDashboard() {
   const pageStart = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const pageEnd = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
-  useEffect(() => {
-    let cancelled = false;
+useEffect(() => {
+  let cancelled = false;
 
-    const fetchCurrentPageScores = async () => {
-      const pageRows = paginatedRows || [];
-      if (!pageRows.length) return;
+  const fetchCurrentPageScores = async () => {
+    const pageRows = paginatedRows || [];
+    if (!pageRows.length) return;
 
-      const rowsToFetch = pageRows.filter((item) => {
-        const appId = String(item?._applicationId || "");
-        const isDraft =
-          String(item?._status || "").toLowerCase() === "draft";
-        return appId && !isDraft;
-      });
+    const rowsToFetch = pageRows.filter((item) => {
+      const appId = String(item?._applicationId || "");
+      const isDraft = String(item?._status || "").toLowerCase() === "draft";
+      return appId && !isDraft;
+    });
 
-      if (!rowsToFetch.length) return;
+    if (!rowsToFetch.length) return;
 
-      const loadingPatch = {};
-      rowsToFetch.forEach((item) => {
-        const appId = String(item._applicationId);
-        if (aiScores[appId] === undefined) {
-          loadingPatch[appId] = true;
-        }
-      });
-
-      if (Object.keys(loadingPatch).length) {
-        setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingPatch }));
+    const loadingPatch = {};
+    rowsToFetch.forEach((item) => {
+      const appId = String(item._applicationId);
+      if (aiScores[appId] === undefined) {
+        loadingPatch[appId] = true;
       }
+    });
 
-      const results = await Promise.all(
-        rowsToFetch.map(async (item) => {
-          const appId = String(item._applicationId);
+    if (Object.keys(loadingPatch).length) {
+      setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingPatch }));
+    }
 
-          if (aiScores[appId] !== undefined) {
-            return { appId, score: aiScores[appId] };
-          }
+    const results = await Promise.all(
+      rowsToFetch.map(async (item) => {
+        const appId = String(item._applicationId);
 
-          try {
-            const snap = await get(ref(rtdb, `/startupAIReview/April/${appId}`));
+        if (aiScores[appId] !== undefined) {
+          return { appId, score: aiScores[appId] };
+        }
 
-            if (!snap.exists()) {
-              return { appId, score: null };
-            }
+        try {
+          const scoreSnap = await get(
+            ref(rtdb, `/startupAIReview/April/${appId}/evaluation/finalScore`)
+          );
 
-            const val = snap.val() || {};
-            const resultScore = val?.result?.overall_score;
-            const apiScore = val?.api?.response?.overall_score;
-            const rawScore = resultScore ?? apiScore ?? null;
-
-            return {
-              appId,
-              score:
-                rawScore === null || rawScore === undefined || rawScore === ""
-                  ? null
-                  : Number(rawScore),
-            };
-          } catch (error) {
+          if (!scoreSnap.exists()) {
             return { appId, score: null };
           }
-        })
-      );
 
-      if (cancelled) return;
+          const rawScore = scoreSnap.val();
 
-      const scorePatch = {};
-      const loadingDonePatch = {};
+          return {
+            appId,
+            score:
+              rawScore === null || rawScore === undefined || rawScore === ""
+                ? null
+                : Number(rawScore),
+          };
+        } catch (error) {
+          return { appId, score: null };
+        }
+      })
+    );
 
-      results.forEach(({ appId, score }) => {
-        scorePatch[appId] = score;
-        loadingDonePatch[appId] = false;
-      });
+    if (cancelled) return;
 
-      setAiScores((prev) => ({ ...prev, ...scorePatch }));
-      setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingDonePatch }));
-    };
+    const scorePatch = {};
+    const loadingDonePatch = {};
 
-    fetchCurrentPageScores();
+    results.forEach(({ appId, score }) => {
+      scorePatch[appId] = score;
+      loadingDonePatch[appId] = false;
+    });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [paginatedRows, currentPage]);
+    setAiScores((prev) => ({ ...prev, ...scorePatch }));
+    setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingDonePatch }));
+  };
+
+  fetchCurrentPageScores();
+
+  return () => {
+    cancelled = true;
+  };
+}, [paginatedRows, currentPage]);
 
   const stats = useMemo(() => {
     return {
@@ -519,10 +517,10 @@ export default function NewApplicationDashboard() {
             ? safe(item?.basicDetails?.otherInstitution)
             : safe(item?.basicDetails?.institution),
         "LinkedIn Profile": safe(item?.basicDetails?.linkedinProfile),
-        "AI Score":
-          String(item?._status || "").toLowerCase() === "draft"
-            ? "Draft"
-            : aiScores[item._applicationId] ?? "-",
+"AI Score":
+  String(item?._status || "").toLowerCase() === "draft"
+    ? "Draft"
+    : aiScores[item._applicationId] ?? "-",
 
         "Has Registered Entity": item?._registeredCompany ? "Yes" : "No",
         "Entity Name": safe(item?.entityDetails?.entityName),

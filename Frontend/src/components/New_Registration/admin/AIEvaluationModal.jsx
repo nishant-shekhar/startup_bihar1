@@ -16,6 +16,10 @@ import {
   Lightbulb,
   Target,
   RefreshCw,
+  Users2,
+  BadgeInfo,
+  Calculator,
+  BadgeAlert,
 } from "lucide-react";
 import { rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 
@@ -24,24 +28,37 @@ const safe = (value) => {
   return String(value);
 };
 
+const joinArr = (v, sep = " | ") =>
+  Array.isArray(v) ? v.filter(Boolean).join(sep) : "";
+
+const humanizeFlag = (key = "") =>
+  String(key)
+    .replace(/([A-Z])/g, " $1")
+    .replaceAll("_", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const getScoreColor = (score) => {
   const s = Number(score) || 0;
   if (s >= 8) return "text-emerald-400 font-bold";
-  if (s >= 6.5) return "text-emerald-300";
-  if (s >= 5.5) return "text-yellow-400";
+  if (s >= 7.2) return "text-indigo-300 font-semibold";
+  if (s >= 5.8) return "text-amber-400";
   return "text-rose-400";
 };
 
 const getDecisionPill = (decision) => {
   const d = (decision || "").toLowerCase();
-  if (d === "pitch_call") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-  if (d === "hold_need_info") return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+  if (d === "pitch_call")
+    return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+  if (d === "reserve_band" || d === "hold_need_info")
+    return "bg-amber-500/10 text-amber-400 border-amber-500/20";
   return "bg-rose-500/10 text-rose-400 border-rose-500/20";
 };
 
 const prettifyDecision = (decision) => {
   const d = (decision || "").toLowerCase();
   if (d === "pitch_call") return "Call for Pitch";
+  if (d === "reserve_band") return "Reserve Band";
   if (d === "hold_need_info") return "Hold (Need Info)";
   if (d === "reject") return "Reject";
   return decision || "-";
@@ -61,18 +78,123 @@ const prettifyQualityTier = (tier) => {
 
 const qualityBadgeClass = (tier) => {
   const t = (tier || "").toLowerCase();
-  if (t === "strong") return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
-  if (t === "promising") return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
-  if (t === "average") return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+  if (t === "strong")
+    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+  if (t === "promising")
+    return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
+  if (t === "average")
+    return "bg-amber-500/10 text-amber-300 border-amber-500/20";
   return "bg-rose-500/10 text-rose-300 border-rose-500/20";
 };
 
 const institutionSignalClass = (signal) => {
   const s = String(signal || "").toLowerCase();
-  if (s === "strong_relevant") return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
-  if (s === "moderate_relevant") return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
-  if (s === "weak_or_irrelevant") return "bg-rose-500/10 text-rose-300 border-rose-500/20";
+  if (s === "strong_relevant")
+    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+  if (s === "moderate_relevant")
+    return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
+  if (s === "weak_or_irrelevant")
+    return "bg-rose-500/10 text-rose-300 border-rose-500/20";
   return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+};
+
+const evidenceBadgeClass = (q) => {
+  const s = String(q || "").toLowerCase();
+  if (s === "high")
+    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+  if (s === "medium")
+    return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+  return "bg-rose-500/10 text-rose-300 border-rose-500/20";
+};
+
+const fraudRiskClass = (label) => {
+  const s = String(label || "").toLowerCase();
+  if (s === "high")
+    return "bg-rose-500/10 text-rose-300 border-rose-500/20";
+  if (s === "medium")
+    return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+  return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+};
+
+const qualificationBucketClass = (bucket) => {
+  const s = String(bucket || "").toLowerCase();
+  if (s === "strong_technical")
+    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+  if (s === "sector_science")
+    return "bg-cyan-500/10 text-cyan-300 border-cyan-500/20";
+  if (s === "moderate_business")
+    return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
+  if (s === "basic_schooling")
+    return "bg-rose-500/10 text-rose-300 border-rose-500/20";
+  if (s === "generic")
+    return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+  return "bg-gray-500/10 text-gray-300 border-gray-500/20";
+};
+
+const prettifyQualificationBucket = (bucket) =>
+  String(bucket || "unknown").replaceAll("_", " ");
+
+const getBandClass = (band) => {
+  const b = String(band || "").toUpperCase();
+  if (b === "A")
+    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+  if (b === "B")
+    return "bg-indigo-500/10 text-indigo-300 border-indigo-500/20";
+  if (b === "C")
+    return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+  return "bg-rose-500/10 text-rose-300 border-rose-500/20";
+};
+
+const scoreDeltaClass = (value) => {
+  const v = Number(value) || 0;
+  if (v > 0) return "text-emerald-400";
+  if (v < 0) return "text-rose-400";
+  return "text-gray-400";
+};
+
+const BadgePill = ({ children, className = "" }) => (
+  <span
+    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${className}`}
+  >
+    {children}
+  </span>
+);
+
+const SignalCard = ({ label, value }) => (
+  <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
+    <div className="text-xs text-gray-500">{label}</div>
+    <div className="text-sm text-white mt-1 break-words">{value}</div>
+  </div>
+);
+
+const AnswerBlock = ({ label, value }) => (
+  <div>
+    <span className="text-xs text-indigo-400 block mb-1">{label}</span>
+    <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+      {value || "N/A"}
+    </p>
+  </div>
+);
+
+const FlagCard = ({ name, active, positive = true }) => {
+  const onClass = positive
+    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+    : "bg-rose-500/10 border-rose-500/20 text-rose-400";
+
+  const offClass = "bg-[#1a1a2e] border-[#2d2d3f] text-gray-500";
+
+  return (
+    <div className={`p-3 rounded-xl border ${active ? onClass : offClass}`}>
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-300 font-mono">
+          {humanizeFlag(name)}
+        </span>
+        <span className={`text-xs font-bold ${active ? "" : "text-gray-500"}`}>
+          {active ? "YES" : "NO"}
+        </span>
+      </div>
+    </div>
+  );
 };
 
 export default function AIEvaluationModal({
@@ -98,6 +220,45 @@ export default function AIEvaluationModal({
     );
   }, [startupId, application]);
 
+  const buildRatingsArray = (ratings = {}) => [
+    {
+      criterion_key: "problem_clarity",
+      criterion_label: "Problem Clarity",
+      score: ratings?.problemClarity?.score ?? 0,
+      reason: ratings?.problemClarity?.reason || "",
+    },
+    {
+      criterion_key: "solution_strength",
+      criterion_label: "Solution Strength",
+      score: ratings?.solutionStrength?.score ?? 0,
+      reason: ratings?.solutionStrength?.reason || "",
+    },
+    {
+      criterion_key: "innovation_depth",
+      criterion_label: "Innovation Depth",
+      score: ratings?.innovationDepth?.score ?? 0,
+      reason: ratings?.innovationDepth?.reason || "",
+    },
+    {
+      criterion_key: "business_model_clarity",
+      criterion_label: "Business Model Clarity",
+      score: ratings?.businessModelClarity?.score ?? 0,
+      reason: ratings?.businessModelClarity?.reason || "",
+    },
+    {
+      criterion_key: "execution_readiness",
+      criterion_label: "Execution Readiness",
+      score: ratings?.executionReadiness?.score ?? 0,
+      reason: ratings?.executionReadiness?.reason || "",
+    },
+    {
+      criterion_key: "team_capability",
+      criterion_label: "Team Capability",
+      score: ratings?.teamCapability?.score ?? 0,
+      reason: ratings?.teamCapability?.reason || "",
+    },
+  ].filter((r) => r.score || r.reason || r.criterion_label);
+
   const loadData = async () => {
     if (!resolvedStartupId) {
       setError("Startup ID not found.");
@@ -109,7 +270,9 @@ export default function AIEvaluationModal({
     setError("");
 
     try {
-      const snapshot = await get(ref(rtdb, `/startupAIReview/April/${resolvedStartupId}`));
+      const snapshot = await get(
+        ref(rtdb, `/startupAIReview/April/${resolvedStartupId}`)
+      );
 
       if (!snapshot.exists()) {
         setEntry(null);
@@ -118,53 +281,151 @@ export default function AIEvaluationModal({
       }
 
       const v = snapshot.val() || {};
-      const r = v?.result || v?.api?.response || {};
-      const scores = r?.scores || {};
-      const teamAssessment = r?.team_assessment || {};
-      const derivedSignals = teamAssessment?.derived_team_signals || {};
-      const evidenceSignals = r?.evidence_signals || {};
+      const app = v?.application || {};
+      const answers = v?.answers || {};
+      const evaluation = v?.evaluation || {};
+      const meta = v?.meta || {};
+      const raw = v?.raw || {};
+
+      const ratings = evaluation?.ratings || {};
+      const teamAssessment = evaluation?.teamAssessment || {};
+      const evidence = evaluation?.evidence || {};
+      const fraudRisk = evaluation?.fraudRisk || {};
+      const calc = evaluation?.calculationBreakdown || {};
+      const derivedSignals = teamAssessment?.derivedSignals || {};
 
       setEntry({
-        startupName: v?.startupName || startupName || "Unknown Startup",
-        applicationId: v?.applicationId || resolvedStartupId,
-        timeTaken: v?.api?.meta?.elapsed_ms
-          ? Math.round(Number(v.api.meta.elapsed_ms) / 1000)
+        startupName: app?.startupName || startupName || "Unknown Startup",
+        applicationId: app?.applicationId || resolvedStartupId,
+        timeTaken: meta?.elapsedMs
+          ? Math.round(Number(meta.elapsedMs) / 1000)
           : "",
         inputData: {
           problemStatement:
-            v?.answers?.problemStatement ||
+            answers?.problemStatement ||
             application?.businessIdea?.problemStatement ||
             "",
           solution:
-            v?.answers?.solution ||
-            application?.businessIdea?.solution ||
-            "",
+            answers?.solution || application?.businessIdea?.solution || "",
           innovation:
-            v?.answers?.innovation ||
-            application?.businessIdea?.innovation ||
-            "",
+            answers?.innovation || application?.businessIdea?.innovation || "",
           businessModel:
-            v?.answers?.businessModel ||
+            answers?.businessModel ||
             application?.businessIdea?.businessModel ||
             "",
         },
         apiResponse: {
-          ...r,
-          scores,
-          team_assessment: {
-            ...teamAssessment,
-            derived_team_signals: derivedSignals,
+          decision: evaluation?.decision || "",
+          decision_reason: evaluation?.decisionReason || "",
+          business_type: evaluation?.businessType || "",
+          startup_quality: evaluation?.startupQuality || "",
+          differentiation_flag: evaluation?.differentiationFlag || "",
+
+          final_score: Number(evaluation?.finalScore || 0),
+          rubric_score: Number(evaluation?.rubricScore || 0),
+          readiness_modifier: Number(evaluation?.readinessModifier || 0),
+          score_band: evaluation?.scoreBand || "",
+          qualifier_count: Number(evaluation?.qualifierCount || 0),
+          summary: evaluation?.summary || "",
+
+          scores: {
+            problem_clarity: Number(ratings?.problemClarity?.score || 0),
+            solution_strength: Number(ratings?.solutionStrength?.score || 0),
+            innovation_depth: Number(ratings?.innovationDepth?.score || 0),
+            business_model_clarity: Number(
+              ratings?.businessModelClarity?.score || 0
+            ),
+            execution_readiness: Number(
+              ratings?.executionReadiness?.score || 0
+            ),
+            team_capability: Number(ratings?.teamCapability?.score || 0),
           },
-          evidence_signals: evidenceSignals,
-          strengths: Array.isArray(r?.strengths) ? r.strengths : [],
-          risks_and_gaps: Array.isArray(r?.risks_and_gaps) ? r.risks_and_gaps : [],
-          improvement_suggestions: Array.isArray(r?.improvement_suggestions)
-            ? r.improvement_suggestions
+
+          ratings: buildRatingsArray(ratings),
+
+          team_assessment: {
+            institution_signal: teamAssessment?.institutionSignal || "",
+            institution_reason: teamAssessment?.institutionReason || "",
+            founder_relevance_score: Number(
+              teamAssessment?.founderRelevanceScore || 0
+            ),
+            cofounder_strength_score: Number(
+              teamAssessment?.cofounderStrengthScore || 0
+            ),
+            team_completeness_score: Number(
+              teamAssessment?.teamCompletenessScore || 0
+            ),
+            qualification_bucket: teamAssessment?.qualificationBucket || "",
+            founder_qualification: teamAssessment?.founderQualification || "",
+            founder_institution: teamAssessment?.founderInstitution || "",
+            parsed_cofounders: Array.isArray(teamAssessment?.parsedCofounders)
+              ? teamAssessment.parsedCofounders
+              : [],
+            execution_adjustment_applied: Number(
+              teamAssessment?.executionAdjustmentApplied || 0
+            ),
+            derived_team_signals: {
+              teamCapabilityScore: Number(
+                derivedSignals?.teamCapabilityScore || 0
+              ),
+              teamSize: Number(derivedSignals?.teamSize || 0),
+              coFounderCount: Number(derivedSignals?.coFounderCount || 0),
+              qualifiedCofounders: Number(
+                derivedSignals?.qualifiedCofounders || 0
+              ),
+              founderHasLinkedin: Boolean(derivedSignals?.founderHasLinkedin),
+            },
+          },
+
+          evidence_signals: {
+            evidence_score: Number(evidence?.evidenceScore || 0),
+            evidence_quality: evidence?.evidenceQuality || "",
+            proof_strength: Number(evidence?.proofStrength || 0),
+            numbers_count: Number(evidence?.numbersCount || 0),
+            currency_mentions: Number(evidence?.currencyMentions || 0),
+            dates_count: Number(evidence?.datesCount || 0),
+            traction_hits: Array.isArray(evidence?.tractionHits)
+              ? evidence.tractionHits
+              : [],
+          },
+
+          fraud_risk: {
+            buzzword_count: Number(fraudRisk?.buzzwordCount || 0),
+            buzzword_risk: Number(fraudRisk?.buzzwordRisk || 0),
+            buzzword_risk_label: fraudRisk?.buzzwordRiskLabel || "",
+            proof_count: Number(fraudRisk?.proofCount || 0),
+            strong_proof_count: Number(fraudRisk?.strongProofCount || 0),
+            weak_generic_count: Number(fraudRisk?.weakGenericCount || 0),
+            possible_claim_inflation: Boolean(
+              fraudRisk?.possibleClaimInflation
+            ),
+          },
+
+          strengths: Array.isArray(evaluation?.strengths)
+            ? evaluation.strengths
             : [],
-          pitch_questions: Array.isArray(r?.pitch_questions) ? r.pitch_questions : [],
-          qualifiers: r?.qualifiers || {},
-          missing_flags: r?.missing_flags || {},
-          ratings: Array.isArray(r?.ratings) ? r.ratings : [],
+          risks_and_gaps: Array.isArray(evaluation?.risksAndGaps)
+            ? evaluation.risksAndGaps
+            : [],
+          improvement_suggestions: Array.isArray(evaluation?.improvementSuggestions)
+            ? evaluation.improvementSuggestions
+            : [],
+          pitch_questions: Array.isArray(evaluation?.pitchQuestions)
+            ? evaluation.pitchQuestions
+            : [],
+          qualifiers: evaluation?.qualifiers || {},
+          missing_flags: evaluation?.missingFlags || {},
+
+          calculation_breakdown: {
+            weighted_contributions: calc?.weightedContributions || {},
+            positive_signals: calc?.positiveSignals || {},
+            negative_signals: calc?.negativeSignals || {},
+            positive_total: Number(calc?.positiveTotal || 0),
+            negative_total: Number(calc?.negativeTotal || 0),
+            formula: calc?.formula || {},
+          },
+
+          raw_api: raw?.apiResponse || null,
         },
       });
     } catch (e) {
@@ -187,6 +448,11 @@ export default function AIEvaluationModal({
   const teamAssessment = r.team_assessment || {};
   const derivedSignals = teamAssessment?.derived_team_signals || {};
   const evidenceSignals = r.evidence_signals || {};
+  const fraudRisk = r.fraud_risk || {};
+  const calc = r.calculation_breakdown || {};
+  const weightedContrib = calc?.weighted_contributions || {};
+  const positiveSignals = calc?.positive_signals || {};
+  const negativeSignals = calc?.negative_signals || {};
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -195,7 +461,7 @@ export default function AIEvaluationModal({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-[#0f0f16] border border-[#2d2d3f] w-full max-w-6xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+          className="bg-[#0f0f16] border border-[#2d2d3f] w-full max-w-7xl max-h-[92vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
         >
           <div className="p-6 border-b border-[#2d2d3f] flex items-center justify-between bg-[#13131f]">
             <div className="flex items-center gap-4">
@@ -213,36 +479,106 @@ export default function AIEvaluationModal({
 
                 {!loading && !error && entry ? (
                   <div className="flex flex-wrap items-center gap-2 mt-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getDecisionPill(r.decision)}`}>
+                    <BadgePill className={getDecisionPill(r.decision)}>
                       {prettifyDecision(r.decision)}
-                    </span>
+                    </BadgePill>
 
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                    <BadgePill
+                      className={
                         (r.business_type || "").toLowerCase() === "startup"
                           ? "bg-indigo-500/10 text-indigo-300 border-indigo-500/20"
                           : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                      }`}
+                      }
                     >
                       {prettifyBusinessType(r.business_type)}
-                    </span>
+                    </BadgePill>
 
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${qualityBadgeClass(r.startup_quality)}`}>
+                    <BadgePill className={qualityBadgeClass(r.startup_quality)}>
                       {prettifyQualityTier(r.startup_quality)}
+                    </BadgePill>
+
+                    <BadgePill className={getBandClass(r.score_band)}>
+                      Band {r.score_band || "D"}
+                    </BadgePill>
+
+                    <BadgePill
+                      className={evidenceBadgeClass(
+                        evidenceSignals.evidence_quality
+                      )}
+                    >
+                      Evidence:{" "}
+                      {String(
+                        evidenceSignals.evidence_quality || "unknown"
+                      ).toUpperCase()}
+                    </BadgePill>
+
+                    <BadgePill
+                      className={institutionSignalClass(
+                        teamAssessment.institution_signal
+                      )}
+                    >
+                      Institution:{" "}
+                      {String(
+                        teamAssessment.institution_signal || "unknown"
+                      ).replaceAll("_", " ")}
+                    </BadgePill>
+
+                    <BadgePill
+                      className={qualificationBucketClass(
+                        teamAssessment.qualification_bucket
+                      )}
+                    >
+                      Qualification:{" "}
+                      {prettifyQualificationBucket(
+                        teamAssessment.qualification_bucket
+                      )}
+                    </BadgePill>
+
+                    <BadgePill
+                      className={fraudRiskClass(
+                        fraudRisk.buzzword_risk_label
+                      )}
+                    >
+                      Fraud Risk: {fraudRisk.buzzword_risk_label || "low"}
+                    </BadgePill>
+
+                    {fraudRisk.possible_claim_inflation ? (
+                      <BadgePill className="bg-rose-500/10 text-rose-300 border-rose-500/20">
+                        Claim inflation risk
+                      </BadgePill>
+                    ) : null}
+
+                    <span className="text-gray-600">•</span>
+                    <span className="text-gray-400 text-sm">
+                      Final:{" "}
+                      <span className={`${getScoreColor(r.final_score)} font-mono`}>
+                        {Number(r.final_score || 0).toFixed(1)}/10
+                      </span>
                     </span>
 
                     <span className="text-gray-600">•</span>
                     <span className="text-gray-400 text-sm">
-                      Overall: <span className={`${getScoreColor(r.overall_score)} font-mono`}>{Number(r.overall_score || 0).toFixed(1)}/10</span>
+                      Rubric:{" "}
+                      <span className="text-indigo-300 font-mono">
+                        {Number(r.rubric_score || 0).toFixed(1)}
+                      </span>
                     </span>
 
                     {entry?.timeTaken ? (
                       <>
                         <span className="text-gray-600">•</span>
-                        <span className="text-gray-400 text-sm">Time: {entry.timeTaken}s</span>
+                        <span className="text-gray-400 text-sm">
+                          Time: {entry.timeTaken}s
+                        </span>
                       </>
                     ) : null}
                   </div>
+                ) : null}
+
+                {!loading && !error && r.decision_reason ? (
+                  <p className="mt-2 text-sm text-gray-300 max-w-3xl">
+                    {r.decision_reason}
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -256,7 +592,10 @@ export default function AIEvaluationModal({
                 Refresh
               </button>
 
-              <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
                 <X size={24} className="text-gray-400" />
               </button>
             </div>
@@ -280,22 +619,22 @@ export default function AIEvaluationModal({
                     </h3>
 
                     <div className="space-y-4 bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50">
-                      <div>
-                        <span className="text-xs text-indigo-400 block mb-1">Problem Statement</span>
-                        <p className="text-sm text-gray-300 leading-relaxed">{entry.inputData.problemStatement || "N/A"}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-indigo-400 block mb-1">Solution</span>
-                        <p className="text-sm text-gray-300 leading-relaxed">{entry.inputData.solution || "N/A"}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-indigo-400 block mb-1">Innovation</span>
-                        <p className="text-sm text-gray-300 leading-relaxed">{entry.inputData.innovation || "N/A"}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-indigo-400 block mb-1">Business Model</span>
-                        <p className="text-sm text-gray-300 leading-relaxed">{entry.inputData.businessModel || "N/A"}</p>
-                      </div>
+                      <AnswerBlock
+                        label="Problem Statement"
+                        value={entry.inputData.problemStatement}
+                      />
+                      <AnswerBlock
+                        label="Solution"
+                        value={entry.inputData.solution}
+                      />
+                      <AnswerBlock
+                        label="Innovation"
+                        value={entry.inputData.innovation}
+                      />
+                      <AnswerBlock
+                        label="Business Model"
+                        value={entry.inputData.businessModel}
+                      />
                     </div>
                   </section>
 
@@ -306,24 +645,148 @@ export default function AIEvaluationModal({
 
                     <div className="space-y-3">
                       {(r.ratings || []).map((rating, idx) => (
-                        <div key={idx} className="bg-[#1a1a2e] p-4 rounded-xl border border-[#2d2d3f] hover:border-indigo-500/30 transition-colors">
+                        <div
+                          key={idx}
+                          className="bg-[#1a1a2e] p-4 rounded-xl border border-[#2d2d3f] hover:border-indigo-500/30 transition-colors"
+                        >
                           <div className="flex justify-between items-center mb-2">
-                            <span className="font-semibold text-white">{rating.criterion_label}</span>
+                            <span className="font-semibold text-white">
+                              {rating.criterion_label}
+                            </span>
                             <div className="flex items-center gap-2">
                               <div className="h-2 w-24 bg-gray-700 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400"
-                                  style={{ width: `${(Number(rating.score) / 10) * 100}%` }}
+                                  style={{
+                                    width: `${(Number(rating.score) / 10) * 100}%`,
+                                  }}
                                 />
                               </div>
-                              <span className="text-emerald-400 font-bold font-mono">{Number(rating.score).toFixed(1)}/10</span>
+                              <span className="text-emerald-400 font-bold font-mono">
+                                {Number(rating.score).toFixed(1)}/10
+                              </span>
                             </div>
                           </div>
                           <p className="text-xs text-gray-400 leading-relaxed border-l-2 border-indigo-500/20 pl-3">
-                            {rating.reason}
+                            {rating.reason || "—"}
                           </p>
                         </div>
                       ))}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Calculator size={16} /> Score Breakdown
+                    </h3>
+
+                    <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <SignalCard
+                          label="Rubric Score"
+                          value={Number(r.rubric_score || 0).toFixed(2)}
+                        />
+                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
+                          <div className="text-xs text-gray-500">
+                            Readiness Modifier
+                          </div>
+                          <div
+                            className={`text-lg font-mono mt-1 ${scoreDeltaClass(
+                              r.readiness_modifier
+                            )}`}
+                          >
+                            {Number(r.readiness_modifier || 0) > 0 ? "+" : ""}
+                            {Number(r.readiness_modifier || 0).toFixed(2)}
+                          </div>
+                        </div>
+                        <SignalCard
+                          label="Final Score"
+                          value={Number(r.final_score || 0).toFixed(2)}
+                        />
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-indigo-300 font-semibold mb-2">
+                          Weighted Contributions
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {Object.entries(weightedContrib).map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]"
+                            >
+                              <div className="text-xs text-gray-500 font-mono">
+                                {humanizeFlag(k)}
+                              </div>
+                              <div className="text-sm text-white mt-1">
+                                Score {Number(v?.score || 0).toFixed(1)} × Weight{" "}
+                                {Number(v?.weight || 0).toFixed(2)}
+                              </div>
+                              <div className="text-sm font-mono text-indigo-300 mt-1">
+                                = {Number(v?.contribution || 0).toFixed(2)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-emerald-300 font-semibold mb-2">
+                          Positive Readiness Signals
+                        </div>
+                        <div className="space-y-2">
+                          {Object.entries(positiveSignals).map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="flex items-center justify-between p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]"
+                            >
+                              <span className="text-xs text-gray-300 font-mono">
+                                {humanizeFlag(k)}
+                              </span>
+                              <span className="text-sm font-mono text-emerald-400">
+                                +{Number(v || 0).toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/20">
+                            <span className="text-xs text-emerald-200 font-semibold">
+                              Positive Total
+                            </span>
+                            <span className="text-sm font-mono text-emerald-300">
+                              +{Number(calc.positive_total || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-xs text-rose-300 font-semibold mb-2">
+                          Negative Readiness Signals
+                        </div>
+                        <div className="space-y-2">
+                          {Object.entries(negativeSignals).map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="flex items-center justify-between p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]"
+                            >
+                              <span className="text-xs text-gray-300 font-mono">
+                                {humanizeFlag(k)}
+                              </span>
+                              <span className="text-sm font-mono text-rose-400">
+                                -{Number(v || 0).toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between p-3 rounded-xl border bg-rose-500/10 border-rose-500/20">
+                            <span className="text-xs text-rose-200 font-semibold">
+                              Negative Total
+                            </span>
+                            <span className="text-sm font-mono text-rose-300">
+                              -{Number(calc.negative_total || 0).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </section>
 
@@ -335,11 +798,21 @@ export default function AIEvaluationModal({
                       {Object.entries(r.missing_flags || {}).map(([k, v]) => (
                         <div
                           key={k}
-                          className={`p-3 rounded-xl border ${v ? "bg-rose-500/10 border-rose-500/20" : "bg-[#1a1a2e] border-[#2d2d3f]"}`}
+                          className={`p-3 rounded-xl border ${
+                            v
+                              ? "bg-rose-500/10 border-rose-500/20"
+                              : "bg-[#1a1a2e] border-[#2d2d3f]"
+                          }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-300 font-mono">{k}</span>
-                            <span className={`text-xs font-bold ${v ? "text-rose-400" : "text-gray-500"}`}>
+                            <span className="text-xs text-gray-300 font-mono">
+                              {humanizeFlag(k)}
+                            </span>
+                            <span
+                              className={`text-xs font-bold ${
+                                v ? "text-rose-400" : "text-gray-500"
+                              }`}
+                            >
                               {v ? "MISSING" : "OK"}
                             </span>
                           </div>
@@ -359,6 +832,30 @@ export default function AIEvaluationModal({
                     </p>
                   </section>
 
+                  <section className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <BadgeInfo size={16} /> Decision Notes
+                    </h3>
+
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
+                        <div className="text-xs text-gray-500">
+                          Decision Reason
+                        </div>
+                        <div className="text-sm text-white mt-1">
+                          {r.decision_reason || "—"}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <SignalCard
+                          label="Decision"
+                          value={prettifyDecision(r.decision)}
+                        />
+                        <SignalCard label="Score Band" value={r.score_band || "D"} />
+                      </div>
+                    </div>
+                  </section>
+
                   <section>
                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                       <Building2 size={16} /> Team Assessment
@@ -366,36 +863,207 @@ export default function AIEvaluationModal({
 
                     <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 space-y-4">
                       <div className="flex flex-wrap gap-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${institutionSignalClass(teamAssessment.institution_signal)}`}>
-                          Institution: {String(teamAssessment.institution_signal || "unknown").replaceAll("_", " ")}
-                        </span>
+                        <BadgePill
+                          className={institutionSignalClass(
+                            teamAssessment.institution_signal
+                          )}
+                        >
+                          Institution:{" "}
+                          {String(
+                            teamAssessment.institution_signal || "unknown"
+                          ).replaceAll("_", " ")}
+                        </BadgePill>
 
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-indigo-500/10 text-indigo-300 border-indigo-500/20">
+                        <BadgePill
+                          className={qualificationBucketClass(
+                            teamAssessment.qualification_bucket
+                          )}
+                        >
+                          {prettifyQualificationBucket(
+                            teamAssessment.qualification_bucket
+                          )}
+                        </BadgePill>
+
+                        <BadgePill className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20">
                           Team Score: {Number(scores.team_capability || 0).toFixed(1)}
-                        </span>
+                        </BadgePill>
                       </div>
 
                       <div className="text-sm text-gray-300 leading-relaxed">
-                        {teamAssessment.institution_reason || "No institution assessment available."}
+                        {teamAssessment.institution_reason ||
+                          "No institution assessment available."}
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                          <div className="text-xs text-gray-500">Founder Relevance</div>
-                          <div className="text-sm font-mono text-white mt-1">{Number(teamAssessment.founder_relevance_score || 0).toFixed(1)}</div>
+                        <SignalCard
+                          label="Founder Relevance"
+                          value={Number(
+                            teamAssessment.founder_relevance_score || 0
+                          ).toFixed(1)}
+                        />
+                        <SignalCard
+                          label="Cofounder Strength"
+                          value={Number(
+                            teamAssessment.cofounder_strength_score || 0
+                          ).toFixed(1)}
+                        />
+                        <SignalCard
+                          label="Team Completeness"
+                          value={Number(
+                            teamAssessment.team_completeness_score || 0
+                          ).toFixed(1)}
+                        />
+                        <SignalCard
+                          label="Derived Team Signal"
+                          value={Number(
+                            derivedSignals.teamCapabilityScore || 0
+                          ).toFixed(1)}
+                        />
+                        <SignalCard
+                          label="Founder Qualification"
+                          value={teamAssessment.founder_qualification || "—"}
+                        />
+                        <SignalCard
+                          label="Founder Institution"
+                          value={teamAssessment.founder_institution || "—"}
+                        />
+                      </div>
+
+                      {(teamAssessment.parsed_cofounders || []).length > 0 && (
+                        <div className="pt-2">
+                          <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Users2 size={14} /> Parsed Cofounders
+                          </div>
+                          <div className="space-y-2">
+                            {(teamAssessment.parsed_cofounders || []).map(
+                              (cf, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]"
+                                >
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                    <div>
+                                      <span className="text-gray-500">Name:</span>{" "}
+                                      <span className="text-gray-200">
+                                        {cf?.name || "—"}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">
+                                        Qualification:
+                                      </span>{" "}
+                                      <span className="text-gray-200">
+                                        {cf?.qualification || "—"}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Email:</span>{" "}
+                                      <span className="text-gray-200">
+                                        {cf?.email || "—"}
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Phone:</span>{" "}
+                                      <span className="text-gray-200">
+                                        {cf?.phone || "—"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            )}
+                          </div>
                         </div>
-                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                          <div className="text-xs text-gray-500">Cofounder Strength</div>
-                          <div className="text-sm font-mono text-white mt-1">{Number(teamAssessment.cofounder_strength_score || 0).toFixed(1)}</div>
-                        </div>
-                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                          <div className="text-xs text-gray-500">Team Completeness</div>
-                          <div className="text-sm font-mono text-white mt-1">{Number(teamAssessment.team_completeness_score || 0).toFixed(1)}</div>
-                        </div>
-                        <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                          <div className="text-xs text-gray-500">Derived Team Signal</div>
-                          <div className="text-sm font-mono text-white mt-1">{Number(derivedSignals.teamCapabilityScore || 0).toFixed(1)}</div>
-                        </div>
+                      )}
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <BrainCircuit size={16} /> Evidence Signals
+                    </h3>
+
+                    <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 grid grid-cols-2 gap-3">
+                      <SignalCard
+                        label="Evidence Score"
+                        value={Number(evidenceSignals.evidence_score || 0).toFixed(1)}
+                      />
+                      <SignalCard
+                        label="Evidence Quality"
+                        value={evidenceSignals.evidence_quality || "—"}
+                      />
+                      <SignalCard
+                        label="Proof Strength"
+                        value={Number(evidenceSignals.proof_strength || 0).toFixed(1)}
+                      />
+                      <SignalCard
+                        label="Numbers Count"
+                        value={Number(evidenceSignals.numbers_count || 0)}
+                      />
+                      <SignalCard
+                        label="Currency Mentions"
+                        value={Number(evidenceSignals.currency_mentions || 0)}
+                      />
+                      <SignalCard
+                        label="Dates Count"
+                        value={Number(evidenceSignals.dates_count || 0)}
+                      />
+                      <SignalCard
+                        label="Traction Hits"
+                        value={joinArr(evidenceSignals.traction_hits, ", ") || "—"}
+                      />
+                    </div>
+                  </section>
+
+                  <section>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <BadgeAlert size={16} /> Fraud / Buzzword Filter
+                    </h3>
+
+                    <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        <BadgePill
+                          className={fraudRiskClass(fraudRisk.buzzword_risk_label)}
+                        >
+                          Risk: {fraudRisk.buzzword_risk_label || "low"}
+                        </BadgePill>
+
+                        {fraudRisk.possible_claim_inflation ? (
+                          <BadgePill className="bg-rose-500/10 text-rose-300 border-rose-500/20">
+                            Proof-light / buzzword-heavy
+                          </BadgePill>
+                        ) : (
+                          <BadgePill className="bg-emerald-500/10 text-emerald-300 border-emerald-500/20">
+                            No claim inflation flag
+                          </BadgePill>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <SignalCard
+                          label="Buzzword Risk Score"
+                          value={Number(fraudRisk.buzzword_risk || 0).toFixed(2)}
+                        />
+                        <SignalCard
+                          label="Buzzword Count"
+                          value={Number(fraudRisk.buzzword_count || 0)}
+                        />
+                        <SignalCard
+                          label="Proof Count"
+                          value={Number(fraudRisk.proof_count || 0)}
+                        />
+                        <SignalCard
+                          label="Strong Proof Count"
+                          value={Number(fraudRisk.strong_proof_count || 0)}
+                        />
+                        <SignalCard
+                          label="Weak Generic Count"
+                          value={Number(fraudRisk.weak_generic_count || 0)}
+                        />
+                        <SignalCard
+                          label="Claim Inflation"
+                          value={fraudRisk.possible_claim_inflation ? "Yes" : "No"}
+                        />
                       </div>
                     </div>
                   </section>
@@ -411,7 +1079,10 @@ export default function AIEvaluationModal({
                             key={i}
                             className="flex gap-3 text-sm text-gray-300 bg-[#1a1a2e]/50 p-3 rounded-lg border border-emerald-500/10"
                           >
-                            <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                            <CheckCircle2
+                              size={16}
+                              className="text-emerald-400 shrink-0 mt-0.5"
+                            />
                             {item}
                           </li>
                         ))}
@@ -430,38 +1101,16 @@ export default function AIEvaluationModal({
                             key={i}
                             className="flex gap-3 text-sm text-gray-300 bg-[#1a1a2e]/50 p-3 rounded-lg border border-rose-500/10"
                           >
-                            <AlertTriangle size={16} className="text-rose-400 shrink-0 mt-0.5" />
+                            <AlertTriangle
+                              size={16}
+                              className="text-rose-400 shrink-0 mt-0.5"
+                            />
                             {item}
                           </li>
                         ))}
                       </ul>
                     </section>
                   )}
-
-                  <section>
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <BrainCircuit size={16} /> Evidence Signals
-                    </h3>
-
-                    <div className="bg-[#1a1a2e] p-5 rounded-2xl border border-[#2d2d3f]/50 grid grid-cols-2 gap-3">
-                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                        <div className="text-xs text-gray-500">Evidence Score</div>
-                        <div className="text-sm font-mono text-white mt-1">{Number(evidenceSignals.evidence_score || 0).toFixed(1)}</div>
-                      </div>
-                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                        <div className="text-xs text-gray-500">Evidence Quality</div>
-                        <div className="text-sm text-white mt-1">{evidenceSignals.evidence_quality || "—"}</div>
-                      </div>
-                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                        <div className="text-xs text-gray-500">Numbers Count</div>
-                        <div className="text-sm font-mono text-white mt-1">{Number(evidenceSignals.numbers_count || 0)}</div>
-                      </div>
-                      <div className="p-3 rounded-xl border bg-[#0f0f16] border-[#2d2d3f]">
-                        <div className="text-xs text-gray-500">Currency Mentions</div>
-                        <div className="text-sm font-mono text-white mt-1">{Number(evidenceSignals.currency_mentions || 0)}</div>
-                      </div>
-                    </div>
-                  </section>
 
                   {(r.improvement_suggestions || []).length > 0 && (
                     <section>
@@ -474,7 +1123,10 @@ export default function AIEvaluationModal({
                             key={i}
                             className="flex gap-3 text-sm text-gray-300 bg-[#1a1a2e]/50 p-3 rounded-lg border border-amber-500/10"
                           >
-                            <AlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                            <AlertTriangle
+                              size={16}
+                              className="text-amber-400 shrink-0 mt-0.5"
+                            />
                             {item}
                           </li>
                         ))}
@@ -489,7 +1141,10 @@ export default function AIEvaluationModal({
                       </h3>
                       <div className="bg-[#1a1a2e] rounded-xl border border-indigo-500/10 overflow-hidden">
                         {(r.pitch_questions || []).map((q, i) => (
-                          <div key={i} className="flex gap-4 p-4 border-b border-[#2d2d3f] last:border-0 hover:bg-[#202030] transition-colors">
+                          <div
+                            key={i}
+                            className="flex gap-4 p-4 border-b border-[#2d2d3f] last:border-0 hover:bg-[#202030] transition-colors"
+                          >
                             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold shrink-0">
                               {i + 1}
                             </span>
@@ -500,28 +1155,16 @@ export default function AIEvaluationModal({
                     </section>
                   )}
 
-                  {(r.qualifiers || {}) && (
-                    <section>
-                      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <CheckCircle2 size={16} /> Qualifiers
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {Object.entries(r.qualifiers || {}).map(([k, v]) => (
-                          <div
-                            key={k}
-                            className={`p-3 rounded-xl border ${v ? "bg-emerald-500/10 border-emerald-500/20" : "bg-[#1a1a2e] border-[#2d2d3f]"}`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-300 font-mono">{k}</span>
-                              <span className={`text-xs font-bold ${v ? "text-emerald-400" : "text-gray-500"}`}>
-                                {v ? "YES" : "NO"}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  )}
+                  <section>
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <CheckCircle2 size={16} /> Qualifiers
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(r.qualifiers || {}).map(([k, v]) => (
+                        <FlagCard key={k} name={k} active={Boolean(v)} positive />
+                      ))}
+                    </div>
+                  </section>
                 </div>
               </div>
             )}
