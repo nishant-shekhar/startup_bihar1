@@ -58,7 +58,7 @@ const districtBlockMap = {
   Aurangabad: ["Aurangabad", "Barun", "Daudnagar", "Deo", "Goh", "Haspura", "Kutumba", "Madanpur", "Nabinagar", "Obra", "Rafiganj"],
   Banka: ["Amarpur", "Banka", "Barahat", "Belhar", "Bounsi", "Chandan", "Dhoraiya", "Fullidumar", "Katoriya", "Rajoun", "Shambhuganj"],
   Begusarai: ["Bachwara", "Bakhri", "Balia", "Barauni", "Begusarai", "Bhagawanpur", "Birpur", "Cheria Bariyarpur", "Chhourahi", "Dandari", "Garhpura", "Khodabandpur", "Mansurchak", "Matihani", "Navkothi", "Sahebpur Kamal", "Samho-Akaha-Kurha", "Teghra"],
-  Bhabhua: ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
+  Kaimur: ["Adhaura", "Bhabhua", "Bhagwanpur", "Chainpur", "Chand", "Durgawati", "Kudra", "Mohania", "Nuawon", "Ramgarh", "Rampur"],
   Bhagalpur: ["Bihpur", "Gauradih", "Gopalpur", "Ishmailpur", "Jagdishpur", "Kahalgaon", "Kharik", "Narayanpur", "Nathnagar", "Navgachhia", "Pirpainty", "Rangra Chowk", "Sabour", "Shahkund", "Sanhoula", "Sultanganj"],
   Bhojpur: ["Agioan", "Ara Sadar", "Barhara", "Bihiya", "Charpokhri", "Garhani", "Jagdishpur", "Koilwar", "Piro", "Sahar", "Sandesh", "Shahpur", "Tarari", "Udwantnagar"],
   Buxar: ["Brahmpur", "Buxar", "Chakki", "Chausha", "Chaugain", "Dumraon", "Itarhi", "Kesath", "Nawanagar", "Rajpur", "Simari"],
