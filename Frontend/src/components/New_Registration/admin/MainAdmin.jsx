@@ -23,11 +23,13 @@ import {
   ChevronRight,
   Download,
   Bot,
+  BarChart3,
 } from "lucide-react";
 import { db, rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 import FeedbackList from "./FeedBackList";
 import DetailDialog from "./DetailDialog";
 import AIEvaluationModal from "./AIEvaluationModal";
+import Analysis from "./Analysis";
 
 const PAGE_SIZE = 50;
 const AI_MONTH_KEY = "April";
@@ -274,6 +276,7 @@ export default function NewApplicationDashboard() {
 
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiModalApplication, setAiModalApplication] = useState(null);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
 
   const [backfillState, setBackfillState] = useState({
     running: false,
@@ -713,41 +716,50 @@ export default function NewApplicationDashboard() {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={loadApplications}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                >
-                  <RefreshCw size={16} />
-                  Refresh
-                </button>
+             <div className="flex flex-wrap gap-3">
+  <button
+    onClick={loadApplications}
+    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+  >
+    <RefreshCw size={16} />
+    Refresh
+  </button>
 
-                <button
-                  onClick={syncExistingAIReviewsToFirestore}
-                  disabled={loading || backfillState.running || applications.length === 0}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Bot size={16} />
-                  {backfillState.running ? "Syncing AI Reviews..." : "Sync AI Reviews"}
-                </button>
+  <button
+    onClick={syncExistingAIReviewsToFirestore}
+    disabled={loading || backfillState.running || applications.length === 0}
+    className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <Bot size={16} />
+    {backfillState.running ? "Syncing AI Reviews..." : "Sync AI Reviews"}
+  </button>
 
-                <button
-                  onClick={exportApplicationsToExcel}
-                  disabled={loading || exporting || filtered.length === 0}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Download size={16} />
-                  {exporting ? "Exporting..." : "Download Excel"}
-                </button>
+  <button
+    onClick={() => setAnalysisOpen(true)}
+    disabled={loading || filtered.length === 0}
+    className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <BarChart3 size={16} />
+    Analysis
+  </button>
 
-                <button
-                  onClick={() => setFeedbackDialogOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                >
-                  <MessageSquareText size={16} />
-                  Website Feedback
-                </button>
-              </div>
+  <button
+    onClick={exportApplicationsToExcel}
+    disabled={loading || exporting || filtered.length === 0}
+    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <Download size={16} />
+    {exporting ? "Exporting..." : "Download Excel"}
+  </button>
+
+  <button
+    onClick={() => setFeedbackDialogOpen(true)}
+    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+  >
+    <MessageSquareText size={16} />
+    Website Feedback
+  </button>
+</div>
             </div>
           </div>
 
@@ -1176,6 +1188,14 @@ export default function NewApplicationDashboard() {
         startupId={aiModalApplication?._applicationId}
         startupName={aiModalApplication ? getStartupName(aiModalApplication) : ""}
       />
+<Analysis
+  open={analysisOpen}
+  onClose={() => setAnalysisOpen(false)}
+  applications={filtered}
+  allApplications={applications}
+  onDownloadExcel={exportApplicationsToExcel}
+  exporting={exporting}
+/>
 
       <FeedbackList
         open={feedbackDialogOpen}
