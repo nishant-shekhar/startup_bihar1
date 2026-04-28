@@ -4,6 +4,9 @@ import {
   getDocs,
   orderBy,
   query,
+  doc,
+  updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { ref, get } from "firebase/database";
 import * as XLSX from "xlsx";
@@ -27,6 +30,7 @@ import DetailDialog from "./DetailDialog";
 import AIEvaluationModal from "./AIEvaluationModal";
 
 const PAGE_SIZE = 50;
+const AI_MONTH_KEY = "April";
 
 const STATUS_OPTIONS = [
   "All",
@@ -38,6 +42,7 @@ const STATUS_OPTIONS = [
 ];
 
 const REGISTERED_OPTIONS = ["All", "Yes", "No"];
+const AI_REVIEW_OPTIONS = ["All", "Yes", "No"];
 
 const safe = (value) => {
   if (value === null || value === undefined || value === "") return "-";
@@ -130,6 +135,23 @@ const getStage = (item) => item?.startupDetails?.stage || item?.stage || "-";
 const getCreatedAt = (item) =>
   item?.createdAt || item?.submittedAt || item?.firestoreUpdatedAt || null;
 
+const hasAIReview = (item) => item?.aiEvaluation?.done === true;
+
+const getAIScore = (item) => {
+  const score = item?.aiEvaluation?.finalScore;
+  return score === null || score === undefined || score === ""
+    ? null
+    : Number(score);
+};
+
+const getAIScoreBand = (score) => {
+  const n = Number(score);
+  if (!Number.isFinite(n)) return "unknown";
+  if (n >= 7.5) return "high";
+  if (n >= 5.5) return "medium";
+  return "low";
+};
+
 const statusToneMap = {
   submitted: "border-sky-200 bg-sky-50 text-sky-700",
   Submitted: "border-sky-200 bg-sky-50 text-sky-700",
@@ -200,19 +222,11 @@ function SummaryCard({ title, value, subtitle, icon: Icon, accent = "amber" }) {
   );
 }
 
-function AIScoreBadge({ score, loading, isDraft }) {
+function AIScoreBadge({ score, isDraft }) {
   if (isDraft) {
     return (
       <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
         Draft
-      </span>
-    );
-  }
-
-  if (loading) {
-    return (
-      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
-        Loading...
       </span>
     );
   }
@@ -253,14 +267,24 @@ export default function NewApplicationDashboard() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [registeredFilter, setRegisteredFilter] = useState("All");
   const [districtFilter, setDistrictFilter] = useState("All");
+  const [aiReviewedFilter, setAiReviewedFilter] = useState("All");
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [aiScores, setAiScores] = useState({});
-  const [aiScoreLoadingMap, setAiScoreLoadingMap] = useState({});
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiModalApplication, setAiModalApplication] = useState(null);
+
+  const [backfillState, setBackfillState] = useState({
+    running: false,
+    total: 0,
+    done: 0,
+    updated: 0,
+    skipped: 0,
+    failed: 0,
+    current: "",
+    message: "",
+  });
 
   const loadApplications = async () => {
     setLoading(true);
@@ -297,6 +321,123 @@ export default function NewApplicationDashboard() {
   useEffect(() => {
     loadApplications();
   }, []);
+
+  const syncExistingAIReviewsToFirestore = async () => {
+    if (backfillState.running) return;
+
+    const rows = applications || [];
+    if (!rows.length) {
+      alert("No applications loaded.");
+      return;
+    }
+
+    setBackfillState({
+      running: true,
+      total: rows.length,
+      done: 0,
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+      current: "",
+      message: "Checking RTDB and syncing AI summaries to Firestore...",
+    });
+
+    let updated = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (let i = 0; i < rows.length; i += 1) {
+      const item = rows[i];
+      const sbNo = String(item?._applicationId || "");
+      const docId = String(item?.id || "");
+      const isDraft = String(item?._status || "").toLowerCase() === "draft";
+
+      setBackfillState((prev) => ({
+        ...prev,
+        done: i,
+        updated,
+        skipped,
+        failed,
+        current: sbNo || docId || `row-${i + 1}`,
+      }));
+
+      if (!sbNo || !docId || isDraft) {
+        skipped += 1;
+        continue;
+      }
+
+      try {
+        const snap = await get(ref(rtdb, `/startupAIReview/${AI_MONTH_KEY}/${sbNo}`));
+
+        if (!snap.exists()) {
+          skipped += 1;
+          continue;
+        }
+
+        const val = snap.val() || {};
+        const result = val?.result || val?.api?.response || {};
+        const evaluation = val?.evaluation || {};
+
+        const finalScoreRaw =
+          evaluation?.finalScore ??
+          result?.overall_score ??
+          val?.api?.response?.overall_score ??
+          null;
+
+        const finalScore =
+          finalScoreRaw === null ||
+          finalScoreRaw === undefined ||
+          finalScoreRaw === ""
+            ? null
+            : Number(finalScoreRaw);
+
+        const payload = {
+          aiEvaluation: {
+            done: true,
+            finalScore,
+            scoreBand: getAIScoreBand(finalScore),
+            decision: result?.decision ?? evaluation?.decision ?? null,
+            startupQuality: result?.startup_quality ?? null,
+            monthKey: AI_MONTH_KEY,
+            source: "rtdb_backfill",
+            sourcePath: `/startupAIReview/${AI_MONTH_KEY}/${sbNo}`,
+            reviewedAtMs: val?.updatedAt_ms ?? val?.updatedAt ?? null,
+            syncedAt: serverTimestamp(),
+          },
+          firestoreUpdatedAt: serverTimestamp(),
+        };
+
+        await updateDoc(doc(db, "startupApplications", docId), payload);
+        updated += 1;
+      } catch (error) {
+        console.error(`Backfill failed for ${sbNo}`, error);
+        failed += 1;
+      }
+
+      setBackfillState((prev) => ({
+        ...prev,
+        done: i + 1,
+        updated,
+        skipped,
+        failed,
+        current: sbNo || docId || `row-${i + 1}`,
+      }));
+
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    }
+
+    setBackfillState((prev) => ({
+      ...prev,
+      running: false,
+      done: rows.length,
+      updated,
+      skipped,
+      failed,
+      message: `Completed. Updated: ${updated}, Skipped: ${skipped}, Failed: ${failed}`,
+    }));
+
+    await loadApplications();
+  };
 
   const districts = useMemo(() => {
     const values = new Set();
@@ -339,18 +480,32 @@ export default function NewApplicationDashboard() {
       const matchesDistrict =
         districtFilter === "All" || getDistrict(item) === districtFilter;
 
+      const reviewed = hasAIReview(item);
+      const matchesAIReviewed =
+        aiReviewedFilter === "All" ||
+        (aiReviewedFilter === "Yes" && reviewed) ||
+        (aiReviewedFilter === "No" && !reviewed);
+
       return (
         matchesSearch &&
         matchesStatus &&
         matchesRegistered &&
-        matchesDistrict
+        matchesDistrict &&
+        matchesAIReviewed
       );
     });
-  }, [applications, search, statusFilter, registeredFilter, districtFilter]);
+  }, [
+    applications,
+    search,
+    statusFilter,
+    registeredFilter,
+    districtFilter,
+    aiReviewedFilter,
+  ]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, registeredFilter, districtFilter]);
+  }, [search, statusFilter, registeredFilter, districtFilter, aiReviewedFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
@@ -359,88 +514,9 @@ export default function NewApplicationDashboard() {
     return filtered.slice(startIndex, startIndex + PAGE_SIZE);
   }, [filtered, currentPage]);
 
-  const pageStart = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const pageStart =
+    filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const pageEnd = Math.min(currentPage * PAGE_SIZE, filtered.length);
-
-useEffect(() => {
-  let cancelled = false;
-
-  const fetchCurrentPageScores = async () => {
-    const pageRows = paginatedRows || [];
-    if (!pageRows.length) return;
-
-    const rowsToFetch = pageRows.filter((item) => {
-      const appId = String(item?._applicationId || "");
-      const isDraft = String(item?._status || "").toLowerCase() === "draft";
-      return appId && !isDraft;
-    });
-
-    if (!rowsToFetch.length) return;
-
-    const loadingPatch = {};
-    rowsToFetch.forEach((item) => {
-      const appId = String(item._applicationId);
-      if (aiScores[appId] === undefined) {
-        loadingPatch[appId] = true;
-      }
-    });
-
-    if (Object.keys(loadingPatch).length) {
-      setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingPatch }));
-    }
-
-    const results = await Promise.all(
-      rowsToFetch.map(async (item) => {
-        const appId = String(item._applicationId);
-
-        if (aiScores[appId] !== undefined) {
-          return { appId, score: aiScores[appId] };
-        }
-
-        try {
-          const scoreSnap = await get(
-            ref(rtdb, `/startupAIReview/April/${appId}/evaluation/finalScore`)
-          );
-
-          if (!scoreSnap.exists()) {
-            return { appId, score: null };
-          }
-
-          const rawScore = scoreSnap.val();
-
-          return {
-            appId,
-            score:
-              rawScore === null || rawScore === undefined || rawScore === ""
-                ? null
-                : Number(rawScore),
-          };
-        } catch (error) {
-          return { appId, score: null };
-        }
-      })
-    );
-
-    if (cancelled) return;
-
-    const scorePatch = {};
-    const loadingDonePatch = {};
-
-    results.forEach(({ appId, score }) => {
-      scorePatch[appId] = score;
-      loadingDonePatch[appId] = false;
-    });
-
-    setAiScores((prev) => ({ ...prev, ...scorePatch }));
-    setAiScoreLoadingMap((prev) => ({ ...prev, ...loadingDonePatch }));
-  };
-
-  fetchCurrentPageScores();
-
-  return () => {
-    cancelled = true;
-  };
-}, [paginatedRows, currentPage]);
 
   const stats = useMemo(() => {
     return {
@@ -461,7 +537,9 @@ useEffect(() => {
 
   const openAIModal = (item) => {
     const isDraft = String(item?._status || "").toLowerCase() === "draft";
-    if (isDraft) return;
+    const reviewed = hasAIReview(item);
+    if (isDraft || !reviewed) return;
+
     setAiModalApplication(item);
     setAiModalOpen(true);
   };
@@ -476,10 +554,7 @@ useEffect(() => {
     const start = Math.max(1, currentPage - 2);
     const end = Math.min(totalPages, currentPage + 2);
 
-    for (let i = start; i <= end; i += 1) {
-      pages.push(i);
-    }
-
+    for (let i = start; i <= end; i += 1) pages.push(i);
     return pages;
   }, [currentPage, totalPages]);
 
@@ -494,33 +569,39 @@ useEffect(() => {
         "Founder Name": safe(getFounderName(item)),
         "Email": safe(getEmail(item)),
         "Phone": safe(getPhone(item)),
-        "Status": safe(item._status),
+        Status: safe(item._status),
         "Registered Company": item._registeredCompany ? "Yes" : "No",
+        "AI Reviewed": hasAIReview(item) ? "Yes" : "No",
+        "AI Score":
+          String(item?._status || "").toLowerCase() === "draft"
+            ? "Draft"
+            : getAIScore(item) ?? "-",
+        "AI Score Band": safe(item?.aiEvaluation?.scoreBand),
+        "AI Decision": safe(item?.aiEvaluation?.decision),
+        "AI Startup Quality": safe(item?.aiEvaluation?.startupQuality),
+        "AI Reviewed At (ms)": safe(item?.aiEvaluation?.reviewedAtMs),
+
         "Application Type": safe(
           item?.userSignup?.applicationType || item?.applicationType
         ),
         "Sector / Category": safe(getCategory(item)),
-        "Stage": safe(getStage(item)),
+        Stage: safe(getStage(item)),
         "Team Size": safe(item?.startupDetails?.teamSize),
-        "Website": safe(item?.startupDetails?.website),
-        "District": safe(getDistrict(item)),
-        "State": safe(item?.basicDetails?.state || item?.entityDetails?.state),
+        Website: safe(item?.startupDetails?.website),
+        District: safe(getDistrict(item)),
+        State: safe(item?.basicDetails?.state || item?.entityDetails?.state),
         "Block Name": safe(item?.basicDetails?.blockName),
-        "Pincode": safe(item?.basicDetails?.pincode),
+        Pincode: safe(item?.basicDetails?.pincode),
         "Applicant Address": safe(item?.basicDetails?.applicantAddress),
-        "Gender": safe(item?.basicDetails?.gender),
-        "Category": safe(item?.basicDetails?.category),
+        Gender: safe(item?.basicDetails?.gender),
+        Category: safe(item?.basicDetails?.category),
         "Date of Birth": safe(item?.basicDetails?.dateOfBirth),
-        "Qualification": safe(item?.basicDetails?.qualification),
-        "Institution":
+        Qualification: safe(item?.basicDetails?.qualification),
+        Institution:
           item?.basicDetails?.institution === "Other"
             ? safe(item?.basicDetails?.otherInstitution)
             : safe(item?.basicDetails?.institution),
         "LinkedIn Profile": safe(item?.basicDetails?.linkedinProfile),
-"AI Score":
-  String(item?._status || "").toLowerCase() === "draft"
-    ? "Draft"
-    : aiScores[item._applicationId] ?? "-",
 
         "Has Registered Entity": item?._registeredCompany ? "Yes" : "No",
         "Entity Name": safe(item?.entityDetails?.entityName),
@@ -533,8 +614,8 @@ useEffect(() => {
         "Business Address": safe(item?.entityDetails?.businessAddress),
 
         "Problem Statement": safe(item?.businessIdea?.problemStatement),
-        "Solution": safe(item?.businessIdea?.solution),
-        "Innovation": safe(item?.businessIdea?.innovation),
+        Solution: safe(item?.businessIdea?.solution),
+        Innovation: safe(item?.businessIdea?.innovation),
         "Business Model": safe(item?.businessIdea?.businessModel),
 
         "Pitch Deck File Name": safe(item?.businessIdea?.pitchDeckMeta?.fileName),
@@ -642,6 +723,15 @@ useEffect(() => {
                 </button>
 
                 <button
+                  onClick={syncExistingAIReviewsToFirestore}
+                  disabled={loading || backfillState.running || applications.length === 0}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Bot size={16} />
+                  {backfillState.running ? "Syncing AI Reviews..." : "Sync AI Reviews"}
+                </button>
+
+                <button
                   onClick={exportApplicationsToExcel}
                   disabled={loading || exporting || filtered.length === 0}
                   className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
@@ -701,7 +791,7 @@ useEffect(() => {
             </div>
 
             <div className="mt-6 rounded-[30px] border border-white/80 bg-white/78 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-5">
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                 <div className="xl:col-span-1">
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Search
@@ -764,6 +854,21 @@ useEffect(() => {
                     ))}
                   </select>
                 </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    AI Reviewed
+                  </label>
+                  <select
+                    value={aiReviewedFilter}
+                    onChange={(e) => setAiReviewedFilter(e.target.value)}
+                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                  >
+                    {AI_REVIEW_OPTIONS.map((item) => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -776,6 +881,67 @@ useEffect(() => {
                 </span>
               </div>
             </div>
+
+            {backfillState.total > 0 ? (
+              <div className="mt-6 rounded-[28px] border border-white/80 bg-white/78 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">
+                      AI Review Firestore Sync
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {backfillState.message || "-"}
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-600">
+                    Current:{" "}
+                    <span className="font-semibold">
+                      {backfillState.current || "-"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between text-xs text-slate-600">
+                    <span>
+                      {backfillState.done}/{backfillState.total}
+                    </span>
+                    <span>
+                      {backfillState.total
+                        ? Math.round((backfillState.done / backfillState.total) * 100)
+                        : 0}
+                      %
+                    </span>
+                  </div>
+
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-indigo-600 transition-all"
+                      style={{
+                        width: `${
+                          backfillState.total
+                            ? (backfillState.done / backfillState.total) * 100
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                      Updated: {backfillState.updated}
+                    </span>
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 font-semibold text-amber-700">
+                      Skipped: {backfillState.skipped}
+                    </span>
+                    <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 font-semibold text-rose-700">
+                      Failed: {backfillState.failed}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="mt-6 overflow-hidden rounded-[32px] border border-white/80 bg-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
               <div className="border-b border-slate-100 px-5 py-4">
@@ -833,11 +999,8 @@ useEffect(() => {
                       </tr>
                     ) : (
                       paginatedRows.map((item) => {
-                        const appId = String(item._applicationId || "");
                         const isDraft =
-                          String(item._status || "").toLowerCase() === "draft";
-                        const aiScore = aiScores[appId];
-                        const aiLoading = !!aiScoreLoadingMap[appId];
+                          String(item?._status || "").toLowerCase() === "draft";
 
                         return (
                           <tr
@@ -875,15 +1038,16 @@ useEffect(() => {
                             >
                               <button
                                 type="button"
-                                disabled={isDraft}
+                                disabled={isDraft || !hasAIReview(item)}
                                 className={`inline-flex items-center gap-2 rounded-xl transition ${
-                                  isDraft ? "cursor-not-allowed opacity-80" : "hover:scale-[1.02]"
+                                  isDraft || !hasAIReview(item)
+                                    ? "cursor-not-allowed opacity-80"
+                                    : "hover:scale-[1.02]"
                                 }`}
                               >
                                 <Bot size={14} className="text-slate-500" />
                                 <AIScoreBadge
-                                  score={aiScore}
-                                  loading={aiLoading}
+                                  score={getAIScore(item)}
                                   isDraft={isDraft}
                                 />
                               </button>

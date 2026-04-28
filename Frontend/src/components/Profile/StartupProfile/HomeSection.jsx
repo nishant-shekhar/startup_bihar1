@@ -193,7 +193,7 @@ const HomeSection = () => {
                     Contact
                   </button>
                   <a
-                    href={`https://startupbihar.in/Startup/${localStorage.getItem("user_id")}`}
+                    href={`/Startup/${localStorage.getItem("user_id")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-6 py-2 border border-gray-300 rounded-lg"

@@ -306,7 +306,6 @@ export default function FeedbackList({ open, onClose }) {
       const q = query(
         collection(db, "startupApplications"),
         orderBy("createdAt", "desc"),
-        limit(600)
       );
 
       const snap = await getDocs(q);
@@ -407,6 +406,81 @@ export default function FeedbackList({ open, onClose }) {
     })
     .slice(0, 3);
 }, [filteredRows]);
+const commentedFeedbackRows = useMemo(() => {
+  return filteredRows.filter((item) => {
+    const msg = item?.websiteFeedback?.message;
+    return msg && msg.trim().length > 0;
+  });
+}, [filteredRows]);
+
+function AllCommentedFeedback({ rows }) {
+  return (
+    <div className="rounded-[26px] border border-white/80 bg-white/82 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <MessagesSquare size={18} className="text-slate-700" />
+          <h3 className="text-lg font-semibold text-slate-900">
+            Feedback With Comments
+          </h3>
+        </div>
+
+        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+          {rows.length}
+        </span>
+      </div>
+
+      <div className="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1">
+        {rows.length === 0 ? (
+          <div className="rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
+            No feedback comments available.
+          </div>
+        ) : (
+          rows.map((item) => {
+            const feedback = item?.websiteFeedback || {};
+            return (
+              <div
+                key={item.id}
+                className="rounded-[20px] border border-slate-100 bg-gradient-to-br from-amber-50/40 via-white to-indigo-50/30 px-4 py-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-slate-900">
+                      {safe(getStartupName(item))}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {safe(getFounderName(item))} • {formatDate(feedback?.submittedAt)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <RatingStars value={feedback?.rating || 0} size={13} />
+                    <span className="text-xs font-semibold text-slate-700">
+                      {safe(feedback?.rating)}/5
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700">
+                    ID: {safe(item._applicationId)}
+                  </span>
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700">
+                    {safe(feedback?.experience)}
+                  </span>
+                </div>
+
+                <div className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
+                  {feedback.message}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 
   if (!open) return null;
 
@@ -549,13 +623,13 @@ export default function FeedbackList({ open, onClose }) {
             )}
 
             {!loading && (
-              <div className="mb-6 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
-                <RatingDistribution
-                  stats={summary.distribution}
-                  total={summary.total}
-                />
-                <RecentFeedbackHighlights rows={recentHighlights} />
-              </div>
+             <div className="mb-6 grid gap-4 xl:grid-cols-[1.05fr_1.05fr]">
+  <RatingDistribution
+    stats={summary.distribution}
+    total={summary.total}
+  />
+  <AllCommentedFeedback rows={commentedFeedbackRows} />
+</div>
             )}
 
             {loading ? (

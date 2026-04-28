@@ -107,10 +107,10 @@ const HomePage = () => {
 				</div>
 
 				{/* mobile content */}
-				<div className="grid grid-cols-4 gap-2 scale-75 sm:mt-24 md:hidden">
+				<div className="grid grid-cols-2 gap-2 scale-75 sm:mt-24 md:hidden">
 
 
-					<div className="col-span-1 flex flex-col items-center  h-full ">
+						{/*<div className="col-span-1 flex flex-col items-center  h-full ">
 						<img
 							src="cm2.png"
 							alt="CM Image"
@@ -122,7 +122,7 @@ const HomePage = () => {
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
 							Hon'ble Chief Minister, Bihar
 						</p>
-					</div>
+					</div>*/}
 					<div className="col-span-1 flex flex-col items-center h-full  ">
 						<img
 							src="5.png"
@@ -149,7 +149,7 @@ const HomePage = () => {
 							Govt. of Bihar
 						</p>
 					</div>
-					<div className="col-span-1 flex flex-col items-center  h-full ">
+						{/*<div className="col-span-1 flex flex-col items-center  h-full ">
 						<img
 							src="minister.png"
 							alt="minister Image"
@@ -161,7 +161,7 @@ const HomePage = () => {
 						<p className="text-xs sm:text-sm md:text- text-gray-600 text-center">
 							Hon'ble Minister, Industry Dept, Bihar
 						</p>
-					</div>
+					</div>*/}
 
 
 				</div>
@@ -288,18 +288,18 @@ const HomePage = () => {
 						className="mt-8 flex justify-center sm:mb-12 sm:flex sm:justify-center"
 						variants={fadeIn}
 >
-						<div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-red-700 ring-1 ring-red-700/10 hover:ring-red-700/20 bg-red-50 flex items-center space-x-2">
+						<div className="relative rounded-full px-3 py-1 text-sm sm:text-xm leading-6 text-indigo-700 ring-1 ring-indigo-700/10 hover:ring-indigo-700/20 bg-indigo-50 flex items-center space-x-2">
 
-							<span className="animate-pulse text-xs  text-white bg-red-600 px-2 py-0.5 rounded-full">
+							<span className="animate-pulse text-xs  text-white bg-indigo-600 px-2 py-0.5 rounded-full">
 								New
 							</span>
 							<span>
-								🚀🚀Evaluation Test Results held on 29th, 30th Dec 2025 and 2nd, 3rd Jan 2026🚀🚀
+								🚀🚀Evaluation Test Results held on 30th Mar'2026, 1st Apr'2026, 2nd Apr'2026🚀🚀
 								<a
-									href="https://firebasestorage.googleapis.com/v0/b/odfkaimur.appspot.com/o/StartupBihar%2FNotification%2Ffinal%20Evaluation%20test%20results%20june%20to%20sept25.pdf?alt=media&token=8da2cefa-e884-4a16-b9b7-edf1c6152b28"
+									href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FNotification%2FEvaluation%20test%20result_Dec%202025.pdf?alt=media&token=b6a5c918-e501-4bb3-ac5e-a084395cb701"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="font-semibold text-red-800 ml-2"
+									className="font-semibold text-indigo-800 ml-2"
 								>
 									View. <span aria-hidden="true">&rarr;</span>
 								</a>
