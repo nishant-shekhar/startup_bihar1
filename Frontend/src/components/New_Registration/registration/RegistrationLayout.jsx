@@ -219,11 +219,13 @@ function RegistrationLayoutInner() {
   const [formData, setFormData] = useState(initialFormData);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [submissionWindow, setSubmissionWindow] = useState({
-    checked: false,
-    isOpen: true,
-    lastDate: null,
-    message: "",
-  });
+  checked: false,
+  isOpen: true,
+  close: false,
+  lastDate: null,
+  serverNow: null,
+  message: "",
+});
 
   const [workingDialog, setWorkingDialog] = useState({
     open: false,
@@ -329,29 +331,37 @@ function RegistrationLayoutInner() {
     return 1;
   }, []);
 
- const refreshSubmissionWindow = useCallback(async () => {
+const refreshSubmissionWindow = useCallback(async () => {
   try {
     const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
     const value = snap.exists() ? snap.val() : null;
 
     const serverNow = await getServerNowFromRTDB();
-    const isOpenFlag = value?.isOpen !== false;
-    const lastDate = Number(value?.lastDate || 0);
-    const deadlinePassed = lastDate > 0 ? serverNow > lastDate : false;
-    const allowed = isOpenFlag && !deadlinePassed;
 
+    // Highest priority: manual close.
+    // Only strict true means closed.
+    // false, empty, undefined, or missing means continue to deadline check.
+    const isManuallyClosed = value?.close === true;
+
+    const lastDate = Number(value?.lastDate || 0);
+    const hasDeadline = lastDate > 0;
+    const deadlinePassed = hasDeadline ? serverNow > lastDate : false;
+
+    let allowed = true;
     let message = "";
-    if (!isOpenFlag && lastDate) {
-      message = `Submission closed on ${formatDeadline(lastDate)}`;
-    } else if (!isOpenFlag) {
-      message = "Submission is currently closed.";
+
+    if (isManuallyClosed) {
+      allowed = false;
+      message = "Form submission is closed.";
     } else if (deadlinePassed) {
+      allowed = false;
       message = `Submission closed on ${formatDeadline(lastDate)}`;
     }
 
     const nextState = {
       checked: true,
       isOpen: allowed,
+      close: isManuallyClosed,
       lastDate: lastDate || null,
       serverNow,
       message,
@@ -361,12 +371,16 @@ function RegistrationLayoutInner() {
     return nextState;
   } catch (error) {
     console.error("Failed to fetch submission window", error);
+
     const nextState = {
       checked: true,
       isOpen: false,
+      close: true,
       lastDate: null,
+      serverNow: null,
       message: "Unable to verify submission window right now.",
     };
+
     setSubmissionWindow(nextState);
     return nextState;
   }
@@ -1300,16 +1314,17 @@ const blockEmailAfterRegistration = useCallback(
       case 7:
         return (
           <Preview
-            formData={formData}
-            isSubmitted={isSubmitted}
-            submissionWindow={submissionWindow}
-            onPrevious={() => handlePrevious(7)}
-            onFormSubmit={handleFinalSubmit}
-            onNavigateToStep={(step) => {
-              if (isSubmitted && step <= 6) return;
-              setCurrentStep(step);
-            }}
-          />
+  formData={formData}
+  isSubmitted={isSubmitted}
+  submissionWindow={submissionWindow}
+  onPrevious={() => handlePrevious(7)}
+  onFormSubmit={handleFinalSubmit}
+  onNavigateToStep={(step) => {
+    if (isSubmitted && step <= 6) return;
+    setCurrentStep(step);
+  }}
+/>
+      
         );
 
       case 8:

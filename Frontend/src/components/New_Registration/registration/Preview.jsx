@@ -27,8 +27,9 @@ const yesNo = (value) => (value ? "Yes" : "No");
 
 const formatApplicationType = (value) => {
   if (value === "recognition_only") return "Startup Recognition Only";
-  if (value === "funding_with_recognition")
+  if (value === "funding_with_recognition") {
     return "Startup Funding with Recognition";
+  }
   return safe(value);
 };
 
@@ -169,7 +170,9 @@ function InfoRow({ label, value }) {
   return (
     <div className="grid grid-cols-1 gap-1 rounded-2xl bg-slate-50 px-4 py-3 md:grid-cols-[220px_1fr]">
       <div className="text-sm font-medium text-slate-500">{label}</div>
-      <div className="break-words text-sm font-semibold text-slate-800">{safe(value)}</div>
+      <div className="break-words text-sm font-semibold text-slate-800">
+        {safe(value)}
+      </div>
     </div>
   );
 }
@@ -259,6 +262,7 @@ function SummaryCard({ label, value, tone = "default" }) {
     default: "border-slate-200 bg-white text-slate-800",
     success: "border-emerald-200 bg-emerald-50 text-emerald-800",
     accent: "border-amber-200 bg-amber-50 text-amber-800",
+    danger: "border-red-200 bg-red-50 text-red-800",
   };
 
   return (
@@ -274,11 +278,18 @@ export default function Preview({
   onPrevious,
   onFormSubmit,
   onNavigateToStep,
+  submissionWindow,
   isSubmitted = false,
 }) {
   const canEdit = !isSubmitted;
   const coFounders = formData?.cofounderDetails?.coFounders || [];
   const isSoleFounder = !!formData?.cofounderDetails?.isSoleFounder;
+
+  const isSubmissionClosed =
+    !isSubmitted && submissionWindow?.checked && submissionWindow?.isOpen === false;
+
+  const submissionMessage =
+    submissionWindow?.message || "Form submission is closed.";
 
   return (
     <div className="mx-auto w-full max-w-6xl">
@@ -322,8 +333,14 @@ export default function Preview({
           <SummaryCard label="Startup" value={formData?.userSignup?.startupName} tone="accent" />
           <SummaryCard
             label="Status"
-            value={isSubmitted ? "Submitted" : "Pending Final Submit"}
-            tone={isSubmitted ? "success" : "default"}
+            value={
+              isSubmitted
+                ? "Submitted"
+                : isSubmissionClosed
+                ? "Submission Closed"
+                : "Pending Final Submit"
+            }
+            tone={isSubmitted ? "success" : isSubmissionClosed ? "danger" : "default"}
           />
         </div>
       </div>
@@ -331,6 +348,10 @@ export default function Preview({
       {isSubmitted ? (
         <div className="mb-6 rounded-[24px] border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
           This application has already been submitted. Steps 1 to 6 are locked now. You can review the details and download the PDF.
+        </div>
+      ) : isSubmissionClosed ? (
+        <div className="mb-6 rounded-[24px] border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
+          {submissionMessage}
         </div>
       ) : (
         <div className="mb-6 rounded-[24px] border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
@@ -490,10 +511,15 @@ export default function Preview({
           <button
             type="button"
             onClick={onFormSubmit}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95"
+            disabled={isSubmissionClosed}
+            className={`inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition ${
+              isSubmissionClosed
+                ? "cursor-not-allowed bg-slate-400 opacity-70"
+                : "bg-slate-900 hover:opacity-95"
+            }`}
           >
             <FaPaperPlane />
-            Final Submit
+            {isSubmissionClosed ? "Submission Closed" : "Final Submit"}
           </button>
         ) : (
           <button
