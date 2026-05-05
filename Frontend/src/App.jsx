@@ -33,6 +33,7 @@ import Migration from './components/AdminRedesign/NewApplicationAdmin/Migration/
 import StartupMainFormWrapper from './components/New_Registration/registration/RegistrationLayout';
 import Block from './components/New_Registration/admin/Block';
 import NewApplicationDashboard from './components/New_Registration/admin/MainAdmin';
+import RegistrationLayout from './components/SSU_Recruitment/registration/RegistrationLayout';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -114,6 +115,7 @@ const App = () => {
 				/>
 				<Route path="/notif" element={<UserNotification />} />
 				<Route path="/NewStartupForm" element={<StartupDetailsForm />} />
+				<Route path="/ssu-recruitment-test" element={<RegistrationLayout />} />
 				<Route path="/SR" element={<UserSignup />} />
 				<Route path="/rv" element={<Response />} />
 				<Route path="/startupregistration" element={<StartupMainFormWrapper />} />

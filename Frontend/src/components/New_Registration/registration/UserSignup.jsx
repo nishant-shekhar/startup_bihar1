@@ -52,6 +52,7 @@ export default function UserSignup({
   isReadOnly = false,
   isLoggedIn = false,
   loginIdentity = "",
+  submissionWindow,
 }) {
   const { t } = useLanguage();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
@@ -60,6 +61,15 @@ export default function UserSignup({
   const [submitError, setSubmitError] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [updatingDetails, setUpdatingDetails] = useState(false);
+
+  const isRegistrationClosed =
+  !isLoggedIn &&
+  !isReadOnly &&
+  submissionWindow?.checked &&
+  submissionWindow?.isOpen === false;
+
+const registrationClosedMessage =
+  submissionWindow?.message || "Startup registration is currently closed.";
 
   const validationSchema = useMemo(
     () => getValidationSchema(isLoggedIn),
@@ -93,7 +103,11 @@ export default function UserSignup({
       setSubmitting(false);
       return;
     }
-
+if (isRegistrationClosed) {
+  setSubmitError(registrationClosedMessage);
+  setSubmitting(false);
+  return;
+}
     if (isLoggedIn) {
       try {
         setUpdatingDetails(true);

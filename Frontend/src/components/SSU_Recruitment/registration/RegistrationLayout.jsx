@@ -51,11 +51,11 @@ import LanguageToggle from "../shared/LanguageToggle";
 import { useNavigate } from "react-router-dom";
 
 import UserSignup from "./UserSignup";
-import BasicDetailsStep from "./FormSteps/BasicDetailsStep";
-import EntityDetailsStep from "./FormSteps/EntityDetailsStep";
-import StartupDetailsStep from "./FormSteps/StartupDetailsStep";
-import CoFounderDetailsStep from "./FormSteps/CoFounderDetailsStep";
-import BusinessIdeaStep from "./FormSteps/BusinessIdeaStep";
+import PersonalDetailsStep from "./FormSteps/PersonalDetailsStep";
+import EducationalQualificationsStep from "./FormSteps/EducationalQualificationsStep";
+import WorkExperienceStep from "./FormSteps/WorkExperienceStep";
+import StartupExposureStep from "./FormSteps/StartupExposureStep";
+import ReferencesAndDocsStep from "./FormSteps/ReferencesAndDocsStep";
 import Preview from "./Preview";
 import PrintAcknowledgement from "./PrintAcknowledgement";
 import FormStatus from "./FormStatus";
@@ -69,11 +69,11 @@ const rtdb = getDatabase(app);
 
 const stepLabels = [
   "Register",
-  "Basic Details",
-  "Entity Details",
-  "Startup Details",
-  "Co-Founder Details",
-  "Business Idea",
+  "Personal Details",
+  "Education",
+  "Work Experience",
+  "Startup Exposure",
+  "References & Docs",
   "Preview",
   "Acknowledgement",
   "Status",
@@ -103,19 +103,17 @@ const initialFormData = {
   adminRemarks: "",
   currentStage: "",
   userSignup: null,
-  basicDetails: null,
-  entityDetails: null,
-  startupDetails: null,
-  cofounderDetails: null,
-  businessIdea: null,
+  personalDetails: null,
+  educationalQualifications: null,
+  workExperience: null,
+  startupExposure: null,
+  referencesAndDocs: null,
 };
 
 const normalizeEmail = (value = "") => value.trim().toLowerCase();
 const normalizePhone = (value = "") => value.replace(/\D/g, "").slice(0, 10);
 const normalizeApplicationId = (value = "") => value.trim().toUpperCase();
 const normalizeAadhar = (value = "") => value.replace(/\D/g, "").slice(0, 12);
-
-
 
 const formatDeadline = (timestamp) => {
   if (!timestamp) return "";
@@ -150,6 +148,8 @@ const buildYearMonthFromTimestamp = (timestamp) => {
   return `${year}${month}`;
 };
 
+// ── DEV MODE: getServerNowFromRTDB commented out (restore before production) ──
+/*
 const getServerNowFromRTDB = async () => {
   const tempKey = `ts_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
   const tempRef = rtdbRef(rtdb, `tempServerTime/${tempKey}`);
@@ -177,7 +177,12 @@ const getServerNowFromRTDB = async () => {
 
   return Number(serverNow);
 };
+*/
+// DEV mock — returns current browser time
+const getServerNowFromRTDB = async () => Date.now();
 
+// ── DEV MODE: generateIncrementalApplicationId commented out (restore before production) ──
+/*
 async function generateIncrementalApplicationId() {
   const serverNow = await getServerNowFromRTDB();
   const yearMonth = buildYearMonthFromTimestamp(serverNow);
@@ -210,6 +215,14 @@ async function generateIncrementalApplicationId() {
 
   return `SB${yearMonth}${String(nextNumber).padStart(4, "0")}`;
 }
+*/
+// DEV mock — generates a local fake application ID
+function generateIncrementalApplicationId() {
+  const now = new Date();
+  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const rand = String(Math.floor(Math.random() * 9000) + 1000);
+  return Promise.resolve(`SSUDEV${yearMonth}${rand}`);
+}
 
 function RegistrationLayoutInner() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -219,13 +232,13 @@ function RegistrationLayoutInner() {
   const [formData, setFormData] = useState(initialFormData);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [submissionWindow, setSubmissionWindow] = useState({
-  checked: false,
-  isOpen: true,
-  close: false,
-  lastDate: null,
-  serverNow: null,
-  message: "",
-});
+    checked: false,
+    isOpen: true,
+    close: false,
+    lastDate: null,
+    serverNow: null,
+    message: "",
+  });
 
   const [workingDialog, setWorkingDialog] = useState({
     open: false,
@@ -322,69 +335,51 @@ function RegistrationLayoutInner() {
   const getStepFromData = useCallback((data) => {
     if (!data) return 1;
     if (data.status === "submitted") return 9;
-    if (data.businessIdea) return 7;
-    if (data.cofounderDetails) return 6;
-    if (data.startupDetails) return 5;
-    if (data.entityDetails) return 4;
-    if (data.basicDetails) return 3;
+    if (data.referencesAndDocs) return 7;
+    if (data.startupExposure) return 6;
+    if (data.workExperience) return 5;
+    if (data.educationalQualifications) return 4;
+    if (data.personalDetails) return 3;
     if (data.userSignup) return 2;
     return 1;
   }, []);
 
-const refreshSubmissionWindow = useCallback(async () => {
-  try {
-    const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
-    const value = snap.exists() ? snap.val() : null;
-
-    const serverNow = await getServerNowFromRTDB();
-
-    // Highest priority: manual close.
-    // Only strict true means closed.
-    // false, empty, undefined, or missing means continue to deadline check.
-    const isManuallyClosed = value?.close === true;
-
-    const lastDate = Number(value?.lastDate || 0);
-    const hasDeadline = lastDate > 0;
-    const deadlinePassed = hasDeadline ? serverNow > lastDate : false;
-
-    let allowed = true;
-    let message = "";
-
-    if (isManuallyClosed) {
-      allowed = false;
-      message = "Form submission is closed.";
-    } else if (deadlinePassed) {
-      allowed = false;
-      message = `Submission closed on ${formatDeadline(lastDate)}`;
+  const refreshSubmissionWindow = useCallback(async () => {
+    // ── DEV MODE: RTDB submission window check commented out ──
+    // Restore the original body before production deployment.
+    /*
+    try {
+      const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
+      const value = snap.exists() ? snap.val() : null;
+      const serverNow = await getServerNowFromRTDB();
+      const isManuallyClosed = value?.close === true;
+      const lastDate = Number(value?.lastDate || 0);
+      const hasDeadline = lastDate > 0;
+      const deadlinePassed = hasDeadline ? serverNow > lastDate : false;
+      let allowed = true;
+      let message = "";
+      if (isManuallyClosed) {
+        allowed = false;
+        message = "Form submission is closed.";
+      } else if (deadlinePassed) {
+        allowed = false;
+        message = `Submission closed on ${formatDeadline(lastDate)}`;
+      }
+      const nextState = { checked: true, isOpen: allowed, close: isManuallyClosed, lastDate: lastDate || null, serverNow, message };
+      setSubmissionWindow(nextState);
+      return nextState;
+    } catch (error) {
+      console.error("Failed to fetch submission window", error);
+      const nextState = { checked: true, isOpen: false, close: true, lastDate: null, serverNow: null, message: "Unable to verify submission window right now." };
+      setSubmissionWindow(nextState);
+      return nextState;
     }
-
-    const nextState = {
-      checked: true,
-      isOpen: allowed,
-      close: isManuallyClosed,
-      lastDate: lastDate || null,
-      serverNow,
-      message,
-    };
-
+    */
+    // DEV mock — always open
+    const nextState = { checked: true, isOpen: true, close: false, lastDate: null, serverNow: Date.now(), message: "" };
     setSubmissionWindow(nextState);
     return nextState;
-  } catch (error) {
-    console.error("Failed to fetch submission window", error);
-
-    const nextState = {
-      checked: true,
-      isOpen: false,
-      close: true,
-      lastDate: null,
-      serverNow: null,
-      message: "Unable to verify submission window right now.",
-    };
-
-    setSubmissionWindow(nextState);
-    return nextState;
-  }
-}, []);
+  }, []);
 
   const checkSubmissionWindow = useCallback(async () => {
     const state = await refreshSubmissionWindow();
@@ -399,17 +394,22 @@ const refreshSubmissionWindow = useCallback(async () => {
 
   const loadApplicationById = useCallback(
     async (applicationId) => {
+      // ── DEV MODE: Firestore load commented out ──
+      /*
       const docRef = doc(db, "startupApplications", applicationId);
       const snap = await getDoc(docRef);
       if (!snap.exists()) return null;
-
       const data = { ...initialFormData, ...snap.data() };
       setFormData(data);
       setCurrentStep(getStepFromData(data));
       persistLocalDraft(data);
       return data;
+      */
+      // DEV mock — always return null (no cloud load)
+      console.log("[DEV] loadApplicationById skipped for:", applicationId);
+      return null;
     },
-    [getStepFromData, persistLocalDraft]
+    [getStepFromData, persistLocalDraft],
   );
 
   useEffect(() => {
@@ -419,34 +419,26 @@ const refreshSubmissionWindow = useCallback(async () => {
   useEffect(() => {
     const loadDraft = async () => {
       setIsInitialLoading(true);
-
       try {
+        // ── DEV MODE: Firestore draft load commented out ──
+        // Auth-based cloud reload is skipped; only localStorage draft is used.
+        /*
         const savedAuthRaw = localStorage.getItem(AUTH_KEY);
-        const savedDraftRaw = localStorage.getItem(STORAGE_KEY);
-
         const savedAuth = savedAuthRaw ? JSON.parse(savedAuthRaw) : null;
-        const savedDraft = savedDraftRaw ? JSON.parse(savedDraftRaw) : null;
-
         if (savedAuth?.applicationId) {
           try {
-            openWorkingDialog(
-              "Loading your application",
-              "Please wait while we restore your saved details."
-            );
-
+            openWorkingDialog("Loading your application", "Please wait while we restore your saved details.");
             const loaded = await loadApplicationById(savedAuth.applicationId);
-            if (loaded) {
-              closeWorkingDialog();
-              setIsInitialLoading(false);
-              return;
-            }
+            if (loaded) { closeWorkingDialog(); setIsInitialLoading(false); return; }
           } catch (error) {
             console.error("Failed to load authenticated application", error);
           } finally {
             closeWorkingDialog();
           }
         }
-
+        */
+        const savedDraftRaw = localStorage.getItem(STORAGE_KEY);
+        const savedDraft = savedDraftRaw ? JSON.parse(savedDraftRaw) : null;
         if (savedDraft) {
           const merged = { ...initialFormData, ...savedDraft };
           setFormData(merged);
@@ -458,37 +450,29 @@ const refreshSubmissionWindow = useCallback(async () => {
         setIsInitialLoading(false);
       }
     };
-
     loadDraft();
-  }, [getStepFromData, loadApplicationById, openWorkingDialog, closeWorkingDialog]);
+  }, [
+    getStepFromData,
+    loadApplicationById,
+    openWorkingDialog,
+    closeWorkingDialog,
+  ]);
 
   const saveSectionToFirestore = useCallback(
     async ({ applicationId, sectionKey, payload, nextStep, preserveStatus }) => {
       if (!applicationId || !sectionKey) return;
-
+      // ── DEV MODE: Firestore write commented out ──
+      /*
       setIsSaving(true);
       setSaveMessage("Saving...");
-      openWorkingDialog(
-        "Saving your details",
-        "Please wait while we securely save this step."
-      );
-
+      openWorkingDialog("Saving your details", "Please wait while we securely save this step.");
       try {
         const docRef = doc(db, "startupApplications", applicationId);
-
         await setDoc(
           docRef,
-          {
-            applicationId,
-            status: preserveStatus || "draft",
-            currentStep: nextStep ?? currentStep,
-            [sectionKey]: payload,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          },
-          { merge: true }
+          { applicationId, status: preserveStatus || "draft", currentStep: nextStep ?? currentStep, [sectionKey]: payload, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
+          { merge: true },
         );
-
         setSaveMessage("Saved");
       } catch (error) {
         console.error(`Failed to save ${sectionKey}`, error);
@@ -498,104 +482,83 @@ const refreshSubmissionWindow = useCallback(async () => {
         setIsSaving(false);
         setTimeout(() => setSaveMessage(""), 1500);
       }
+      */
+      // DEV mock — simulate instant save
+      console.log("[DEV] saveSectionToFirestore skipped:", sectionKey, payload);
+      setSaveMessage("Saved (dev)");
+      setTimeout(() => setSaveMessage(""), 1200);
     },
-    [currentStep, openWorkingDialog, closeWorkingDialog]
+    [currentStep, openWorkingDialog, closeWorkingDialog],
   );
 
- const checkIdentifierExists = useCallback(
-  async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
-    const existing = [];
-    const currentId = normalizeApplicationId(currentApplicationId);
-
-    const normalizedEmail = normalizeEmail(email);
-    const normalizedPhone = normalizePhone(phoneNumber);
-    const normalizedAadhar = normalizeAadhar(aadharNumber);
-
-    if (normalizedEmail) {
-      const blockedEmailSnap = await getDoc(doc(db, "emailBlocked", normalizedEmail));
-      if (blockedEmailSnap.exists()) {
-        const blockedForApplicationId = blockedEmailSnap.data()?.applicationId || "";
-        if (blockedForApplicationId !== currentId) {
-          existing.push("email");
-        }
+  const checkIdentifierExists = useCallback(
+    async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
+      // ── DEV MODE: Firestore duplicate check commented out ──
+      /*
+      const existing = [];
+      const currentId = normalizeApplicationId(currentApplicationId);
+      const normalizedEmail = normalizeEmail(email);
+      const normalizedPhone = normalizePhone(phoneNumber);
+      const normalizedAadhar = normalizeAadhar(aadharNumber);
+      if (normalizedEmail) {
+        const snap = await getDoc(doc(db, "emailBlocked", normalizedEmail));
+        if (snap.exists() && snap.data()?.applicationId !== currentId) existing.push("email");
       }
-    }
-
-    if (normalizedPhone) {
-      const blockedPhoneSnap = await getDoc(doc(db, "phoneBlocked", normalizedPhone));
-      if (blockedPhoneSnap.exists()) {
-        const blockedForApplicationId = blockedPhoneSnap.data()?.applicationId || "";
-        if (blockedForApplicationId !== currentId) {
-          existing.push("mobile");
-        }
+      if (normalizedPhone) {
+        const snap = await getDoc(doc(db, "phoneBlocked", normalizedPhone));
+        if (snap.exists() && snap.data()?.applicationId !== currentId) existing.push("mobile");
       }
-    }
-
-    if (normalizedAadhar) {
-      const blockedAadharSnap = await getDoc(doc(db, "aadharBlocked", normalizedAadhar));
-      if (blockedAadharSnap.exists()) {
-        const blockedForApplicationId = blockedAadharSnap.data()?.applicationId || "";
-        if (blockedForApplicationId !== currentId) {
-          existing.push("aadhar");
-        }
+      if (normalizedAadhar) {
+        const snap = await getDoc(doc(db, "aadharBlocked", normalizedAadhar));
+        if (snap.exists() && snap.data()?.applicationId !== currentId) existing.push("aadhar");
       }
-    }
+      return existing;
+      */
+      // DEV mock — always allow
+      console.log("[DEV] checkIdentifierExists skipped");
+      return [];
+    },
+    [],
+  );
 
-    return existing;
-  },
-  []
-);
+  const blockAadharAfterRegistration = useCallback(
+    async ({ aadharNumber, applicationId }) => {
+      // ── DEV MODE: Firestore block write commented out ──
+      /*
+      const normalizedAadhar = normalizeAadhar(aadharNumber);
+      if (!normalizedAadhar || !applicationId) return;
+      await setDoc(doc(db, "aadharBlocked", normalizedAadhar), { applicationId, blockedAt: serverTimestamp() }, { merge: true });
+      */
+      console.log("[DEV] blockAadharAfterRegistration skipped");
+    },
+    [],
+  );
 
-const blockAadharAfterRegistration = useCallback(
-  async ({ aadharNumber, applicationId }) => {
-    const normalizedAadhar = normalizeAadhar(aadharNumber);
-    if (!normalizedAadhar || !applicationId) return;
+  const blockPhoneAfterRegistration = useCallback(
+    async ({ phoneNumber, applicationId }) => {
+      // ── DEV MODE: Firestore block write commented out ──
+      /*
+      const normalizedPhone = normalizePhone(phoneNumber);
+      if (!normalizedPhone || !applicationId) return;
+      await setDoc(doc(db, "phoneBlocked", normalizedPhone), { applicationId, blockedAt: serverTimestamp() }, { merge: true });
+      */
+      console.log("[DEV] blockPhoneAfterRegistration skipped");
+    },
+    [],
+  );
 
-    await setDoc(
-      doc(db, "aadharBlocked", normalizedAadhar),
-      {
-        applicationId,
-        blockedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-  },
-  []
-);
-
-const blockPhoneAfterRegistration = useCallback(
-  async ({ phoneNumber, applicationId }) => {
-    const normalizedPhone = normalizePhone(phoneNumber);
-    if (!normalizedPhone || !applicationId) return;
-
-    await setDoc(
-      doc(db, "phoneBlocked", normalizedPhone),
-      {
-        applicationId,
-        blockedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-  },
-  []
-);
-
-const blockEmailAfterRegistration = useCallback(
-  async ({ email, applicationId }) => {
-    const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail || !applicationId) return;
-
-    await setDoc(
-      doc(db, "emailBlocked", normalizedEmail),
-      {
-        applicationId,
-        blockedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-  },
-  []
-);
+  const blockEmailAfterRegistration = useCallback(
+    async ({ email, applicationId }) => {
+      // ── DEV MODE: Firestore block write commented out ──
+      /*
+      const normalizedEmail = normalizeEmail(email);
+      if (!normalizedEmail || !applicationId) return;
+      await setDoc(doc(db, "emailBlocked", normalizedEmail), { applicationId, blockedAt: serverTimestamp() }, { merge: true });
+      */
+      console.log("[DEV] blockEmailAfterRegistration skipped");
+    },
+    [],
+  );
 
   const transformStepDataForStorage = useCallback(
     async (stepData, step, applicationId) => {
@@ -604,16 +567,17 @@ const blockEmailAfterRegistration = useCallback(
 
         if (stepData.profilePhoto instanceof File) {
           const ext =
-            stepData.profilePhoto.name?.split(".").pop()?.toLowerCase() || "jpg";
+            stepData.profilePhoto.name?.split(".").pop()?.toLowerCase() ||
+            "jpg";
 
           openWorkingDialog(
             "Uploading profile photo",
-            "Please wait while we upload your profile photo."
+            "Please wait while we upload your profile photo.",
           );
 
           profilePhotoMeta = await uploadFileAndGetMeta(
             stepData.profilePhoto,
-            `startupApplications/${applicationId}/basic/profile-photo-${Date.now()}.${ext}`
+            `startupApplications/${applicationId}/basic/profile-photo-${Date.now()}.${ext}`,
           );
         }
 
@@ -625,39 +589,39 @@ const blockEmailAfterRegistration = useCallback(
       }
 
       if (step === 3) {
-  if (!stepData?.hasRegisteredEntity) {
-    return {
-      ...stepData,
-      hasRegisteredEntity: false,
-      state: "Bihar",
-      certificate: null,
-      // keep old certificateMeta and old field values intact in Firestore
-      // do not force-clear anything here
-    };
-  }
+        if (!stepData?.hasRegisteredEntity) {
+          return {
+            ...stepData,
+            hasRegisteredEntity: false,
+            state: "Bihar",
+            certificate: null,
+            // keep old certificateMeta and old field values intact in Firestore
+            // do not force-clear anything here
+          };
+        }
 
-  let certificateMeta = stepData.certificateMeta || null;
+        let certificateMeta = stepData.certificateMeta || null;
 
-  if (stepData.certificate instanceof File) {
-    openWorkingDialog(
-      "Uploading certificate",
-      "Please wait while we upload your entity certificate."
-    );
+        if (stepData.certificate instanceof File) {
+          openWorkingDialog(
+            "Uploading certificate",
+            "Please wait while we upload your entity certificate.",
+          );
 
-    certificateMeta = await uploadFileAndGetMeta(
-      stepData.certificate,
-      `startupApplications/${applicationId}/entity/certificate-${Date.now()}-${stepData.certificate.name}`
-    );
-  }
+          certificateMeta = await uploadFileAndGetMeta(
+            stepData.certificate,
+            `startupApplications/${applicationId}/entity/certificate-${Date.now()}-${stepData.certificate.name}`,
+          );
+        }
 
-  return {
-    ...stepData,
-    hasRegisteredEntity: true,
-    state: "Bihar",
-    certificate: null,
-    certificateMeta,
-  };
-}
+        return {
+          ...stepData,
+          hasRegisteredEntity: true,
+          state: "Bihar",
+          certificate: null,
+          certificateMeta,
+        };
+      }
 
       if (step === 6) {
         let pitchDeckMeta = stepData.pitchDeckMeta || null;
@@ -669,7 +633,7 @@ const blockEmailAfterRegistration = useCallback(
 
           openWorkingDialog(
             "Uploading pitch deck",
-            "Please wait while we upload your pitch deck."
+            "Please wait while we upload your pitch deck.",
           );
 
           const existingPitchDeckPath =
@@ -679,13 +643,16 @@ const blockEmailAfterRegistration = useCallback(
             try {
               await deleteObject(ref(storage, existingPitchDeckPath));
             } catch (error) {
-              console.warn("Could not delete previous pitch deck from storage", error);
+              console.warn(
+                "Could not delete previous pitch deck from storage",
+                error,
+              );
             }
           }
 
           pitchDeckMeta = await uploadFileAndGetMeta(
             stepData.pitchDeck,
-            `startupApplications/${applicationId}/business/pitchdeck-${Date.now()}-${stepData.pitchDeck.name}`
+            `startupApplications/${applicationId}/business/pitchdeck-${Date.now()}-${stepData.pitchDeck.name}`,
           );
         }
 
@@ -698,12 +665,13 @@ const blockEmailAfterRegistration = useCallback(
 
       return stepData;
     },
-    [uploadFileAndGetMeta, openWorkingDialog, formData]
+    [uploadFileAndGetMeta, openWorkingDialog, formData],
   );
 
   const handleStepSubmit = useCallback(
     async (rawStepData, step) => {
-      if (isSubmitted) return { ok: false, error: "Application already submitted." };
+      if (isSubmitted)
+        return { ok: false, error: "Application already submitted." };
 
       let nextFormData = { ...formData };
       let sectionKey = "";
@@ -714,7 +682,9 @@ const blockEmailAfterRegistration = useCallback(
           const updatedSignup = {
             ...formData.userSignup,
             startupName:
-              rawStepData.startupName?.trim() || formData.userSignup.startupName || "",
+              rawStepData.startupName?.trim() ||
+              formData.userSignup.startupName ||
+              "",
             applicationType:
               rawStepData.applicationType ||
               formData.userSignup.applicationType ||
@@ -743,7 +713,7 @@ const blockEmailAfterRegistration = useCallback(
         } else {
           openWorkingDialog(
             "Checking your details",
-            "Please wait while we validate your registration information."
+            "Please wait while we validate your registration information.",
           );
 
           const exists = await checkIdentifierExists({
@@ -770,24 +740,21 @@ const blockEmailAfterRegistration = useCallback(
             ...nextFormData,
             applicationId,
             userSignup: {
-              founderName: rawStepData.founderName,
-              startupName: rawStepData.startupName,
-              applicationType:
-                rawStepData.applicationType || "funding_with_recognition",
+              fullName: rawStepData.fullName,
               email: normalizeEmail(rawStepData.email),
               phoneNumber: normalizePhone(rawStepData.phoneNumber),
               aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
               phoneVerified: true,
               registrationType: rawStepData.type || "registration",
-              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
+              registeredAt:
+                rawStepData.registeredAt || new Date().toISOString(),
               passwordHash,
             },
           };
 
           persistAuth({
             applicationId,
-            founderName: rawStepData.founderName,
-            startupName: rawStepData.startupName,
+            fullName: rawStepData.fullName,
             email: normalizeEmail(rawStepData.email),
             phoneNumber: normalizePhone(rawStepData.phoneNumber),
           });
@@ -801,31 +768,24 @@ const blockEmailAfterRegistration = useCallback(
         const stepData = await transformStepDataForStorage(
           rawStepData,
           step,
-          applicationId
+          applicationId,
         );
 
         if (step === 2) {
-          sectionKey = "basicDetails";
-          nextFormData.basicDetails = stepData;
+          sectionKey = "personalDetails";
+          nextFormData.personalDetails = stepData;
         } else if (step === 3) {
-  sectionKey = "entityDetails";
-
-  const previousEntityDetails = nextFormData.entityDetails || {};
-
-  nextFormData.entityDetails = {
-    ...previousEntityDetails,
-    ...stepData,
-    state: "Bihar",
-  };
-} else if (step === 4) {
-          sectionKey = "startupDetails";
-          nextFormData.startupDetails = stepData;
+          sectionKey = "educationalQualifications";
+          nextFormData.educationalQualifications = stepData;
+        } else if (step === 4) {
+          sectionKey = "workExperience";
+          nextFormData.workExperience = stepData;
         } else if (step === 5) {
-          sectionKey = "cofounderDetails";
-          nextFormData.cofounderDetails = stepData;
+          sectionKey = "startupExposure";
+          nextFormData.startupExposure = stepData;
         } else if (step === 6) {
-          sectionKey = "businessIdea";
-          nextFormData.businessIdea = stepData;
+          sectionKey = "referencesAndDocs";
+          nextFormData.referencesAndDocs = stepData;
           nextStep = 7;
         }
       }
@@ -843,21 +803,26 @@ const blockEmailAfterRegistration = useCallback(
         });
       }
 
-      if (step === 1 && !isLoggedIn && nextFormData?.applicationId && nextFormData?.userSignup) {
-       await Promise.all([
-  blockAadharAfterRegistration({
-    aadharNumber: nextFormData.userSignup.aadharNumber,
-    applicationId: nextFormData.applicationId,
-  }),
-  blockPhoneAfterRegistration({
-    phoneNumber: nextFormData.userSignup.phoneNumber,
-    applicationId: nextFormData.applicationId,
-  }),
-  blockEmailAfterRegistration({
-    email: nextFormData.userSignup.email,
-    applicationId: nextFormData.applicationId,
-  }),
-]);
+      if (
+        step === 1 &&
+        !isLoggedIn &&
+        nextFormData?.applicationId &&
+        nextFormData?.userSignup
+      ) {
+        await Promise.all([
+          blockAadharAfterRegistration({
+            aadharNumber: nextFormData.userSignup.aadharNumber,
+            applicationId: nextFormData.applicationId,
+          }),
+          blockPhoneAfterRegistration({
+            phoneNumber: nextFormData.userSignup.phoneNumber,
+            applicationId: nextFormData.applicationId,
+          }),
+          blockEmailAfterRegistration({
+            email: nextFormData.userSignup.email,
+            applicationId: nextFormData.applicationId,
+          }),
+        ]);
       }
 
       closeWorkingDialog();
@@ -880,50 +845,56 @@ const blockEmailAfterRegistration = useCallback(
       blockEmailAfterRegistration,
       openWorkingDialog,
       closeWorkingDialog,
-    ]
+    ],
   );
 
   const handleFinalSubmit = useCallback(async () => {
     if (!formData.applicationId || isSubmitted) return;
 
+    // ── DEV MODE: submission window check and Firestore write commented out ──
+    /*
     const windowCheck = await checkSubmissionWindow();
     if (!windowCheck.allowed) {
       setSaveMessage(windowCheck.message || "Submission is currently closed.");
       return;
     }
+    */
 
     setIsSaving(true);
     setSaveMessage("Submitting...");
     openWorkingDialog(
       "Submitting your application",
-      "Please wait while we finalize and submit your application."
+      "Please wait while we finalize and submit your application.",
     );
 
     try {
+      // ── DEV MODE: Firestore final submit write commented out ──
+      /*
       const docRef = doc(db, "startupApplications", formData.applicationId);
-
       await setDoc(
         docRef,
         {
           applicationId: formData.applicationId,
           status: "submitted",
           statusLabel: "Application Submitted",
-          statusMessage:
-            "Your application has been submitted successfully and is awaiting review.",
+          statusMessage: "Your application has been submitted successfully and is awaiting review.",
           currentStage: "submitted",
           currentStep: 8,
           submittedAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
+      await refreshSubmissionWindow();
+      */
+      // DEV mock — just update local state
+      console.log("[DEV] handleFinalSubmit — no Firestore write");
 
       const updated = {
         ...formData,
         status: "submitted",
         statusLabel: "Application Submitted",
-        statusMessage:
-          "Your application has been submitted successfully and is awaiting review.",
+        statusMessage: "Your application has been submitted successfully and is awaiting review.",
         currentStage: "submitted",
       };
 
@@ -931,7 +902,6 @@ const blockEmailAfterRegistration = useCallback(
       persistLocalDraft(updated);
       setCurrentStep(8);
       setSaveMessage("Submitted");
-      await refreshSubmissionWindow();
     } catch (error) {
       console.error("Final submit failed", error);
       setSaveMessage("Submit failed");
@@ -999,7 +969,7 @@ const blockEmailAfterRegistration = useCallback(
       const q = query(
         colRef,
         where("userSignup.phoneNumber", "==", normalizePhone(trimmed)),
-        limit(1)
+        limit(1),
       );
       const result = await getDocs(q);
       if (!result.empty) {
@@ -1011,7 +981,7 @@ const blockEmailAfterRegistration = useCallback(
     const q = query(
       colRef,
       where("userSignup.email", "==", normalizeEmail(trimmed)),
-      limit(1)
+      limit(1),
     );
     const result = await getDocs(q);
     if (!result.empty) {
@@ -1029,7 +999,9 @@ const blockEmailAfterRegistration = useCallback(
     const password = loginPassword;
 
     if (!identifier || !password) {
-      setLoginError("Enter registration number, email or mobile, and password.");
+      setLoginError(
+        "Enter registration number, email or mobile, and password.",
+      );
       return;
     }
 
@@ -1037,7 +1009,7 @@ const blockEmailAfterRegistration = useCallback(
       setLoginLoading(true);
       openWorkingDialog(
         "Checking your account",
-        "Please wait while we verify your login details."
+        "Please wait while we verify your login details.",
       );
 
       const application = await findApplicationForLogin(identifier);
@@ -1057,8 +1029,7 @@ const blockEmailAfterRegistration = useCallback(
 
       const auth = {
         applicationId: application.applicationId || application.id,
-        founderName: application?.userSignup?.founderName || "",
-        startupName: application?.userSignup?.startupName || "",
+        fullName: application?.userSignup?.fullName || "",
         email: application?.userSignup?.email || "",
         phoneNumber: application?.userSignup?.phoneNumber || "",
       };
@@ -1097,7 +1068,7 @@ const blockEmailAfterRegistration = useCallback(
       setForgotPasswordLoading(true);
       openWorkingDialog(
         "Checking mobile number",
-        "Please wait while we look for your application."
+        "Please wait while we look for your application.",
       );
 
       const application = await findApplicationForLogin(phone);
@@ -1151,7 +1122,7 @@ const blockEmailAfterRegistration = useCallback(
       setResetPasswordLoading(true);
       openWorkingDialog(
         "Updating password",
-        "Please wait while we securely update your password."
+        "Please wait while we securely update your password.",
       );
 
       const passwordHash = await sha256(newPassword);
@@ -1162,15 +1133,19 @@ const blockEmailAfterRegistration = useCallback(
           applicationId: resetAccount.applicationId,
           userSignup: {
             ...(resetAccount.userSignup || {}),
-            phoneNumber: normalizePhone(resetAccount?.userSignup?.phoneNumber || ""),
+            phoneNumber: normalizePhone(
+              resetAccount?.userSignup?.phoneNumber || "",
+            ),
             email: normalizeEmail(resetAccount?.userSignup?.email || ""),
-            aadharNumber: normalizeAadhar(resetAccount?.userSignup?.aadharNumber || ""),
+            aadharNumber: normalizeAadhar(
+              resetAccount?.userSignup?.aadharNumber || "",
+            ),
             passwordHash,
             passwordResetAt: new Date().toISOString(),
           },
           updatedAt: serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
 
       setShowResetPasswordModal(false);
@@ -1192,17 +1167,17 @@ const blockEmailAfterRegistration = useCallback(
       case 1:
         return !!formData.userSignup;
       case 2:
-        return !!formData.basicDetails;
+        return !!formData.personalDetails;
       case 3:
-        return !!formData.entityDetails;
+        return !!formData.educationalQualifications;
       case 4:
-        return !!formData.startupDetails;
+        return !!formData.workExperience;
       case 5:
-        return !!formData.cofounderDetails;
+        return !!formData.startupExposure;
       case 6:
-        return !!formData.businessIdea;
+        return !!formData.referencesAndDocs;
       case 7:
-        return !!formData.businessIdea;
+        return !!formData.referencesAndDocs;
       case 8:
         return formData.status === "submitted";
       case 9:
@@ -1213,9 +1188,13 @@ const blockEmailAfterRegistration = useCallback(
   };
 
   const isLocked = (n) => {
+    // ── DEV MODE: all steps unlocked for local testing ──
+    return false;
+    // eslint-disable-next-line no-unreachable
+    /* -- ORIGINAL LOCK LOGIC (restore before production) --
     if (isSubmitted) {
       if ([1, 2, 3, 4, 5, 6].includes(n)) return true;
-      if (n === 7) return !formData.businessIdea;
+      if (n === 7) return !formData.referencesAndDocs;
       if (n === 8) return false;
       if (n === 9) return false;
       return true;
@@ -1223,14 +1202,15 @@ const blockEmailAfterRegistration = useCallback(
 
     if (n === 1) return false;
     if (n === 2) return !formData.userSignup;
-    if (n === 3) return !formData.basicDetails;
-    if (n === 4) return !formData.entityDetails;
-    if (n === 5) return !formData.startupDetails;
-    if (n === 6) return !formData.cofounderDetails;
-    if (n === 7) return !formData.businessIdea;
+    if (n === 3) return !formData.personalDetails;
+    if (n === 4) return !formData.educationalQualifications;
+    if (n === 5) return !formData.workExperience;
+    if (n === 6) return !formData.startupExposure;
+    if (n === 7) return !formData.referencesAndDocs;
     if (n === 8) return formData.status !== "submitted";
     if (n === 9) return !formData.applicationId;
     return true;
+    -- END ORIGINAL LOCK LOGIC -- */
   };
 
   const handleTabClick = (stepIndex) => {
@@ -1241,7 +1221,9 @@ const blockEmailAfterRegistration = useCallback(
   };
 
   const progressPercent = useMemo(() => {
-    const completedSteps = [1, 2, 3, 4, 5, 6].filter((n) => isStepCompleted(n)).length;
+    const completedSteps = [1, 2, 3, 4, 5, 6].filter((n) =>
+      isStepCompleted(n),
+    ).length;
     const totalSteps = 7;
     const finalSubmitDone = formData.status === "submitted" ? 1 : 0;
     return Math.round(((completedSteps + finalSubmitDone) / totalSteps) * 100);
@@ -1258,74 +1240,72 @@ const blockEmailAfterRegistration = useCallback(
       case 1:
         return (
           <UserSignup
-  {...commonProps}
-  initialValues={formData.userSignup}
-  isLoggedIn={isLoggedIn}
-  loginIdentity={
-    authState?.applicationId ||
-    authState?.email ||
-    authState?.phoneNumber ||
-    ""
-  }
-  submissionWindow={submissionWindow}
-/>
+            {...commonProps}
+            initialValues={formData.userSignup}
+            isLoggedIn={isLoggedIn}
+            loginIdentity={
+              authState?.applicationId ||
+              authState?.email ||
+              authState?.phoneNumber ||
+              ""
+            }
+          />
         );
 
       case 2:
         return (
-          <BasicDetailsStep
+          <PersonalDetailsStep
             {...commonProps}
-            initialValues={formData.basicDetails}
+            initialValues={formData.personalDetails}
             userSignupData={formData.userSignup}
           />
         );
 
       case 3:
         return (
-          <EntityDetailsStep
+          <EducationalQualificationsStep
             {...commonProps}
-            initialValues={formData.entityDetails}
+            initialValues={formData.educationalQualifications}
           />
         );
 
       case 4:
         return (
-          <StartupDetailsStep
+          <WorkExperienceStep
             {...commonProps}
-            initialValues={formData.startupDetails}
+            initialValues={formData.workExperience}
           />
         );
 
       case 5:
         return (
-          <CoFounderDetailsStep
+          <StartupExposureStep
             {...commonProps}
-            initialValues={formData.cofounderDetails}
+            initialValues={formData.startupExposure}
           />
         );
 
       case 6:
         return (
-          <BusinessIdeaStep
+          <ReferencesAndDocsStep
             {...commonProps}
-            initialValues={formData.businessIdea}
+            initialValues={formData.referencesAndDocs}
           />
         );
 
       case 7:
         return (
           <Preview
-  formData={formData}
-  isSubmitted={isSubmitted}
-  submissionWindow={submissionWindow}
-  onPrevious={() => handlePrevious(7)}
-  onFormSubmit={handleFinalSubmit}
-  onNavigateToStep={(step) => {
-    if (isSubmitted && step <= 6) return;
-    setCurrentStep(step);
-  }}
-/>
-      
+            formData={formData}
+            isSubmitted={isSubmitted}
+            submissionWindow={submissionWindow}
+            onPrevious={() => handlePrevious(7)}
+            onFormSubmit={handleFinalSubmit}
+            onNavigateToStep={(step) => {
+              if (isSubmitted && step <= 6) return;
+              setCurrentStep(step);
+            }}
+          />
         );
 
       case 8:
@@ -1361,7 +1341,9 @@ const blockEmailAfterRegistration = useCallback(
         <div className="absolute inset-0 bg-[rgba(247,244,238,0.68)] backdrop-blur-[3px]" />
         <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
           <div className="rounded-[32px] border border-white/80 bg-white/75 px-10 py-8 text-center shadow-[0_18px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl">
-            <div className="text-lg font-semibold text-slate-800">Loading application...</div>
+            <div className="text-lg font-semibold text-slate-800">
+              Loading application...
+            </div>
             <div className="mt-2 text-sm text-slate-500">
               Restoring your saved details
             </div>
@@ -1381,7 +1363,9 @@ const blockEmailAfterRegistration = useCallback(
       <div className="relative z-10">
         <div className="md:hidden flex items-center justify-between border-b border-white/60 bg-white/40 px-4 py-3 backdrop-blur-xl">
           <div>
-            <div className="text-lg font-semibold text-slate-800">Startup Bihar</div>
+            <div className="text-lg font-semibold text-slate-800">
+              Startup Bihar
+            </div>
             <div className="text-xs text-slate-500">Registration Form</div>
           </div>
 
@@ -1425,7 +1409,9 @@ const blockEmailAfterRegistration = useCallback(
                     </div>
 
                     <div className="mt-1 text-sm text-slate-500">
-                      {isLoggedIn ? "Logged in application" : "New registration"}
+                      {isLoggedIn
+                        ? "Logged in application"
+                        : "New registration"}
                     </div>
                   </div>
 
@@ -1452,7 +1438,9 @@ const blockEmailAfterRegistration = useCallback(
                 <div className="mt-5 rounded-[24px] border border-white/80 bg-white/75 p-4 shadow-sm">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-500">Progress</span>
-                    <span className="font-semibold text-slate-700">{progressPercent}%</span>
+                    <span className="font-semibold text-slate-700">
+                      {progressPercent}%
+                    </span>
                   </div>
 
                   <div className="mt-3 h-2 rounded-full bg-slate-100">
@@ -1467,10 +1455,10 @@ const blockEmailAfterRegistration = useCallback(
                       (isSaving
                         ? "Saving..."
                         : isSubmitted
-                        ? "Submitted"
-                        : isLoggedIn
-                        ? "Final submission pending"
-                        : "Guest mode")}
+                          ? "Submitted"
+                          : isLoggedIn
+                            ? "Final submission pending"
+                            : "Guest mode")}
                   </div>
                 </div>
 
@@ -1514,15 +1502,17 @@ const blockEmailAfterRegistration = useCallback(
                         active
                           ? "border border-slate-200 bg-white shadow-sm"
                           : locked
-                          ? "cursor-not-allowed opacity-50"
-                          : "hover:bg-white/70"
+                            ? "cursor-not-allowed opacity-50"
+                            : "hover:bg-white/70"
                       }`}
                     >
                       <span className="flex items-center gap-3">
                         <span style={{ color: locked ? "#CBD5E1" : gray }}>
                           {locked ? <FaLock /> : icons[index]}
                         </span>
-                        <span className="text-sm font-medium text-slate-700">{label}</span>
+                        <span className="text-sm font-medium text-slate-700">
+                          {label}
+                        </span>
                       </span>
 
                       {completed && !locked && (
@@ -1544,7 +1534,9 @@ const blockEmailAfterRegistration = useCallback(
                 />
                 <div className="absolute left-0 top-0 h-full w-[84%] max-w-xs bg-white/95 p-4 shadow-xl backdrop-blur-xl">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-                    <div className="text-lg font-semibold text-slate-800">Registration</div>
+                    <div className="text-lg font-semibold text-slate-800">
+                      Registration
+                    </div>
                     <button
                       onClick={() => setMobileNavOpen(false)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200"
@@ -1574,7 +1566,9 @@ const blockEmailAfterRegistration = useCallback(
                             active ? "bg-slate-100" : "hover:bg-slate-50"
                           } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
                         >
-                          <span className="text-sm text-slate-700">{label}</span>
+                          <span className="text-sm text-slate-700">
+                            {label}
+                          </span>
                           {isStepCompleted(stepNumber) && !locked && (
                             <FaCheck className="text-emerald-600" />
                           )}
@@ -1650,8 +1644,8 @@ const blockEmailAfterRegistration = useCallback(
                           active
                             ? "border-slate-900 bg-slate-900 text-white"
                             : locked
-                            ? "border-slate-200 text-slate-400"
-                            : "border-slate-300 text-slate-700"
+                              ? "border-slate-200 text-slate-400"
+                              : "border-slate-300 text-slate-700"
                         }`}
                       >
                         {label}
@@ -1665,13 +1659,14 @@ const blockEmailAfterRegistration = useCallback(
                 <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 md:px-8">
                   {submissionWindow.message}
                 </div>
-              
               ) : null}
               <div className="md:hidden px-4 pt-3">
-  <Notice />
-</div>
+                <Notice />
+              </div>
 
-              <div className="flex-1 overflow-y-auto p-4 md:p-8">{renderStep()}</div>
+              <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                {renderStep()}
+              </div>
             </main>
           </div>
         </div>
@@ -1845,7 +1840,9 @@ const blockEmailAfterRegistration = useCallback(
                 </label>
                 <input
                   value={forgotPhone}
-                  onChange={(e) => setForgotPhone(normalizePhone(e.target.value))}
+                  onChange={(e) =>
+                    setForgotPhone(normalizePhone(e.target.value))
+                  }
                   placeholder="9876543210"
                   maxLength={10}
                   className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
@@ -1932,7 +1929,8 @@ const blockEmailAfterRegistration = useCallback(
                   Set a new password
                 </h3>
                 <p className="mt-2 text-sm text-slate-500">
-                  Your mobile number is verified. Create a new password to continue.
+                  Your mobile number is verified. Create a new password to
+                  continue.
                 </p>
               </div>
 

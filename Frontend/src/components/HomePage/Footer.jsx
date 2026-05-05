@@ -1,215 +1,640 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { HiOutlineMail } from "react-icons/hi";
-import { FaPhoneAlt } from "react-icons/fa";
+import {
+  HiOutlineMail,
+  HiOutlinePhone,
+  HiOutlineLocationMarker,
+} from "react-icons/hi";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+  FaArrowRight,
+} from "react-icons/fa";
 
 const Footer = () => {
-	return (
-		<div>
-			<footer className="bg-[#270a3c]">
-				<div className="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
-					<div className="md:flex md:justify-between">
-						<div className="mb-6 md:mb-0">
-							<a className="flex items-center">
-								<img
-									src="Seal_of_Bihar.svg"
-									className="h-24 me-3"
-									alt="startup Bihar"
-								/>
-								<span className="self-center text-sm whitespace-nowrap text-white dark:text-white pl-3 pt-1">
-									DEPARTMENT OF INDUSTRIES <br />
-									Government of Bihar <br />
-									Copyright owned by DoI Bihar,
-									<br /> All Rights Reserved <br /> 
-									<div className="flex items-center gap-4 mt-4">
-										<h2 className="text-sm py-4 font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
-											<HiOutlineMail />
-											startup-bihar@gov.in
-										</h2>
-										<h2 className="text-sm font-semibold text-gray-100 dark:text-white flex items-center gap-2 transform transition-transform duration-300 hover:scale-105">
-											<FaPhoneAlt />
-											1800 345 6214
-										</h2>
-									</div>
-								</span>
-							</a>
-						</div>
+  return (
+    <>
+      <footer className="footer-base" id="footer">
+        {/* ── Top CTA Banner ── */}
+        <div className="footer-cta-banner">
+          <div className="footer-cta-inner">
+            <div className="footer-cta-text">
+              <h3 className="footer-cta-title">
+                Ready to Start Your Entrepreneurial Journey?
+              </h3>
+              <p className="footer-cta-desc">
+                Register your startup today and unlock Bihar's innovation
+                ecosystem.
+              </p>
+            </div>
+            <Link to="/startupregistration" className="footer-cta-btn">
+              Register Now <FaArrowRight className="footer-cta-arrow" />
+            </Link>
+          </div>
+        </div>
 
-						<div className="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 items-end ">
-							<div>
+        {/* ── Main Footer Grid ── */}
+        <div className="footer-main">
+          {/* Column 1 — Brand */}
+          <div className="footer-brand-col">
+            <div className="footer-brand-top">
+              <img
+                src="Seal_of_Bihar.svg"
+                className="footer-seal"
+                alt="Seal of Bihar"
+              />
+              <div className="footer-brand-info">
+                <span className="footer-brand-name">Startup Bihar</span>
+                <span className="footer-brand-dept">
+                  Department of Industries
+                </span>
+                <span className="footer-brand-govt">Government of Bihar</span>
+              </div>
+            </div>
+            <p className="footer-brand-desc">
+              Driving innovation, growth, and entrepreneurial success by
+              supporting startups across diverse sectors in Bihar.
+            </p>
 
-								<ul className="text-gray-300 dark:text-gray-400 font-medium">
-									<li className="mb-4">
-										<Link to="/contact-us" className="hover:underline">
-											Contact Us
-										</Link>
-									</li>
+            {/* Contact details */}
+            <div className="footer-contact-list">
+              <a href="mailto:startup-bihar@gov.in" className="footer-contact-item">
+                <HiOutlineMail className="footer-contact-icon" />
+                <span>startup-bihar@gov.in</span>
+              </a>
+              <a href="tel:18003456214" className="footer-contact-item">
+                <HiOutlinePhone className="footer-contact-icon" />
+                <span>1800 345 6214 (Toll Free)</span>
+              </a>
+              <div className="footer-contact-item">
+                <HiOutlineLocationMarker className="footer-contact-icon" />
+                <span>Udyog Bhawan, Patna, Bihar</span>
+              </div>
+            </div>
+          </div>
 
-									<li>
-										<a
-											href="/DeveloperTeam"
-											className="hover:underline"
-										>
-											Developer's Team
-										</a>
+          {/* Column 2 — Quick Links */}
+          <div className="footer-link-col">
+            <h4 className="footer-col-title">Quick Links</h4>
+            <ul className="footer-link-list">
+              <li>
+                <Link to="/" className="footer-link">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/about-us" className="footer-link">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact-us" className="footer-link">
+                  Startup Team
+                </Link>
+              </li>
+              <li>
+                <Link to="/AllStartups" className="footer-link">
+                  All Startups
+                </Link>
+              </li>
+              <li>
+                <Link to="/PublicDashboard" className="footer-link">
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link to="/Events" className="footer-link">
+                  Events
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-									</li>
-								</ul>
-							</div>
-							<div>
+          {/* Column 3 — Ecosystem */}
+          <div className="footer-link-col">
+            <h4 className="footer-col-title">Ecosystem</h4>
+            <ul className="footer-link-list">
+              <li>
+                <Link to="/ecosystem" className="footer-link">
+                  Startup Ecosystem
+                </Link>
+              </li>
+              <li>
+                <Link to="/StartupCell" className="footer-link">
+                  Startup Cell
+                </Link>
+              </li>
+              <li>
+                <Link to="/IncubationCell" className="footer-link">
+                  Incubation Cell
+                </Link>
+              </li>
+              <li>
+                <Link to="/Mentors" className="footer-link">
+                  Mentors
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="https://iciitp.com/zerolab/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-link"
+                >
+                  Zero Lab
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://bhub.org.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-link"
+                >
+                  B-Hub
+                </a>
+              </li>
+            </ul>
+          </div>
 
-								<ul className="text-gray-300 dark:text-gray-400 font-medium">
-									<li className="mb-4">
-										<Link to="/about-us" className="hover:underline">
-											About Us
-										</Link>
-									</li>
-									<li className="">
-										<a
-											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FCopyright%20Policy.pdf?alt=media&token=0ba2d4c6-36a3-436d-a58f-2654ff621050"
-											className="hover:underline"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											Copyright
-										</a>
-									</li>
-								</ul>
-							</div>
+          {/* Column 4 — Legal & Resources */}
+          <div className="footer-link-col">
+            <h4 className="footer-col-title">Legal & Resources</h4>
+            <ul className="footer-link-list">
+              <li>
+                <a
+                  href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPRIVACY%20POLICY.pdf?alt=media&token=5feaa5fd-2e0d-4a01-bc44-09ab8ad9b0cd"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FTERMS%20OF%20USE_DRAFT.pdf?alt=media&token=5831df8f-0a32-4480-88c1-59e88fa76537"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Terms of Use
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FCopyright%20Policy.pdf?alt=media&token=0ba2d4c6-36a3-436d-a58f-2654ff621050"
+                  className="footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Copyright Policy
+                </a>
+              </li>
+              <li>
+                <Link to="/startupregistration" className="footer-link">
+                  Register Startup
+                </Link>
+              </li>
+              <li>
+                <Link to="/login" className="footer-link">
+                  Login / Sign In
+                </Link>
+              </li>
+              <li>
+                <a href="/DeveloperTeam" className="footer-link">
+                  Developer Team
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
 
-							<div>
+        {/* ── Divider ── */}
+        <div className="footer-divider" />
 
-								<ul className="text-gray-300 dark:text-gray-400 font-medium">
-									<li className="mb-4">
-										<a
-											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPRIVACY%20POLICY.pdf?alt=media&token=5feaa5fd-2e0d-4a01-bc44-09ab8ad9b0cd"
-											className="hover:underline"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											Privacy Policy
-										</a>
-									</li>
-									<li>
-										<a
-											href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FTERMS%20OF%20USE_DRAFT.pdf?alt=media&token=5831df8f-0a32-4480-88c1-59e88fa76537"
-											className="hover:underline"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											Terms of Use
-										</a>
-									</li>
-								</ul>
+        {/* ── Bottom Bar ── */}
+        <div className="footer-bottom">
+          <span className="footer-copyright">
+            © {new Date().getFullYear()} Department of Industries, Government of
+            Bihar. All Rights Reserved.
+          </span>
 
-							</div>
-						</div>
-					</div>
-					<hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
-					<div className="sm:flex sm:items-center sm:justify-between">
-						<span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
-							© DoI Bihar, All Rights Reserved.
-						</span>
+          <a href="/DeveloperTeam" className="footer-dev-credit">
+            Developed & maintained by{" "}
+            <span className="footer-dev-name">NS Apps Innovations</span>, a
+            product of Startup Bihar.
+          </a>
 
-						<a
-	href="/DeveloperTeam"
-	className="text-sm text-gray-400 sm:text-center dark:text-gray-400"
->
-	This website is developed and maintained by <span className="font-bold">NS Apps Innovations</span>, a product of Startup Bihar.
-</a>
+          {/* Social icons */}
+          <div className="footer-social-row">
+            <a
+              href="https://www.facebook.com/startupbihar2022/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-social-icon"
+              aria-label="Facebook"
+            >
+              <FaFacebookF />
+            </a>
+            <a
+              href="https://x.com/startup_bihar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-social-icon"
+              aria-label="Twitter"
+            >
+              <FaTwitter />
+            </a>
+            <a
+              href="https://www.instagram.com/startupbihar23/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-social-icon"
+              aria-label="Instagram"
+            >
+              <FaInstagram />
+            </a>
+            <a
+              href="https://www.linkedin.com/company/startup-bihar/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-social-icon"
+              aria-label="LinkedIn"
+            >
+              <FaLinkedinIn />
+            </a>
+            <a
+              href="https://www.youtube.com/@StartupBihar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-social-icon"
+              aria-label="YouTube"
+            >
+              <FaYoutube />
+            </a>
+          </div>
+        </div>
+      </footer>
 
+      {/* ===== Footer Scoped Styles ===== */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-						<div className="flex mt-4 sm:justify-center sm:mt-0">
-							<a
-								href="https://www.facebook.com/startupbihar2022/"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-gray-500 hover:text-gray-900 dark:hover:text-white"
-							>
-								<svg
-									className="w-4 h-4"
-									aria-hidden="true"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="currentColor"
-									viewBox="0 0 8 19"
-								>
-									<path
-										fillRule="evenodd"
-										d="M6.135 3H8V0H6.135a4.147 4.147 0 0 0-4.142 4.142V6H0v3h2v9.938h3V9h2.021l.592-3H5V3.591A.6.6 0 0 1 5.592 3h.543Z"
-										clipRule="evenodd"
-									/>
-								</svg>
-								<span className="sr-only">Facebook page</span>
-							</a>
-							<a
-								href="https://x.com/startup_bihar"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
-							>
-								<svg
-									className="w-4 h-4"
-									aria-hidden="true"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="currentColor"
-									viewBox="0 0 20 17"
-								>
-									<path
-										fillRule="evenodd"
-										d="M20 1.892a8.178 8.178 0 0 1-2.355.635 4.074 4.074 0 0 0 1.8-2.235 8.344 8.344 0 0 1-2.605.98A4.13 4.13 0 0 0 13.85 0a4.068 4.068 0 0 0-4.1 4.038 4 4 0 0 0 .105.919A11.705 11.705 0 0 1 1.4.734a4.006 4.006 0 0 0 1.268 5.392 4.165 4.165 0 0 1-1.859-.5v.05A4.057 4.057 0 0 0 4.1 9.635a4.19 4.19 0 0 1-1.856.07 4.108 4.108 0 0 0 3.831 2.807A8.36 8.36 0 0 1 0 14.184 11.732 11.732 0 0 0 6.291 16 11.502 11.502 0 0 0 17.964 4.5c0-.177 0-.35-.012-.523A8.143 8.143 0 0 0 20 1.892Z"
-										clipRule="evenodd"
-									/>
-								</svg>
-								<span className="sr-only">Twitter page</span>
-							</a>
-							<a
-								href="https://www.instagram.com/startupbihar23/"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
-							>
-								<svg
-									className="w-4 h-4"
-									aria-hidden="true"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										fillRule="evenodd"
-										d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.31.975.975 1.248 2.242 1.31 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.334 2.633-1.31 3.608-.975.975-2.242 1.248-3.608 1.31-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.334-3.608-1.31-.975-.975-1.248-2.242-1.31-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.334-2.633 1.31-3.608.975-.975 2.242-1.248 3.608-1.31 1.266-.058 1.646-.07 4.85-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-1.281.058-2.563.334-3.637 1.408-1.074 1.074-1.35 2.356-1.408 3.637-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.058 1.281.334 2.563 1.408 3.637 1.074 1.074 2.356 1.35 3.637 1.408 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c1.281-.058 2.563-.334 3.637-1.408 1.074-1.074 1.35-2.356 1.408-3.637.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.058-1.281-.334-2.563-1.408-3.637-1.074-1.074-2.356-1.35-3.637-1.408-1.28-.058-1.688-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.324c-2.297 0-4.162-1.865-4.162-4.162s1.865-4.162 4.162-4.162 4.162 1.865 4.162 4.162-1.865 4.162-4.162 4.162zm6.406-11.845c-.796 0-1.441.645-1.441 1.441s.645 1.441 1.441 1.441 1.441-.645 1.441-1.441-.645-1.441-1.441-1.441z"
-										clipRule="evenodd"
-									/>
-								</svg>
-								<span className="sr-only">Instagram Page</span>
-							</a>
-							<a
-								href="https://www.linkedin.com/company/startup-bihar/"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5"
-							>
-								<svg
-									className="w-4 h-4"
-									aria-hidden="true"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="currentColor"
-									viewBox="0 0 24 24"
-								>
-									<path
-										fillRule="evenodd"
-										d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11.75 19h-2.5v-10h2.5v10zm-1.25-11.25c-.828 0-1.5-.672-1.5-1.5s.672-1.5 1.5-1.5 1.5.672 1.5 1.5-.672 1.5-1.5 1.5zm13.25 11.25h-2.5v-5.5c0-1.378-1.122-2.5-2.5-2.5s-2.5 1.122-2.5 2.5v5.5h-2.5v-10h2.5v1.25c.691-.691 1.622-1.25 2.5-1.25 1.878 0 3.5 1.622 3.5 3.5v6.5z"
-										clipRule="evenodd"
-									/>
-								</svg>
-								<span className="sr-only">Linkedin Account</span>
-							</a>
-						</div>
-					</div>
-				</div>
-			</footer>
-		</div>
-	);
+        .footer-base {
+          background: #090E34;
+          font-family: 'Inter', sans-serif;
+          color: #c8cdd8;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* Subtle gradient glow at the top */
+        .footer-base::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #4A6CF7, transparent);
+        }
+
+        /* ── CTA Banner ── */
+        .footer-cta-banner {
+          background: linear-gradient(135deg, #4A6CF7 0%, #3b5de7 100%);
+          padding: 48px 32px;
+          position: relative;
+          overflow: hidden;
+        }
+        .footer-cta-banner::after {
+          content: '';
+          position: absolute;
+          top: -50%;
+          right: -10%;
+          width: 300px;
+          height: 300px;
+          background: rgba(255, 255, 255, 0.06);
+          border-radius: 50%;
+          pointer-events: none;
+        }
+        .footer-cta-inner {
+          max-width: 1280px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 32px;
+          flex-wrap: wrap;
+        }
+        .footer-cta-text {
+          flex: 1;
+          min-width: 280px;
+        }
+        .footer-cta-title {
+          font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+          font-weight: 800;
+          color: #fff;
+          margin: 0 0 8px;
+          line-height: 1.3;
+          letter-spacing: -0.01em;
+        }
+        .footer-cta-desc {
+          font-size: 0.92rem;
+          color: rgba(255, 255, 255, 0.8);
+          margin: 0;
+          line-height: 1.6;
+        }
+        .footer-cta-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 14px 32px;
+          background: #fff;
+          color: #4A6CF7;
+          font-weight: 700;
+          font-size: 0.92rem;
+          border-radius: 9999px;
+          text-decoration: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+          flex-shrink: 0;
+        }
+        .footer-cta-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+          background: #f8faff;
+        }
+        .footer-cta-arrow {
+          font-size: 0.75rem;
+          transition: transform 0.2s ease;
+        }
+        .footer-cta-btn:hover .footer-cta-arrow {
+          transform: translateX(3px);
+        }
+
+        /* ── Main Grid ── */
+        .footer-main {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 64px 32px 40px;
+          display: grid;
+          grid-template-columns: 1.6fr 1fr 1fr 1fr;
+          gap: 48px;
+        }
+
+        /* Brand column */
+        .footer-brand-col {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .footer-brand-top {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .footer-seal {
+          width: 56px;
+          height: 56px;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
+          opacity: 0.9;
+        }
+        .footer-brand-info {
+          display: flex;
+          flex-direction: column;
+        }
+        .footer-brand-name {
+          font-size: 1.15rem;
+          font-weight: 800;
+          color: #fff;
+          letter-spacing: -0.01em;
+        }
+        .footer-brand-dept {
+          font-size: 0.78rem;
+          color: #959CB1;
+          font-weight: 500;
+          margin-top: 2px;
+        }
+        .footer-brand-govt {
+          font-size: 0.72rem;
+          color: #7a7f94;
+          font-weight: 500;
+        }
+        .footer-brand-desc {
+          font-size: 0.88rem;
+          line-height: 1.7;
+          color: #959CB1;
+          margin: 0;
+          max-width: 320px;
+        }
+
+        /* Contact list */
+        .footer-contact-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 4px;
+        }
+        .footer-contact-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.84rem;
+          color: #b0b5c7;
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+        .footer-contact-item:hover {
+          color: #4A6CF7;
+        }
+        .footer-contact-icon {
+          font-size: 1rem;
+          color: #4A6CF7;
+          flex-shrink: 0;
+        }
+
+        /* Link columns */
+        .footer-link-col {
+          display: flex;
+          flex-direction: column;
+        }
+        .footer-col-title {
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: #fff;
+          margin: 0 0 20px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+        .footer-link-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .footer-link {
+          font-size: 0.88rem;
+          color: #959CB1;
+          text-decoration: none;
+          transition: all 0.2s ease;
+          position: relative;
+          display: inline-block;
+        }
+        .footer-link:hover {
+          color: #4A6CF7;
+          transform: translateX(4px);
+        }
+
+        /* ── Divider ── */
+        .footer-divider {
+          max-width: 1280px;
+          margin: 0 auto;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(74, 108, 247, 0.2), transparent);
+        }
+
+        /* ── Bottom Bar ── */
+        .footer-bottom {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 24px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .footer-copyright {
+          font-size: 0.78rem;
+          color: #6b7090;
+        }
+        .footer-dev-credit {
+          font-size: 0.78rem;
+          color: #6b7090;
+          text-decoration: none;
+          transition: color 0.2s ease;
+        }
+        .footer-dev-credit:hover {
+          color: #959CB1;
+        }
+        .footer-dev-name {
+          font-weight: 700;
+          color: #4A6CF7;
+        }
+
+        /* Social icons */
+        .footer-social-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .footer-social-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.06);
+          color: #959CB1;
+          font-size: 0.88rem;
+          text-decoration: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .footer-social-icon:hover {
+          background: #4A6CF7;
+          color: #fff;
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(74, 108, 247, 0.35);
+          border-color: transparent;
+        }
+
+        /* ── Responsive ── */
+
+        /* Tablet — 2 columns */
+        @media (max-width: 1024px) {
+          .footer-main {
+            grid-template-columns: 1fr 1fr;
+            gap: 40px 32px;
+            padding: 48px 24px 36px;
+          }
+          .footer-brand-col {
+            grid-column: 1 / -1;
+          }
+          .footer-cta-banner {
+            padding: 40px 24px;
+          }
+          .footer-bottom {
+            padding: 20px 24px;
+          }
+        }
+
+        /* Mobile — single column */
+        @media (max-width: 640px) {
+          .footer-main {
+            grid-template-columns: 1fr;
+            gap: 32px;
+            padding: 40px 20px 28px;
+          }
+          .footer-cta-inner {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+          }
+          .footer-cta-text {
+            min-width: auto;
+          }
+          .footer-cta-banner {
+            padding: 36px 20px;
+          }
+          .footer-bottom {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+            padding: 20px 20px;
+          }
+          .footer-brand-desc {
+            max-width: 100%;
+          }
+          .footer-social-row {
+            justify-content: center;
+          }
+        }
+
+        /* Small mobile */
+        @media (max-width: 400px) {
+          .footer-cta-title {
+            font-size: 1.1rem;
+          }
+          .footer-cta-btn {
+            padding: 12px 24px;
+            font-size: 0.85rem;
+          }
+          .footer-brand-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+          .footer-col-title {
+            font-size: 0.82rem;
+          }
+          .footer-link {
+            font-size: 0.84rem;
+          }
+        }
+      `}</style>
+    </>
+  );
 };
 
 export default Footer;
