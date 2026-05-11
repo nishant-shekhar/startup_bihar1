@@ -1,73 +1,60 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   orderBy,
   query,
+  doc,
+  updateDoc,
   serverTimestamp,
-  setDoc,
 } from "firebase/firestore";
-import { get, ref } from "firebase/database";
+import { ref, get } from "firebase/database";
+import * as XLSX from "xlsx";
 import {
-  X,
   Search,
   RefreshCw,
-  LogOut,
-  LockKeyhole,
-  UserRound,
   FileText,
   Building2,
+  CircleCheckBig,
   Clock3,
-  CheckCircle2,
-  Star,
-  Bot,
-  Lightbulb,
-  Rocket,
-  Users,
-  BadgeCheck,
-  ExternalLink,
+  Sparkles,
+  MessageSquareText,
   ChevronLeft,
   ChevronRight,
-  MapPin,
-  Phone,
-  Mail,
-  IdCard,
-  ShieldCheck,
-  Moon,
-  Sun,
+  Download,
+  Bot,
+  BarChart3,
 } from "lucide-react";
-
 import { db, rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
+import FeedbackList from "./FeedBackList";
+import DetailDialog from "./DetailDialog";
 import AIEvaluationModal from "./AIEvaluationModal";
+import Analysis from "./Analysis";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 50;
+const AI_MONTH_KEY = "April";
+
+const STATUS_OPTIONS = [
+  "All",
+  "submitted",
+  "Under Review",
+  "Approved",
+  "Rejected",
+  "draft",
+];
+
+const REGISTERED_OPTIONS = ["All", "Yes", "No"];
+const AI_REVIEW_OPTIONS = ["All", "Yes", "No"];
 
 const safe = (value) => {
   if (value === null || value === undefined || value === "") return "-";
   return String(value);
 };
 
-const yesNo = (value) => (value ? "Yes" : "No");
-
-const normalizeNumber = (value) => {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
-};
-
 const formatDate = (value) => {
   if (!value) return "-";
 
   try {
-    if (typeof value?.toDate === "function") {
-      return value.toDate().toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    }
-
     if (value?.seconds) {
       return new Date(value.seconds * 1000).toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -91,7 +78,17 @@ const getStatus = (item) =>
   item?.applicationStatus ||
   item?.reviewStatus ||
   item?.documentStatus ||
-  "submitted";
+  "Submitted";
+
+const hasRegisteredCompany = (item) =>
+  !!(
+    item?.entityDetails?.hasRegisteredEntity ||
+    item?.cin ||
+    item?.registrationNumber ||
+    item?.registration_no ||
+    item?.entityType ||
+    item?.entityDetails?.entityRegistrationNumber
+  );
 
 const getApplicationId = (item, docId) =>
   item?.applicationId ||
@@ -105,28 +102,20 @@ const getStartupName = (item) =>
   item?.startupName ||
   item?.startup_name ||
   item?.company_name ||
-  item?.companyName ||
-  "-";
+  item?.companyName;
 
 const getFounderName = (item) =>
   item?.userSignup?.founderName ||
   item?.basicDetails?.fullName ||
   item?.founderName ||
   item?.founder_name ||
-  item?.name ||
-  "-";
+  item?.name;
 
 const getEmail = (item) =>
-  item?.userSignup?.email ||
-  item?.email ||
-  item?.basicDetails?.email ||
-  "-";
+  item?.userSignup?.email || item?.email || item?.basicDetails?.email;
 
 const getPhone = (item) =>
-  item?.userSignup?.phoneNumber ||
-  item?.phoneNumber ||
-  item?.mobile ||
-  "-";
+  item?.userSignup?.phoneNumber || item?.phoneNumber || item?.mobile;
 
 const getDistrict = (item) =>
   item?.basicDetails?.district ||
@@ -134,442 +123,87 @@ const getDistrict = (item) =>
   item?.registeredDistrict ||
   item?.districtRoc ||
   item?.startupDistrict ||
-  item?.entityDetails?.district ||
-  "-";
+  item?.entityDetails?.district;
 
 const getCategory = (item) =>
   item?.startupDetails?.sector ||
   item?.basicDetails?.category ||
   item?.category ||
   item?.sector ||
-  item?.startupCategory ||
-  "-";
+  item?.startupCategory;
 
 const getStage = (item) => item?.startupDetails?.stage || item?.stage || "-";
 
-const hasRegisteredCompany = (item) =>
-  !!(
-    item?.entityDetails?.hasRegisteredEntity ||
-    item?._registeredCompany ||
-    item?.cin ||
-    item?.registrationNumber ||
-    item?.registration_no ||
-    item?.entityType ||
-    item?.entityDetails?.entityRegistrationNumber
-  );
+const getCreatedAt = (item) =>
+  item?.createdAt || item?.submittedAt || item?.firestoreUpdatedAt || null;
 
-const getAIScore = (item) => normalizeNumber(item?.aiEvaluation?.finalScore);
+const hasAIReview = (item) => item?.aiEvaluation?.done === true;
 
-function ThemeToggle({ darkMode, setDarkMode }) {
-  const toggleTheme = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    localStorage.setItem("expertReviewerTheme", next ? "dark" : "light");
-  };
+const getAIScore = (item) => {
+  const score = item?.aiEvaluation?.finalScore;
+  return score === null || score === undefined || score === ""
+    ? null
+    : Number(score);
+};
 
+const getAIScoreBand = (score) => {
+  const n = Number(score);
+  if (!Number.isFinite(n)) return "unknown";
+  if (n >= 7.5) return "high";
+  if (n >= 5.5) return "medium";
+  return "low";
+};
+
+const statusToneMap = {
+  submitted: "border-sky-200 bg-sky-50 text-sky-700",
+  Submitted: "border-sky-200 bg-sky-50 text-sky-700",
+  "Under Review": "border-amber-200 bg-amber-50 text-amber-700",
+  Approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  Rejected: "border-rose-200 bg-rose-50 text-rose-700",
+  draft: "border-slate-200 bg-slate-100 text-slate-700",
+  Draft: "border-slate-200 bg-slate-100 text-slate-700",
+};
+
+function StatusBadge({ status }) {
   return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm transition ${
-        darkMode
-          ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
-          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+    <span
+      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+        statusToneMap[status] || "border-slate-200 bg-slate-100 text-slate-700"
       }`}
     >
-      {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-      {darkMode ? "Light Theme" : "Dark Theme"}
-    </button>
+      {safe(status)}
+    </span>
   );
 }
 
-function StatusBadge({ status, darkMode = false }) {
-  const base = "inline-flex rounded-full border px-3 py-1 text-xs font-semibold";
-
-  if (darkMode) {
-    const map = {
-      submitted: "border-sky-400/30 bg-sky-400/10 text-sky-200",
-      Submitted: "border-sky-400/30 bg-sky-400/10 text-sky-200",
-      "Under Review": "border-amber-400/30 bg-amber-400/10 text-amber-200",
-      Approved: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-      Rejected: "border-rose-400/30 bg-rose-400/10 text-rose-200",
-      draft: "border-slate-400/25 bg-slate-400/10 text-slate-300",
-      Draft: "border-slate-400/25 bg-slate-400/10 text-slate-300",
-    };
-
-    return <span className={`${base} ${map[status] || map.draft}`}>{safe(status)}</span>;
-  }
-
-  const map = {
-    submitted: "border-sky-200 bg-sky-50 text-sky-700",
-    Submitted: "border-sky-200 bg-sky-50 text-sky-700",
-    "Under Review": "border-amber-200 bg-amber-50 text-amber-700",
-    Approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    Rejected: "border-rose-200 bg-rose-50 text-rose-700",
-    draft: "border-slate-200 bg-slate-100 text-slate-700",
-    Draft: "border-slate-200 bg-slate-100 text-slate-700",
-  };
-
-  return <span className={`${base} ${map[status] || map.draft}`}>{safe(status)}</span>;
-}
-
-function RegisteredBadge({ value, darkMode = false }) {
-  if (darkMode) {
-    return value ? (
-      <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
-        Registered: Yes
-      </span>
-    ) : (
-      <span className="inline-flex rounded-full border border-slate-400/25 bg-slate-400/10 px-3 py-1 text-xs font-semibold text-slate-300">
-        Registered: No
-      </span>
-    );
-  }
-
+function RegisteredBadge({ value }) {
   return value ? (
     <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-      Registered: Yes
+      Yes
     </span>
   ) : (
     <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-      Registered: No
+      No
     </span>
   );
 }
 
-function ReviewBadge({ children, tone = "slate", darkMode = false }) {
-  const base =
-    "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm";
-
-  if (darkMode) {
-    const map = {
-      slate: "border-slate-500/30 bg-slate-500/10 text-slate-200",
-      amber: "border-amber-400/30 bg-amber-400/10 text-amber-200",
-      emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-      indigo: "border-indigo-400/30 bg-indigo-400/10 text-indigo-200",
-      cyan: "border-cyan-400/30 bg-cyan-400/10 text-cyan-200",
-      rose: "border-rose-400/30 bg-rose-400/10 text-rose-200",
-    };
-
-    return <span className={`${base} ${map[tone] || map.slate}`}>{children}</span>;
-  }
-
-  const map = {
-    slate: "border-slate-200 bg-white text-slate-700",
-    amber: "border-amber-200 bg-amber-50 text-amber-700",
-    emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    indigo: "border-indigo-200 bg-indigo-50 text-indigo-700",
-    cyan: "border-cyan-200 bg-cyan-50 text-cyan-700",
-    rose: "border-rose-200 bg-rose-50 text-rose-700",
-  };
-
-  return <span className={`${base} ${map[tone] || map.slate}`}>{children}</span>;
-}
-
-function LinkValue({ value, darkMode = false }) {
-  if (!value || value === "-") return <>{safe(value)}</>;
-
-  const raw = String(value).trim();
-  const href =
-    raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`;
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className={`inline-flex items-center gap-1 break-all underline-offset-4 transition hover:underline ${
-        darkMode ? "text-amber-200 hover:text-amber-100" : "text-amber-700 hover:text-amber-900"
-      }`}
-    >
-      {raw}
-      <ExternalLink size={13} />
-    </a>
-  );
-}
-
-function LoginScreen({ onLogin, darkMode, setDarkMode }) {
-  const [expertId, setExpertId] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const submitLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    const cleanId = expertId.trim();
-    const cleanPassword = password.trim();
-
-    if (!cleanId || !cleanPassword) {
-      setError("Please enter reviewer ID and password.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const adminSnap = await get(ref(rtdb, `Admin/${cleanId}`));
-
-      if (!adminSnap.exists()) {
-        setError("Invalid reviewer ID or password.");
-        return;
-      }
-
-      const adminData = adminSnap.val() || {};
-      const isExpert = String(adminData?.type || "").toLowerCase() === "expert";
-      const passwordMatches = String(adminData?.password || "") === cleanPassword;
-      const isBlocked = adminData?.active === false || adminData?.disabled === true;
-
-      if (!isExpert || !passwordMatches || isBlocked) {
-        setError("Invalid reviewer ID or password.");
-        return;
-      }
-
-      const session = {
-        id: cleanId,
-        type: adminData.type || "Expert",
-        name: adminData.name || cleanId,
-        loginAt: new Date().toISOString(),
-      };
-
-      localStorage.setItem("expertReviewerSession", JSON.stringify(session));
-      onLogin(session);
-    } catch (error) {
-      console.error("Expert login failed", error);
-      setError("Unable to verify login. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div
-      className="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/bg1.jpg')" }}
-    >
-      <div
-        className={`absolute inset-0 backdrop-[blur(2px)] ${
-          darkMode ? "bg-slate-950/86" : "bg-white/70"
-        }`}
-      />
-
-      <div className="relative flex min-h-screen items-center justify-center p-4">
-        <div
-          className={`grid w-full max-w-5xl overflow-hidden rounded-[34px] border shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr] ${
-            darkMode ? "border-white/10 bg-slate-950/78" : "border-white/80 bg-white/72"
-          }`}
-        >
-          <div className="hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-8 text-white lg:block">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-amber-100">
-              <ShieldCheck size={26} />
-            </div>
-
-            <h1 className="mt-8 max-w-md text-4xl font-black tracking-tight">
-              Startup Bihar Expert Review Board
-            </h1>
-
-            <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
-              Secure expert access for reviewing assigned applications, submitting scores,
-              and viewing AI evaluation only after independent scoring.
-            </p>
-
-            <div className="mt-10 grid gap-3">
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-100/80">
-                  Credential Source
-                </div>
-                <div className="mt-1 text-sm text-white/90">Realtime Database /Admin</div>
-              </div>
-
-              <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-100/80">
-                  Access Type
-                </div>
-                <div className="mt-1 text-sm text-white/90">Expert reviewer access</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 md:p-8">
-            <div className="flex items-center justify-between gap-3">
-              <div className="lg:hidden">
-                <div
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${
-                    darkMode ? "bg-white/10 text-white" : "bg-slate-950 text-white"
-                  }`}
-                >
-                  <ShieldCheck size={22} />
-                </div>
-              </div>
-
-              <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
-            </div>
-
-            <div className="mt-5 lg:mt-6">
-              <div
-                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                  darkMode
-                    ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                    : "border-amber-200 bg-amber-50 text-amber-700"
-                }`}
-              >
-                Expert Login
-              </div>
-
-              <h2
-                className={`mt-3 text-2xl font-black tracking-tight ${
-                  darkMode ? "text-white" : "text-slate-950"
-                }`}
-              >
-                Verify Reviewer Access
-              </h2>
-
-              <p
-                className={`mt-2 text-sm leading-6 ${
-                  darkMode ? "text-slate-400" : "text-slate-500"
-                }`}
-              >
-                Use your reviewer ID and password.
-              </p>
-            </div>
-
-            <form onSubmit={submitLogin} className="mt-7">
-              <label
-                className={`mb-2 block text-sm font-bold ${
-                  darkMode ? "text-slate-200" : "text-slate-700"
-                }`}
-              >
-                Reviewer ID
-              </label>
-
-              <div className="relative">
-                <UserRound
-                  size={17}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-                <input
-                  value={expertId}
-                  onChange={(e) => setExpertId(e.target.value)}
-                  placeholder="Reviewer ID"
-                  autoComplete="username"
-                  className={`w-full rounded-2xl border px-4 py-3 pl-11 text-sm font-semibold outline-none transition ${
-                    darkMode
-                      ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/8 focus:ring-4 focus:ring-amber-400/10"
-                      : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                  }`}
-                />
-              </div>
-
-              <label
-                className={`mb-2 mt-5 block text-sm font-bold ${
-                  darkMode ? "text-slate-200" : "text-slate-700"
-                }`}
-              >
-                Password
-              </label>
-
-              <div className="relative">
-                <LockKeyhole
-                  size={17}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  autoComplete="current-password"
-                  className={`w-full rounded-2xl border px-4 py-3 pl-11 text-sm font-semibold outline-none transition ${
-                    darkMode
-                      ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/8 focus:ring-4 focus:ring-amber-400/10"
-                      : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                  }`}
-                />
-              </div>
-
-              {error ? (
-                <div
-                  className={`mt-4 rounded-2xl border px-4 py-3 text-sm font-semibold ${
-                    darkMode
-                      ? "border-rose-400/25 bg-rose-400/10 text-rose-200"
-                      : "border-rose-200 bg-rose-50 text-rose-700"
-                  }`}
-                >
-                  {error}
-                </div>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 px-5 py-3 text-sm font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <LockKeyhole size={16} />
-                {loading ? "Verifying..." : "Open Reviewer Board"}
-              </button>
-
-              <div
-                className={`mt-4 rounded-2xl border px-4 py-3 text-xs leading-5 ${
-                  darkMode
-                    ? "border-white/10 bg-white/5 text-slate-400"
-                    : "border-white/80 bg-white/65 text-slate-500"
-                }`}
-              >
-                Password is verified from RTDB, not hardcoded in this component.
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function KpiCard({ icon: Icon, title, value, subtitle, tone = "slate", darkMode = false }) {
-  if (darkMode) {
-    const toneMap = {
-      slate: "from-slate-900/92 via-slate-950/90 to-slate-900/80",
-      cyan: "from-sky-950/55 via-slate-950/90 to-slate-900/80",
-      emerald: "from-emerald-950/50 via-slate-950/90 to-slate-900/80",
-      amber: "from-amber-950/45 via-slate-950/90 to-slate-900/80",
-      indigo: "from-indigo-950/60 via-slate-950/90 to-slate-900/80",
-    };
-
-    return (
-      <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-        <div className={`rounded-[22px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                {title}
-              </div>
-              <div className="mt-3 text-3xl font-bold tracking-tight text-white">
-                {safe(value)}
-              </div>
-              <div className="mt-2 text-sm text-slate-400">{subtitle}</div>
-            </div>
-
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-amber-100 shadow-sm">
-              <Icon size={18} />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const toneMap = {
-    slate: "from-slate-50 via-white to-slate-100",
-    cyan: "from-sky-50 via-white to-indigo-50",
-    emerald: "from-emerald-50 via-white to-teal-50",
+function SummaryCard({ title, value, subtitle, icon: Icon, accent = "amber" }) {
+  const accentClasses = {
     amber: "from-amber-50 via-white to-orange-50",
-    indigo: "from-violet-50 via-white to-indigo-50",
+    blue: "from-sky-50 via-white to-indigo-50",
+    emerald: "from-emerald-50 via-white to-teal-50",
+    rose: "from-rose-50 via-white to-orange-50",
+    slate: "from-slate-50 via-white to-slate-100",
   };
 
   return (
     <div className="rounded-[28px] border border-white/90 bg-white/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl">
-      <div className={`rounded-[22px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
+      <div
+        className={`rounded-[22px] bg-gradient-to-br ${
+          accentClasses[accent] || accentClasses.amber
+        } p-5`}
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -590,1337 +224,239 @@ function KpiCard({ icon: Icon, title, value, subtitle, tone = "slate", darkMode 
   );
 }
 
-function IconLabel({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-[20px] border border-white/10 bg-white/[0.07] px-4 py-3">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-amber-50/60">
-        <Icon size={13} />
-        {label}
-      </div>
-
-      <div className="mt-2 break-words text-sm font-semibold text-white">
-        {safe(value)}
-      </div>
-    </div>
-  );
-}
-
-function SectionShell({
-  id,
-  icon: Icon,
-  title,
-  subtitle,
-  children,
-  tone = "slate",
-  darkMode = false,
-}) {
-  if (darkMode) {
-    const toneMap = {
-      slate: "from-slate-900/92 via-slate-950/88 to-slate-900/85",
-      warm: "from-amber-950/30 via-slate-950/90 to-slate-900/85",
-      indigo: "from-indigo-950/40 via-slate-950/90 to-cyan-950/20",
-      emerald: "from-emerald-950/30 via-slate-950/90 to-teal-950/20",
-      violet: "from-violet-950/35 via-slate-950/90 to-indigo-950/25",
-      cyan: "from-cyan-950/35 via-slate-950/90 to-sky-950/20",
-    };
-
+function AIScoreBadge({ score, isDraft }) {
+  if (isDraft) {
     return (
-      <section
-        id={id}
-        className="scroll-mt-6 rounded-[30px] border border-white/10 bg-white/[0.04] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl md:p-5"
-      >
-        <div className={`rounded-[24px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
-          <div className="flex items-start gap-3 border-b border-white/10 pb-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-amber-100 shadow-[0_12px_30px_rgba(0,0,0,0.20)]">
-              <Icon size={18} />
-            </div>
-            <div>
-              <h3 className="text-lg font-black text-white">{title}</h3>
-              <p className="mt-1 text-sm leading-6 text-slate-400">{subtitle}</p>
-            </div>
-          </div>
-          <div className="mt-5">{children}</div>
-        </div>
-      </section>
+      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        Draft
+      </span>
     );
   }
 
-  const toneMap = {
-    slate: "from-white via-white to-slate-50",
-    warm: "from-amber-50/80 via-white to-orange-50/45",
-    indigo: "from-indigo-50/75 via-white to-cyan-50/45",
-    emerald: "from-emerald-50/70 via-white to-teal-50/45",
-    violet: "from-violet-50/75 via-white to-indigo-50/45",
-    cyan: "from-cyan-50/75 via-white to-sky-50/45",
-  };
-
-  return (
-    <section
-      id={id}
-      className="scroll-mt-6 rounded-[30px] border border-white/85 bg-white/82 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-5"
-    >
-      <div className={`rounded-[24px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
-        <div className="flex items-start gap-3 border-b border-slate-100 pb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]">
-            <Icon size={18} />
-          </div>
-          <div>
-            <h3 className="text-lg font-black text-slate-900">{title}</h3>
-            <p className="mt-1 text-sm leading-6 text-slate-500">{subtitle}</p>
-          </div>
-        </div>
-        <div className="mt-5">{children}</div>
-      </div>
-    </section>
-  );
-}
-
-function NarrativeReviewCard({ number, title, value, tone = "amber", darkMode = false }) {
-  const toneMap = {
-    amber: "from-amber-500 to-orange-500",
-    indigo: "from-indigo-500 to-cyan-500",
-    emerald: "from-emerald-500 to-teal-500",
-    violet: "from-violet-500 to-indigo-500",
-  };
-
-  return (
-    <div
-      className={`rounded-[24px] p-5 shadow-sm transition ${
-        darkMode
-          ? "border border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border border-slate-100 bg-white/94 hover:border-amber-100 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]"
-      }`}
-    >
-      <div className="flex items-start gap-4">
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-sm font-bold text-white shadow-sm ${
-            toneMap[tone] || toneMap.amber
-          }`}
-        >
-          {number}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div
-            className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-              darkMode ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            {title}
-          </div>
-
-          <div
-            className={`mt-3 whitespace-pre-wrap break-words text-[15px] leading-7 ${
-              darkMode ? "text-slate-200" : "text-slate-800"
-            }`}
-          >
-            {safe(value)}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoGrid({ items, darkMode = false }) {
-  return (
-    <div className="grid gap-3 md:grid-cols-2">
-      {items.map(([label, value]) => (
-        <InfoCell key={label} label={label} value={value} darkMode={darkMode} />
-      ))}
-    </div>
-  );
-}
-
-function InfoCell({ label, value, darkMode = false }) {
-  const isLink = label === "Website" || label === "LinkedIn Profile";
-
-  return (
-    <div
-      className={`rounded-[20px] px-4 py-4 shadow-sm transition ${
-        darkMode
-          ? "border border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border border-slate-100 bg-white/90 hover:border-amber-100"
-      }`}
-    >
-      <div
-        className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-          darkMode ? "text-slate-400" : "text-slate-500"
-        }`}
-      >
-        {label}
-      </div>
-
-      <div
-        className={`mt-2 break-words text-sm font-semibold leading-6 ${
-          darkMode ? "text-slate-200" : "text-slate-800"
-        }`}
-      >
-        {isLink ? <LinkValue value={value} darkMode={darkMode} /> : safe(value)}
-      </div>
-    </div>
-  );
-}
-
-function WideInfoCell({ label, value, darkMode = false }) {
-  const isLink = label === "Website" || label === "LinkedIn Profile";
-
-  return (
-    <div
-      className={`rounded-[22px] px-5 py-4 shadow-sm transition ${
-        darkMode
-          ? "border border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border border-slate-100 bg-white/90 hover:border-amber-100"
-      }`}
-    >
-      <div
-        className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-          darkMode ? "text-slate-400" : "text-slate-500"
-        }`}
-      >
-        {label}
-      </div>
-
-      <div
-        className={`mt-3 whitespace-pre-wrap break-words text-sm leading-6 ${
-          darkMode ? "text-slate-200" : "text-slate-800"
-        }`}
-      >
-        {isLink ? <LinkValue value={value} darkMode={darkMode} /> : safe(value)}
-      </div>
-    </div>
-  );
-}
-
-function ActionDocumentCard({
-  title,
-  meta,
-  icon: Icon = FileText,
-  tone = "violet",
-  darkMode = false,
-}) {
-  const fileName = meta?.fileName || "-";
-  const link = meta?.downloadURL || "";
-
-  const lightToneMap = {
-    violet: "from-violet-50/85 via-white to-indigo-50/70",
-    amber: "from-amber-50/85 via-white to-orange-50/70",
-    emerald: "from-emerald-50/85 via-white to-teal-50/70",
-    cyan: "from-cyan-50/85 via-white to-sky-50/70",
-    slate: "from-slate-50 via-white to-slate-100",
-  };
-
-  const darkToneMap = {
-    violet: "from-violet-950/35 via-slate-950/70 to-indigo-950/25",
-    amber: "from-amber-950/30 via-slate-950/70 to-orange-950/20",
-    emerald: "from-emerald-950/30 via-slate-950/70 to-teal-950/20",
-    cyan: "from-cyan-950/30 via-slate-950/70 to-sky-950/20",
-    slate: "from-slate-900 via-slate-950 to-slate-900",
-  };
-
-  return (
-    <div
-      className={`rounded-[24px] border bg-gradient-to-br p-4 shadow-sm ${
-        darkMode
-          ? `border-white/10 ${darkToneMap[tone] || darkToneMap.violet}`
-          : `border-slate-100 ${lightToneMap[tone] || lightToneMap.violet}`
-      }`}
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
-            darkMode
-              ? "bg-white/10 text-amber-100"
-              : "bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white"
-          }`}
-        >
-          <Icon size={17} />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div
-            className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-              darkMode ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            {title}
-          </div>
-
-          <div
-            className={`mt-2 break-words text-sm font-semibold leading-6 ${
-              darkMode ? "text-slate-200" : "text-slate-800"
-            }`}
-          >
-            {fileName}
-          </div>
-
-          {link ? (
-            <a
-              href={link}
-              target="_blank"
-              rel="noreferrer"
-              className={`mt-3 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
-                darkMode
-                  ? "border-white/10 bg-white/8 text-amber-100 hover:border-amber-400/25 hover:bg-amber-400/10"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
-              }`}
-            >
-              Open File
-              <ExternalLink size={14} />
-            </a>
-          ) : (
-            <div className={`mt-3 text-xs ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
-              No file uploaded
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function UtilityRail({ children, darkMode = false }) {
-  return (
-    <aside
-      className={`rounded-[30px] p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl ${
-        darkMode ? "border border-white/10 bg-white/[0.04]" : "border border-white/85 bg-white/82"
-      }`}
-    >
-      <div className={`mb-5 border-b pb-4 ${darkMode ? "border-white/10" : "border-slate-100"}`}>
-        <h3 className={`text-lg font-black ${darkMode ? "text-white" : "text-slate-900"}`}>
-          Review Utility
-        </h3>
-        <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-          Important files and quick review data.
-        </p>
-      </div>
-
-      <div className="space-y-4">{children}</div>
-    </aside>
-  );
-}
-
-function UtilityFact({ label, value, darkMode = false }) {
-  const isLink = label === "Website";
-
-  return (
-    <div
-      className={`rounded-[18px] border px-4 py-3 transition ${
-        darkMode
-          ? "border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border-slate-100 bg-slate-50/95 hover:border-amber-100 hover:bg-white"
-      }`}
-    >
-      <div
-        className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-          darkMode ? "text-slate-400" : "text-slate-500"
-        }`}
-      >
-        {label}
-      </div>
-
-      <div
-        className={`mt-1 break-words text-sm font-semibold ${
-          darkMode ? "text-slate-200" : "text-slate-800"
-        }`}
-      >
-        {isLink ? <LinkValue value={value} darkMode={darkMode} /> : safe(value)}
-      </div>
-    </div>
-  );
-}
-
-function ProfileRail({
-  profilePhoto,
-  profilePhotoName,
-  founderName,
-  email,
-  phone,
-  district,
-  stage,
-  onAI,
-  canViewAI,
-  darkMode = false,
-}) {
-  return (
-    <div className="sticky top-4 space-y-4">
-      <div className="overflow-hidden rounded-[30px] border border-white/10 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.30)]">
-        <div className="bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.16),transparent_25%),radial-gradient(circle_at_center,rgba(99,102,241,0.12),transparent_30%)] p-4">
-          <div className="overflow-hidden rounded-[24px] border border-white/10 bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-            {profilePhoto ? (
-              <img src={profilePhoto} alt={founderName} className="h-[260px] w-full object-cover" />
-            ) : (
-              <div className="flex h-[260px] items-center justify-center text-center text-sm text-white/60">
-                No profile photo
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-50/55">
-              Founder
-            </div>
-            <div className="mt-1 text-lg font-semibold text-white">{safe(founderName)}</div>
-          </div>
-
-          <div className="mt-4 grid gap-3">
-            <IconLabel icon={Mail} label="Email" value={email} />
-            <IconLabel icon={Phone} label="Mobile" value={phone} />
-            <IconLabel icon={MapPin} label="District" value={district} />
-            <IconLabel icon={Rocket} label="Stage" value={stage} />
-          </div>
-
-          {profilePhotoName ? (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-50/55">
-                Profile File
-              </div>
-              <div className="mt-1 break-words text-sm font-medium text-white/90">
-                {safe(profilePhotoName)}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        disabled={!canViewAI}
-        onClick={onAI}
-        className={`flex w-full items-center justify-center gap-2 rounded-[22px] border px-4 py-3 text-sm font-bold shadow-sm transition ${
-          canViewAI
-            ? darkMode
-              ? "border-amber-400/25 bg-amber-400/10 text-amber-100 hover:bg-amber-400/15"
-              : "border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 hover:border-amber-300 hover:from-amber-100 hover:to-orange-100"
-            : darkMode
-            ? "cursor-not-allowed border-white/10 bg-white/5 text-slate-500"
-            : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-        }`}
-      >
-        <Bot size={17} />
-        {canViewAI ? "View AI Evaluation" : "Score First to Unlock AI"}
-      </button>
-    </div>
-  );
-}
-
-function FeedbackMiniPanel({ feedback, darkMode = false }) {
-  const hasFeedback = feedback?.submitted === true;
-
-  if (!hasFeedback) {
+  if (score === null || score === undefined || score === "") {
     return (
-      <div
-        className={`rounded-[20px] border px-4 py-4 text-sm ${
-          darkMode
-            ? "border-white/10 bg-white/[0.05] text-slate-400"
-            : "border-slate-200 bg-slate-50 text-slate-500"
-        }`}
-      >
-        No website feedback submitted yet.
-      </div>
+      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        —
+      </span>
     );
   }
 
+  const n = Number(score);
+  const tone =
+    n >= 7.5
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : n >= 5.5
+      ? "border-amber-200 bg-amber-50 text-amber-700"
+      : "border-rose-200 bg-rose-50 text-rose-700";
+
   return (
-    <div
-      className={`rounded-[22px] border p-4 ${
-        darkMode
-          ? "border-emerald-400/20 bg-emerald-400/10"
-          : "border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-cyan-50"
-      }`}
+    <span
+      className={`inline-flex min-w-[82px] items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <div
-            className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
-              darkMode ? "text-emerald-200" : "text-emerald-700"
-            }`}
-          >
-            Website Feedback
-          </div>
-          <div className={`mt-1 text-sm font-bold ${darkMode ? "text-white" : "text-slate-900"}`}>
-            {safe(feedback?.experience)}
-          </div>
-        </div>
-
-        <div
-          className={`flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold ${
-            darkMode
-              ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-              : "border-amber-200 bg-amber-50 text-amber-700"
-          }`}
-        >
-          <Star size={13} className="fill-amber-400 text-amber-400" />
-          {safe(feedback?.rating)}/5
-        </div>
-      </div>
-
-      {feedback?.message ? (
-        <div
-          className={`mt-3 whitespace-pre-wrap break-words rounded-[18px] border px-4 py-3 text-sm leading-6 ${
-            darkMode
-              ? "border-white/10 bg-white/[0.05] text-slate-200"
-              : "border-white bg-white/75 text-slate-700"
-          }`}
-        >
-          {feedback.message}
-        </div>
-      ) : null}
-    </div>
+      {n.toFixed(1)}/10
+    </span>
   );
 }
 
-function CofounderList({ coFounders, isSoleFounder, darkMode = false }) {
-  if (isSoleFounder) {
-    return (
-      <div
-        className={`rounded-[22px] border px-5 py-4 text-sm font-medium ${
-          darkMode
-            ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
-            : "border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800"
-        }`}
-      >
-        This startup has been marked as a sole-founder venture.
-      </div>
-    );
-  }
-
-  if (!coFounders.length) {
-    return (
-      <div
-        className={`rounded-[22px] border px-5 py-4 text-sm ${
-          darkMode
-            ? "border-white/10 bg-white/[0.05] text-slate-400"
-            : "border-slate-200 bg-slate-50 text-slate-500"
-        }`}
-      >
-        No co-founder details added.
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-3 md:grid-cols-2">
-      {coFounders.map((coFounder, index) => (
-        <div
-          key={index}
-          className={`rounded-[24px] border p-4 shadow-sm ${
-            darkMode ? "border-white/10 bg-white/[0.05]" : "border-slate-200 bg-white/90"
-          }`}
-        >
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div className={`text-sm font-bold ${darkMode ? "text-white" : "text-slate-800"}`}>
-              Co-Founder {index + 1}
-            </div>
-            <ReviewBadge tone="indigo" darkMode={darkMode}>
-              Team Member
-            </ReviewBadge>
-          </div>
-
-          <div className="space-y-3">
-            <InfoCell label="Name" value={coFounder?.name} darkMode={darkMode} />
-            <InfoCell label="Email" value={coFounder?.email} darkMode={darkMode} />
-            <InfoCell label="Phone Number" value={coFounder?.phoneNumber} darkMode={darkMode} />
-            <InfoCell label="Qualification" value={coFounder?.qualification} darkMode={darkMode} />
-            <WideInfoCell
-              label="LinkedIn Profile"
-              value={coFounder?.linkedinProfile}
-              darkMode={darkMode}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ScorePanel({
-  review,
-  score,
-  setScore,
-  comment,
-  setComment,
-  saving,
-  onSave,
-  darkMode = false,
-}) {
-  const alreadyScored = !!review?.score;
-
-  return (
-    <div
-      className={`rounded-[30px] border p-5 shadow-[0_22px_70px_rgba(15,23,42,0.10)] ${
-        darkMode ? "border-white/10 bg-slate-950/70" : "border-white/80 bg-white/78"
-      }`}
-    >
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-        <div>
-          <div
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black ${
-              darkMode
-                ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                : "border-amber-200 bg-amber-50 text-amber-700"
-            }`}
-          >
-            <Star size={13} />
-            Expert Score
-          </div>
-
-          <h3 className={`mt-3 text-xl font-black ${darkMode ? "text-white" : "text-slate-950"}`}>
-            {alreadyScored ? "Score Submitted" : "Submit Score"}
-          </h3>
-
-          <p className={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-            Submit your independent score first. AI evaluation will be available only after score submission.
-          </p>
-        </div>
-
-        {alreadyScored ? (
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm font-bold ${
-              darkMode
-                ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200"
-                : "border-emerald-200 bg-emerald-50 text-emerald-800"
-            }`}
-          >
-            Score: {review.score}/10
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-5 grid gap-4 lg:grid-cols-[220px_1fr_auto]">
-        <div>
-          <label
-            className={`mb-2 block text-xs font-bold uppercase tracking-[0.16em] ${
-              darkMode ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            Score out of 10
-          </label>
-
-          <input
-            type="number"
-            min="0"
-            max="10"
-            step="0.1"
-            value={score}
-            onChange={(e) => setScore(e.target.value)}
-            placeholder="0 - 10"
-            className={`w-full rounded-2xl border px-4 py-3 text-sm font-bold outline-none transition ${
-              darkMode
-                ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-amber-400/10"
-                : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-            }`}
-          />
-        </div>
-
-        <div>
-          <label
-            className={`mb-2 block text-xs font-bold uppercase tracking-[0.16em] ${
-              darkMode ? "text-slate-400" : "text-slate-500"
-            }`}
-          >
-            Comment
-          </label>
-
-          <textarea
-            rows={2}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Write expert observation..."
-            className={`w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition ${
-              darkMode
-                ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-amber-400/10"
-                : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-            }`}
-          />
-        </div>
-
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={saving}
-            className="inline-flex h-[48px] items-center justify-center rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 px-5 text-sm font-black text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {saving ? "Saving..." : alreadyScored ? "Revise Score" : "Save Score"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DetailModal({
-  open,
-  onClose,
-  application,
-  reviewerId,
-  onReviewSaved,
-  darkMode = false,
-}) {
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [score, setScore] = useState("");
-  const [comment, setComment] = useState("");
-  const [review, setReview] = useState(null);
-  const [loadingReview, setLoadingReview] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const item = application || {};
-  const appDocId = item?.id || item?._docId || "";
-  const startupId = item?._applicationId || item?.applicationId || appDocId || "";
-
-  const coFounders = item?.cofounderDetails?.coFounders || [];
-  const isSoleFounder = !!item?.cofounderDetails?.isSoleFounder;
-
-  const startupName = safe(getStartupName(item));
-  const founderName = safe(getFounderName(item));
-  const email = safe(getEmail(item));
-  const phone = safe(getPhone(item));
-  const submitted = safe(item._createdAtDisplay);
-  const district = safe(getDistrict(item));
-  const category = safe(getCategory(item));
-  const stage = safe(getStage(item));
-
-  const profilePhoto = item?.basicDetails?.profilePhotoMeta?.downloadURL || "";
-  const profilePhotoName = item?.basicDetails?.profilePhotoMeta?.fileName || "";
-
-  const feedback = item?.websiteFeedback || null;
-  const hasEntity = hasRegisteredCompany(item);
-
-  const institutionValue =
-    item?.basicDetails?.institution === "Other"
-      ? item?.basicDetails?.otherInstitution
-      : item?.basicDetails?.institution;
-
-  const canViewAI = !!review?.score;
-
-  useEffect(() => {
-    const loadReview = async () => {
-      if (!open || !appDocId) return;
-
-      try {
-        setLoadingReview(true);
-
-        const reviewRef = doc(db, "startupApplications", appDocId, "review", "expert");
-        const snap = await getDoc(reviewRef);
-
-        if (snap.exists()) {
-          const data = snap.data();
-          setReview(data);
-          setScore(data?.score ?? "");
-          setComment(data?.comment ?? "");
-        } else {
-          setReview(null);
-          setScore("");
-          setComment("");
-        }
-      } catch (error) {
-        console.error("Failed to load expert review", error);
-      } finally {
-        setLoadingReview(false);
-      }
-    };
-
-    loadReview();
-  }, [open, appDocId]);
-
-  const saveExpertReview = async () => {
-    const numericScore = Number(score);
-
-    if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > 10) {
-      alert("Please enter a valid score between 0 and 10.");
-      return;
-    }
-
-    if (!comment.trim()) {
-      alert("Please add a short comment.");
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const reviewRef = doc(db, "startupApplications", appDocId, "review", "expert");
-
-      const previousScore = Number(review?.score);
-      const alreadyScored = !!review?.score;
-      const scoreChanged =
-        alreadyScored && Number.isFinite(previousScore) && previousScore !== numericScore;
-      const viewedAI = review?.aiEvaluationViewed === true;
-
-      let payload = {
-        reviewerId: reviewerId || "unknownExpert",
-        reviewerType: "expertReviewer",
-        score: numericScore,
-        comment: comment.trim(),
-        updatedAt: serverTimestamp(),
-      };
-
-      if (!alreadyScored) {
-        payload = {
-          ...payload,
-          firstScore: numericScore,
-          firstComment: comment.trim(),
-          firstSubmittedAt: serverTimestamp(),
-          scoreSubmitted: true,
-          aiEvaluationAllowed: true,
-          scoreRevised: false,
-        };
-      } else {
-        payload = {
-          ...payload,
-          firstScore: review.firstScore ?? review.score,
-          firstComment: review.firstComment || review.comment || "",
-          firstSubmittedAt: review.firstSubmittedAt || null,
-          scoreRevised: scoreChanged || review?.scoreRevised === true,
-          lastRevisedAt: scoreChanged ? serverTimestamp() : review?.lastRevisedAt || null,
-          previousScore: scoreChanged ? previousScore : review?.previousScore ?? null,
-          previousComment: scoreChanged ? review?.comment || "" : review?.previousComment || "",
-          scoreChangedAfterAIView:
-            viewedAI && scoreChanged ? true : review?.scoreChangedAfterAIView === true,
-          scoreChangedAfterAIViewAt:
-            viewedAI && scoreChanged ? serverTimestamp() : review?.scoreChangedAfterAIViewAt || null,
-        };
-      }
-
-      await setDoc(reviewRef, payload, { merge: true });
-
-      const freshSnap = await getDoc(reviewRef);
-      const freshReview = freshSnap.exists() ? freshSnap.data() : payload;
-
-      setReview(freshReview);
-      onReviewSaved?.(appDocId, freshReview);
-
-      alert(!review?.score ? "Score saved. AI evaluation is now available." : "Score revised successfully.");
-    } catch (error) {
-      console.error("Failed to save expert review", error);
-      alert("Unable to save expert review.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const openAIWithTracking = async () => {
-    if (!canViewAI) return;
-
-    setIsAIModalOpen(true);
-
-    if (review?.aiEvaluationViewed === true || !appDocId) return;
-
-    try {
-      const reviewRef = doc(db, "startupApplications", appDocId, "review", "expert");
-
-      await setDoc(
-        reviewRef,
-        {
-          aiEvaluationViewed: true,
-          aiEvaluationViewedAt: serverTimestamp(),
-          aiEvaluationViewedBy: reviewerId || "unknownExpert",
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-      const freshSnap = await getDoc(reviewRef);
-
-      if (freshSnap.exists()) {
-        const freshReview = freshSnap.data();
-        setReview(freshReview);
-        onReviewSaved?.(appDocId, freshReview);
-      }
-    } catch (error) {
-      console.error("Failed to mark AI evaluation viewed", error);
-    }
-  };
-
-  if (!open || !application) return null;
-
-  return (
-    <>
-      <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/82 p-3 backdrop-blur-md md:p-6">
-        <div
-          className={`relative max-h-[94vh] w-full max-w-[1500px] overflow-hidden rounded-[38px] border shadow-[0_44px_130px_rgba(2,6,23,0.50)] ${
-            darkMode ? "border-white/10 bg-slate-950" : "border-white/20 bg-[#f7f9fc]"
-          }`}
-        >
-          <div
-            className={`absolute inset-0 ${
-              darkMode
-                ? "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.10),transparent_18%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.12),transparent_23%),linear-gradient(to_bottom,rgba(2,6,23,0.94),rgba(15,23,42,0.98))]"
-                : "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.13),transparent_18%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_23%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.10),transparent_21%),linear-gradient(to_bottom,rgba(255,255,255,0.90),rgba(255,255,255,0.98))]"
-            }`}
-          />
-
-          <div className="relative flex max-h-[94vh] flex-col">
-            <div
-              className={`border-b px-5 py-4 backdrop-blur-xl md:px-7 ${
-                darkMode ? "border-white/10 bg-white/[0.04]" : "border-white/70 bg-white/78"
-              }`}
-            >
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="min-w-0">
-                  <div
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] shadow-sm ${
-                      darkMode
-                        ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                        : "border-amber-200 bg-amber-50 text-amber-700"
-                    }`}
-                  >
-                    <ShieldCheck size={13} />
-                    Expert Review
-                  </div>
-
-                  <div className="mt-3 flex flex-col gap-3 xl:flex-row xl:items-center">
-                    <h2
-                      className={`truncate text-[28px] font-black tracking-tight ${
-                        darkMode ? "text-white" : "text-slate-950"
-                      }`}
-                    >
-                      {startupName}
-                    </h2>
-
-                    <div className="flex flex-wrap gap-2">
-                      <StatusBadge status={item._status} darkMode={darkMode} />
-                      <ReviewBadge darkMode={darkMode}>ID: {safe(item._applicationId)}</ReviewBadge>
-                      <RegisteredBadge value={item._registeredCompany} darkMode={darkMode} />
-                      {review?.score ? (
-                        <ReviewBadge tone="emerald" darkMode={darkMode}>
-                          Scored
-                        </ReviewBadge>
-                      ) : (
-                        <ReviewBadge tone="amber" darkMode={darkMode}>
-                          Pending Score
-                        </ReviewBadge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={onClose}
-                  className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border shadow-sm transition hover:scale-[1.02] ${
-                    darkMode
-                      ? "border-white/10 bg-white/8 text-white hover:bg-white/12"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-
-            <div className="relative overflow-auto px-4 py-4 md:px-7 md:py-6">
-              <div className="mb-5">
-                {loadingReview ? (
-                  <div
-                    className={`rounded-[28px] border p-5 text-sm ${
-                      darkMode
-                        ? "border-white/10 bg-white/[0.04] text-slate-400"
-                        : "border-white/85 bg-white/82 text-slate-500"
-                    }`}
-                  >
-                    Loading expert review...
-                  </div>
-                ) : (
-                  <ScorePanel
-                    review={review}
-                    score={score}
-                    setScore={setScore}
-                    comment={comment}
-                    setComment={setComment}
-                    saving={saving}
-                    onSave={saveExpertReview}
-                    darkMode={darkMode}
-                  />
-                )}
-              </div>
-
-              <div className="grid gap-5 xl:grid-cols-[300px_1fr]">
-                <ProfileRail
-                  profilePhoto={profilePhoto}
-                  profilePhotoName={profilePhotoName}
-                  founderName={founderName}
-                  email={email}
-                  phone={phone}
-                  district={district}
-                  stage={stage}
-                  onAI={openAIWithTracking}
-                  canViewAI={canViewAI}
-                  darkMode={darkMode}
-                />
-
-                <div className="space-y-5">
-                  <div className="grid gap-5 2xl:grid-cols-[1fr_380px]">
-                    <SectionShell
-                      id="review-business-idea"
-                      icon={Lightbulb}
-                      title="Business Idea"
-                      subtitle="Primary evaluation area. Review this before opening AI evaluation."
-                      tone="warm"
-                      darkMode={darkMode}
-                    >
-                      <div className="grid gap-4">
-                        <NarrativeReviewCard
-                          number="1"
-                          title="Problem Statement"
-                          value={item?.businessIdea?.problemStatement}
-                          tone="amber"
-                          darkMode={darkMode}
-                        />
-                        <NarrativeReviewCard
-                          number="2"
-                          title="Solution"
-                          value={item?.businessIdea?.solution}
-                          tone="indigo"
-                          darkMode={darkMode}
-                        />
-                        <NarrativeReviewCard
-                          number="3"
-                          title="Innovation"
-                          value={item?.businessIdea?.innovation}
-                          tone="emerald"
-                          darkMode={darkMode}
-                        />
-                        <NarrativeReviewCard
-                          number="4"
-                          title="Business Model"
-                          value={item?.businessIdea?.businessModel}
-                          tone="violet"
-                          darkMode={darkMode}
-                        />
-                      </div>
-                    </SectionShell>
-
-                    <div className="space-y-5 2xl:sticky 2xl:top-4 2xl:self-start">
-                      <UtilityRail darkMode={darkMode}>
-                        <ActionDocumentCard
-                          title="Pitch Deck"
-                          meta={item?.businessIdea?.pitchDeckMeta}
-                          icon={FileText}
-                          tone="violet"
-                          darkMode={darkMode}
-                        />
-
-                        <div className="grid gap-3">
-                          <UtilityFact
-                            label="Sector"
-                            value={item?.startupDetails?.sector || category}
-                            darkMode={darkMode}
-                          />
-                          <UtilityFact
-                            label="Stage"
-                            value={item?.startupDetails?.stage || stage}
-                            darkMode={darkMode}
-                          />
-                          <UtilityFact
-                            label="Team Size"
-                            value={item?.startupDetails?.teamSize}
-                            darkMode={darkMode}
-                          />
-                          <UtilityFact
-                            label="Website"
-                            value={item?.startupDetails?.website}
-                            darkMode={darkMode}
-                          />
-                          <UtilityFact label="Submitted" value={submitted} darkMode={darkMode} />
-                          <UtilityFact
-                            label="Registered Entity"
-                            value={hasEntity ? "Yes" : "No"}
-                            darkMode={darkMode}
-                          />
-                        </div>
-
-                        {hasEntity ? (
-                          <ActionDocumentCard
-                            title="Entity Certificate"
-                            meta={item?.entityDetails?.certificateMeta}
-                            icon={BadgeCheck}
-                            tone="emerald"
-                            darkMode={darkMode}
-                          />
-                        ) : null}
-
-                        <FeedbackMiniPanel feedback={feedback} darkMode={darkMode} />
-                      </UtilityRail>
-                    </div>
-                  </div>
-
-                  <SectionShell
-                    id="review-founder"
-                    icon={UserRound}
-                    title="Founder Profile"
-                    subtitle="Applicant identity, contact details, education, and address."
-                    tone="slate"
-                    darkMode={darkMode}
-                  >
-                    <InfoGrid
-                      darkMode={darkMode}
-                      items={[
-                        ["Full Name", item?.basicDetails?.fullName || founderName],
-                        ["Email", email],
-                        ["Phone Number", phone],
-                        ["Gender", item?.basicDetails?.gender],
-                        ["Category", item?.basicDetails?.category],
-                        ["Date of Birth", item?.basicDetails?.dateOfBirth],
-                        ["Qualification", item?.basicDetails?.qualification],
-                        ["Institution", institutionValue],
-                        ["LinkedIn Profile", item?.basicDetails?.linkedinProfile],
-                        ["State", item?.basicDetails?.state],
-                        ["District", item?.basicDetails?.district],
-                        ["Block Name", item?.basicDetails?.blockName],
-                        ["Pincode", item?.basicDetails?.pincode],
-                      ]}
-                    />
-
-                    <div className="mt-3">
-                      <WideInfoCell
-                        label="Applicant Address"
-                        value={item?.basicDetails?.applicantAddress}
-                        darkMode={darkMode}
-                      />
-                    </div>
-                  </SectionShell>
-
-                  <SectionShell
-                    id="review-entity"
-                    icon={Building2}
-                    title="Entity Details"
-                    subtitle="Company registration details and official business information."
-                    tone="indigo"
-                    darkMode={darkMode}
-                  >
-                    {!hasEntity ? (
-                      <div
-                        className={`rounded-[22px] border px-5 py-4 text-sm ${
-                          darkMode
-                            ? "border-white/10 bg-white/[0.05] text-slate-400"
-                            : "border-slate-200 bg-slate-50 text-slate-500"
-                        }`}
-                      >
-                        No registered entity has been added in this application.
-                      </div>
-                    ) : (
-                      <>
-                        <InfoGrid
-                          darkMode={darkMode}
-                          items={[
-                            [
-                              "Has Registered Entity",
-                              yesNo(item?.entityDetails?.hasRegisteredEntity || item._registeredCompany),
-                            ],
-                            ["Entity Name", item?.entityDetails?.entityName],
-                            ["Entity Type", item?.entityDetails?.entityType],
-                            [
-                              "Registration Number",
-                              item?.entityDetails?.entityRegistrationNumber || item?.registrationNumber,
-                            ],
-                            ["Date of Registration", item?.entityDetails?.dateOfRegistration],
-                            ["State", item?.entityDetails?.state],
-                            ["District", item?.entityDetails?.district],
-                          ]}
-                        />
-
-                        <div className="mt-3">
-                          <WideInfoCell
-                            label="Business Address"
-                            value={item?.entityDetails?.businessAddress}
-                            darkMode={darkMode}
-                          />
-                        </div>
-
-                        <div className="mt-3">
-                          <ActionDocumentCard
-                            title="Certificate"
-                            meta={item?.entityDetails?.certificateMeta}
-                            icon={BadgeCheck}
-                            tone="emerald"
-                            darkMode={darkMode}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </SectionShell>
-
-                  <SectionShell
-                    id="review-cofounders"
-                    icon={Users}
-                    title="Co-Founder Details"
-                    subtitle="Additional founders and team members listed by applicant."
-                    tone="slate"
-                    darkMode={darkMode}
-                  >
-                    <CofounderList
-                      coFounders={coFounders}
-                      isSoleFounder={isSoleFounder}
-                      darkMode={darkMode}
-                    />
-                  </SectionShell>
-
-                  <SectionShell
-                    id="review-metadata"
-                    icon={IdCard}
-                    title="Registration Metadata"
-                    subtitle="Low-priority reference information for record verification."
-                    tone="slate"
-                    darkMode={darkMode}
-                  >
-                    <InfoGrid
-                      darkMode={darkMode}
-                      items={[
-                        ["Application ID", item._applicationId],
-                        ["Founder Name", getFounderName(item)],
-                        ["Startup Name", getStartupName(item)],
-                        ["Aadhar Number", item?.userSignup?.aadharNumber],
-                        ["Application Type", item?.userSignup?.applicationType || item?.applicationType],
-                        ["Status", item._status],
-                        ["Submitted", submitted],
-                        ["Registered Entity", hasEntity ? "Yes" : "No"],
-                      ]}
-                    />
-                  </SectionShell>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <AIEvaluationModal
-        open={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        startupId={startupId}
-        startupName={startupName}
-        application={item}
-      />
-    </>
-  );
-}
-
-export default function ReviewerBoard() {
-  const getSavedSession = () => {
-    try {
-      return JSON.parse(localStorage.getItem("expertReviewerSession") || "null");
-    } catch {
-      return null;
-    }
-  };
-
-  const getSavedTheme = () => localStorage.getItem("expertReviewerTheme") === "dark";
-
-  const savedSession = getSavedSession();
-
-  const [darkMode, setDarkMode] = useState(getSavedTheme);
-  const [loggedIn, setLoggedIn] = useState(!!savedSession?.id);
-  const [reviewer, setReviewer] = useState(savedSession || null);
-
-  const [rows, setRows] = useState([]);
-  const [internalThreshold, setInternalThreshold] = useState(7.5);
-  const [loading, setLoading] = useState(false);
+export default function NewApplicationDashboard() {
+  const [applications, setApplications] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [registeredFilter, setRegisteredFilter] = useState("All");
-  const [reviewFilter, setReviewFilter] = useState("All");
-  const [scoreFilter, setScoreFilter] = useState("All");
-  const [sortMode, setSortMode] = useState("ID Desc");
-  const [page, setPage] = useState(1);
+  const [districtFilter, setDistrictFilter] = useState("All");
+  const [aiReviewedFilter, setAiReviewedFilter] = useState("All");
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
 
-  const [selectedApplication, setSelectedApplication] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const loadReviewerData = async () => {
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalApplication, setAiModalApplication] = useState(null);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+
+  const [backfillState, setBackfillState] = useState({
+    running: false,
+    total: 0,
+    done: 0,
+    updated: 0,
+    skipped: 0,
+    failed: 0,
+    current: "",
+    message: "",
+  });
+
+  const loadApplications = async () => {
     setLoading(true);
 
     try {
-      let minScore = 7.5;
+      const q = query(
+        collection(db, "startupApplications"),
+        orderBy("createdAt", "desc")
+      );
 
-      try {
-        const thresholdSnap = await get(ref(rtdb, "GlobalParameter/ExpertReviewMinScore"));
-        if (thresholdSnap.exists()) {
-          minScore = Number(thresholdSnap.val()) || 7.5;
-        }
-      } catch (error) {
-        console.warn("ExpertReviewMinScore not found. Using fallback 7.5", error);
-      }
+      const snapshot = await getDocs(q);
 
-      setInternalThreshold(minScore);
-
-      const q = query(collection(db, "startupApplications"), orderBy("createdAt", "desc"));
-      const snap = await getDocs(q);
-
-      const allRows = snap.docs.map((docItem) => {
+      const rows = snapshot.docs.map((docItem) => {
         const data = docItem.data();
-
         return {
           id: docItem.id,
-          _docId: docItem.id,
           ...data,
-          _applicationId: getApplicationId(data, docItem.id),
           _status: getStatus(data),
           _registeredCompany: hasRegisteredCompany(data),
-          _createdAtDisplay: formatDate(
-            data?.createdAt || data?.submittedAt || data?.firestoreUpdatedAt
-          ),
-          _aiScoreInternal: getAIScore(data),
+          _applicationId: getApplicationId(data, docItem.id),
+          _createdAtDisplay: formatDate(getCreatedAt(data)),
         };
       });
 
-      const eligibleRows = allRows.filter((item) => item._aiScoreInternal >= minScore);
-
-      const enriched = await Promise.all(
-        eligibleRows.map(async (item) => {
-          try {
-            const reviewRef = doc(db, "startupApplications", item.id, "review", "expert");
-            const reviewSnap = await getDoc(reviewRef);
-
-            return {
-              ...item,
-              _expertReview: reviewSnap.exists() ? reviewSnap.data() : null,
-            };
-          } catch {
-            return {
-              ...item,
-              _expertReview: null,
-            };
-          }
-        })
-      );
-
-      setRows(enriched);
+      setApplications(rows);
     } catch (error) {
-      console.error("Failed to load reviewer board", error);
-      setRows([]);
+      console.error("Failed to load applications", error);
+      setApplications([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (loggedIn) {
-      loadReviewerData();
+    loadApplications();
+  }, []);
+
+  const syncExistingAIReviewsToFirestore = async () => {
+    if (backfillState.running) return;
+
+    const rows = applications || [];
+    if (!rows.length) {
+      alert("No applications loaded.");
+      return;
     }
-  }, [loggedIn]);
 
-  const handleLogin = (session) => {
-    setReviewer(session);
-    setLoggedIn(true);
+    setBackfillState({
+      running: true,
+      total: rows.length,
+      done: 0,
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+      current: "",
+      message: "Checking RTDB and syncing AI summaries to Firestore...",
+    });
+
+    let updated = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (let i = 0; i < rows.length; i += 1) {
+      const item = rows[i];
+      const sbNo = String(item?._applicationId || "");
+      const docId = String(item?.id || "");
+      const isDraft = String(item?._status || "").toLowerCase() === "draft";
+
+      setBackfillState((prev) => ({
+        ...prev,
+        done: i,
+        updated,
+        skipped,
+        failed,
+        current: sbNo || docId || `row-${i + 1}`,
+      }));
+
+      if (!sbNo || !docId || isDraft) {
+        skipped += 1;
+        continue;
+      }
+
+      try {
+        const snap = await get(ref(rtdb, `/startupAIReview/${AI_MONTH_KEY}/${sbNo}`));
+
+        if (!snap.exists()) {
+          skipped += 1;
+          continue;
+        }
+
+        const val = snap.val() || {};
+        const result = val?.result || val?.api?.response || {};
+        const evaluation = val?.evaluation || {};
+
+        const finalScoreRaw =
+          evaluation?.finalScore ??
+          result?.overall_score ??
+          val?.api?.response?.overall_score ??
+          null;
+
+        const finalScore =
+          finalScoreRaw === null ||
+          finalScoreRaw === undefined ||
+          finalScoreRaw === ""
+            ? null
+            : Number(finalScoreRaw);
+
+        const payload = {
+          aiEvaluation: {
+            done: true,
+            finalScore,
+            scoreBand: getAIScoreBand(finalScore),
+            decision: result?.decision ?? evaluation?.decision ?? null,
+            startupQuality: result?.startup_quality ?? null,
+            monthKey: AI_MONTH_KEY,
+            source: "rtdb_backfill",
+            sourcePath: `/startupAIReview/${AI_MONTH_KEY}/${sbNo}`,
+            reviewedAtMs: val?.updatedAt_ms ?? val?.updatedAt ?? null,
+            syncedAt: serverTimestamp(),
+          },
+          firestoreUpdatedAt: serverTimestamp(),
+        };
+
+        await updateDoc(doc(db, "startupApplications", docId), payload);
+        updated += 1;
+      } catch (error) {
+        console.error(`Backfill failed for ${sbNo}`, error);
+        failed += 1;
+      }
+
+      setBackfillState((prev) => ({
+        ...prev,
+        done: i + 1,
+        updated,
+        skipped,
+        failed,
+        current: sbNo || docId || `row-${i + 1}`,
+      }));
+
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    }
+
+    setBackfillState((prev) => ({
+      ...prev,
+      running: false,
+      done: rows.length,
+      updated,
+      skipped,
+      failed,
+      message: `Completed. Updated: ${updated}, Skipped: ${skipped}, Failed: ${failed}`,
+    }));
+
+    await loadApplications();
   };
 
-  const logout = () => {
-    localStorage.removeItem("expertReviewerSession");
-    setReviewer(null);
-    setLoggedIn(false);
-  };
+  const districts = useMemo(() => {
+    const values = new Set();
 
-  const getNumericId = (id) => {
-    const found = String(id || "").match(/(\d+)/g);
-    return found ? Number(found.join("")) : 0;
-  };
+    applications.forEach((item) => {
+      const district = getDistrict(item);
+      if (district && district !== "-") values.add(district);
+    });
 
-  const filteredRows = useMemo(() => {
+    return ["All", ...Array.from(values).sort()];
+  }, [applications]);
+
+  const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    const filtered = rows.filter((item) => {
+    return applications.filter((item) => {
       const searchable = [
         item._applicationId,
         getStartupName(item),
@@ -1936,247 +472,342 @@ export default function ReviewerBoard() {
         .toLowerCase();
 
       const matchesSearch = !q || searchable.includes(q);
-      const matchesStatus = statusFilter === "All" || item._status === statusFilter;
+      const matchesStatus =
+        statusFilter === "All" || item._status === statusFilter;
 
       const matchesRegistered =
         registeredFilter === "All" ||
         (registeredFilter === "Yes" && item._registeredCompany) ||
         (registeredFilter === "No" && !item._registeredCompany);
 
-      const hasReview = !!item?._expertReview?.score;
-      const score = Number(item?._expertReview?.score);
+      const matchesDistrict =
+        districtFilter === "All" || getDistrict(item) === districtFilter;
 
-      const matchesReview =
-        reviewFilter === "All" ||
-        (reviewFilter === "Pending" && !hasReview) ||
-        (reviewFilter === "Reviewed" && hasReview);
+      const reviewed = hasAIReview(item);
+      const matchesAIReviewed =
+        aiReviewedFilter === "All" ||
+        (aiReviewedFilter === "Yes" && reviewed) ||
+        (aiReviewedFilter === "No" && !reviewed);
 
-      const matchesScore =
-        scoreFilter === "All" ||
-        (scoreFilter === "Not Scored" && !hasReview) ||
-        (scoreFilter === "0 - 4.9" && hasReview && score < 5) ||
-        (scoreFilter === "5 - 6.9" && hasReview && score >= 5 && score < 7) ||
-        (scoreFilter === "7 - 8.4" && hasReview && score >= 7 && score < 8.5) ||
-        (scoreFilter === "8.5 - 10" && hasReview && score >= 8.5);
-
-      return matchesSearch && matchesStatus && matchesRegistered && matchesReview && matchesScore;
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesRegistered &&
+        matchesDistrict &&
+        matchesAIReviewed
+      );
     });
-
-    return [...filtered].sort((a, b) => {
-      const aId = String(a._applicationId || a.id || "");
-      const bId = String(b._applicationId || b.id || "");
-      const aNum = getNumericId(aId);
-      const bNum = getNumericId(bId);
-      const aScore = Number(a?._expertReview?.score || 0);
-      const bScore = Number(b?._expertReview?.score || 0);
-
-      if (sortMode === "ID Asc") return aNum - bNum || aId.localeCompare(bId);
-      if (sortMode === "ID Desc") return bNum - aNum || bId.localeCompare(aId);
-      if (sortMode === "Score High") return bScore - aScore;
-      if (sortMode === "Score Low") return aScore - bScore;
-      return 0;
-    });
-  }, [rows, search, statusFilter, registeredFilter, reviewFilter, scoreFilter, sortMode]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-
-  const paginatedRows = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filteredRows.slice(start, start + PAGE_SIZE);
-  }, [filteredRows, page]);
+  }, [
+    applications,
+    search,
+    statusFilter,
+    registeredFilter,
+    districtFilter,
+    aiReviewedFilter,
+  ]);
 
   useEffect(() => {
-    setPage(1);
-  }, [search, statusFilter, registeredFilter, reviewFilter, scoreFilter, sortMode]);
+    setCurrentPage(1);
+  }, [search, statusFilter, registeredFilter, districtFilter, aiReviewedFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const paginatedRows = useMemo(() => {
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    return filtered.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filtered, currentPage]);
+
+  const pageStart =
+    filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const pageEnd = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
   const stats = useMemo(() => {
-    const reviewed = rows.filter((item) => !!item?._expertReview?.score).length;
-    const pending = rows.length - reviewed;
-    const registered = rows.filter((item) => item._registeredCompany).length;
-
     return {
-      total: rows.length,
-      reviewed,
-      pending,
-      registered,
+      total: applications.length,
+      submitted: applications.filter(
+        (a) => a._status === "submitted" || a._status === "Submitted"
+      ).length,
+      review: applications.filter((a) => a._status === "Under Review").length,
+      approved: applications.filter((a) => a._status === "Approved").length,
+      registered: applications.filter((a) => a._registeredCompany).length,
     };
-  }, [rows]);
+  }, [applications]);
 
-  const openDetails = (item) => {
-    setSelectedApplication(item);
-    setDetailOpen(true);
+  const handleRowClick = (item) => {
+    setSelected(item);
+    setDialogOpen(true);
   };
 
-  const handleReviewSaved = (docId, reviewData) => {
-    setRows((prev) =>
-      prev.map((item) =>
-        item.id === docId
-          ? {
-              ...item,
-              _expertReview: reviewData,
-            }
-          : item
-      )
-    );
+  const openAIModal = (item) => {
+    const isDraft = String(item?._status || "").toLowerCase() === "draft";
+    const reviewed = hasAIReview(item);
+    if (isDraft || !reviewed) return;
 
-    setSelectedApplication((prev) =>
-      prev?.id === docId
-        ? {
-            ...prev,
-            _expertReview: reviewData,
-          }
-        : prev
-    );
+    setAiModalApplication(item);
+    setAiModalOpen(true);
   };
 
-  if (!loggedIn) {
-    return (
-      <LoginScreen
-        onLogin={handleLogin}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
-    );
-  }
+  const goToPage = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  const pageNumbers = useMemo(() => {
+    const pages = [];
+    const start = Math.max(1, currentPage - 2);
+    const end = Math.min(totalPages, currentPage + 2);
+
+    for (let i = start; i <= end; i += 1) pages.push(i);
+    return pages;
+  }, [currentPage, totalPages]);
+
+  const exportApplicationsToExcel = () => {
+    try {
+      setExporting(true);
+
+      const excelRows = filtered.map((item, index) => ({
+        "S. No.": index + 1,
+        "Application ID": safe(item._applicationId),
+        "Startup Name": safe(getStartupName(item)),
+        "Founder Name": safe(getFounderName(item)),
+        "Email": safe(getEmail(item)),
+        "Phone": safe(getPhone(item)),
+        Status: safe(item._status),
+        "Registered Company": item._registeredCompany ? "Yes" : "No",
+        "AI Reviewed": hasAIReview(item) ? "Yes" : "No",
+        "AI Score":
+          String(item?._status || "").toLowerCase() === "draft"
+            ? "Draft"
+            : getAIScore(item) ?? "-",
+        "AI Score Band": safe(item?.aiEvaluation?.scoreBand),
+        "AI Decision": safe(item?.aiEvaluation?.decision),
+        "AI Startup Quality": safe(item?.aiEvaluation?.startupQuality),
+        "AI Reviewed At (ms)": safe(item?.aiEvaluation?.reviewedAtMs),
+
+        "Application Type": safe(
+          item?.userSignup?.applicationType || item?.applicationType
+        ),
+        "Sector / Category": safe(getCategory(item)),
+        Stage: safe(getStage(item)),
+        "Team Size": safe(item?.startupDetails?.teamSize),
+        Website: safe(item?.startupDetails?.website),
+        District: safe(getDistrict(item)),
+        State: safe(item?.basicDetails?.state || item?.entityDetails?.state),
+        "Block Name": safe(item?.basicDetails?.blockName),
+        Pincode: safe(item?.basicDetails?.pincode),
+        "Applicant Address": safe(item?.basicDetails?.applicantAddress),
+        Gender: safe(item?.basicDetails?.gender),
+        Category: safe(item?.basicDetails?.category),
+        "Date of Birth": safe(item?.basicDetails?.dateOfBirth),
+        Qualification: safe(item?.basicDetails?.qualification),
+        Institution:
+          item?.basicDetails?.institution === "Other"
+            ? safe(item?.basicDetails?.otherInstitution)
+            : safe(item?.basicDetails?.institution),
+        "LinkedIn Profile": safe(item?.basicDetails?.linkedinProfile),
+
+        "Has Registered Entity": item?._registeredCompany ? "Yes" : "No",
+        "Entity Name": safe(item?.entityDetails?.entityName),
+        "Entity Type": safe(item?.entityDetails?.entityType),
+        "Entity Registration Number": safe(
+          item?.entityDetails?.entityRegistrationNumber ||
+            item?.registrationNumber
+        ),
+        "Date of Registration": safe(item?.entityDetails?.dateOfRegistration),
+        "Business Address": safe(item?.entityDetails?.businessAddress),
+
+        "Problem Statement": safe(item?.businessIdea?.problemStatement),
+        Solution: safe(item?.businessIdea?.solution),
+        Innovation: safe(item?.businessIdea?.innovation),
+        "Business Model": safe(item?.businessIdea?.businessModel),
+
+        "Pitch Deck File Name": safe(item?.businessIdea?.pitchDeckMeta?.fileName),
+        "Pitch Deck URL": safe(item?.businessIdea?.pitchDeckMeta?.downloadURL),
+
+        "Profile Photo File Name": safe(
+          item?.basicDetails?.profilePhotoMeta?.fileName
+        ),
+        "Profile Photo URL": safe(
+          item?.basicDetails?.profilePhotoMeta?.downloadURL
+        ),
+
+        "Entity Certificate File Name": safe(
+          item?.entityDetails?.certificateMeta?.fileName
+        ),
+        "Entity Certificate URL": safe(
+          item?.entityDetails?.certificateMeta?.downloadURL
+        ),
+
+        "Co-Founder Count": Array.isArray(item?.cofounderDetails?.coFounders)
+          ? item.cofounderDetails.coFounders.length
+          : 0,
+        "Is Sole Founder": item?.cofounderDetails?.isSoleFounder ? "Yes" : "No",
+        "Co-Founders": Array.isArray(item?.cofounderDetails?.coFounders)
+          ? item.cofounderDetails.coFounders
+              .map((cf, idx) => {
+                const parts = [
+                  `#${idx + 1}`,
+                  cf?.name || "-",
+                  cf?.email || "-",
+                  cf?.phoneNumber || "-",
+                  cf?.qualification || "-",
+                ];
+                return parts.join(" | ");
+              })
+              .join(" || ")
+          : "-",
+
+        "Feedback Submitted":
+          item?.websiteFeedback?.submitted === true ? "Yes" : "No",
+        "Feedback Experience": safe(item?.websiteFeedback?.experience),
+        "Feedback Rating": safe(item?.websiteFeedback?.rating),
+        "Feedback Message": safe(item?.websiteFeedback?.message),
+        "Feedback Submitted At": formatDate(item?.websiteFeedback?.submittedAt),
+
+        "Aadhar Number": safe(item?.userSignup?.aadharNumber),
+        "Created At": safe(item._createdAtDisplay),
+        "Firestore Doc ID": safe(item.id),
+      }));
+
+      if (excelRows.length === 0) {
+        alert("No filtered applications available to export.");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
+
+      const now = new Date();
+      const datePart = `${now.getFullYear()}-${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+      XLSX.writeFile(workbook, `startup_applications_filtered_${datePart}.xlsx`);
+    } catch (error) {
+      console.error("Excel export failed", error);
+      alert("Failed to export Excel file.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div
       className="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/bg1.jpg')" }}
     >
-      <div
-        className={`absolute inset-0 backdrop-[blur(2px)] ${
-          darkMode ? "bg-slate-950/82" : "bg-white/70"
-        }`}
-      />
+      <div className="absolute inset-0 bg-white/70 backdrop-[blur(2px)]" />
 
       <div className="relative mx-auto max-w-[1650px] p-4 md:p-6 xl:p-8">
-        <div
-          className={`overflow-hidden rounded-[38px] border shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl ${
-            darkMode ? "border-white/10 bg-slate-950/72" : "border-white/80 bg-white/58"
-          }`}
-        >
-          <div
-            className={`border-b px-5 py-5 md:px-7 md:py-6 ${
-              darkMode ? "border-white/10 bg-white/[0.04]" : "border-white/70 bg-white/30"
-            }`}
-          >
+        <div className="overflow-hidden rounded-[38px] border border-white/80 bg-white/58 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+          <div className="border-b border-white/70 bg-white/30 px-5 py-5 md:px-7 md:py-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <div
-                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                    darkMode
-                      ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                      : "border-amber-200 bg-amber-50 text-amber-700"
-                  }`}
-                >
-                  Expert Reviewer Board
+                <div className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                  New Application Dashboard
                 </div>
-
-                <h1
-                  className={`mt-3 text-3xl font-bold tracking-tight md:text-4xl ${
-                    darkMode ? "text-white" : "text-slate-900"
-                  }`}
-                >
-                  Assigned Startup Review Queue
+                <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+                  Admin Dashboard
                 </h1>
-
-                <p
-                  className={`mt-2 max-w-3xl text-sm ${
-                    darkMode ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
-                  Review assigned applications independently. AI score remains hidden to avoid bias.
+                <p className="mt-2 max-w-3xl text-sm text-slate-500">
+                  Incoming startup applications, premium filters, and full-screen
+                  detail view on row click.
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <div
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm ${
-                    darkMode
-                      ? "border-white/15 bg-white/10 text-white"
-                      : "border-slate-200 bg-white text-slate-700"
-                  }`}
-                >
-                  Reviewer: {reviewer?.name || reviewer?.id}
-                </div>
+             <div className="flex flex-wrap gap-3">
+  <button
+    onClick={loadApplications}
+    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+  >
+    <RefreshCw size={16} />
+    Refresh
+  </button>
 
-                <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
+  <button
+    onClick={syncExistingAIReviewsToFirestore}
+    disabled={loading || backfillState.running || applications.length === 0}
+    className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <Bot size={16} />
+    {backfillState.running ? "Syncing AI Reviews..." : "Sync AI Reviews"}
+  </button>
 
-                <button
-                  onClick={loadReviewerData}
-                  className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold shadow-sm transition ${
-                    darkMode
-                      ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <RefreshCw size={16} />
-                  Refresh
-                </button>
+  <button
+    onClick={() => setAnalysisOpen(true)}
+    disabled={loading || filtered.length === 0}
+    className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <BarChart3 size={16} />
+    Analysis
+  </button>
 
-                <button
-                  onClick={logout}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-100"
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
-              </div>
+  <button
+    onClick={exportApplicationsToExcel}
+    disabled={loading || exporting || filtered.length === 0}
+    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    <Download size={16} />
+    {exporting ? "Exporting..." : "Download Excel"}
+  </button>
+
+  <button
+    onClick={() => setFeedbackDialogOpen(true)}
+    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+  >
+    <MessageSquareText size={16} />
+    Website Feedback
+  </button>
+</div>
             </div>
           </div>
 
           <div className="p-5 md:p-7">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <KpiCard
-                icon={FileText}
-                title="Assigned"
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <SummaryCard
+                title="Total Applications"
                 value={stats.total}
-                subtitle="Applications in review queue"
-                tone="amber"
-                darkMode={darkMode}
+                subtitle="All incoming applications"
+                icon={FileText}
+                accent="amber"
               />
-              <KpiCard
+              <SummaryCard
+                title="Submitted"
+                value={stats.submitted}
+                subtitle="Awaiting action"
                 icon={Clock3}
-                title="Pending"
-                value={stats.pending}
-                subtitle="Yet to be scored"
-                tone="cyan"
-                darkMode={darkMode}
+                accent="blue"
               />
-              <KpiCard
-                icon={CheckCircle2}
-                title="Scored"
-                value={stats.reviewed}
-                subtitle="Score saved"
-                tone="emerald"
-                darkMode={darkMode}
+              <SummaryCard
+                title="Under Review"
+                value={stats.review}
+                subtitle="Currently being checked"
+                icon={Search}
+                accent="amber"
               />
-              <KpiCard
-                icon={Building2}
-                title="Registered"
+              <SummaryCard
+                title="Approved"
+                value={stats.approved}
+                subtitle="Successfully cleared"
+                icon={CircleCheckBig}
+                accent="emerald"
+              />
+              <SummaryCard
+                title="Registered Company"
                 value={stats.registered}
-                subtitle="Registered entities"
-                tone="slate"
-                darkMode={darkMode}
+                subtitle="Company already registered"
+                icon={Building2}
+                accent="slate"
               />
             </div>
 
-            <div
-              className={`mt-6 rounded-[30px] border p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-5 ${
-                darkMode ? "border-white/10 bg-white/[0.05]" : "border-white/80 bg-white/78"
-              }`}
-            >
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-                <div className="xl:col-span-2">
-                  <label
-                    className={`mb-2 block text-xs font-semibold uppercase tracking-[0.14em] ${
-                      darkMode ? "text-slate-400" : "text-slate-500"
-                    }`}
-                  >
+            <div className="mt-6 rounded-[30px] border border-white/80 bg-white/78 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-5">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <div className="xl:col-span-1">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Search
                   </label>
-
                   <div className="relative">
                     <Search
                       size={16}
@@ -2185,107 +816,168 @@ export default function ReviewerBoard() {
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search startup, founder, district, sector..."
-                      className={`w-full rounded-2xl border px-4 py-3 pl-11 text-sm shadow-sm outline-none transition ${
-                        darkMode
-                          ? "border-white/10 bg-slate-950/80 text-white placeholder:text-slate-500 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10"
-                          : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                      }`}
+                      placeholder="Search startup, founder, mobile, email..."
+                      className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 pl-11 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
                     />
                   </div>
                 </div>
 
-                <FilterSelect
-                  label="Status"
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                  options={["All", "submitted", "Submitted", "Under Review", "Approved", "Rejected", "draft", "Draft"]}
-                  darkMode={darkMode}
-                />
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Status
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                  >
+                    {STATUS_OPTIONS.map((item) => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <FilterSelect
-                  label="Registered"
-                  value={registeredFilter}
-                  onChange={setRegisteredFilter}
-                  options={["All", "Yes", "No"]}
-                  darkMode={darkMode}
-                />
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Registered Company
+                  </label>
+                  <select
+                    value={registeredFilter}
+                    onChange={(e) => setRegisteredFilter(e.target.value)}
+                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                  >
+                    {REGISTERED_OPTIONS.map((item) => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <FilterSelect
-                  label="Review"
-                  value={reviewFilter}
-                  onChange={setReviewFilter}
-                  options={["All", "Pending", "Reviewed"]}
-                  darkMode={darkMode}
-                />
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    District
+                  </label>
+                  <select
+                    value={districtFilter}
+                    onChange={(e) => setDistrictFilter(e.target.value)}
+                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                  >
+                    {districts.map((item) => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <FilterSelect
-                  label="Score"
-                  value={scoreFilter}
-                  onChange={setScoreFilter}
-                  options={["All", "Not Scored", "0 - 4.9", "5 - 6.9", "7 - 8.4", "8.5 - 10"]}
-                  darkMode={darkMode}
-                />
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    AI Reviewed
+                  </label>
+                  <select
+                    value={aiReviewedFilter}
+                    onChange={(e) => setAiReviewedFilter(e.target.value)}
+                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                  >
+                    {AI_REVIEW_OPTIONS.map((item) => (
+                      <option key={item}>{item}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-                <FilterSelect
-                  label="Sort"
-                  value={sortMode}
-                  onChange={setSortMode}
-                  options={["ID Desc", "ID Asc", "Score High", "Score Low"]}
-                  darkMode={darkMode}
-                />
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                  <Sparkles size={12} />
+                  Showing {pageStart}-{pageEnd} of {filtered.length}
+                </span>
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                  Page {currentPage} of {totalPages}
+                </span>
               </div>
             </div>
 
-            <div
-              className={`mt-6 overflow-hidden rounded-[32px] border shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl ${
-                darkMode ? "border-white/10 bg-white/[0.05]" : "border-white/80 bg-white/80"
-              }`}
-            >
-              <div
-                className={`flex flex-col gap-2 border-b px-5 py-4 md:flex-row md:items-center md:justify-between ${
-                  darkMode ? "border-white/10" : "border-slate-100"
-                }`}
-              >
-                <div>
-                  <h2 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-slate-900"}`}>
-                    Assigned Startups
-                  </h2>
-                  <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                    Click any row to review, score, or revise score.
-                  </p>
+            {backfillState.total > 0 ? (
+              <div className="mt-6 rounded-[28px] border border-white/80 bg-white/78 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">
+                      AI Review Firestore Sync
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {backfillState.message || "-"}
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-600">
+                    Current:{" "}
+                    <span className="font-semibold">
+                      {backfillState.current || "-"}
+                    </span>
+                  </div>
                 </div>
 
-                <div
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                    darkMode
-                      ? "border-white/10 bg-white/8 text-slate-300"
-                      : "border-slate-200 bg-white text-slate-700"
-                  }`}
-                >
-                  Showing {filteredRows.length} of {rows.length}
+                <div className="mt-4">
+                  <div className="mb-2 flex items-center justify-between text-xs text-slate-600">
+                    <span>
+                      {backfillState.done}/{backfillState.total}
+                    </span>
+                    <span>
+                      {backfillState.total
+                        ? Math.round((backfillState.done / backfillState.total) * 100)
+                        : 0}
+                      %
+                    </span>
+                  </div>
+
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-indigo-600 transition-all"
+                      style={{
+                        width: `${
+                          backfillState.total
+                            ? (backfillState.done / backfillState.total) * 100
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                      Updated: {backfillState.updated}
+                    </span>
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 font-semibold text-amber-700">
+                      Skipped: {backfillState.skipped}
+                    </span>
+                    <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 font-semibold text-rose-700">
+                      Failed: {backfillState.failed}
+                    </span>
+                  </div>
                 </div>
+              </div>
+            ) : null}
+
+            <div className="mt-6 overflow-hidden rounded-[32px] border border-white/80 bg-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+              <div className="border-b border-slate-100 px-5 py-4">
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Incoming Applications
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Click any row to open the full details dialog
+                </p>
               </div>
 
               <div className="overflow-auto">
-                <table className="min-w-[1280px] w-full">
-                  <thead className={darkMode ? "bg-slate-900 text-white" : "bg-slate-50/80"}>
-                    <tr
-                      className={`text-left text-xs uppercase tracking-[0.14em] ${
-                        darkMode ? "text-white/78" : "text-slate-500"
-                      }`}
-                    >
+                <table className="min-w-[1350px] w-full">
+                  <thead className="bg-slate-50/80">
+                    <tr className="text-left text-xs uppercase tracking-[0.14em] text-slate-500">
                       <th className="px-5 py-4 font-semibold">Application ID</th>
                       <th className="px-5 py-4 font-semibold">Startup</th>
                       <th className="px-5 py-4 font-semibold">Founder</th>
                       <th className="px-5 py-4 font-semibold">Status</th>
-                      <th className="px-5 py-4 font-semibold">Registered</th>
+                      <th className="px-5 py-4 font-semibold">AI Review</th>
+                      <th className="px-5 py-4 font-semibold">Registered Company</th>
                       <th className="px-5 py-4 font-semibold">District</th>
-                      <th className="px-5 py-4 font-semibold">Sector</th>
-                      <th className="px-5 py-4 font-semibold">Score</th>
-                      <th className="px-5 py-4 font-semibold">Review</th>
+                      <th className="px-5 py-4 font-semibold">Category / Sector</th>
+                      <th className="px-5 py-4 font-semibold">Stage</th>
                       <th className="px-5 py-4 font-semibold">Submitted</th>
                     </tr>
                   </thead>
@@ -2293,17 +985,10 @@ export default function ReviewerBoard() {
                   <tbody>
                     {loading ? (
                       Array.from({ length: 8 }).map((_, index) => (
-                        <tr
-                          key={index}
-                          className={darkMode ? "border-t border-white/10" : "border-t border-slate-100"}
-                        >
+                        <tr key={index} className="border-t border-slate-100">
                           {Array.from({ length: 10 }).map((__, i) => (
                             <td key={i} className="px-5 py-4">
-                              <div
-                                className={`h-4 w-full animate-pulse rounded ${
-                                  darkMode ? "bg-white/10" : "bg-slate-100"
-                                }`}
-                              />
+                              <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
                             </td>
                           ))}
                         </tr>
@@ -2312,17 +997,13 @@ export default function ReviewerBoard() {
                       <tr>
                         <td colSpan={10} className="px-6 py-16 text-center">
                           <div className="mx-auto max-w-md">
-                            <div
-                              className={`mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl ${
-                                darkMode ? "bg-white/8 text-slate-400" : "bg-slate-100 text-slate-500"
-                              }`}
-                            >
+                            <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
                               <FileText size={22} />
                             </div>
-                            <h3 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>
-                              No startups found
+                            <h3 className="text-lg font-semibold text-slate-800">
+                              No applications found
                             </h3>
-                            <p className={`mt-2 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                            <p className="mt-2 text-sm text-slate-500">
                               Try changing the filter or search values.
                             </p>
                           </div>
@@ -2330,84 +1011,77 @@ export default function ReviewerBoard() {
                       </tr>
                     ) : (
                       paginatedRows.map((item) => {
-                        const isReviewed = !!item?._expertReview?.score;
+                        const isDraft =
+                          String(item?._status || "").toLowerCase() === "draft";
 
                         return (
                           <tr
                             key={item.id}
-                            onClick={() => openDetails(item)}
-                            className={`cursor-pointer border-t transition ${
-                              darkMode
-                                ? "border-white/10 hover:bg-white/[0.06]"
-                                : "border-slate-100 hover:bg-amber-50/40"
-                            }`}
+                            onClick={() => handleRowClick(item)}
+                            className="cursor-pointer border-t border-slate-100 transition hover:bg-amber-50/40"
                           >
-                            <td
-                              className={`px-5 py-4 text-sm font-semibold ${
-                                darkMode ? "text-white" : "text-slate-900"
-                              }`}
-                            >
+                            <td className="px-5 py-4 text-sm font-semibold text-slate-900">
                               {safe(item._applicationId)}
                             </td>
 
                             <td className="px-5 py-4">
-                              <div
-                                className={`text-sm font-semibold ${
-                                  darkMode ? "text-white" : "text-slate-900"
-                                }`}
-                              >
+                              <div className="text-sm font-semibold text-slate-900">
                                 {safe(getStartupName(item))}
                               </div>
-                              <div className={`mt-1 text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                              <div className="mt-1 text-xs text-slate-500">
                                 {safe(getEmail(item))}
                               </div>
                             </td>
 
-                            <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+                            <td className="px-5 py-4 text-sm text-slate-700">
                               {safe(getFounderName(item))}
                             </td>
 
                             <td className="px-5 py-4">
-                              <StatusBadge status={item._status} darkMode={darkMode} />
+                              <StatusBadge status={item._status} />
+                            </td>
+
+                            <td
+                              className="px-5 py-4"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openAIModal(item);
+                              }}
+                            >
+                              <button
+                                type="button"
+                                disabled={isDraft || !hasAIReview(item)}
+                                className={`inline-flex items-center gap-2 rounded-xl transition ${
+                                  isDraft || !hasAIReview(item)
+                                    ? "cursor-not-allowed opacity-80"
+                                    : "hover:scale-[1.02]"
+                                }`}
+                              >
+                                <Bot size={14} className="text-slate-500" />
+                                <AIScoreBadge
+                                  score={getAIScore(item)}
+                                  isDraft={isDraft}
+                                />
+                              </button>
                             </td>
 
                             <td className="px-5 py-4">
-                              <RegisteredBadge value={item._registeredCompany} darkMode={darkMode} />
+                              <RegisteredBadge value={item._registeredCompany} />
                             </td>
 
-                            <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+                            <td className="px-5 py-4 text-sm text-slate-700">
                               {safe(getDistrict(item))}
                             </td>
 
-                            <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+                            <td className="px-5 py-4 text-sm text-slate-700">
                               {safe(getCategory(item))}
                             </td>
 
-                            <td className="px-5 py-4">
-                              {isReviewed ? (
-                                <ReviewBadge tone="emerald" darkMode={darkMode}>
-                                  {item._expertReview.score}/10
-                                </ReviewBadge>
-                              ) : (
-                                <ReviewBadge tone="amber" darkMode={darkMode}>
-                                  Not Scored
-                                </ReviewBadge>
-                              )}
+                            <td className="px-5 py-4 text-sm text-slate-700">
+                              {safe(getStage(item))}
                             </td>
 
-                            <td className="px-5 py-4">
-                              {isReviewed ? (
-                                <ReviewBadge tone="emerald" darkMode={darkMode}>
-                                  Scored
-                                </ReviewBadge>
-                              ) : (
-                                <ReviewBadge tone="amber" darkMode={darkMode}>
-                                  Pending
-                                </ReviewBadge>
-                              )}
-                            </td>
-
-                            <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+                            <td className="px-5 py-4 text-sm text-slate-700">
                               {safe(item._createdAtDisplay)}
                             </td>
                           </tr>
@@ -2418,88 +1092,115 @@ export default function ReviewerBoard() {
                 </table>
               </div>
 
-              <div
-                className={`flex flex-col gap-3 border-t px-5 py-4 md:flex-row md:items-center md:justify-between ${
-                  darkMode ? "border-white/10" : "border-slate-100"
-                }`}
-              >
-                <div className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
-                  Showing page <span className="font-semibold">{page}</span> of{" "}
-                  <span className="font-semibold">{totalPages}</span> |{" "}
-                  <span className="font-semibold">{filteredRows.length}</span> startups
-                </div>
+              {!loading && filtered.length > 0 ? (
+                <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-4 md:flex-row md:items-center md:justify-between">
+                  <div className="text-sm text-slate-600">
+                    Showing <span className="font-semibold">{pageStart}</span> to{" "}
+                    <span className="font-semibold">{pageEnd}</span> of{" "}
+                    <span className="font-semibold">{filtered.length}</span> entries
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                      darkMode
-                        ? "border-white/10 bg-white/8 text-white hover:bg-white/12"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    <ChevronLeft size={16} />
-                    Prev
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <ChevronLeft size={16} />
+                      Prev
+                    </button>
 
-                  <button
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                      darkMode
-                        ? "border-white/10 bg-white/8 text-white hover:bg-white/12"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                    }`}
-                  >
-                    Next
-                    <ChevronRight size={16} />
-                  </button>
+                    {currentPage > 3 && (
+                      <>
+                        <button
+                          onClick={() => goToPage(1)}
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                        >
+                          1
+                        </button>
+                        {currentPage > 4 && (
+                          <span className="px-1 text-sm text-slate-400">...</span>
+                        )}
+                      </>
+                    )}
+
+                    {pageNumbers.map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        className={`rounded-xl px-3 py-2 text-sm font-semibold shadow-sm transition ${
+                          currentPage === page
+                            ? "border border-slate-900 bg-slate-900 text-white"
+                            : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                    {currentPage < totalPages - 2 && (
+                      <>
+                        {currentPage < totalPages - 3 && (
+                          <span className="px-1 text-sm text-slate-400">...</span>
+                        )}
+                        <button
+                          onClick={() => goToPage(totalPages)}
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                        >
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Next
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
         </div>
-
-        <DetailModal
-          open={detailOpen}
-          onClose={() => setDetailOpen(false)}
-          application={selectedApplication}
-          reviewerId={reviewer?.id}
-          onReviewSaved={handleReviewSaved}
-          darkMode={darkMode}
-        />
       </div>
-    </div>
-  );
-}
 
-function FilterSelect({ label, value, onChange, options, darkMode = false }) {
-  return (
-    <div>
-      <label
-        className={`mb-2 block text-xs font-semibold uppercase tracking-[0.14em] ${
-          darkMode ? "text-slate-400" : "text-slate-500"
-        }`}
-      >
-        {label}
-      </label>
+      <DetailDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        application={selected}
+        getStartupName={getStartupName}
+        getFounderName={getFounderName}
+        getEmail={getEmail}
+        getPhone={getPhone}
+        getDistrict={getDistrict}
+        getCategory={getCategory}
+        getStage={getStage}
+      />
 
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition ${
-          darkMode
-            ? "border-white/10 bg-slate-950/80 text-white focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10"
-            : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-        }`}
-      >
-        {options.map((item) => (
-          <option key={item} value={item} className={darkMode ? "bg-slate-950 text-white" : ""}>
-            {item}
-          </option>
-        ))}
-      </select>
+      <AIEvaluationModal
+        open={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        application={aiModalApplication}
+        startupId={aiModalApplication?._applicationId}
+        startupName={aiModalApplication ? getStartupName(aiModalApplication) : ""}
+      />
+<Analysis
+  open={analysisOpen}
+  onClose={() => setAnalysisOpen(false)}
+  applications={filtered}
+  allApplications={applications}
+  onDownloadExcel={exportApplicationsToExcel}
+  exporting={exporting}
+/>
+
+      <FeedbackList
+        open={feedbackDialogOpen}
+        onClose={() => setFeedbackDialogOpen(false)}
+      />
     </div>
   );
 }
