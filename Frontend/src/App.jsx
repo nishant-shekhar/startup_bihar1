@@ -34,6 +34,7 @@ import StartupMainFormWrapper from './components/New_Registration/registration/R
 import Block from './components/New_Registration/admin/Block';
 import NewApplicationDashboard from './components/New_Registration/admin/MainAdmin';
 import RegistrationLayout from './components/SSU_Recruitment/registration/RegistrationLayout';
+import ReviewerBoard from './components/New_Registration/admin/ReviewerBoard';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -58,7 +59,7 @@ const App = () => {
 				<Route path="/IncubationCell" element={<IncubationNodalList />} />
 				<Route path="/Mentors" element={<Mentors />} />
 				<Route path="/newapplicationdashboard" element={<MainAdmin />} />
-				
+				<Route path="/reviewer-board" element={<ReviewerBoard />} />
 				<Route path="/Events" element={<Events />} />
 				<Route path="/pdf-viewer" element={<PdfViewer />} />
 				<Route

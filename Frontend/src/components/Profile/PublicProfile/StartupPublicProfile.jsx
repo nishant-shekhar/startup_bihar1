@@ -1,373 +1,1168 @@
 import React from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-
 import { useEffect, useState } from "react";
 import {
-	FaTwitter,
-	FaFacebook,
-	FaInstagram,
-	FaLinkedin,
-	FaGlobe,
+  FaTwitter,
+  FaFacebook,
+  FaInstagram,
+  FaLinkedin,
+  FaGlobe,
+  FaArrowLeft,
+  FaEdit,
+  FaLink,
+  FaUsers,
+  FaStar,
+  FaMoneyBillWave,
+  FaChartBar,
 } from "react-icons/fa";
+import { IoMdContact } from "react-icons/io";
+
 import ShowcaseCard from "./ShowcaseCard";
 import EmployeeDetails from "../StartupProfile/FieldsUpdate/EmployeeDetails";
 
+/* ── Responsive helper ── */
+const useWindowWidth = () => {
+  const [width, setWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+};
+
+/* ─── Design tokens (FourthPage palette) ─── */
+const P = "#000000";
+const PL = "#eef2ff";
+const BORDER = "#e8ecf0";
+const TEXT = "#090E34";
+const MUTED = "#959CB1";
+const CARD = "#ffffff";
+const BG = "#f4f6f9";
+
+const cardBase = {
+  background: CARD,
+  borderRadius: "12px",
+  border: `1px solid ${BORDER}`,
+  boxShadow: "0 2px 12px rgba(74,108,247,0.06)",
+};
+
+/* ─── Stat Icon Wrappers ─── */
+const StatIcon = ({ bg, children }) => (
+  <div
+    style={{
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      background: bg,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 18,
+      color: "#fff",
+    }}
+  >
+    {children}
+  </div>
+);
+
+/* ════════════════════════════════════ */
 const StartupPublicProfile = () => {
-	const { id } = useParams(); // Fetch the dynamic id from the URL
+  const { id } = useParams();
+  const vw = useWindowWidth();
+  const isMobile = vw < 640;
+  const isTablet = vw >= 640 && vw < 1024;
 
-	const [startup, setStartup] = useState([]);
-	const [showcases, setShowcases] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [isContactVisible, setIsContactVisible] = useState(false);
-	const [employees, setEmployees] = useState([]);
-	const [showEmployeeDetails, setShowEmployeeDetails] = useState(false);
+  const [startup, setStartup] = useState([]);
+  const [showcases, setShowcases] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isContactVisible, setIsContactVisible] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [showEmployeeDetails, setShowEmployeeDetails] = useState(false);
 
-	const categories = ['Showcase', "About Startup"];
+  const categories = ["Overview", "About Startup", "Showcase"];
+  const [selectedCategory, setSelectedCategory] = useState("Overview");
 
-	const [selectedCategory, setSelectedCategory] = useState('Showcase');
+  const handleCategoryClick = (cat) => setSelectedCategory(cat);
 
-	// Handle category click
-	const handleCategoryClick = (category) => {
-		setSelectedCategory(category);
-	};
+  const getWebsiteUrl = (url) => {
+    if (!url) return "#";
+    return url.startsWith("http://") || url.startsWith("https://")
+      ? url
+      : `https://${url}`;
+  };
 
-	const getWebsiteUrl = (url) => {
-		if (!url) return "#";
-		return url.startsWith("http://") || url.startsWith("https://") ? url : `https://${url}`;
-	};
+  const fetchDetails = async () => {
+    try {
+      const response = await axios.get(
+        `https://startupbihar.in/api/userlogin/public-startup-details?user_id=${id}`,
+      );
+      setStartup(response.data.startup);
 
-	const fetchDetails = async () => {
-		try {
-			const response = await axios.get(
-				`https://startupbihar.in/api/userlogin/public-startup-details?user_id=${id}`,
-			);
+      const showcaseResponse = await axios.get(
+        `https://startupbihar.in/api/showcase/get-showcase/${id}`,
+      );
+      setShowcases(showcaseResponse.data.showcase);
 
-			setStartup(response.data.startup);
-			//console.log(response.data.startup)
-			//console.log(startup.about)
-			// Fetch showcase data
-			const showcaseResponse = await axios.get(
-				`https://startupbihar.in/api/showcase/get-showcase/${id}`
-			);
-			setShowcases(showcaseResponse.data.showcase);
+      const employeeResponse = await axios.get(
+        `https://startupbihar.in/api/userlogin/getEmployees/${id}`,
+      );
+      setEmployees(employeeResponse.data.employee);
+      console.log(employeeResponse.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+      setIsLoading(false);
+    }
+  };
+  console.log(showcases.id);
 
-			const employeeResponse = await axios.get(`https://startupbihar.in/api/userlogin/getEmployees/${id}`);
-			setEmployees(employeeResponse.data.employee); // Access `data.employee` based on your API response
+  useEffect(() => {
+    fetchDetails();
+  }, []);
 
-			console.log(employeeResponse.data)
-			setIsLoading(false);
-		} catch (error) {
-			console.error("Failed to fetch data:", error);
-			setIsLoading(false);
-		}
-	};
-	console.log(showcases.id);
+  const SocialLink = ({ href, Icon, label, hoverColor }) => (
+    <a
+      href={href || "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={label}
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: "50%",
+        background: "#f0f2ff",
+        border: `1.5px solid ${BORDER}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: P,
+        fontSize: 13,
+        textDecoration: "none",
+        transition: "all 0.15s",
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = hoverColor + "18";
+        e.currentTarget.style.color = hoverColor;
+        e.currentTarget.style.borderColor = hoverColor + "55";
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = "#f0f2ff";
+        e.currentTarget.style.color = P;
+        e.currentTarget.style.borderColor = BORDER;
+      }}
+    >
+      <Icon />
+    </a>
+  );
 
+  /* ══ Stats data ══ */
+  const stats = [
+    {
+      label: "Work Orders",
+      value: startup.workOrders || "—",
+      icon: <FaMoneyBillWave />,
+      bg: "#4A6CF7",
+    },
+    {
+      label: "Total Employees",
+      value: startup.employeeCount || "—",
+      icon: <FaUsers />,
+      bg: "#4A6CF7",
+    },
+    {
+      label: "Total Projects",
+      value: startup.projects || "—",
+      icon: <FaChartBar />,
+      bg: "#4A6CF7",
+    },
+  ];
 
-	useEffect(() => {
-		fetchDetails();
-	}, []);
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f4f6f9",
+        fontFamily: "'Inter', sans-serif",
+        position: "relative",
+        overflowX: "hidden",
+      }}
+    >
+      {/* ── Decorative SVG Background ── */}
+      <svg
+        style={{
+          position: "fixed",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          {/* Blob gradients */}
+          <radialGradient id="blob1" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#c7d7fd" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#c7d7fd" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="blob2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ddd6fe" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#ddd6fe" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="blob3" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#bfdbfe" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#bfdbfe" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="blob4" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#e0e7ff" stopOpacity="0.38" />
+            <stop offset="100%" stopColor="#e0e7ff" stopOpacity="0" />
+          </radialGradient>
+          {/* Dot pattern */}
+          <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="1.5" cy="1.5" r="1.5" fill="#090E34" fillOpacity="0.045" />
+          </pattern>
+        </defs>
 
+        {/* Dot grid — full page */}
+        <rect width="100%" height="100%" fill="url(#dots)" />
 
-	return (
-		// <div>
-		// 	{/* Navbar */}
-		// 	<div className="flex justify-between px-8 py-3">
-		// 		<h1>Startup Bihar</h1>
-		// 		<h1>Home</h1>
-		// 	</div>
-		// 	<img src="cover.jpg" alt="" className="w-full h-52 object-cover" />
-		// 	<img
-		// 		src="https://easy-peasy.ai/cdn-cgi/image/quality=80,format=auto,width=700/https://fdczvxmwwjwpwbeeqcth.supabase.co/storage/v1/object/public/images/50dab922-5d48-4c6b-8725-7fd0755d9334/3a3f2d35-8167-4708-9ef0-bdaa980989f9.png"
-		// 		alt=""
-		// 		className="absolute left-20 top-48 w-72 h-72 rounded-3xl border-8 border-gray-200/30"
-		// 	/>
-		// </div>
+        {/* Blob 1 — top-left */}
+        <ellipse cx="-6%" cy="12%" rx="38%" ry="32%" fill="url(#blob1)" />
 
-		<div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-100">
-			{/* Navigation */}
-			<nav className="px-4 py-2 flex items-center justify-between">
-				<div className="flex items-center space-x-1">
-					<div className="text-purple-600 font-semibold">✦</div>
-					<a href="/" className="font-semibold">
-						Startup Bihar
-					</a>
-				</div>
+        {/* Blob 2 — top-right */}
+        <ellipse cx="106%" cy="8%" rx="42%" ry="36%" fill="url(#blob2)" />
 
-				<div className="flex items-center space-x-4">
-				</div>
-			</nav>
+        {/* Blob 3 — bottom-left */}
+        <ellipse cx="10%" cy="96%" rx="34%" ry="28%" fill="url(#blob3)" />
 
-			<img
-				src={startup.founder_dp || "https://firebasestorage.googleapis.com/v0/b/iimv-ae907.appspot.com/o/Website%2Fcover_pic.png?alt=media&token=2f48030e-daa7-4e20-80c5-218bd6a93a25"}
-				className="w-full h-52 object-cover"
-				alt="Cover Pic"
-			/>
-			{/* Profile Section */}
-			<div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 mx-4 sm:mx-10 lg:mx-20 my-2 sm:my-4">
-				{/* Image Container */}
-				<div className="sm:col-span-4 md:col-span-3 lg:col-span-2 flex items-center justify-center lg:justify-start h-[120px] sm:h-[150px] lg:h-[180px]">
-					<div className="w-[120px] sm:w-[150px] lg:w-[180px] aspect-w-1 aspect-h-1 overflow-hidden flex items-center justify-center">
-						<img
-							src={startup.logo || "https://dummyimage.com/100x100/000/fff.png&text=Logo"}
-							alt="Logo"
-							className="object-cover w-full h-full rounded-lg"
-						/>
-					</div>
-				</div>
+        {/* Blob 4 — center-right */}
+        <ellipse cx="88%" cy="62%" rx="30%" ry="26%" fill="url(#blob4)" />
 
-				{/* Green Container */}
-				<div className="sm:col-span-8 md:col-span-9 lg:col-span-6 h-[150px] sm:h-[150px] lg:h-[180px] flex flex-col justify-center sm:justify-start items-center sm:items-start  p-4">
-					
-					<div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-1">
-						{/* On mobile, this badge appears first; on sm and above, it appears second */}
-						<span className="order-1 sm:order-2 px-2 py-1 bg-purple-600 text-white text-xs rounded-full flex items-center mt-4 sm:mt-0">
-							<svg
-								className="w-3 h-3 mr-1"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								/>
-							</svg>
-							Top Startup
-						</span>
-						{/* On mobile, this appears second; on sm and above, it appears first */}
-						<h1 className="order-2 sm:order-1 text-2xl font-semibold ">
-							{startup.company_name}
-						</h1>
-					</div>
+        {/* Thin arc ring — top-right decoration */}
+        <circle
+          cx="92%" cy="18%" r="120"
+          fill="none"
+          stroke="#4A6CF7"
+          strokeOpacity="0.07"
+          strokeWidth="1"
+        />
+        <circle
+          cx="92%" cy="18%" r="190"
+          fill="none"
+          stroke="#4A6CF7"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
 
+        {/* Thin arc ring — bottom-left decoration */}
+        <circle
+          cx="8%" cy="88%" r="100"
+          fill="none"
+          stroke="#7c3aed"
+          strokeOpacity="0.07"
+          strokeWidth="1"
+        />
+        <circle
+          cx="8%" cy="88%" r="160"
+          fill="none"
+          stroke="#7c3aed"
+          strokeOpacity="0.04"
+          strokeWidth="1"
+        />
 
+        {/* Diagonal hairline — subtle depth */}
+        <line x1="0" y1="0" x2="100%" y2="100%" stroke="#4A6CF7" strokeOpacity="0.025" strokeWidth="1" />
+        <line x1="100%" y1="0" x2="0" y2="100%" stroke="#4A6CF7" strokeOpacity="0.018" strokeWidth="1" />
+      </svg>
 
+      {/* All page content sits above the SVG */}
+      <div style={{ position: "relative", zIndex: 1 }}>
+      {/* ── Cover Banner ── */}
+      <div style={{ height: isMobile ? 150 : 220, overflow: "hidden", position: "relative" }}>
+        <img
+          src={
+            startup.founder_dp ||
+            "https://firebasestorage.googleapis.com/v0/b/iimv-ae907.appspot.com/o/Website%2Fcover_pic.png?alt=media&token=2f48030e-daa7-4e20-80c5-218bd6a93a25"
+          }
+          alt="Cover"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(9,14,52,0.35) 100%)",
+          }}
+        />
+        {/* Back button */}
+        <button
+          onClick={() => window.history.back()}
+          style={{
+            position: "absolute",
+            top: 18,
+            left: 18,
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.92)",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: TEXT,
+            fontSize: 15,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+          }}
+        >
+          <FaArrowLeft />
+        </button>
+        {/* Go to website pill */}
+        <a
+          href={getWebsiteUrl(startup.website)}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: "absolute",
+            top: 18,
+            right: 18,
+            padding: "8px 18px",
+            borderRadius: 100,
+            background: "rgba(255,255,255,0.92)",
+            border: "none",
+            color: P,
+            fontWeight: 700,
+            fontSize: 13,
+            textDecoration: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <FaGlobe style={{ fontSize: 12 }} /> Go to website
+        </a>
+      </div>
 
-					<div className="text-gray-800 sm:text-lg mt-1 text-center sm:text-left text-base ">
-						{startup.moto}
-					</div>
+      {/* ── Page Layout ── */}
+      <div
+        style={{
+          maxWidth: 1160,
+          margin: "0 auto",
+          padding: isMobile ? "0 12px 40px" : "0 20px 60px",
+          display: "flex",
+          flexDirection: isMobile || isTablet ? "column" : "row",
+          gap: isMobile ? 14 : 20,
+          alignItems: "flex-start",
+        }}
+      >
+        {/* ════ MAIN COLUMN ════ */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* ── Profile Card ── */}
+          <div
+            style={{
+              ...cardBase,
+              marginTop: isMobile ? -36 : -56,
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
+            {/* Top row: logo + action buttons */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                padding: "20px 28px 0",
+              }}
+            >
+              {/* Circular Logo */}
+              <div
+                style={{
+                  width: isMobile ? 64 : 84,
+                  height: isMobile ? 64 : 84,
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                  border: `4px solid ${CARD}`,
+                  boxShadow: "0 4px 20px rgba(74,108,247,0.22)",
+                  overflow: "hidden",
+                  background: "#090E34",
+                  marginTop: isMobile ? -32 : -48,
+                }}
+              >
+                <img
+                  src={
+                    startup.logo ||
+                    "https://dummyimage.com/100x100/090E34/fff.png&text=S"
+                  }
+                  alt="Logo"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+              {/* Buttons */}
+              <div style={{ display: "flex", gap: 10, paddingTop: 10 }}>
+                <button
+                  onClick={() => setIsContactVisible(true)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "8px 20px",
+                    borderRadius: 8,
+                    border: `1.5px solid ${BORDER}`,
+                    background: CARD,
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    color: TEXT,
+                    cursor: "pointer",
+                    transition: "border-color 0.15s",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.borderColor = P)}
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.borderColor = BORDER)
+                  }
+                >
+                  <IoMdContact style={{ color: P, fontSize: 13 }} /> View
+                  Contact
+                </button>
+                <a
+                  href={getWebsiteUrl(startup.website)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 8,
+                    border: `1.5px solid ${BORDER}`,
+                    background: CARD,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: MUTED,
+                    fontSize: 15,
+                    textDecoration: "none",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.borderColor = P;
+                    e.currentTarget.style.color = P;
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.borderColor = BORDER;
+                    e.currentTarget.style.color = MUTED;
+                  }}
+                >
+                  <FaLink />
+                </a>
+              </div>
+            </div>
 
-					<p className="text-gray-600 text-center sm:text-left">
-						{startup.founder_name} (Founder)
-						<br />
-					</p>
+            {/* Info block */}
+            <div style={{ padding: isMobile ? "12px 16px 0" : "14px 28px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
+                <h1
+                  style={{
+                    fontSize: isMobile ? 20 : 24,
+                    fontWeight: 800,
+                    color: TEXT,
+                    letterSpacing: "-0.03em",
+                    margin: 0,
+                  }}
+                >
+                  {startup.company_name}
+                </h1>
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "3px 10px",
+                    borderRadius: 100,
+                    background: "linear-gradient(130deg,#7c3aed,#a855f7)",
+                    color: "#fff",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  <svg style={{ width: 9, height: 9 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Top Startup
+                </span>
+              </div>
+              {startup.founder_name && (
+                <p
+                  style={{
+                    fontSize: 13.5,
+                    color: MUTED,
+                    margin: "0 0 8px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {startup.address || "Bihar, India"}
+                </p>
+              )}
+              <p
+                style={{
+                  fontSize: 14.5,
+                  color: "#374151",
+                  lineHeight: 1.65,
+                  maxWidth: 580,
+                  margin: "0 0 16px",
+                }}
+              >
+                {startup.moto}
+              </p>
+              {/* Social links */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  marginBottom: 18,
+                }}
+              >
+                <SocialLink
+                  href={startup.linkedin}
+                  Icon={FaLinkedin}
+                  label="LinkedIn"
+                  hoverColor="#0a66c2"
+                />
+                <SocialLink
+                  href={startup.twitter}
+                  Icon={FaTwitter}
+                  label="Twitter"
+                  hoverColor="#1d9bf0"
+                />
+                <SocialLink
+                  href={getWebsiteUrl(startup.website)}
+                  Icon={FaGlobe}
+                  label="Website"
+                  hoverColor={P}
+                />
+                <SocialLink
+                  href={startup.facebook}
+                  Icon={FaFacebook}
+                  label="Facebook"
+                  hoverColor="#1877f2"
+                />
+                <SocialLink
+                  href={startup.instagram}
+                  Icon={FaInstagram}
+                  label="Instagram"
+                  hoverColor="#e1306c"
+                />
+              </div>
+            </div>
 
-					<div className="flex gap-3 mb-2 mt-5 justify-center sm:justify-start">
-						<button
-							className="px-6 py-2 bg-black text-white rounded-lg"
-							onClick={() => setIsContactVisible(true)}
-						>
-							Contact
-						</button>
-						<a
-							href={getWebsiteUrl(startup.website)}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="px-6 py-2 border border-gray-300 rounded-lg"
-						>
-							Visit Website
-						</a>
-					</div>
-				</div>
+            {/* ── Tab Bar ── */}
+            <div
+              style={{
+                borderTop: `1px solid ${BORDER}`,
+                padding: "0 28px",
+                display: "flex",
+                overflowX: "auto",
+              }}
+            >
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryClick(cat)}
+                  style={{
+                    padding: "14px 4px",
+                    marginRight: 28,
+                    fontSize: 14,
+                    fontWeight: selectedCategory === cat ? 700 : 500,
+                    color: selectedCategory === cat ? P : MUTED,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    borderBottom:
+                      selectedCategory === cat
+                        ? `3px solid ${P}`
+                        : "3px solid transparent",
+                    transition: "color 0.15s, border-color 0.15s",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
 
+          {/* ── Stats Row ── */}
+          <div
+            style={{
+              ...cardBase,
+              marginTop: 16,
+              padding: isMobile ? "18px 16px" : "24px 28px",
+              display: "grid",
+              gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(3,1fr)",
+              gap: isMobile ? 16 : 0,
+            }}
+          >
+            {stats.map(({ label, value, icon, bg }, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  paddingLeft: isMobile ? 0 : (i > 0 ? 28 : 0),
+                  paddingRight: isMobile ? 0 : (i < stats.length - 1 ? 28 : 0),
+                  borderRight: isMobile ? "none" : (i < stats.length - 1 ? `1px solid ${BORDER}` : "none"),
+                  borderBottom: isMobile ? `1px solid ${BORDER}` : "none",
+                  paddingBottom: isMobile ? 12 : 0,
+                }}
+              >
+                <StatIcon bg={bg}>{icon}</StatIcon>
+                <span style={{ fontSize: 12.5, color: MUTED, fontWeight: 500 }}>
+                  {label}
+                </span>
+                <span
+                  style={{
+                    fontSize: 26,
+                    fontWeight: 800,
+                    color: TEXT,
+                    letterSpacing: "-0.04em",
+                    lineHeight: 1,
+                  }}
+                >
+                  {value}
+                </span>
+              </div>
+            ))}
+          </div>
 
-				{/* Purple Container */}
-				<div className="sm:col-span-12 lg:col-span-4  ">
-					{/* Add content here if needed to ensure the height expands properly */}
-					<div className="mt-4 sm:mt-0">
-						<div className="flex justify-center lg:justify-end items-center gap-4 sm:my-4">
-							<div className="text-center border-r px-3">
-								<div className="text-xl font-semibold">{startup.employeeCount || '—'}</div>
-								<div className="text-gray-600">Employees</div>
-							</div>
-							<div className="text-center border-r px-3">
-								<div className="text-xl font-semibold">{startup.workOrders || '—'}</div>
-								<div className="text-gray-600">Work Orders</div>
-							</div>
-							<div className="text-center ">
-								<div className="text-xl font-semibold">{startup.projects || '—'}</div>
-								<div className="text-gray-600">Projects</div>
-							</div>
+          {/* ── Content Area ── */}
+          <div style={{ ...cardBase, marginTop: 16, padding: "26px 28px" }}>
+            {selectedCategory === "Overview" && (
+              <>
+                <h2
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: TEXT,
+                    letterSpacing: "-0.025em",
+                    margin: "0 0 14px",
+                  }}
+                >
+                  About {startup.company_name}
+                </h2>
+                <p
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    wordWrap: "break-word",
+                    fontSize: 14.5,
+                    color: "#374151",
+                    lineHeight: 1.8,
+                    letterSpacing: "-0.005em",
+                    maxWidth: 660,
+                  }}
+                >
+                  {startup.about || startup.moto}
+                </p>
+              </>
+            )}
 
-						</div>
-						<div className="flex justify-center lg:justify-end  gap-6 mt-3 lg:mt-6 py-2">
-							<a
-								href={startup.twitter || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<FaTwitter className="text-3xl cursor-pointer hover:text-blue-500" />
-							</a>
-							<a
-								href={startup.facebook || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<FaFacebook className="text-3xl cursor-pointer hover:text-blue-700" />
-							</a>
-							<a
-								href={startup.instagram || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<FaInstagram className="text-3xl cursor-pointer hover:text-pink-500" />
-							</a>
-							<a
-								href={startup.linkedin || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<FaLinkedin className="text-3xl cursor-pointer hover:text-blue-600" />
-							</a>
-							<a
-								href={getWebsiteUrl(startup.website) || "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<FaGlobe className="text-3xl cursor-pointer hover:text-green-600" />
-							</a>
-						</div>
+            {selectedCategory === "About Startup" && (
+              <>
+                <h2
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: TEXT,
+                    letterSpacing: "-0.025em",
+                    marginBottom: 14,
+                  }}
+                >
+                  About {startup.company_name}
+                </h2>
+                <p
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    wordWrap: "break-word",
+                    fontSize: 14.5,
+                    color: "#374151",
+                    lineHeight: 1.8,
+                    letterSpacing: "-0.005em",
+                    maxWidth: 660,
+                  }}
+                >
+                  {startup.about}
+                </p>
+              </>
+            )}
 
-						<div
-							className="mt-4 flex sm:justify-end justify-center -space-x-2 overflow-hidden flex-wrap"
-							onClick={() => setShowEmployeeDetails(true)}
-						>
-							{employees && employees.length > 0 ? (
-								employees.map((employee, index) => (
-									<img
-										key={index}
-										alt={employee.name}
-										src={employee.dp}
-										className="inline-block size-10 rounded-full ring-2 ring-white"
-									/>
-								))
-							) : (
-								<p className="text-sm text-gray-500">No employees found</p>
-							)}
-						</div>
+            {selectedCategory === "Showcase" && (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 20,
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: TEXT,
+                      letterSpacing: "-0.025em",
+                      margin: 0,
+                    }}
+                  >
+                    Showcase
+                  </h2>
+                  {showcases.length > 0 && (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: P,
+                        background: PL,
+                        padding: "3px 10px",
+                        borderRadius: 100,
+                        border: `1px solid ${BORDER}`,
+                      }}
+                    >
+                      {showcases.length} items
+                    </span>
+                  )}
+                </div>
+                {isLoading ? (
+                  <div
+                    style={{
+                      padding: "48px 0",
+                      textAlign: "center",
+                      color: MUTED,
+                      fontSize: 13,
+                    }}
+                  >
+                    Loading…
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fill,minmax(190px,1fr))",
+                      gap: 16,
+                    }}
+                  >
+                    {[...showcases].reverse().map((showcase, index) => (
+                      <ShowcaseCard
+                        key={index}
+                        imgurl={showcase.picUrl}
+                        dateandtime={showcase.date}
+                        title={showcase.title}
+                        subtitle={showcase.subtitle}
+                        tag={showcase.location}
+                        projectLink={showcase.projectLink}
+                        delhidden={true}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
 
-					</div>
-					{showEmployeeDetails && (
-						<EmployeeDetails
-							onClose={() => setShowEmployeeDetails(false)}
-							deleteBtn={false}
-							userId={id}
-						/>
-					)}
-				</div>
-			</div>
-			<div className="mx-5 lg:mx-20 justify-start mt-10 mb-4">
-				{/* Tabs Section */}
-				<div className="border-2 border-white rounded-2xl px-4 py-2 bg-transparent">
-					<nav className="justify-start space-x-2">
-						{categories.map((category) => (
-							<button
-								key={category}
-								onClick={() => handleCategoryClick(category)}
-								className={`py-1 px-4 transition-all duration-300 transform ${selectedCategory === category
-									? "bg-slate-200 text-[#0E0C22] font-semibold rounded-full scale-105" // Selected styles with slight scale animation
-									: "text-[#151334] font-medium hover:text-opacity-70 hover:bg-[#F8F7F3] hover:text-[#0E0C22] rounded-full" // Unselected styles with hover effect
-									}`}
-							>
-								{category}
-							</button>
-						))}
-					</nav>
-				</div>
-			</div>
+        {/* ════ RIGHT SIDEBAR ════ */}
+        <div
+          style={{
+            width: isMobile || isTablet ? "100%" : 280,
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: isMobile ? "column" : (isTablet ? "row" : "column"),
+            flexWrap: isTablet ? "wrap" : "unset",
+            gap: 16,
+            paddingTop: isMobile || isTablet ? 0 : 16,
+          }}
+        >
+          {/* Founder */}
+          {startup.founder_name && (
+            <div style={{ ...cardBase, padding: "20px", flex: isTablet ? "1 1 calc(50% - 8px)" : undefined }}>
+              <h3
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: TEXT,
+                  letterSpacing: "-0.02em",
+                  margin: "0 0 14px",
+                }}
+              >
+                Founder
+              </h3>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    background: "#eef2ff",
+                    border: `2px solid ${BORDER}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 20,
+                    color: P,
+                    flexShrink: 0,
+                  }}
+                >
+                  <FaUsers style={{ fontSize: 16 }} />
+                </div>
+                <div>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: TEXT,
+                    }}
+                  >
+                    {startup.founder_name}
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 12.5,
+                      color: MUTED,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Founder & CEO
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
+          {/* Team */}
+          <div style={{ ...cardBase, padding: "20px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 14,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: TEXT,
+                  letterSpacing: "-0.02em",
+                  margin: 0,
+                }}
+              >
+                Team
+              </h3>
+              {employees && employees.length > 0 && (
+                <button
+                  onClick={() => setShowEmployeeDetails(true)}
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: P,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  See all →
+                </button>
+              )}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6,
+                cursor: "pointer",
+              }}
+              onClick={() => setShowEmployeeDetails(true)}
+            >
+              {employees && employees.length > 0 ? (
+                employees.slice(0, 12).map((employee, index) => (
+                  <img
+                    key={index}
+                    alt={employee.name}
+                    src={employee.dp}
+                    title={employee.name}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: `2px solid ${CARD}`,
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                ))
+              ) : (
+                <p style={{ fontSize: 13, color: MUTED }}>
+                  No team members yet
+                </p>
+              )}
+            </div>
+          </div>
 
-			<div className="mx-5 lg:mx-20 p-6 bg-white shadow rounded-md">
-				{/* Showcase Content */}
-				{selectedCategory === "Showcase" && (
-					<>
-						<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
-							Showcase
-						</h1>
-						<hr className="mb-6 border-gray-500/30" />
-						{isLoading ? (
-							<p className="text-center text-gray-500 mt-8">Loading...</p>
-						) : (
-							<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-								{[...showcases].reverse().map((showcase, index) => (
-									<ShowcaseCard
-										key={index}
-										imgurl={showcase.picUrl}
-										dateandtime={showcase.date}
-										title={showcase.title}
-										subtitle={showcase.subtitle}
-										tag={showcase.location}
-										projectLink={showcase.projectLink}
-										delhidden={true}
-									/>
-								))}
-							</div>
-						)}
-					</>
-				)}
+          {/* Locations */}
+          <div style={{ ...cardBase, padding: "20px" }}>
+            <h3
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: TEXT,
+                letterSpacing: "-0.02em",
+                margin: "0 0 12px",
+              }}
+            >
+              Locations
+            </h3>
+            <p style={{ fontSize: 13.5, color: MUTED, margin: 0 }}>
+              {startup.address || "Bihar, India"}
+            </p>
+          </div>
 
-				{/* About Content */}
-				{selectedCategory === "About Startup" && (
-					<>
-						<h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4">
-							About Startup
-						</h1>
-						<hr className="mb-6 border-gray-500/30" />
-						<p
-							style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
-						>
-							{startup.about}
-						</p>
-					</>
-				)}
+          {/* Quick Links */}
+          <div style={{ ...cardBase, padding: "20px" }}>
+            <h3
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: TEXT,
+                letterSpacing: "-0.02em",
+                margin: "0 0 12px",
+              }}
+            >
+              Quick Links
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {[
+                {
+                  label: "Website",
+                  href: getWebsiteUrl(startup.website),
+                  Icon: FaGlobe,
+                },
+                { label: "LinkedIn", href: startup.linkedin, Icon: FaLinkedin },
+                { label: "Twitter", href: startup.twitter, Icon: FaTwitter },
+                {
+                  label: "Instagram",
+                  href: startup.instagram,
+                  Icon: FaInstagram,
+                },
+              ].map(({ label, href, Icon }, i) => (
+                <a
+                  key={i}
+                  href={href || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    fontSize: 13.5,
+                    color: TEXT,
+                    fontWeight: 500,
+                    textDecoration: "none",
+                    padding: "7px 9px",
+                    borderRadius: 8,
+                    transition: "background 0.12s",
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = PL)}
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  <span style={{ color: P, fontSize: 14 }}>
+                    <Icon />
+                  </span>
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-				{isContactVisible && (
-					<div className="fixed inset-0 flex items-center justify-center  z-50">
-						<div className="absolute inset-0 bg-black opacity-10"></div>
-						<div className="relative bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg border border-white border-opacity-30 w-5/12 p-8 rounded-lg shadow-lg">
-							<button
-								className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
-								onClick={() => setIsContactVisible(false)}
-							>
-								&times;
-							</button>
-							<h1 className="text-2xl font-bold">{startup.company_name}</h1>
-							<h1 className="mb-3 ">{startup.moto}</h1>
-							<h2 className="text-xl font-semibold ">Contact :</h2>
-							Phone :
-							<a href={`tel:${startup.mobile}`} className="text-blue-600 ">
-								{" "}
-								{startup.mobile || "N/A"}
-							</a>
-							<br />
-							Website:
-							<a
-								href={startup.website || "#"}
-								className="text-blue-600 underline"
-							>
-								{" "}
-								{startup.website || "#"}
-							</a>
-							<br />
-							Address:
-							<a
-								href={startup.address || "#"}
-								className="text-blue-600 underline"
-							>
-								{" "}
-							</a>
-						</div>
-					</div>
-				)}
+      {/* ── Employee Details Modal ── */}
+      {showEmployeeDetails && (
+        <EmployeeDetails
+          onClose={() => setShowEmployeeDetails(false)}
+          deleteBtn={false}
+          userId={id}
+        />
+      )}
 
-			</div>
-		</div>
-	);
+      {/* ── Contact Modal ── */}
+      {isContactVisible && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "rgba(9,14,52,0.42)",
+              backdropFilter: "blur(5px)",
+            }}
+            onClick={() => setIsContactVisible(false)}
+          />
+          <div
+            style={{
+              position: "relative",
+              zIndex: 10,
+              background: CARD,
+              borderRadius: 18,
+              padding: "32px 32px 28px",
+              width: "min(460px,92vw)",
+              border: `1px solid ${BORDER}`,
+              boxShadow:
+                "0 24px 60px rgba(74,108,247,0.18), 0 4px 16px rgba(0,0,0,0.08)",
+            }}
+          >
+            <button
+              onClick={() => setIsContactVisible(false)}
+              style={{
+                position: "absolute",
+                top: 14,
+                right: 14,
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                border: `1px solid ${BORDER}`,
+                background: PL,
+                cursor: "pointer",
+                color: MUTED,
+                fontSize: 18,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              ×
+            </button>
+            <h2
+              style={{
+                fontSize: 20,
+                fontWeight: 800,
+                color: TEXT,
+                letterSpacing: "-0.03em",
+                marginBottom: 4,
+              }}
+            >
+              {startup.company_name}
+            </h2>
+            <p
+              style={{
+                fontSize: 13,
+                color: P,
+                fontStyle: "italic",
+                marginBottom: 22,
+              }}
+            >
+              {startup.moto}
+            </p>
+            <div
+              style={{
+                background: PL,
+                borderRadius: 12,
+                border: `1px solid ${BORDER}`,
+                padding: "16px 18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#9ca3af",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
+                  margin: 0,
+                }}
+              >
+                Contact Details
+              </p>
+              {[
+                {
+                  label: "Phone",
+                  value: startup.mobile,
+                  href: `tel:${startup.mobile}`,
+                },
+                {
+                  label: "Website",
+                  value: startup.website,
+                  href: startup.website || "#",
+                },
+                {
+                  label: "Address",
+                  value: startup.address,
+                  href: startup.address || "#",
+                },
+              ].map(({ label, value, href }, i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", gap: 10 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: MUTED,
+                      fontWeight: 500,
+                      minWidth: 58,
+                    }}
+                  >
+                    {label}
+                  </span>
+                  <a
+                    href={href}
+                    style={{
+                      fontSize: 13.5,
+                      color: P,
+                      fontWeight: 600,
+                      textDecoration: "none",
+                    }}
+                  >
+                    {value || "—"}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      </div>{/* end zIndex:1 content wrapper */}
+    </div>
+  );
 };
 
 export default StartupPublicProfile;

@@ -158,7 +158,9 @@ const hasRegisteredCompany = (item) =>
     item?.entityDetails?.entityRegistrationNumber
   );
 
-const getAIScore = (item) => normalizeNumber(item?.aiEvaluation?.finalScore);
+const getAIScore = (item) => {
+  return normalizeNumber(item?.aiEvaluation?.finalScore);
+};
 
 function ThemeToggle({ darkMode, setDarkMode }) {
   const toggleTheme = () => {
@@ -171,10 +173,10 @@ function ThemeToggle({ darkMode, setDarkMode }) {
     <button
       type="button"
       onClick={toggleTheme}
-      className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm transition ${
+      className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black shadow-sm transition ${
         darkMode
           ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
-          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
       }`}
     >
       {darkMode ? <Sun size={16} /> : <Moon size={16} />}
@@ -187,7 +189,7 @@ function StatusBadge({ status, darkMode = false }) {
   const base = "inline-flex rounded-full border px-3 py-1 text-xs font-semibold";
 
   if (darkMode) {
-    const map = {
+    const darkMap = {
       submitted: "border-sky-400/30 bg-sky-400/10 text-sky-200",
       Submitted: "border-sky-400/30 bg-sky-400/10 text-sky-200",
       "Under Review": "border-amber-400/30 bg-amber-400/10 text-amber-200",
@@ -197,10 +199,14 @@ function StatusBadge({ status, darkMode = false }) {
       Draft: "border-slate-400/25 bg-slate-400/10 text-slate-300",
     };
 
-    return <span className={`${base} ${map[status] || map.draft}`}>{safe(status)}</span>;
+    return (
+      <span className={`${base} ${darkMap[status] || darkMap.draft}`}>
+        {safe(status)}
+      </span>
+    );
   }
 
-  const map = {
+  const statusMap = {
     submitted: "border-sky-200 bg-sky-50 text-sky-700",
     Submitted: "border-sky-200 bg-sky-50 text-sky-700",
     "Under Review": "border-amber-200 bg-amber-50 text-amber-700",
@@ -210,7 +216,11 @@ function StatusBadge({ status, darkMode = false }) {
     Draft: "border-slate-200 bg-slate-100 text-slate-700",
   };
 
-  return <span className={`${base} ${map[status] || map.draft}`}>{safe(status)}</span>;
+  return (
+    <span className={`${base} ${statusMap[status] || statusMap.draft}`}>
+      {safe(status)}
+    </span>
+  );
 }
 
 function RegisteredBadge({ value, darkMode = false }) {
@@ -242,7 +252,7 @@ function ReviewBadge({ children, tone = "slate", darkMode = false }) {
     "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm";
 
   if (darkMode) {
-    const map = {
+    const darkMap = {
       slate: "border-slate-500/30 bg-slate-500/10 text-slate-200",
       amber: "border-amber-400/30 bg-amber-400/10 text-amber-200",
       emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
@@ -251,10 +261,10 @@ function ReviewBadge({ children, tone = "slate", darkMode = false }) {
       rose: "border-rose-400/30 bg-rose-400/10 text-rose-200",
     };
 
-    return <span className={`${base} ${map[tone] || map.slate}`}>{children}</span>;
+    return <span className={`${base} ${darkMap[tone] || darkMap.slate}`}>{children}</span>;
   }
 
-  const map = {
+  const toneMap = {
     slate: "border-slate-200 bg-white text-slate-700",
     amber: "border-amber-200 bg-amber-50 text-amber-700",
     emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -263,7 +273,7 @@ function ReviewBadge({ children, tone = "slate", darkMode = false }) {
     rose: "border-rose-200 bg-rose-50 text-rose-700",
   };
 
-  return <span className={`${base} ${map[tone] || map.slate}`}>{children}</span>;
+  return <span className={`${base} ${toneMap[tone] || toneMap.slate}`}>{children}</span>;
 }
 
 function LinkValue({ value, darkMode = false }) {
@@ -279,7 +289,7 @@ function LinkValue({ value, darkMode = false }) {
       target="_blank"
       rel="noreferrer"
       className={`inline-flex items-center gap-1 break-all underline-offset-4 transition hover:underline ${
-        darkMode ? "text-amber-200 hover:text-amber-100" : "text-amber-700 hover:text-amber-900"
+        darkMode ? "text-cyan-200 hover:text-cyan-100" : "text-cyan-700 hover:text-cyan-900"
       }`}
     >
       {raw}
@@ -308,7 +318,6 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
 
     try {
       setLoading(true);
-
       const adminSnap = await get(ref(rtdb, `Admin/${cleanId}`));
 
       if (!adminSnap.exists()) {
@@ -349,41 +358,42 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
       style={{ backgroundImage: "url('/bg1.jpg')" }}
     >
       <div
-        className={`absolute inset-0 backdrop-[blur(2px)] ${
-          darkMode ? "bg-slate-950/86" : "bg-white/70"
+        className={`absolute inset-0 backdrop-blur-[2px] ${
+          darkMode
+            ? "bg-gradient-to-br from-slate-950/96 via-indigo-950/92 to-cyan-950/90"
+            : "bg-gradient-to-br from-slate-950/88 via-indigo-950/82 to-cyan-950/76"
         }`}
       />
+      <div className="absolute -left-24 top-20 h-72 w-72 rounded-full bg-cyan-400/20 blur-3xl" />
+      <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-indigo-500/25 blur-3xl" />
 
       <div className="relative flex min-h-screen items-center justify-center p-4">
         <div
-          className={`grid w-full max-w-5xl overflow-hidden rounded-[34px] border shadow-[0_30px_90px_rgba(15,23,42,0.18)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr] ${
-            darkMode ? "border-white/10 bg-slate-950/78" : "border-white/80 bg-white/72"
+          className={`grid w-full max-w-5xl overflow-hidden rounded-[34px] border shadow-[0_40px_120px_rgba(2,6,23,0.45)] backdrop-blur-xl lg:grid-cols-[1.05fr_0.95fr] ${
+            darkMode ? "border-white/10 bg-slate-950/92" : "border-white/20 bg-white/95"
           }`}
         >
-          <div className="hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-8 text-white lg:block">
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-amber-100">
+          <div className="hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-cyan-950 p-8 text-white lg:block">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-cyan-100">
               <ShieldCheck size={26} />
             </div>
-
             <h1 className="mt-8 max-w-md text-4xl font-black tracking-tight">
               Startup Bihar Expert Review Board
             </h1>
-
             <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
-              Secure expert access for reviewing assigned applications, submitting scores,
-              and viewing AI evaluation only after independent scoring.
+              Secure access for expert reviewers to examine assigned applications, submit
+              score, and view AI evaluation only after expert scoring.
             </p>
 
             <div className="mt-10 grid gap-3">
               <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-100/80">
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-100/80">
                   Credential Source
                 </div>
                 <div className="mt-1 text-sm text-white/90">Realtime Database /Admin</div>
               </div>
-
               <div className="rounded-2xl border border-white/12 bg-white/8 p-4">
-                <div className="text-xs font-bold uppercase tracking-[0.18em] text-amber-100/80">
+                <div className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-100/80">
                   Access Type
                 </div>
                 <div className="mt-1 text-sm text-white/90">Expert reviewer access</div>
@@ -402,21 +412,19 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
                   <ShieldCheck size={22} />
                 </div>
               </div>
-
               <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
             </div>
 
             <div className="mt-5 lg:mt-6">
               <div
-                className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${
                   darkMode
-                    ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                    : "border-amber-200 bg-amber-50 text-amber-700"
+                    ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-200"
+                    : "border-cyan-200 bg-cyan-50 text-cyan-700"
                 }`}
               >
                 Expert Login
               </div>
-
               <h2
                 className={`mt-3 text-2xl font-black tracking-tight ${
                   darkMode ? "text-white" : "text-slate-950"
@@ -424,12 +432,7 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
               >
                 Verify Reviewer Access
               </h2>
-
-              <p
-                className={`mt-2 text-sm leading-6 ${
-                  darkMode ? "text-slate-400" : "text-slate-500"
-                }`}
-              >
+              <p className={`mt-2 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                 Use your reviewer ID and password.
               </p>
             </div>
@@ -442,7 +445,6 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
               >
                 Reviewer ID
               </label>
-
               <div className="relative">
                 <UserRound
                   size={17}
@@ -455,8 +457,8 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
                   autoComplete="username"
                   className={`w-full rounded-2xl border px-4 py-3 pl-11 text-sm font-semibold outline-none transition ${
                     darkMode
-                      ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/8 focus:ring-4 focus:ring-amber-400/10"
-                      : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                      ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:bg-white/8 focus:ring-4 focus:ring-cyan-400/10"
+                      : "border-slate-200 bg-slate-50 text-slate-800 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100"
                   }`}
                 />
               </div>
@@ -468,7 +470,6 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
               >
                 Password
               </label>
-
               <div className="relative">
                 <LockKeyhole
                   size={17}
@@ -482,8 +483,8 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
                   autoComplete="current-password"
                   className={`w-full rounded-2xl border px-4 py-3 pl-11 text-sm font-semibold outline-none transition ${
                     darkMode
-                      ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/8 focus:ring-4 focus:ring-amber-400/10"
-                      : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                      ? "border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:bg-white/8 focus:ring-4 focus:ring-cyan-400/10"
+                      : "border-slate-200 bg-slate-50 text-slate-800 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100"
                   }`}
                 />
               </div>
@@ -503,7 +504,7 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 px-5 py-3 text-sm font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.25)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-slate-950 via-indigo-950 to-cyan-900 px-5 py-3 text-sm font-black text-white shadow-[0_18px_40px_rgba(15,23,42,0.28)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <LockKeyhole size={16} />
                 {loading ? "Verifying..." : "Open Reviewer Board"}
@@ -513,7 +514,7 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
                 className={`mt-4 rounded-2xl border px-4 py-3 text-xs leading-5 ${
                   darkMode
                     ? "border-white/10 bg-white/5 text-slate-400"
-                    : "border-white/80 bg-white/65 text-slate-500"
+                    : "border-slate-200 bg-slate-50 text-slate-500"
                 }`}
               >
                 Password is verified from RTDB, not hardcoded in this component.
@@ -528,29 +529,26 @@ function LoginScreen({ onLogin, darkMode, setDarkMode }) {
 
 function KpiCard({ icon: Icon, title, value, subtitle, tone = "slate", darkMode = false }) {
   if (darkMode) {
-    const toneMap = {
+    const darkToneMap = {
       slate: "from-slate-900/92 via-slate-950/90 to-slate-900/80",
-      cyan: "from-sky-950/55 via-slate-950/90 to-slate-900/80",
+      cyan: "from-cyan-950/55 via-slate-950/90 to-slate-900/80",
       emerald: "from-emerald-950/50 via-slate-950/90 to-slate-900/80",
       amber: "from-amber-950/45 via-slate-950/90 to-slate-900/80",
       indigo: "from-indigo-950/60 via-slate-950/90 to-slate-900/80",
     };
 
     return (
-      <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-        <div className={`rounded-[22px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
-          <div className="flex items-start justify-between gap-4">
+      <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+        <div className={`rounded-[22px] bg-gradient-to-br ${darkToneMap[tone]} p-5`}>
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                 {title}
               </div>
-              <div className="mt-3 text-3xl font-bold tracking-tight text-white">
-                {safe(value)}
-              </div>
+              <div className="mt-2 text-3xl font-black text-white">{value}</div>
               <div className="mt-2 text-sm text-slate-400">{subtitle}</div>
             </div>
-
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-amber-100 shadow-sm">
+            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-cyan-100">
               <Icon size={18} />
             </div>
           </div>
@@ -560,28 +558,25 @@ function KpiCard({ icon: Icon, title, value, subtitle, tone = "slate", darkMode 
   }
 
   const toneMap = {
-    slate: "from-slate-50 via-white to-slate-100",
-    cyan: "from-sky-50 via-white to-indigo-50",
+    slate: "from-white via-white to-slate-50",
+    cyan: "from-cyan-50 via-white to-sky-50",
     emerald: "from-emerald-50 via-white to-teal-50",
     amber: "from-amber-50 via-white to-orange-50",
-    indigo: "from-violet-50 via-white to-indigo-50",
+    indigo: "from-indigo-50 via-white to-violet-50",
   };
 
   return (
-    <div className="rounded-[28px] border border-white/90 bg-white/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl">
-      <div className={`rounded-[22px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
-        <div className="flex items-start justify-between gap-4">
+    <div className="rounded-[28px] border border-white/85 bg-white/80 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+      <div className={`rounded-[22px] bg-gradient-to-br ${toneMap[tone]} p-5`}>
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
               {title}
             </div>
-            <div className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-              {safe(value)}
-            </div>
+            <div className="mt-2 text-3xl font-black text-slate-950">{value}</div>
             <div className="mt-2 text-sm text-slate-500">{subtitle}</div>
           </div>
-
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-sm">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-white">
             <Icon size={18} />
           </div>
         </div>
@@ -593,7 +588,7 @@ function KpiCard({ icon: Icon, title, value, subtitle, tone = "slate", darkMode 
 function IconLabel({ icon: Icon, label, value }) {
   return (
     <div className="rounded-[20px] border border-white/10 bg-white/[0.07] px-4 py-3">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-amber-50/60">
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-cyan-50/60">
         <Icon size={13} />
         {label}
       </div>
@@ -615,7 +610,7 @@ function SectionShell({
   darkMode = false,
 }) {
   if (darkMode) {
-    const toneMap = {
+    const darkToneMap = {
       slate: "from-slate-900/92 via-slate-950/88 to-slate-900/85",
       warm: "from-amber-950/30 via-slate-950/90 to-slate-900/85",
       indigo: "from-indigo-950/40 via-slate-950/90 to-cyan-950/20",
@@ -629,9 +624,9 @@ function SectionShell({
         id={id}
         className="scroll-mt-6 rounded-[30px] border border-white/10 bg-white/[0.04] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl md:p-5"
       >
-        <div className={`rounded-[24px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
+        <div className={`rounded-[24px] bg-gradient-to-br ${darkToneMap[tone]} p-5`}>
           <div className="flex items-start gap-3 border-b border-white/10 pb-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-amber-100 shadow-[0_12px_30px_rgba(0,0,0,0.20)]">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-cyan-100 shadow-[0_12px_30px_rgba(0,0,0,0.20)]">
               <Icon size={18} />
             </div>
             <div>
@@ -661,7 +656,7 @@ function SectionShell({
     >
       <div className={`rounded-[24px] bg-gradient-to-br ${toneMap[tone] || toneMap.slate} p-5`}>
         <div className="flex items-start gap-3 border-b border-slate-100 pb-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)]">
             <Icon size={18} />
           </div>
           <div>
@@ -687,8 +682,8 @@ function NarrativeReviewCard({ number, title, value, tone = "amber", darkMode = 
     <div
       className={`rounded-[24px] p-5 shadow-sm transition ${
         darkMode
-          ? "border border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border border-slate-100 bg-white/94 hover:border-amber-100 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]"
+          ? "border border-white/10 bg-white/[0.05] hover:border-cyan-400/25"
+          : "border border-slate-100 bg-white/94 hover:border-cyan-100 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]"
       }`}
     >
       <div className="flex items-start gap-4">
@@ -699,7 +694,6 @@ function NarrativeReviewCard({ number, title, value, tone = "amber", darkMode = 
         >
           {number}
         </div>
-
         <div className="min-w-0 flex-1">
           <div
             className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${
@@ -708,7 +702,6 @@ function NarrativeReviewCard({ number, title, value, tone = "amber", darkMode = 
           >
             {title}
           </div>
-
           <div
             className={`mt-3 whitespace-pre-wrap break-words text-[15px] leading-7 ${
               darkMode ? "text-slate-200" : "text-slate-800"
@@ -739,8 +732,8 @@ function InfoCell({ label, value, darkMode = false }) {
     <div
       className={`rounded-[20px] px-4 py-4 shadow-sm transition ${
         darkMode
-          ? "border border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border border-slate-100 bg-white/90 hover:border-amber-100"
+          ? "border border-white/10 bg-white/[0.05] hover:border-cyan-400/25"
+          : "border border-slate-100 bg-white/90 hover:border-cyan-100"
       }`}
     >
       <div
@@ -750,7 +743,6 @@ function InfoCell({ label, value, darkMode = false }) {
       >
         {label}
       </div>
-
       <div
         className={`mt-2 break-words text-sm font-semibold leading-6 ${
           darkMode ? "text-slate-200" : "text-slate-800"
@@ -769,8 +761,8 @@ function WideInfoCell({ label, value, darkMode = false }) {
     <div
       className={`rounded-[22px] px-5 py-4 shadow-sm transition ${
         darkMode
-          ? "border border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border border-slate-100 bg-white/90 hover:border-amber-100"
+          ? "border border-white/10 bg-white/[0.05] hover:border-cyan-400/25"
+          : "border border-slate-100 bg-white/90 hover:border-cyan-100"
       }`}
     >
       <div
@@ -780,7 +772,6 @@ function WideInfoCell({ label, value, darkMode = false }) {
       >
         {label}
       </div>
-
       <div
         className={`mt-3 whitespace-pre-wrap break-words text-sm leading-6 ${
           darkMode ? "text-slate-200" : "text-slate-800"
@@ -830,8 +821,8 @@ function ActionDocumentCard({
         <div
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
             darkMode
-              ? "bg-white/10 text-amber-100"
-              : "bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white"
+              ? "bg-white/10 text-cyan-100"
+              : "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white"
           }`}
         >
           <Icon size={17} />
@@ -845,7 +836,6 @@ function ActionDocumentCard({
           >
             {title}
           </div>
-
           <div
             className={`mt-2 break-words text-sm font-semibold leading-6 ${
               darkMode ? "text-slate-200" : "text-slate-800"
@@ -861,8 +851,8 @@ function ActionDocumentCard({
               rel="noreferrer"
               className={`mt-3 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
                 darkMode
-                  ? "border-white/10 bg-white/8 text-amber-100 hover:border-amber-400/25 hover:bg-amber-400/10"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-amber-200 hover:bg-amber-50 hover:text-amber-700"
+                  ? "border-white/10 bg-white/8 text-cyan-100 hover:border-cyan-400/25 hover:bg-cyan-400/10"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700"
               }`}
             >
               Open File
@@ -894,7 +884,6 @@ function UtilityRail({ children, darkMode = false }) {
           Important files and quick review data.
         </p>
       </div>
-
       <div className="space-y-4">{children}</div>
     </aside>
   );
@@ -907,8 +896,8 @@ function UtilityFact({ label, value, darkMode = false }) {
     <div
       className={`rounded-[18px] border px-4 py-3 transition ${
         darkMode
-          ? "border-white/10 bg-white/[0.05] hover:border-amber-400/25"
-          : "border-slate-100 bg-slate-50/95 hover:border-amber-100 hover:bg-white"
+          ? "border-white/10 bg-white/[0.05] hover:border-cyan-400/25"
+          : "border-slate-100 bg-slate-50/95 hover:border-cyan-100 hover:bg-white"
       }`}
     >
       <div
@@ -918,7 +907,6 @@ function UtilityFact({ label, value, darkMode = false }) {
       >
         {label}
       </div>
-
       <div
         className={`mt-1 break-words text-sm font-semibold ${
           darkMode ? "text-slate-200" : "text-slate-800"
@@ -945,7 +933,7 @@ function ProfileRail({
   return (
     <div className="sticky top-4 space-y-4">
       <div className="overflow-hidden rounded-[30px] border border-white/10 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white shadow-[0_24px_70px_rgba(15,23,42,0.30)]">
-        <div className="bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.16),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.16),transparent_25%),radial-gradient(circle_at_center,rgba(99,102,241,0.12),transparent_30%)] p-4">
+        <div className="bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.18),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.16),transparent_25%),radial-gradient(circle_at_center,rgba(99,102,241,0.12),transparent_30%)] p-4">
           <div className="overflow-hidden rounded-[24px] border border-white/10 bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
             {profilePhoto ? (
               <img src={profilePhoto} alt={founderName} className="h-[260px] w-full object-cover" />
@@ -957,7 +945,7 @@ function ProfileRail({
           </div>
 
           <div className="mt-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-50/55">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-50/55">
               Founder
             </div>
             <div className="mt-1 text-lg font-semibold text-white">{safe(founderName)}</div>
@@ -972,7 +960,7 @@ function ProfileRail({
 
           {profilePhotoName ? (
             <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-50/55">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-50/55">
                 Profile File
               </div>
               <div className="mt-1 break-words text-sm font-medium text-white/90">
@@ -990,8 +978,8 @@ function ProfileRail({
         className={`flex w-full items-center justify-center gap-2 rounded-[22px] border px-4 py-3 text-sm font-bold shadow-sm transition ${
           canViewAI
             ? darkMode
-              ? "border-amber-400/25 bg-amber-400/10 text-amber-100 hover:bg-amber-400/15"
-              : "border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 hover:border-amber-300 hover:from-amber-100 hover:to-orange-100"
+              ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-100 hover:bg-cyan-400/15"
+              : "border-cyan-200 bg-gradient-to-r from-cyan-50 to-indigo-50 text-cyan-700 hover:border-cyan-300 hover:from-cyan-100 hover:to-indigo-100"
             : darkMode
             ? "cursor-not-allowed border-white/10 bg-white/5 text-slate-500"
             : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
@@ -1149,7 +1137,7 @@ function ScorePanel({
   return (
     <div
       className={`rounded-[30px] border p-5 shadow-[0_22px_70px_rgba(15,23,42,0.10)] ${
-        darkMode ? "border-white/10 bg-slate-950/70" : "border-white/80 bg-white/78"
+        darkMode ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white"
       }`}
     >
       <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
@@ -1157,18 +1145,16 @@ function ScorePanel({
           <div
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black ${
               darkMode
-                ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                : "border-amber-200 bg-amber-50 text-amber-700"
+                ? "border-indigo-400/25 bg-indigo-400/10 text-indigo-200"
+                : "border-indigo-200 bg-indigo-50 text-indigo-700"
             }`}
           >
             <Star size={13} />
             Expert Score
           </div>
-
           <h3 className={`mt-3 text-xl font-black ${darkMode ? "text-white" : "text-slate-950"}`}>
             {alreadyScored ? "Score Submitted" : "Submit Score"}
           </h3>
-
           <p className={`mt-1 text-sm leading-6 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
             Submit your independent score first. AI evaluation will be available only after score submission.
           </p>
@@ -1196,7 +1182,6 @@ function ScorePanel({
           >
             Score out of 10
           </label>
-
           <input
             type="number"
             min="0"
@@ -1207,8 +1192,8 @@ function ScorePanel({
             placeholder="0 - 10"
             className={`w-full rounded-2xl border px-4 py-3 text-sm font-bold outline-none transition ${
               darkMode
-                ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-amber-400/10"
-                : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-indigo-400/10"
+                : "border-slate-200 bg-slate-50 text-slate-800 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100"
             }`}
           />
         </div>
@@ -1221,7 +1206,6 @@ function ScorePanel({
           >
             Comment
           </label>
-
           <textarea
             rows={2}
             value={comment}
@@ -1229,8 +1213,8 @@ function ScorePanel({
             placeholder="Write expert observation..."
             className={`w-full resize-none rounded-2xl border px-4 py-3 text-sm outline-none transition ${
               darkMode
-                ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-amber-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-amber-400/10"
-                : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-indigo-400/10"
+                : "border-slate-200 bg-slate-50 text-slate-800 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100"
             }`}
           />
         </div>
@@ -1240,7 +1224,7 @@ function ScorePanel({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="inline-flex h-[48px] items-center justify-center rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 px-5 text-sm font-black text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-[48px] items-center justify-center rounded-2xl bg-gradient-to-r from-slate-950 via-indigo-950 to-cyan-900 px-5 text-sm font-black text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? "Saving..." : alreadyScored ? "Revise Score" : "Save Score"}
           </button>
@@ -1300,7 +1284,6 @@ function DetailModal({
 
       try {
         setLoadingReview(true);
-
         const reviewRef = doc(db, "startupApplications", appDocId, "review", "expert");
         const snap = await getDoc(reviewRef);
 
@@ -1390,7 +1373,6 @@ function DetailModal({
 
       setReview(freshReview);
       onReviewSaved?.(appDocId, freshReview);
-
       alert(!review?.score ? "Score saved. AI evaluation is now available." : "Score revised successfully.");
     } catch (error) {
       console.error("Failed to save expert review", error);
@@ -1409,7 +1391,6 @@ function DetailModal({
 
     try {
       const reviewRef = doc(db, "startupApplications", appDocId, "review", "expert");
-
       await setDoc(
         reviewRef,
         {
@@ -1422,7 +1403,6 @@ function DetailModal({
       );
 
       const freshSnap = await getDoc(reviewRef);
-
       if (freshSnap.exists()) {
         const freshReview = freshSnap.data();
         setReview(freshReview);
@@ -1446,8 +1426,8 @@ function DetailModal({
           <div
             className={`absolute inset-0 ${
               darkMode
-                ? "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.10),transparent_18%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.12),transparent_23%),linear-gradient(to_bottom,rgba(2,6,23,0.94),rgba(15,23,42,0.98))]"
-                : "bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.13),transparent_18%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_23%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.10),transparent_21%),linear-gradient(to_bottom,rgba(255,255,255,0.90),rgba(255,255,255,0.98))]"
+                ? "bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.10),transparent_18%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.12),transparent_23%),linear-gradient(to_bottom,rgba(2,6,23,0.94),rgba(15,23,42,0.98))]"
+                : "bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.13),transparent_18%),radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_23%),radial-gradient(circle_at_bottom_left,rgba(245,158,11,0.10),transparent_21%),linear-gradient(to_bottom,rgba(255,255,255,0.90),rgba(255,255,255,0.98))]"
             }`}
           />
 
@@ -1462,8 +1442,8 @@ function DetailModal({
                   <div
                     className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] shadow-sm ${
                       darkMode
-                        ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                        : "border-amber-200 bg-amber-50 text-amber-700"
+                        ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-200"
+                        : "border-cyan-200 bg-cyan-50 text-cyan-700"
                     }`}
                   >
                     <ShieldCheck size={13} />
@@ -1805,7 +1785,10 @@ export default function ReviewerBoard() {
     }
   };
 
-  const getSavedTheme = () => localStorage.getItem("expertReviewerTheme") === "dark";
+  const getSavedTheme = () => {
+    const saved = localStorage.getItem("expertReviewerTheme");
+    return saved === "dark";
+  };
 
   const savedSession = getSavedSession();
 
@@ -1937,7 +1920,6 @@ export default function ReviewerBoard() {
 
       const matchesSearch = !q || searchable.includes(q);
       const matchesStatus = statusFilter === "All" || item._status === statusFilter;
-
       const matchesRegistered =
         registeredFilter === "All" ||
         (registeredFilter === "Yes" && item._registeredCompany) ||
@@ -2045,59 +2027,37 @@ export default function ReviewerBoard() {
       style={{ backgroundImage: "url('/bg1.jpg')" }}
     >
       <div
-        className={`absolute inset-0 backdrop-[blur(2px)] ${
-          darkMode ? "bg-slate-950/82" : "bg-white/70"
+        className={`absolute inset-0 backdrop-blur-[2px] ${
+          darkMode
+            ? "bg-gradient-to-br from-slate-950/96 via-indigo-950/94 to-cyan-950/92"
+            : "bg-gradient-to-br from-slate-50/92 via-indigo-50/82 to-cyan-50/88"
         }`}
       />
+      <div className="absolute left-0 top-0 h-80 w-80 rounded-full bg-cyan-300/20 blur-3xl" />
+      <div className="absolute right-0 top-20 h-96 w-96 rounded-full bg-indigo-400/18 blur-3xl" />
 
       <div className="relative mx-auto max-w-[1650px] p-4 md:p-6 xl:p-8">
         <div
-          className={`overflow-hidden rounded-[38px] border shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl ${
-            darkMode ? "border-white/10 bg-slate-950/72" : "border-white/80 bg-white/58"
+          className={`overflow-hidden rounded-[38px] border shadow-[0_34px_100px_rgba(15,23,42,0.16)] backdrop-blur-xl ${
+            darkMode ? "border-white/10 bg-slate-950/88" : "border-white bg-white/76"
           }`}
         >
-          <div
-            className={`border-b px-5 py-5 md:px-7 md:py-6 ${
-              darkMode ? "border-white/10 bg-white/[0.04]" : "border-white/70 bg-white/30"
-            }`}
-          >
+          <div className="border-b border-white/10 bg-gradient-to-r from-slate-950 via-indigo-950 to-cyan-900 px-5 py-5 text-white md:px-7 md:py-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <div
-                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
-                    darkMode
-                      ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-                      : "border-amber-200 bg-amber-50 text-amber-700"
-                  }`}
-                >
+                <div className="inline-flex rounded-full border border-cyan-200/30 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
                   Expert Reviewer Board
                 </div>
-
-                <h1
-                  className={`mt-3 text-3xl font-bold tracking-tight md:text-4xl ${
-                    darkMode ? "text-white" : "text-slate-900"
-                  }`}
-                >
+                <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
                   Assigned Startup Review Queue
                 </h1>
-
-                <p
-                  className={`mt-2 max-w-3xl text-sm ${
-                    darkMode ? "text-slate-400" : "text-slate-500"
-                  }`}
-                >
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/72">
                   Review assigned applications independently. AI score remains hidden to avoid bias.
                 </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <div
-                  className={`rounded-2xl border px-4 py-3 text-sm font-semibold shadow-sm ${
-                    darkMode
-                      ? "border-white/15 bg-white/10 text-white"
-                      : "border-slate-200 bg-white text-slate-700"
-                  }`}
-                >
+                <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-white shadow-sm">
                   Reviewer: {reviewer?.name || reviewer?.id}
                 </div>
 
@@ -2105,11 +2065,7 @@ export default function ReviewerBoard() {
 
                 <button
                   onClick={loadReviewerData}
-                  className={`inline-flex items-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold shadow-sm transition ${
-                    darkMode
-                      ? "border-white/15 bg-white/10 text-white hover:bg-white/15"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white px-5 py-3 text-sm font-black text-slate-900 shadow-sm transition hover:bg-cyan-50"
                 >
                   <RefreshCw size={16} />
                   Refresh
@@ -2117,7 +2073,7 @@ export default function ReviewerBoard() {
 
                 <button
                   onClick={logout}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 shadow-sm transition hover:bg-rose-100"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-black text-rose-700 shadow-sm transition hover:bg-rose-100"
                 >
                   <LogOut size={16} />
                   Logout
@@ -2133,7 +2089,7 @@ export default function ReviewerBoard() {
                 title="Assigned"
                 value={stats.total}
                 subtitle="Applications in review queue"
-                tone="amber"
+                tone="cyan"
                 darkMode={darkMode}
               />
               <KpiCard
@@ -2141,7 +2097,7 @@ export default function ReviewerBoard() {
                 title="Pending"
                 value={stats.pending}
                 subtitle="Yet to be scored"
-                tone="cyan"
+                tone="amber"
                 darkMode={darkMode}
               />
               <KpiCard
@@ -2157,26 +2113,25 @@ export default function ReviewerBoard() {
                 title="Registered"
                 value={stats.registered}
                 subtitle="Registered entities"
-                tone="slate"
+                tone="indigo"
                 darkMode={darkMode}
               />
             </div>
 
             <div
-              className={`mt-6 rounded-[30px] border p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-5 ${
-                darkMode ? "border-white/10 bg-white/[0.05]" : "border-white/80 bg-white/78"
+              className={`mt-6 rounded-[30px] border p-4 shadow-[0_20px_60px_rgba(15,23,42,0.09)] backdrop-blur-xl md:p-5 ${
+                darkMode ? "border-white/10 bg-white/[0.05]" : "border-white bg-white/88"
               }`}
             >
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                 <div className="xl:col-span-2">
                   <label
-                    className={`mb-2 block text-xs font-semibold uppercase tracking-[0.14em] ${
+                    className={`mb-2 block text-xs font-bold uppercase tracking-[0.16em] ${
                       darkMode ? "text-slate-400" : "text-slate-500"
                     }`}
                   >
                     Search
                   </label>
-
                   <div className="relative">
                     <Search
                       size={16}
@@ -2188,8 +2143,8 @@ export default function ReviewerBoard() {
                       placeholder="Search startup, founder, district, sector..."
                       className={`w-full rounded-2xl border px-4 py-3 pl-11 text-sm shadow-sm outline-none transition ${
                         darkMode
-                          ? "border-white/10 bg-slate-950/80 text-white placeholder:text-slate-500 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10"
-                          : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+                          ? "border-white/10 bg-white/[0.05] text-white placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.08] focus:ring-4 focus:ring-indigo-400/10"
+                          : "border-slate-200 bg-slate-50 text-slate-800 focus:border-indigo-300 focus:bg-white focus:ring-4 focus:ring-indigo-100"
                       }`}
                     />
                   </div>
@@ -2240,8 +2195,8 @@ export default function ReviewerBoard() {
             </div>
 
             <div
-              className={`mt-6 overflow-hidden rounded-[32px] border shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl ${
-                darkMode ? "border-white/10 bg-white/[0.05]" : "border-white/80 bg-white/80"
+              className={`mt-6 overflow-hidden rounded-[32px] border shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-xl ${
+                darkMode ? "border-white/10 bg-white/[0.05]" : "border-white bg-white/90"
               }`}
             >
               <div
@@ -2250,43 +2205,36 @@ export default function ReviewerBoard() {
                 }`}
               >
                 <div>
-                  <h2 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-slate-900"}`}>
+                  <h2 className={`text-lg font-black ${darkMode ? "text-white" : "text-slate-950"}`}>
                     Assigned Startups
                   </h2>
                   <p className={`mt-1 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                     Click any row to review, score, or revise score.
                   </p>
                 </div>
-
                 <div
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                    darkMode
-                      ? "border-white/10 bg-white/8 text-slate-300"
-                      : "border-slate-200 bg-white text-slate-700"
+                  className={`rounded-2xl px-4 py-2 text-xs font-bold ${
+                    darkMode ? "bg-white/8 text-slate-300" : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  Showing {filteredRows.length} of {rows.length}
+                  {filteredRows.length} filtered / {rows.length} assigned
                 </div>
               </div>
 
               <div className="overflow-auto">
                 <table className="min-w-[1280px] w-full">
-                  <thead className={darkMode ? "bg-slate-900 text-white" : "bg-slate-50/80"}>
-                    <tr
-                      className={`text-left text-xs uppercase tracking-[0.14em] ${
-                        darkMode ? "text-white/78" : "text-slate-500"
-                      }`}
-                    >
-                      <th className="px-5 py-4 font-semibold">Application ID</th>
-                      <th className="px-5 py-4 font-semibold">Startup</th>
-                      <th className="px-5 py-4 font-semibold">Founder</th>
-                      <th className="px-5 py-4 font-semibold">Status</th>
-                      <th className="px-5 py-4 font-semibold">Registered</th>
-                      <th className="px-5 py-4 font-semibold">District</th>
-                      <th className="px-5 py-4 font-semibold">Sector</th>
-                      <th className="px-5 py-4 font-semibold">Score</th>
-                      <th className="px-5 py-4 font-semibold">Review</th>
-                      <th className="px-5 py-4 font-semibold">Submitted</th>
+                  <thead className={darkMode ? "bg-slate-900 text-white" : "bg-slate-950 text-white"}>
+                    <tr className="text-left text-xs uppercase tracking-[0.14em] text-white/78">
+                      <th className="px-5 py-4 font-bold">Application ID</th>
+                      <th className="px-5 py-4 font-bold">Startup</th>
+                      <th className="px-5 py-4 font-bold">Founder</th>
+                      <th className="px-5 py-4 font-bold">Status</th>
+                      <th className="px-5 py-4 font-bold">Registered</th>
+                      <th className="px-5 py-4 font-bold">District</th>
+                      <th className="px-5 py-4 font-bold">Sector</th>
+                      <th className="px-5 py-4 font-bold">Score</th>
+                      <th className="px-5 py-4 font-bold">Review</th>
+                      <th className="px-5 py-4 font-bold">Submitted</th>
                     </tr>
                   </thead>
 
@@ -2319,11 +2267,11 @@ export default function ReviewerBoard() {
                             >
                               <FileText size={22} />
                             </div>
-                            <h3 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>
+                            <h3 className={`text-lg font-bold ${darkMode ? "text-white" : "text-slate-800"}`}>
                               No startups found
                             </h3>
                             <p className={`mt-2 text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                              Try changing the filter or search values.
+                              Try changing filters.
                             </p>
                           </div>
                         </td>
@@ -2339,21 +2287,20 @@ export default function ReviewerBoard() {
                             className={`cursor-pointer border-t transition ${
                               darkMode
                                 ? "border-white/10 hover:bg-white/[0.06]"
-                                : "border-slate-100 hover:bg-amber-50/40"
+                                : "border-slate-100 hover:bg-indigo-50/55"
                             }`}
                           >
                             <td
-                              className={`px-5 py-4 text-sm font-semibold ${
-                                darkMode ? "text-white" : "text-slate-900"
+                              className={`px-5 py-4 text-sm font-black ${
+                                darkMode ? "text-white" : "text-slate-950"
                               }`}
                             >
                               {safe(item._applicationId)}
                             </td>
-
                             <td className="px-5 py-4">
                               <div
-                                className={`text-sm font-semibold ${
-                                  darkMode ? "text-white" : "text-slate-900"
+                                className={`text-sm font-bold ${
+                                  darkMode ? "text-white" : "text-slate-950"
                                 }`}
                               >
                                 {safe(getStartupName(item))}
@@ -2362,27 +2309,21 @@ export default function ReviewerBoard() {
                                 {safe(getEmail(item))}
                               </div>
                             </td>
-
                             <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
                               {safe(getFounderName(item))}
                             </td>
-
                             <td className="px-5 py-4">
                               <StatusBadge status={item._status} darkMode={darkMode} />
                             </td>
-
                             <td className="px-5 py-4">
                               <RegisteredBadge value={item._registeredCompany} darkMode={darkMode} />
                             </td>
-
                             <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
                               {safe(getDistrict(item))}
                             </td>
-
                             <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
                               {safe(getCategory(item))}
                             </td>
-
                             <td className="px-5 py-4">
                               {isReviewed ? (
                                 <ReviewBadge tone="emerald" darkMode={darkMode}>
@@ -2394,7 +2335,6 @@ export default function ReviewerBoard() {
                                 </ReviewBadge>
                               )}
                             </td>
-
                             <td className="px-5 py-4">
                               {isReviewed ? (
                                 <ReviewBadge tone="emerald" darkMode={darkMode}>
@@ -2406,7 +2346,6 @@ export default function ReviewerBoard() {
                                 </ReviewBadge>
                               )}
                             </td>
-
                             <td className={`px-5 py-4 text-sm ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
                               {safe(item._createdAtDisplay)}
                             </td>
@@ -2423,33 +2362,29 @@ export default function ReviewerBoard() {
                   darkMode ? "border-white/10" : "border-slate-100"
                 }`}
               >
-                <div className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
-                  Showing page <span className="font-semibold">{page}</span> of{" "}
-                  <span className="font-semibold">{totalPages}</span> |{" "}
-                  <span className="font-semibold">{filteredRows.length}</span> startups
+                <div className={`text-sm ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                  Showing page <b>{page}</b> of <b>{totalPages}</b> | {filteredRows.length} startups
                 </div>
-
                 <div className="flex items-center gap-2">
                   <button
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                    className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${
                       darkMode
-                        ? "border-white/10 bg-white/8 text-white hover:bg-white/12"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        ? "border-white/10 bg-white/8 text-white"
+                        : "border-slate-200 bg-white text-slate-700"
                     }`}
                   >
                     <ChevronLeft size={16} />
-                    Prev
+                    Previous
                   </button>
-
                   <button
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                    className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${
                       darkMode
-                        ? "border-white/10 bg-white/8 text-white hover:bg-white/12"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        ? "border-white/10 bg-white/8 text-white"
+                        : "border-slate-200 bg-white text-slate-700"
                     }`}
                   >
                     Next
@@ -2478,20 +2413,19 @@ function FilterSelect({ label, value, onChange, options, darkMode = false }) {
   return (
     <div>
       <label
-        className={`mb-2 block text-xs font-semibold uppercase tracking-[0.14em] ${
+        className={`mb-2 block text-xs font-bold uppercase tracking-[0.16em] ${
           darkMode ? "text-slate-400" : "text-slate-500"
         }`}
       >
         {label}
       </label>
-
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-sm outline-none transition ${
           darkMode
-            ? "border-white/10 bg-slate-950/80 text-white focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10"
-            : "border-white/80 bg-white/85 text-slate-800 focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+            ? "border-white/10 bg-slate-950/80 text-white focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/10"
+            : "border-white/80 bg-white/90 text-slate-800 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-100"
         }`}
       >
         {options.map((item) => (
