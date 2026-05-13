@@ -34,8 +34,8 @@ const LeftBar = ({ changePanel }) => {
   // Full menu items array
   const menuItems = [
     { label: "Notifications", panel: "AdminNotification" },
-    { label: "Startup Profile", panel: "StartupProfile" },
     { label: "New Application Dashboard", panel: "NewApplicationDashboard" },
+    { label: "Startup Profile", panel: "StartupProfile" },
 
     { label: "Seed Fund Module", panel: "SeedFundModule" },
     { label: "Second Tranche Module", panel: "SecondTrancheModule" },
