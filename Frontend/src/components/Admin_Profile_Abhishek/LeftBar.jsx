@@ -71,6 +71,7 @@ const LeftBar = ({ changePanel }) => {
 	"IT": [
 	  "New Application Dashboard",
 	  "Seed Fund Module",
+    "Startup Profile",
 	  "Second Tranche Module",
 	  "Post Seed Fund Module",
 	  "Startup Progress Report",
