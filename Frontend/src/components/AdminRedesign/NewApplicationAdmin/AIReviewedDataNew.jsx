@@ -49,6 +49,11 @@ const SHORTLIST_PATH = "ssu_shortlists_new";
 const safeKey = (k) => String(k || "").replace(/[.#$/[\]]/g, "_");
 const to2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
 const clamp010 = (v) => Math.max(0, Math.min(10, Number(v) || 0));
+const clampScore = (v) => {
+  const n = Number(v);
+  if (Number.isNaN(n)) return 0;
+  return Math.max(0, Math.min(10, Math.round(n * 10) / 10));
+};
 const joinArr = (v, sep = " | ") =>
   Array.isArray(v) ? v.filter(Boolean).join(sep) : "";
 

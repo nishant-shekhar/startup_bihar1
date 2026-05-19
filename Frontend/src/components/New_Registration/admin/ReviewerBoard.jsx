@@ -2046,10 +2046,10 @@ export default function ReviewerBoard() {
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <div className="inline-flex rounded-full border border-cyan-200/30 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
-                  Expert Reviewer Board
+                  Expert Evaluation Panel
                 </div>
                 <h1 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">
-                  Assigned Startup Review Queue
+                  List of Startup Applications for Expert Review
                 </h1>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-white/72">
                   Review assigned applications independently. AI score remains hidden to avoid bias.
