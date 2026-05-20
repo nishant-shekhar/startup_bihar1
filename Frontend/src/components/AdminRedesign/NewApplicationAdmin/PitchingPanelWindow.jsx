@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { rtdb } from "./firebase"; // adjust path if needed
 
-const PITCH_REVIEWS_ROOT = "StartupPitchReviews";
+const PITCH_REVIEWS_ROOT = "StartupReviews";
 
 const safeKey = (k) => String(k || "").replace(/[.#$/\[\]]/g, "_");
 const clamp010 = (v) => Math.max(0, Math.min(10, Number(v) || 0));
