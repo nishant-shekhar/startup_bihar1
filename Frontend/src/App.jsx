@@ -35,6 +35,7 @@ import Block from './components/New_Registration/admin/Block';
 import NewApplicationDashboard from './components/New_Registration/admin/MainAdmin';
 import RegistrationLayout from './components/SSU_Recruitment/registration/RegistrationLayout';
 import ReviewerBoard from './components/New_Registration/admin/ReviewerBoard';
+import PIAIReviewedData from './components/AdminRedesign/NewApplicationAdmin/PIAIEvaluationData';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -99,6 +100,14 @@ const App = () => {
 					element={
 						<PrivateRoute role="admin">
 							<NewApplicationDashboard />
+						</PrivateRoute>
+					}
+				/>
+					<Route
+					path="/PitchingPanel"
+					element={
+						<PrivateRoute role="admin">
+							<PIAIReviewedData />
 						</PrivateRoute>
 					}
 				/>
