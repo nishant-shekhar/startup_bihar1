@@ -92,7 +92,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/contact-us" className="footer-link">
-                  Startup Team
+                  Contact Us
                 </Link>
               </li>
               <li>
@@ -197,6 +197,11 @@ const Footer = () => {
               <li>
                 <Link to="/startupregistration" className="footer-link">
                   Register Startup
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund-policy" className="footer-link">
+                  Refund Policy
                 </Link>
               </li>
               <li>

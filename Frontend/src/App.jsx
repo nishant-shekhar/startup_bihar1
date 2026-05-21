@@ -36,6 +36,7 @@ import NewApplicationDashboard from './components/New_Registration/admin/MainAdm
 import RegistrationLayout from './components/SSU_Recruitment/registration/RegistrationLayout';
 import ReviewerBoard from './components/New_Registration/admin/ReviewerBoard';
 import PIAIReviewedData from './components/AdminRedesign/NewApplicationAdmin/PIAIEvaluationData';
+import RefundPolicy from './components/HomePage/RefundPolicy';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -55,6 +56,7 @@ const App = () => {
 				<Route path="/" element={<HomePage />} />
 				<Route path="/AllStartups" element={<AllStartup />} />
 				<Route path="/DeveloperTeam" element={<Team />} />
+				<Route path="/refund-policy" element={<RefundPolicy />} />
 				<Route path="/PublicDashboard" element={<DashboardPagePublic />} />
 				<Route path="/StartupCell" element={<StartupIncubationCell />} />
 				<Route path="/IncubationCell" element={<IncubationNodalList />} />
