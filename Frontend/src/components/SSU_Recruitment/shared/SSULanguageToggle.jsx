@@ -1,7 +1,7 @@
 import React from "react";
-import { useLanguage } from "./LanguageContext";
+import { useLanguage } from "./SSULanguageContext";
 
-const LanguageToggle = () => {
+const SSULanguageToggle = () => {
   const { language, toggleLanguage } = useLanguage();
 
   return (
@@ -35,4 +35,4 @@ const LanguageToggle = () => {
   );
 };
 
-export default LanguageToggle;
+export default SSULanguageToggle;

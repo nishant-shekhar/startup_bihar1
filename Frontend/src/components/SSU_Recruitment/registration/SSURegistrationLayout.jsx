@@ -1,71 +1,86 @@
-import React, { useMemo, useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  FaBars,
   FaCheck,
-  FaHome,
+  FaClipboardCheck,
   FaClipboardList,
+  FaCreditCard,
+  FaEye,
+  FaHome,
   FaInfoCircle,
+  FaLock,
+  FaSignOutAlt,
+  FaTimes,
+  FaUserCheck,
+  FaUserCircle,
   FaChartBar,
   FaWallet,
-  FaUserCheck,
-  FaEye,
-  FaClipboardCheck,
-  FaLock,
-  FaBars,
-  FaTimes,
-  FaSignOutAlt,
-  FaUserCircle,
   FaShieldAlt,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 import {
-  doc,
-  setDoc,
-  serverTimestamp,
-  getDoc,
-  runTransaction,
   collection,
-  query,
-  where,
-  limit,
+  doc,
+  getDoc,
   getDocs,
+  limit,
+  query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+  where,
 } from "firebase/firestore";
+
 import {
-  ref,
+  ref as storageRef,
   uploadBytes,
   getDownloadURL,
-  deleteObject,
 } from "firebase/storage";
+
 import {
-  getDatabase,
   ref as rtdbRef,
   get,
   set,
   remove,
   serverTimestamp as rtdbServerTimestamp,
 } from "firebase/database";
-import app, {
-  db,
-  storage,
-} from "../../AdminRedesign/NewApplicationAdmin/firebase";
-import { LanguageProvider } from "../shared/LanguageContext";
-import LanguageToggle from "../shared/LanguageToggle";
-import { useNavigate } from "react-router-dom";
 
-import UserSignup from "./UserSignup";
-import PersonalDetailsStep from "./FormSteps/PersonalDetailsStep";
-import EducationalQualificationsStep from "./FormSteps/EducationalQualificationsStep";
-import WorkExperienceStep from "./FormSteps/WorkExperienceStep";
-import StartupExposureStep from "./FormSteps/StartupExposureStep";
-import ReferencesAndDocsStep from "./FormSteps/ReferencesAndDocsStep";
-import Preview from "./Preview";
-import PrintAcknowledgement from "./PrintAcknowledgement";
-import FormStatus from "./FormStatus";
-import PhoneVerificationModal from "./modals/PhoneVerificationModal";
-import WorkingDialog from "./WorkingDialog";
-import Notice from "../admin/Notice";
+import { db, rtdb, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 
-const STORAGE_KEY = "startupRegistrationDraft";
-const AUTH_KEY = "startupRegistrationAuth";
-const rtdb = getDatabase(app);
+import { LanguageProvider } from "../shared/SSULanguageContext";
+import SSULanguageToggle from "../shared/SSULanguageToggle";
+
+import Notice from "./Notice";
+import SSUUserSignup from "./SSUUserSignup";
+import SSUPersonalDetailsStep from "./FormSteps/SSUPersonalDetailsStep";
+import SSUEducationalQualificationsStep from "./FormSteps/SSUEducationalQualificationsStep";
+import SSUWorkExperienceStep from "./FormSteps/SSUWorkExperienceStep";
+import SSUStartupExposureStep from "./FormSteps/SSUStartupExposureStep";
+import SSUReferencesAndDocsStep from "./FormSteps/SSUReferencesAndDocsStep";
+import SSUPaymentStep from "./FormSteps/SSUPaymentStep";
+import SSUPreview from "./SSUPreview";
+import SSUPrintAcknowledgement from "./SSUPrintAcknowledgement";
+import SSUFormStatus from "./SSUFormStatus";
+import SSUPhoneVerificationModal from "./modals/SSUPhoneVerificationModal";
+import SSUWorkingDialog from "./SSUWorkingDialog";
+
+import {
+  SSU_APPLICATION_STATUS,
+  SSU_TIMELINE_KEYS,
+  buildSearchFields,
+  buildSSUApplicationId,
+  normalizeAadhaar,
+  normalizeApplicationId,
+  normalizeEmail,
+  normalizePhone,
+  ssuCollectionPath,
+  ssuDocPath,
+  ssuStoragePath,
+} from "./ssuFirebasePaths";
+
+const STORAGE_KEY = "ssuRecruitmentDraft";
+const AUTH_KEY = "ssuRecruitmentAuth";
 
 const stepLabels = [
   "Register",
@@ -73,7 +88,8 @@ const stepLabels = [
   "Education",
   "Work Experience",
   "Startup Exposure",
-  "References & Docs",
+  "Reference & Document Upload",
+  "Payment",
   "Preview",
   "Acknowledgement",
   "Status",
@@ -86,6 +102,7 @@ const icons = [
   <FaInfoCircle />,
   <FaChartBar />,
   <FaWallet />,
+  <FaCreditCard />,
   <FaEye />,
   <FaClipboardCheck />,
   <FaClipboardCheck />,
@@ -93,82 +110,85 @@ const icons = [
 
 const initialFormData = {
   applicationId: "",
-  status: "draft",
+  applicationNo: "",
+  formType: "ssu_recruitment",
+  source: "web",
+  status: SSU_APPLICATION_STATUS.draft,
   currentStep: 1,
-  createdAt: null,
-  updatedAt: null,
-  submittedAt: null,
-  statusLabel: "",
-  statusMessage: "",
+  currentStage: "registration_started",
+  statusLabel: "Draft",
+  statusMessage: "Complete the application step by step.",
   adminRemarks: "",
-  currentStage: "",
   userSignup: null,
   personalDetails: null,
   educationalQualifications: null,
   workExperience: null,
   startupExposure: null,
   referencesAndDocs: null,
+  paymentDetails: null,
+  search: {},
+  flags: {
+    isDeleted: false,
+    isLocked: false,
+    duplicateChecked: false,
+    documentsVerified: false,
+    paymentVerified: false,
+  },
+  createdAt: null,
+  updatedAt: null,
+  submittedAt: null,
 };
-
-const normalizeEmail = (value = "") => value.trim().toLowerCase();
-const normalizePhone = (value = "") => value.replace(/\D/g, "").slice(0, 10);
-const normalizeApplicationId = (value = "") => value.trim().toUpperCase();
-const normalizeAadhar = (value = "") => value.replace(/\D/g, "").slice(0, 12);
 
 const formatDeadline = (timestamp) => {
   if (!timestamp) return "";
+
   const date = new Date(Number(timestamp));
   if (Number.isNaN(date.getTime())) return "";
+
   return date.toLocaleString("en-IN", {
     day: "2-digit",
     month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
   });
+};
+
+const buildYearMonthFromTimestamp = (timestamp) => {
+  const date = new Date(Number(timestamp));
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Invalid server timestamp received.");
+  }
+
+  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
 
 async function sha256(text) {
   const encoded = new TextEncoder().encode(text);
   const buffer = await crypto.subtle.digest("SHA-256", encoded);
+
   return Array.from(new Uint8Array(buffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
-const buildYearMonthFromTimestamp = (timestamp) => {
-  const date = new Date(Number(timestamp));
-  if (Number.isNaN(date.getTime())) {
-    throw new Error("Invalid server timestamp received.");
-  }
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${year}${month}`;
-};
-
-// ── DEV MODE: getServerNowFromRTDB commented out (restore before production) ──
-/*
 const getServerNowFromRTDB = async () => {
-  const tempKey = `ts_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-  const tempRef = rtdbRef(rtdb, `tempServerTime/${tempKey}`);
+  const tempKey = `ssu_ts_${Date.now()}_${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
 
-  await set(tempRef, {
-    ts: rtdbServerTimestamp(),
-  });
+  const tempRef = rtdbRef(rtdb, `SSURecruitment/tempServerTime/${tempKey}`);
+
+  await set(tempRef, { ts: rtdbServerTimestamp() });
 
   const snap = await get(tempRef);
-
-  let serverNow = null;
-  if (snap.exists()) {
-    serverNow = snap.val()?.ts ?? null;
-  }
+  const serverNow = snap.exists() ? snap.val()?.ts : null;
 
   try {
     await remove(tempRef);
   } catch (error) {
-    console.warn("Could not clean up temp server time node", error);
+    console.warn("Could not remove temporary server time node", error);
   }
 
   if (!serverNow || Number.isNaN(Number(serverNow))) {
@@ -177,16 +197,12 @@ const getServerNowFromRTDB = async () => {
 
   return Number(serverNow);
 };
-*/
-// DEV mock — returns current browser time
-const getServerNowFromRTDB = async () => Date.now();
 
-// ── DEV MODE: generateIncrementalApplicationId commented out (restore before production) ──
-/*
 async function generateIncrementalApplicationId() {
   const serverNow = await getServerNowFromRTDB();
   const yearMonth = buildYearMonthFromTimestamp(serverNow);
-  const counterRef = doc(db, "applicationCounters", yearMonth);
+
+  const counterRef = doc(db, ...ssuDocPath.counter(yearMonth));
 
   const nextNumber = await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(counterRef);
@@ -198,6 +214,7 @@ async function generateIncrementalApplicationId() {
         serverNow,
         updatedAt: serverTimestamp(),
       });
+
       return 1;
     }
 
@@ -213,24 +230,39 @@ async function generateIncrementalApplicationId() {
     return updated;
   });
 
-  return `SB${yearMonth}${String(nextNumber).padStart(4, "0")}`;
-}
-*/
-// DEV mock — generates a local fake application ID
-function generateIncrementalApplicationId() {
-  const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const rand = String(Math.floor(Math.random() * 9000) + 1000);
-  return Promise.resolve(`SSUDEV${yearMonth}${rand}`);
+  return buildSSUApplicationId(yearMonth, nextNumber);
 }
 
+const removeFileObjects = (value) => {
+  if (value instanceof File) return null;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => removeFileObjects(item));
+  }
+
+  if (value && typeof value === "object") {
+    const clean = {};
+
+    Object.entries(value).forEach(([key, item]) => {
+      clean[key] = removeFileObjects(item);
+    });
+
+    return clean;
+  }
+
+  return value;
+};
+
 function RegistrationLayoutInner() {
+  const navigate = useNavigate();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [formData, setFormData] = useState(initialFormData);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+
   const [submissionWindow, setSubmissionWindow] = useState({
     checked: false,
     isOpen: true,
@@ -245,7 +277,6 @@ function RegistrationLayoutInner() {
     title: "",
     message: "",
   });
-  const navigate = useNavigate();
 
   const [authState, setAuthState] = useState(() => {
     try {
@@ -277,27 +308,19 @@ function RegistrationLayoutInner() {
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
 
   const appId = formData.applicationId;
-  const isSubmitted = formData.status === "submitted";
+  const isSubmitted = formData.status === SSU_APPLICATION_STATUS.submitted;
   const isLoggedIn = !!authState?.applicationId;
 
   const openWorkingDialog = useCallback((title, message) => {
-    setWorkingDialog({
-      open: true,
-      title,
-      message,
-    });
+    setWorkingDialog({ open: true, title, message });
   }, []);
 
   const closeWorkingDialog = useCallback(() => {
-    setWorkingDialog({
-      open: false,
-      title: "",
-      message: "",
-    });
+    setWorkingDialog({ open: false, title: "", message: "" });
   }, []);
 
   const persistLocalDraft = useCallback((data) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(removeFileObjects(data)));
   }, []);
 
   const persistAuth = useCallback((auth) => {
@@ -306,6 +329,7 @@ function RegistrationLayoutInner() {
       setAuthState(null);
       return;
     }
+
     localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
     setAuthState(auth);
   }, []);
@@ -318,7 +342,7 @@ function RegistrationLayoutInner() {
   const uploadFileAndGetMeta = useCallback(async (file, path) => {
     if (!file) return null;
 
-    const fileRef = ref(storage, path);
+    const fileRef = storageRef(storage, path);
     await uploadBytes(fileRef, file);
     const downloadURL = await getDownloadURL(fileRef);
 
@@ -334,7 +358,8 @@ function RegistrationLayoutInner() {
 
   const getStepFromData = useCallback((data) => {
     if (!data) return 1;
-    if (data.status === "submitted") return 9;
+    if (data.status === SSU_APPLICATION_STATUS.submitted) return 9;
+    if (data.paymentDetails) return 8;
     if (data.referencesAndDocs) return 7;
     if (data.startupExposure) return 6;
     if (data.workExperience) return 5;
@@ -345,71 +370,90 @@ function RegistrationLayoutInner() {
   }, []);
 
   const refreshSubmissionWindow = useCallback(async () => {
-    // ── DEV MODE: RTDB submission window check commented out ──
-    // Restore the original body before production deployment.
-    /*
     try {
-      const snap = await get(rtdbRef(rtdb, "StartupFormOpen"));
-      const value = snap.exists() ? snap.val() : null;
+      const snap = await getDoc(doc(db, ...ssuDocPath.settingFormOpen()));
+      const value = snap.exists() ? snap.data() : null;
+
       const serverNow = await getServerNowFromRTDB();
-      const isManuallyClosed = value?.close === true;
+
+      const isManuallyClosed = value?.close === true || value?.isOpen === false;
       const lastDate = Number(value?.lastDate || 0);
       const hasDeadline = lastDate > 0;
       const deadlinePassed = hasDeadline ? serverNow > lastDate : false;
+
       let allowed = true;
       let message = "";
+
       if (isManuallyClosed) {
         allowed = false;
-        message = "Form submission is closed.";
+        message = value?.message || "Form submission is closed.";
       } else if (deadlinePassed) {
         allowed = false;
-        message = `Submission closed on ${formatDeadline(lastDate)}`;
+        message = `Submission closed on ${formatDeadline(lastDate)}.`;
       }
-      const nextState = { checked: true, isOpen: allowed, close: isManuallyClosed, lastDate: lastDate || null, serverNow, message };
-      setSubmissionWindow(nextState);
-      return nextState;
+
+      const state = {
+        checked: true,
+        isOpen: allowed,
+        close: isManuallyClosed,
+        lastDate: lastDate || null,
+        serverNow,
+        message,
+      };
+
+      setSubmissionWindow(state);
+      return state;
     } catch (error) {
-      console.error("Failed to fetch submission window", error);
-      const nextState = { checked: true, isOpen: false, close: true, lastDate: null, serverNow: null, message: "Unable to verify submission window right now." };
-      setSubmissionWindow(nextState);
-      return nextState;
+      console.error("Failed to verify SSU form window", error);
+
+      const state = {
+        checked: true,
+        isOpen: false,
+        close: true,
+        lastDate: null,
+        serverNow: null,
+        message: "Unable to verify submission window right now.",
+      };
+
+      setSubmissionWindow(state);
+      return state;
     }
-    */
-    // DEV mock — always open
-    const nextState = { checked: true, isOpen: true, close: false, lastDate: null, serverNow: Date.now(), message: "" };
-    setSubmissionWindow(nextState);
-    return nextState;
   }, []);
 
   const checkSubmissionWindow = useCallback(async () => {
     const state = await refreshSubmissionWindow();
+
     if (!state.isOpen) {
       return {
         allowed: false,
         message: state.message || "Submission is currently closed.",
       };
     }
+
     return { allowed: true };
   }, [refreshSubmissionWindow]);
 
   const loadApplicationById = useCallback(
     async (applicationId) => {
-      // ── DEV MODE: Firestore load commented out ──
-      /*
-      const docRef = doc(db, "startupApplications", applicationId);
-      const snap = await getDoc(docRef);
+      if (!applicationId) return null;
+
+      const snap = await getDoc(doc(db, ...ssuDocPath.application(applicationId)));
+
       if (!snap.exists()) return null;
-      const data = { ...initialFormData, ...snap.data() };
+
+      const data = {
+        ...initialFormData,
+        ...snap.data(),
+        applicationId: snap.data()?.applicationId || snap.id,
+      };
+
       setFormData(data);
       setCurrentStep(getStepFromData(data));
       persistLocalDraft(data);
+
       return data;
-      */
-      // DEV mock — always return null (no cloud load)
-      console.log("[DEV] loadApplicationById skipped for:", applicationId);
-      return null;
     },
-    [getStepFromData, persistLocalDraft],
+    [getStepFromData, persistLocalDraft]
   );
 
   useEffect(() => {
@@ -419,60 +463,205 @@ function RegistrationLayoutInner() {
   useEffect(() => {
     const loadDraft = async () => {
       setIsInitialLoading(true);
+
       try {
-        // ── DEV MODE: Firestore draft load commented out ──
-        // Auth-based cloud reload is skipped; only localStorage draft is used.
-        /*
         const savedAuthRaw = localStorage.getItem(AUTH_KEY);
         const savedAuth = savedAuthRaw ? JSON.parse(savedAuthRaw) : null;
+
         if (savedAuth?.applicationId) {
           try {
-            openWorkingDialog("Loading your application", "Please wait while we restore your saved details.");
+            openWorkingDialog(
+              "Loading your application",
+              "Please wait while we restore your saved details."
+            );
+
             const loaded = await loadApplicationById(savedAuth.applicationId);
-            if (loaded) { closeWorkingDialog(); setIsInitialLoading(false); return; }
-          } catch (error) {
-            console.error("Failed to load authenticated application", error);
+            if (loaded) return;
           } finally {
             closeWorkingDialog();
           }
         }
-        */
+
         const savedDraftRaw = localStorage.getItem(STORAGE_KEY);
         const savedDraft = savedDraftRaw ? JSON.parse(savedDraftRaw) : null;
+
         if (savedDraft) {
           const merged = { ...initialFormData, ...savedDraft };
           setFormData(merged);
           setCurrentStep(getStepFromData(merged));
         }
       } catch (error) {
-        console.error("Failed to restore draft", error);
+        console.error("Failed to restore SSU draft", error);
       } finally {
         setIsInitialLoading(false);
       }
     };
+
     loadDraft();
-  }, [
-    getStepFromData,
-    loadApplicationById,
-    openWorkingDialog,
-    closeWorkingDialog,
-  ]);
+  }, [closeWorkingDialog, getStepFromData, loadApplicationById, openWorkingDialog]);
+
+  const savePaymentAudit = useCallback(
+    async ({ applicationId, paymentDetails }) => {
+      if (!applicationId) return;
+
+      const paymentDocId =
+        paymentDetails?.transactionId ||
+        paymentDetails?.utrNumber ||
+        `manual_${applicationId}_${Date.now()}`;
+
+      await setDoc(
+        doc(db, ...ssuDocPath.payment(paymentDocId)),
+        {
+          applicationId,
+          applicationNo: applicationId,
+          applicantName:
+            formData?.userSignup?.fullName ||
+            formData?.personalDetails?.fullName ||
+            "",
+          phoneNumber: formData?.userSignup?.phoneNumber || "",
+          email: formData?.userSignup?.email || "",
+
+          status: paymentDetails?.status || "submitted_for_verification",
+          verificationStatus: paymentDetails?.verificationStatus || "pending",
+          amount: Number(paymentDetails?.amount || 500),
+          currency: paymentDetails?.currency || "INR",
+          paymentMode: paymentDetails?.paymentMode || "UPI_QR",
+
+          payerMobile: paymentDetails?.payerMobile || "",
+          payerUpiId: paymentDetails?.payerUpiId || "",
+          utrNumber: paymentDetails?.utrNumber || "",
+          paymentDate: paymentDetails?.paymentDate || "",
+          paymentScreenshotMeta: paymentDetails?.paymentScreenshotMeta || null,
+
+          applicantDeclaration: paymentDetails?.applicantDeclaration === true,
+          verified: false,
+
+          adminVerification: paymentDetails?.adminVerification || {
+            status: "pending",
+            verifiedBy: "",
+            verifiedAt: null,
+            remarks: "",
+          },
+
+          createdAt: serverTimestamp(),
+          submittedAt: paymentDetails?.submittedAt || new Date().toISOString(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    },
+    [formData]
+  );
+
+  const saveTimelineEvent = useCallback(async ({ applicationId, eventId, data }) => {
+    if (!applicationId || !eventId) return;
+
+    await setDoc(
+      doc(db, ...ssuDocPath.timelineEvent(applicationId, eventId)),
+      {
+        applicationId,
+        ...data,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }, []);
 
   const saveSectionToFirestore = useCallback(
     async ({ applicationId, sectionKey, payload, nextStep, preserveStatus }) => {
       if (!applicationId || !sectionKey) return;
-      // ── DEV MODE: Firestore write commented out ──
-      /*
+
       setIsSaving(true);
       setSaveMessage("Saving...");
-      openWorkingDialog("Saving your details", "Please wait while we securely save this step.");
+      openWorkingDialog(
+        "Saving your details",
+        "Please wait while we securely save this step."
+      );
+
       try {
-        const docRef = doc(db, "startupApplications", applicationId);
-        await setDoc(
-          docRef,
-          { applicationId, status: preserveStatus || "draft", currentStep: nextStep ?? currentStep, [sectionKey]: payload, createdAt: serverTimestamp(), updatedAt: serverTimestamp() },
-          { merge: true },
-        );
+        const existingStatus = preserveStatus || SSU_APPLICATION_STATUS.draft;
+
+        const nextSearch = buildSearchFields({
+          applicationId,
+          userSignup:
+            sectionKey === "userSignup" ? payload : formData.userSignup || {},
+          personalDetails:
+            sectionKey === "personalDetails"
+              ? payload
+              : formData.personalDetails || {},
+          status: existingStatus,
+        });
+
+        const basePayload = {
+          applicationId,
+          applicationNo: applicationId,
+          formType: "ssu_recruitment",
+          source: "web",
+          status: existingStatus,
+          currentStep: nextStep ?? currentStep,
+          currentStage:
+            existingStatus === SSU_APPLICATION_STATUS.submitted
+              ? "submitted"
+              : "draft",
+          statusLabel:
+            existingStatus === SSU_APPLICATION_STATUS.submitted
+              ? "Application Submitted"
+              : "Draft",
+          statusMessage:
+            existingStatus === SSU_APPLICATION_STATUS.submitted
+              ? "Your application has been submitted successfully and is awaiting review."
+              : "Complete the application step by step.",
+          [sectionKey]: payload,
+          search: nextSearch,
+          updatedAt: serverTimestamp(),
+        };
+
+        if (sectionKey === "userSignup") {
+          basePayload.createdAt = serverTimestamp();
+          basePayload.flags = {
+            isDeleted: false,
+            isLocked: false,
+            duplicateChecked: true,
+            documentsVerified: false,
+            paymentVerified: false,
+          };
+        }
+
+        if (sectionKey === "paymentDetails") {
+          basePayload.status = SSU_APPLICATION_STATUS.paymentPending;
+          basePayload.currentStage = "payment_submitted_for_verification";
+          basePayload.statusLabel = "Payment Verification Pending";
+          basePayload.statusMessage =
+            "Your payment proof has been submitted and is pending verification.";
+          basePayload.flags = {
+            ...(formData.flags || {}),
+            paymentVerified: false,
+          };
+        }
+
+        await setDoc(doc(db, ...ssuDocPath.application(applicationId)), basePayload, {
+          merge: true,
+        });
+
+        if (sectionKey === "paymentDetails") {
+          await savePaymentAudit({ applicationId, paymentDetails: payload });
+
+          await saveTimelineEvent({
+            applicationId,
+            eventId: SSU_TIMELINE_KEYS.paymentCompleted,
+            data: {
+              key: SSU_TIMELINE_KEYS.paymentCompleted,
+              title: "Payment Proof Submitted",
+              description:
+                "Payment screenshot and transaction details have been submitted for verification.",
+              completed: true,
+              visibleToApplicant: true,
+              createdBy: "system",
+              createdAt: serverTimestamp(),
+            },
+          });
+        }
+
         setSaveMessage("Saved");
       } catch (error) {
         console.error(`Failed to save ${sectionKey}`, error);
@@ -482,238 +671,283 @@ function RegistrationLayoutInner() {
         setIsSaving(false);
         setTimeout(() => setSaveMessage(""), 1500);
       }
-      */
-      // DEV mock — simulate instant save
-      console.log("[DEV] saveSectionToFirestore skipped:", sectionKey, payload);
-      setSaveMessage("Saved (dev)");
-      setTimeout(() => setSaveMessage(""), 1200);
     },
-    [currentStep, openWorkingDialog, closeWorkingDialog],
+    [
+      currentStep,
+      formData,
+      openWorkingDialog,
+      closeWorkingDialog,
+      savePaymentAudit,
+      saveTimelineEvent,
+    ]
   );
 
   const checkIdentifierExists = useCallback(
     async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
-      // ── DEV MODE: Firestore duplicate check commented out ──
-      /*
       const existing = [];
+
       const currentId = normalizeApplicationId(currentApplicationId);
       const normalizedEmail = normalizeEmail(email);
       const normalizedPhone = normalizePhone(phoneNumber);
-      const normalizedAadhar = normalizeAadhar(aadharNumber);
+      const normalizedAadhaar = normalizeAadhaar(aadharNumber);
+
       if (normalizedEmail) {
-        const snap = await getDoc(doc(db, "emailBlocked", normalizedEmail));
-        if (snap.exists() && snap.data()?.applicationId !== currentId) existing.push("email");
+        const snap = await getDoc(doc(db, ...ssuDocPath.blockedEmail(normalizedEmail)));
+
+        if (snap.exists() && snap.data()?.applicationId !== currentId) {
+          existing.push("email");
+        }
       }
+
       if (normalizedPhone) {
-        const snap = await getDoc(doc(db, "phoneBlocked", normalizedPhone));
-        if (snap.exists() && snap.data()?.applicationId !== currentId) existing.push("mobile");
+        const snap = await getDoc(doc(db, ...ssuDocPath.blockedPhone(normalizedPhone)));
+
+        if (snap.exists() && snap.data()?.applicationId !== currentId) {
+          existing.push("mobile");
+        }
       }
-      if (normalizedAadhar) {
-        const snap = await getDoc(doc(db, "aadharBlocked", normalizedAadhar));
-        if (snap.exists() && snap.data()?.applicationId !== currentId) existing.push("aadhar");
+
+      if (normalizedAadhaar) {
+        const snap = await getDoc(doc(db, ...ssuDocPath.blockedAadhaar(normalizedAadhaar)));
+
+        if (snap.exists() && snap.data()?.applicationId !== currentId) {
+          existing.push("aadhaar");
+        }
       }
+
       return existing;
-      */
-      // DEV mock — always allow
-      console.log("[DEV] checkIdentifierExists skipped");
-      return [];
     },
-    [],
+    []
   );
 
-  const blockAadharAfterRegistration = useCallback(
-    async ({ aadharNumber, applicationId }) => {
-      // ── DEV MODE: Firestore block write commented out ──
-      /*
-      const normalizedAadhar = normalizeAadhar(aadharNumber);
-      if (!normalizedAadhar || !applicationId) return;
-      await setDoc(doc(db, "aadharBlocked", normalizedAadhar), { applicationId, blockedAt: serverTimestamp() }, { merge: true });
-      */
-      console.log("[DEV] blockAadharAfterRegistration skipped");
-    },
-    [],
-  );
+  const blockIdentifiersAfterRegistration = useCallback(
+    async ({ userSignup, applicationId }) => {
+      if (!applicationId || !userSignup) return;
 
-  const blockPhoneAfterRegistration = useCallback(
-    async ({ phoneNumber, applicationId }) => {
-      // ── DEV MODE: Firestore block write commented out ──
-      /*
-      const normalizedPhone = normalizePhone(phoneNumber);
-      if (!normalizedPhone || !applicationId) return;
-      await setDoc(doc(db, "phoneBlocked", normalizedPhone), { applicationId, blockedAt: serverTimestamp() }, { merge: true });
-      */
-      console.log("[DEV] blockPhoneAfterRegistration skipped");
-    },
-    [],
-  );
+      const email = normalizeEmail(userSignup.email);
+      const phone = normalizePhone(userSignup.phoneNumber);
+      const aadhaar = normalizeAadhaar(
+        userSignup.aadharNumber || userSignup.aadhaarNumber
+      );
 
-  const blockEmailAfterRegistration = useCallback(
-    async ({ email, applicationId }) => {
-      // ── DEV MODE: Firestore block write commented out ──
-      /*
-      const normalizedEmail = normalizeEmail(email);
-      if (!normalizedEmail || !applicationId) return;
-      await setDoc(doc(db, "emailBlocked", normalizedEmail), { applicationId, blockedAt: serverTimestamp() }, { merge: true });
-      */
-      console.log("[DEV] blockEmailAfterRegistration skipped");
+      const writes = [];
+
+      if (email) {
+        writes.push(
+          setDoc(
+            doc(db, ...ssuDocPath.blockedEmail(email)),
+            {
+              applicationId,
+              type: "email",
+              value: email,
+              blockedAt: serverTimestamp(),
+              reason: "application_created",
+            },
+            { merge: true }
+          )
+        );
+      }
+
+      if (phone) {
+        writes.push(
+          setDoc(
+            doc(db, ...ssuDocPath.blockedPhone(phone)),
+            {
+              applicationId,
+              type: "phone",
+              value: phone,
+              blockedAt: serverTimestamp(),
+              reason: "application_created",
+            },
+            { merge: true }
+          )
+        );
+      }
+
+      if (aadhaar) {
+        writes.push(
+          setDoc(
+            doc(db, ...ssuDocPath.blockedAadhaar(aadhaar)),
+            {
+              applicationId,
+              type: "aadhaar",
+              value: aadhaar,
+              blockedAt: serverTimestamp(),
+              reason: "application_created",
+            },
+            { merge: true }
+          )
+        );
+      }
+
+      await Promise.all(writes);
     },
-    [],
+    []
   );
 
   const transformStepDataForStorage = useCallback(
     async (stepData, step, applicationId) => {
-      if (step === 2) {
-        let profilePhotoMeta = stepData.profilePhotoMeta || null;
+      if (![2, 6, 7].includes(step)) {
+        return removeFileObjects(stepData);
+      }
 
-        if (stepData.profilePhoto instanceof File) {
-          const ext =
-            stepData.profilePhoto.name?.split(".").pop()?.toLowerCase() ||
-            "jpg";
+      if (step === 2) {
+        const next = {
+          ...stepData,
+        };
+
+        if (stepData.profilePhotoFile instanceof File) {
+          if (stepData.profilePhotoFile.size > 1 * 1024 * 1024) {
+            throw new Error("Profile photo must be 1 MB or less.");
+          }
+
+          if (!stepData.profilePhotoFile.type?.startsWith("image/")) {
+            throw new Error("Profile photo must be an image file.");
+          }
 
           openWorkingDialog(
             "Uploading profile photo",
-            "Please wait while we upload your profile photo.",
+            "Please wait while we upload your profile photo."
           );
 
-          profilePhotoMeta = await uploadFileAndGetMeta(
-            stepData.profilePhoto,
-            `startupApplications/${applicationId}/basic/profile-photo-${Date.now()}.${ext}`,
-          );
-        }
-
-        return {
-          ...stepData,
-          profilePhoto: null,
-          profilePhotoMeta,
-        };
-      }
-
-      if (step === 3) {
-        if (!stepData?.hasRegisteredEntity) {
-          return {
-            ...stepData,
-            hasRegisteredEntity: false,
-            state: "Bihar",
-            certificate: null,
-            // keep old certificateMeta and old field values intact in Firestore
-            // do not force-clear anything here
-          };
-        }
-
-        let certificateMeta = stepData.certificateMeta || null;
-
-        if (stepData.certificate instanceof File) {
-          openWorkingDialog(
-            "Uploading certificate",
-            "Please wait while we upload your entity certificate.",
-          );
-
-          certificateMeta = await uploadFileAndGetMeta(
-            stepData.certificate,
-            `startupApplications/${applicationId}/entity/certificate-${Date.now()}-${stepData.certificate.name}`,
+          next.profilePhotoMeta = await uploadFileAndGetMeta(
+            stepData.profilePhotoFile,
+            ssuStoragePath.generic(
+              applicationId,
+              "profile/photo",
+              `${Date.now()}-${stepData.profilePhotoFile.name}`
+            )
           );
         }
 
-        return {
-          ...stepData,
-          hasRegisteredEntity: true,
-          state: "Bihar",
-          certificate: null,
-          certificateMeta,
-        };
+        delete next.profilePhotoFile;
+        return removeFileObjects(next);
       }
 
       if (step === 6) {
-        let pitchDeckMeta = stepData.pitchDeckMeta || null;
+        const next = {
+          ...stepData,
+          documents: { ...(stepData.documents || {}) },
+        };
 
-        if (stepData.pitchDeck instanceof File) {
-          if (stepData.pitchDeck.size > 5 * 1024 * 1024) {
-            throw new Error("Pitch deck must be 5 MB or less.");
+        const documentFiles = stepData.documentFiles || {};
+
+        for (const [key, file] of Object.entries(documentFiles)) {
+          if (file instanceof File) {
+            openWorkingDialog(
+              "Uploading document",
+              `Please wait while we upload ${file.name}.`
+            );
+
+            const meta = await uploadFileAndGetMeta(
+              file,
+              ssuStoragePath.generic(
+                applicationId,
+                `documents/${key}`,
+                `${Date.now()}-${file.name}`
+              )
+            );
+
+            next.documents[key] = meta;
+          }
+        }
+
+        if (stepData.signatureFile instanceof File) {
+          if (stepData.signatureFile.size > 200 * 1024) {
+            throw new Error("Signature file must be 200 KB or less.");
           }
 
           openWorkingDialog(
-            "Uploading pitch deck",
-            "Please wait while we upload your pitch deck.",
+            "Uploading signature",
+            "Please wait while we upload your signature."
           );
 
-          const existingPitchDeckPath =
-            formData?.businessIdea?.pitchDeckMeta?.storagePath || "";
-
-          if (existingPitchDeckPath) {
-            try {
-              await deleteObject(ref(storage, existingPitchDeckPath));
-            } catch (error) {
-              console.warn(
-                "Could not delete previous pitch deck from storage",
-                error,
-              );
-            }
-          }
-
-          pitchDeckMeta = await uploadFileAndGetMeta(
-            stepData.pitchDeck,
-            `startupApplications/${applicationId}/business/pitchdeck-${Date.now()}-${stepData.pitchDeck.name}`,
+          next.signatureMeta = await uploadFileAndGetMeta(
+            stepData.signatureFile,
+            ssuStoragePath.generic(
+              applicationId,
+              "documents/signature",
+              `${Date.now()}-${stepData.signatureFile.name}`
+            )
           );
         }
 
-        return {
-          ...stepData,
-          pitchDeck: null,
-          pitchDeckMeta,
-        };
+        delete next.documentFiles;
+        delete next.signatureFile;
+
+        return removeFileObjects(next);
       }
 
-      return stepData;
+      if (step === 7) {
+        const next = {
+          ...stepData,
+          status: "submitted_for_verification",
+          verificationStatus: "pending",
+          currency: "INR",
+          paymentMode: "UPI_QR",
+          verified: false,
+          submittedAt: stepData?.submittedAt || new Date().toISOString(),
+          adminVerification: stepData?.adminVerification || {
+            status: "pending",
+            verifiedBy: "",
+            verifiedAt: null,
+            remarks: "",
+          },
+        };
+
+        if (stepData.paymentScreenshotFile instanceof File) {
+          openWorkingDialog(
+            "Uploading payment proof",
+            "Please wait while we upload your payment screenshot."
+          );
+
+          const file = stepData.paymentScreenshotFile;
+
+          next.paymentScreenshotMeta = await uploadFileAndGetMeta(
+            file,
+            ssuStoragePath.generic(
+              applicationId,
+              "payment/screenshots",
+              `${Date.now()}-${file.name}`
+            )
+          );
+        }
+
+        delete next.paymentScreenshotFile;
+
+        return removeFileObjects(next);
+      }
+
+      return removeFileObjects(stepData);
     },
-    [uploadFileAndGetMeta, openWorkingDialog, formData],
+    [openWorkingDialog, uploadFileAndGetMeta]
   );
 
   const handleStepSubmit = useCallback(
     async (rawStepData, step) => {
-      if (isSubmitted)
+      if (isSubmitted) {
         return { ok: false, error: "Application already submitted." };
+      }
 
       let nextFormData = { ...formData };
       let sectionKey = "";
       let nextStep = step + 1;
 
-      if (step === 1) {
-        if (isLoggedIn && formData.applicationId && formData.userSignup) {
-          const updatedSignup = {
-            ...formData.userSignup,
-            startupName:
-              rawStepData.startupName?.trim() ||
-              formData.userSignup.startupName ||
-              "",
-            applicationType:
-              rawStepData.applicationType ||
-              formData.userSignup.applicationType ||
-              "funding_with_recognition",
-            founderName: formData.userSignup.founderName,
-            email: formData.userSignup.email,
-            phoneNumber: formData.userSignup.phoneNumber,
-            aadharNumber: formData.userSignup.aadharNumber,
-            passwordHash: formData.userSignup.passwordHash,
-          };
+      try {
+        if (step === 1 && rawStepData?.type === "skipToNext") {
+          setCurrentStep(2);
+          return { ok: true };
+        }
 
-          nextFormData = {
-            ...nextFormData,
-            userSignup: updatedSignup,
-          };
+        if (step === 1) {
+          if (isLoggedIn && formData.applicationId && formData.userSignup) {
+            setCurrentStep(2);
+            return { ok: true };
+          }
 
-          sectionKey = "userSignup";
-          persistAuth({
-            ...(authState || {}),
-            applicationId: formData.applicationId,
-            founderName: updatedSignup.founderName,
-            startupName: updatedSignup.startupName,
-            email: updatedSignup.email,
-            phoneNumber: updatedSignup.phoneNumber,
-          });
-        } else {
           openWorkingDialog(
             "Checking your details",
-            "Please wait while we validate your registration information.",
+            "Please wait while we validate your registration information."
           );
 
           const exists = await checkIdentifierExists({
@@ -724,6 +958,7 @@ function RegistrationLayoutInner() {
 
           if (exists.length > 0) {
             closeWorkingDialog();
+
             return {
               ok: false,
               error: `The following already exist or are blocked: ${exists.join(", ")}.`,
@@ -739,168 +974,227 @@ function RegistrationLayoutInner() {
           nextFormData = {
             ...nextFormData,
             applicationId,
+            applicationNo: applicationId,
             userSignup: {
-              fullName: rawStepData.fullName,
+              fullName: rawStepData.fullName || "",
               email: normalizeEmail(rawStepData.email),
               phoneNumber: normalizePhone(rawStepData.phoneNumber),
-              aadharNumber: normalizeAadhar(rawStepData.aadharNumber),
+              aadharNumber: normalizeAadhaar(rawStepData.aadharNumber),
               phoneVerified: true,
               registrationType: rawStepData.type || "registration",
-              registeredAt:
-                rawStepData.registeredAt || new Date().toISOString(),
+              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
               passwordHash,
             },
           };
 
           persistAuth({
             applicationId,
-            fullName: rawStepData.fullName,
-            email: normalizeEmail(rawStepData.email),
-            phoneNumber: normalizePhone(rawStepData.phoneNumber),
+            fullName: nextFormData.userSignup.fullName,
+            email: nextFormData.userSignup.email,
+            phoneNumber: nextFormData.userSignup.phoneNumber,
+          });
+        } else {
+          const applicationId =
+            nextFormData.applicationId || (await createOrGetApplicationId());
+
+          nextFormData.applicationId = applicationId;
+          nextFormData.applicationNo = applicationId;
+
+          const stepData = await transformStepDataForStorage(
+            rawStepData,
+            step,
+            applicationId
+          );
+
+          if (step === 2) {
+            sectionKey = "personalDetails";
+            nextFormData.personalDetails = stepData;
+          } else if (step === 3) {
+            sectionKey = "educationalQualifications";
+            nextFormData.educationalQualifications = stepData;
+          } else if (step === 4) {
+            sectionKey = "workExperience";
+            nextFormData.workExperience = stepData;
+          } else if (step === 5) {
+            sectionKey = "startupExposure";
+            nextFormData.startupExposure = stepData;
+          } else if (step === 6) {
+            sectionKey = "referencesAndDocs";
+            nextFormData.referencesAndDocs = stepData;
+            nextStep = 7;
+          } else if (step === 7) {
+            sectionKey = "paymentDetails";
+            nextFormData.paymentDetails = {
+              status: "submitted_for_verification",
+              verificationStatus: "pending",
+              amount: 500,
+              currency: "INR",
+              paymentMode: "UPI_QR",
+              verified: false,
+              adminVerification: {
+                status: "pending",
+                verifiedBy: "",
+                verifiedAt: null,
+                remarks: "",
+              },
+              ...stepData,
+            };
+            nextStep = 8;
+          }
+        }
+
+        nextFormData = {
+          ...nextFormData,
+          currentStep: nextStep,
+          search: buildSearchFields({
+            applicationId: nextFormData.applicationId,
+            userSignup: nextFormData.userSignup || {},
+            personalDetails: nextFormData.personalDetails || {},
+            status: nextFormData.status,
+          }),
+        };
+
+        setFormData(nextFormData);
+        persistLocalDraft(nextFormData);
+
+        if (sectionKey) {
+          await saveSectionToFirestore({
+            applicationId: nextFormData.applicationId,
+            sectionKey,
+            payload: nextFormData[sectionKey],
+            nextStep,
+            preserveStatus: SSU_APPLICATION_STATUS.draft,
           });
         }
-      } else {
-        const applicationId =
-          nextFormData.applicationId || (await createOrGetApplicationId());
 
-        nextFormData.applicationId = applicationId;
+        if (
+          step === 1 &&
+          !isLoggedIn &&
+          nextFormData?.applicationId &&
+          nextFormData?.userSignup
+        ) {
+          await blockIdentifiersAfterRegistration({
+            userSignup: nextFormData.userSignup,
+            applicationId: nextFormData.applicationId,
+          });
 
-        const stepData = await transformStepDataForStorage(
-          rawStepData,
-          step,
-          applicationId,
-        );
-
-        if (step === 2) {
-          sectionKey = "personalDetails";
-          nextFormData.personalDetails = stepData;
-        } else if (step === 3) {
-          sectionKey = "educationalQualifications";
-          nextFormData.educationalQualifications = stepData;
-        } else if (step === 4) {
-          sectionKey = "workExperience";
-          nextFormData.workExperience = stepData;
-        } else if (step === 5) {
-          sectionKey = "startupExposure";
-          nextFormData.startupExposure = stepData;
-        } else if (step === 6) {
-          sectionKey = "referencesAndDocs";
-          nextFormData.referencesAndDocs = stepData;
-          nextStep = 7;
+          await saveTimelineEvent({
+            applicationId: nextFormData.applicationId,
+            eventId: SSU_TIMELINE_KEYS.registrationStarted,
+            data: {
+              key: SSU_TIMELINE_KEYS.registrationStarted,
+              title: "Registration Started",
+              description: "Your SSU recruitment application has been created.",
+              completed: true,
+              visibleToApplicant: true,
+              createdBy: "system",
+              createdAt: serverTimestamp(),
+            },
+          });
         }
+
+        closeWorkingDialog();
+        setCurrentStep(nextStep);
+
+        return { ok: true };
+      } catch (error) {
+        console.error("Step submission failed", error);
+        closeWorkingDialog();
+
+        return {
+          ok: false,
+          error: error.message || "Could not save this step. Please try again.",
+        };
       }
-
-      setFormData(nextFormData);
-      persistLocalDraft(nextFormData);
-
-      if (sectionKey) {
-        await saveSectionToFirestore({
-          applicationId: nextFormData.applicationId,
-          sectionKey,
-          payload: nextFormData[sectionKey],
-          nextStep,
-          preserveStatus: "draft",
-        });
-      }
-
-      if (
-        step === 1 &&
-        !isLoggedIn &&
-        nextFormData?.applicationId &&
-        nextFormData?.userSignup
-      ) {
-        await Promise.all([
-          blockAadharAfterRegistration({
-            aadharNumber: nextFormData.userSignup.aadharNumber,
-            applicationId: nextFormData.applicationId,
-          }),
-          blockPhoneAfterRegistration({
-            phoneNumber: nextFormData.userSignup.phoneNumber,
-            applicationId: nextFormData.applicationId,
-          }),
-          blockEmailAfterRegistration({
-            email: nextFormData.userSignup.email,
-            applicationId: nextFormData.applicationId,
-          }),
-        ]);
-      }
-
-      closeWorkingDialog();
-      setCurrentStep(nextStep);
-      return { ok: true };
     },
     [
-      isSubmitted,
+      blockIdentifiersAfterRegistration,
+      checkIdentifierExists,
+      closeWorkingDialog,
+      createOrGetApplicationId,
       formData,
       isLoggedIn,
-      authState,
-      createOrGetApplicationId,
+      isSubmitted,
+      openWorkingDialog,
+      persistAuth,
       persistLocalDraft,
       saveSectionToFirestore,
+      saveTimelineEvent,
       transformStepDataForStorage,
-      persistAuth,
-      checkIdentifierExists,
-      blockAadharAfterRegistration,
-      blockPhoneAfterRegistration,
-      blockEmailAfterRegistration,
-      openWorkingDialog,
-      closeWorkingDialog,
-    ],
+    ]
   );
 
   const handleFinalSubmit = useCallback(async () => {
     if (!formData.applicationId || isSubmitted) return;
 
-    // ── DEV MODE: submission window check and Firestore write commented out ──
-    /*
     const windowCheck = await checkSubmissionWindow();
+
     if (!windowCheck.allowed) {
       setSaveMessage(windowCheck.message || "Submission is currently closed.");
       return;
     }
-    */
 
     setIsSaving(true);
     setSaveMessage("Submitting...");
     openWorkingDialog(
       "Submitting your application",
-      "Please wait while we finalize and submit your application.",
+      "Please wait while we finalize and submit your application."
     );
 
     try {
-      // ── DEV MODE: Firestore final submit write commented out ──
-      /*
-      const docRef = doc(db, "startupApplications", formData.applicationId);
       await setDoc(
-        docRef,
+        doc(db, ...ssuDocPath.application(formData.applicationId)),
         {
           applicationId: formData.applicationId,
-          status: "submitted",
+          applicationNo: formData.applicationId,
+          status: SSU_APPLICATION_STATUS.submitted,
           statusLabel: "Application Submitted",
-          statusMessage: "Your application has been submitted successfully and is awaiting review.",
-          currentStage: "submitted",
-          currentStep: 8,
+          statusMessage:
+            "Your application has been submitted successfully. Payment proof is subject to admin verification.",
+          currentStage: "submitted_payment_verification_pending",
+          currentStep: 9,
+          search: buildSearchFields({
+            applicationId: formData.applicationId,
+            userSignup: formData.userSignup || {},
+            personalDetails: formData.personalDetails || {},
+            status: SSU_APPLICATION_STATUS.submitted,
+          }),
           submittedAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         },
-        { merge: true },
+        { merge: true }
       );
+
+      await saveTimelineEvent({
+        applicationId: formData.applicationId,
+        eventId: SSU_TIMELINE_KEYS.formSubmitted,
+        data: {
+          key: SSU_TIMELINE_KEYS.formSubmitted,
+          title: "Application Submitted",
+          description:
+            "Your SSU recruitment application has been submitted successfully. Payment verification is pending.",
+          completed: true,
+          visibleToApplicant: true,
+          createdBy: "system",
+          createdAt: serverTimestamp(),
+        },
+      });
+
       await refreshSubmissionWindow();
-      */
-      // DEV mock — just update local state
-      console.log("[DEV] handleFinalSubmit — no Firestore write");
 
       const updated = {
         ...formData,
-        status: "submitted",
+        status: SSU_APPLICATION_STATUS.submitted,
         statusLabel: "Application Submitted",
-        statusMessage: "Your application has been submitted successfully and is awaiting review.",
-        currentStage: "submitted",
+        statusMessage:
+          "Your application has been submitted successfully. Payment proof is subject to admin verification.",
+        currentStage: "submitted_payment_verification_pending",
+        currentStep: 9,
       };
 
       setFormData(updated);
       persistLocalDraft(updated);
-      setCurrentStep(8);
+      setCurrentStep(9);
       setSaveMessage("Submitted");
     } catch (error) {
       console.error("Final submit failed", error);
@@ -911,24 +1205,26 @@ function RegistrationLayoutInner() {
       setTimeout(() => setSaveMessage(""), 1800);
     }
   }, [
+    checkSubmissionWindow,
+    closeWorkingDialog,
     formData,
-    persistLocalDraft,
     isSubmitted,
     openWorkingDialog,
-    closeWorkingDialog,
-    checkSubmissionWindow,
+    persistLocalDraft,
     refreshSubmissionWindow,
+    saveTimelineEvent,
   ]);
 
   const handlePrevious = (step) => {
-    if (step > 1) {
-      if (isSubmitted) {
-        if (step === 9) setCurrentStep(8);
-        else if (step === 8) setCurrentStep(7);
-        return;
-      }
-      setCurrentStep(step - 1);
+    if (step <= 1) return;
+
+    if (isSubmitted) {
+      if (step === 10) setCurrentStep(9);
+      else if (step === 9) setCurrentStep(8);
+      return;
     }
+
+    setCurrentStep(step - 1);
   };
 
   const resetForgotPasswordFlow = () => {
@@ -957,21 +1253,24 @@ function RegistrationLayoutInner() {
 
   const findApplicationForLogin = async (identifier) => {
     const trimmed = identifier.trim();
-    const colRef = collection(db, "startupApplications");
+    const applicationsRef = collection(db, ...ssuCollectionPath.applications);
 
-    if (/^SB\d{10}$/i.test(trimmed)) {
-      const appId = normalizeApplicationId(trimmed);
-      const snap = await getDoc(doc(db, "startupApplications", appId));
+    if (/^SSU\d{10}$/i.test(trimmed)) {
+      const applicationId = normalizeApplicationId(trimmed);
+      const snap = await getDoc(doc(db, ...ssuDocPath.application(applicationId)));
+
       return snap.exists() ? { id: snap.id, ...snap.data() } : null;
     }
 
     if (/^\d{10}$/.test(trimmed)) {
       const q = query(
-        colRef,
+        applicationsRef,
         where("userSignup.phoneNumber", "==", normalizePhone(trimmed)),
-        limit(1),
+        limit(1)
       );
+
       const result = await getDocs(q);
+
       if (!result.empty) {
         const d = result.docs[0];
         return { id: d.id, ...d.data() };
@@ -979,11 +1278,13 @@ function RegistrationLayoutInner() {
     }
 
     const q = query(
-      colRef,
+      applicationsRef,
       where("userSignup.email", "==", normalizeEmail(trimmed)),
-      limit(1),
+      limit(1)
     );
+
     const result = await getDocs(q);
+
     if (!result.empty) {
       const d = result.docs[0];
       return { id: d.id, ...d.data() };
@@ -999,9 +1300,7 @@ function RegistrationLayoutInner() {
     const password = loginPassword;
 
     if (!identifier || !password) {
-      setLoginError(
-        "Enter registration number, email or mobile, and password.",
-      );
+      setLoginError("Enter registration number, email or mobile, and password.");
       return;
     }
 
@@ -1009,7 +1308,7 @@ function RegistrationLayoutInner() {
       setLoginLoading(true);
       openWorkingDialog(
         "Checking your account",
-        "Please wait while we verify your login details.",
+        "Please wait while we verify your login details."
       );
 
       const application = await findApplicationForLogin(identifier);
@@ -1036,7 +1335,12 @@ function RegistrationLayoutInner() {
 
       persistAuth(auth);
 
-      const loaded = { ...initialFormData, ...application };
+      const loaded = {
+        ...initialFormData,
+        ...application,
+        applicationId: application.applicationId || application.id,
+      };
+
       setFormData(loaded);
       setCurrentStep(getStepFromData(loaded));
       persistLocalDraft(loaded);
@@ -1056,7 +1360,6 @@ function RegistrationLayoutInner() {
 
   const handleForgotPasswordStart = async () => {
     const phone = normalizePhone(forgotPhone);
-
     setForgotPasswordError("");
 
     if (phone.length !== 10) {
@@ -1068,7 +1371,7 @@ function RegistrationLayoutInner() {
       setForgotPasswordLoading(true);
       openWorkingDialog(
         "Checking mobile number",
-        "Please wait while we look for your application.",
+        "Please wait while we look for your application."
       );
 
       const application = await findApplicationForLogin(phone);
@@ -1095,11 +1398,6 @@ function RegistrationLayoutInner() {
     }
   };
 
-  const handleResetOtpVerified = () => {
-    setShowResetOtpModal(false);
-    setShowResetPasswordModal(true);
-  };
-
   const handleResetPasswordSubmit = async () => {
     setResetPasswordError("");
 
@@ -1122,30 +1420,28 @@ function RegistrationLayoutInner() {
       setResetPasswordLoading(true);
       openWorkingDialog(
         "Updating password",
-        "Please wait while we securely update your password.",
+        "Please wait while we securely update your password."
       );
 
       const passwordHash = await sha256(newPassword);
 
       await setDoc(
-        doc(db, "startupApplications", resetAccount.applicationId),
+        doc(db, ...ssuDocPath.application(resetAccount.applicationId)),
         {
           applicationId: resetAccount.applicationId,
           userSignup: {
             ...(resetAccount.userSignup || {}),
-            phoneNumber: normalizePhone(
-              resetAccount?.userSignup?.phoneNumber || "",
-            ),
+            phoneNumber: normalizePhone(resetAccount?.userSignup?.phoneNumber || ""),
             email: normalizeEmail(resetAccount?.userSignup?.email || ""),
-            aadharNumber: normalizeAadhar(
-              resetAccount?.userSignup?.aadharNumber || "",
+            aadharNumber: normalizeAadhaar(
+              resetAccount?.userSignup?.aadharNumber || ""
             ),
             passwordHash,
             passwordResetAt: new Date().toISOString(),
           },
           updatedAt: serverTimestamp(),
         },
-        { merge: true },
+        { merge: true }
       );
 
       setShowResetPasswordModal(false);
@@ -1167,7 +1463,7 @@ function RegistrationLayoutInner() {
       case 1:
         return !!formData.userSignup;
       case 2:
-        return !!formData.personalDetails;
+        return !!formData.personalDetails?.profilePhotoMeta?.downloadURL;
       case 3:
         return !!formData.educationalQualifications;
       case 4:
@@ -1177,10 +1473,12 @@ function RegistrationLayoutInner() {
       case 6:
         return !!formData.referencesAndDocs;
       case 7:
-        return !!formData.referencesAndDocs;
+        return !!formData.paymentDetails;
       case 8:
-        return formData.status === "submitted";
+        return !!formData.paymentDetails;
       case 9:
+        return formData.status === SSU_APPLICATION_STATUS.submitted;
+      case 10:
         return !!formData.applicationId;
       default:
         return false;
@@ -1188,45 +1486,45 @@ function RegistrationLayoutInner() {
   };
 
   const isLocked = (n) => {
-    // ── DEV MODE: all steps unlocked for local testing ──
-    return false;
-    // eslint-disable-next-line no-unreachable
-    /* -- ORIGINAL LOCK LOGIC (restore before production) --
+    const hasRegisteredOrLoggedIn =
+      !!formData.userSignup || !!authState?.applicationId || isLoggedIn;
+
     if (isSubmitted) {
-      if ([1, 2, 3, 4, 5, 6].includes(n)) return true;
-      if (n === 7) return !formData.referencesAndDocs;
-      if (n === 8) return false;
-      if (n === 9) return false;
+      if (n >= 1 && n <= 7) return true;
+      if (n === 8 || n === 9 || n === 10) return false;
       return true;
     }
 
-    if (n === 1) return false;
-    if (n === 2) return !formData.userSignup;
-    if (n === 3) return !formData.personalDetails;
-    if (n === 4) return !formData.educationalQualifications;
-    if (n === 5) return !formData.workExperience;
-    if (n === 6) return !formData.startupExposure;
-    if (n === 7) return !formData.referencesAndDocs;
-    if (n === 8) return formData.status !== "submitted";
-    if (n === 9) return !formData.applicationId;
+    if (!hasRegisteredOrLoggedIn) {
+      return n !== 1;
+    }
+
+    if (hasRegisteredOrLoggedIn) {
+      if (n >= 1 && n <= 8) return false;
+      if (n === 9 || n === 10) return true;
+    }
+
     return true;
-    -- END ORIGINAL LOCK LOGIC -- */
   };
 
   const handleTabClick = (stepIndex) => {
     const stepNumber = stepIndex + 1;
+
     if (isLocked(stepNumber)) return;
+
     setCurrentStep(stepNumber);
     setMobileNavOpen(false);
   };
 
   const progressPercent = useMemo(() => {
-    const completedSteps = [1, 2, 3, 4, 5, 6].filter((n) =>
-      isStepCompleted(n),
+    const completedSteps = [1, 2, 3, 4, 5, 6, 7].filter((n) =>
+      isStepCompleted(n)
     ).length;
-    const totalSteps = 7;
-    const finalSubmitDone = formData.status === "submitted" ? 1 : 0;
-    return Math.round(((completedSteps + finalSubmitDone) / totalSteps) * 100);
+
+    const finalSubmitDone =
+      formData.status === SSU_APPLICATION_STATUS.submitted ? 1 : 0;
+
+    return Math.round(((completedSteps + finalSubmitDone) / 8) * 100);
   }, [formData]);
 
   const renderStep = () => {
@@ -1239,7 +1537,7 @@ function RegistrationLayoutInner() {
     switch (currentStep) {
       case 1:
         return (
-          <UserSignup
+          <SSUUserSignup
             {...commonProps}
             initialValues={formData.userSignup}
             isLoggedIn={isLoggedIn}
@@ -1254,7 +1552,7 @@ function RegistrationLayoutInner() {
 
       case 2:
         return (
-          <PersonalDetailsStep
+          <SSUPersonalDetailsStep
             {...commonProps}
             initialValues={formData.personalDetails}
             userSignupData={formData.userSignup}
@@ -1263,7 +1561,7 @@ function RegistrationLayoutInner() {
 
       case 3:
         return (
-          <EducationalQualificationsStep
+          <SSUEducationalQualificationsStep
             {...commonProps}
             initialValues={formData.educationalQualifications}
           />
@@ -1271,7 +1569,7 @@ function RegistrationLayoutInner() {
 
       case 4:
         return (
-          <WorkExperienceStep
+          <SSUWorkExperienceStep
             {...commonProps}
             initialValues={formData.workExperience}
           />
@@ -1279,7 +1577,7 @@ function RegistrationLayoutInner() {
 
       case 5:
         return (
-          <StartupExposureStep
+          <SSUStartupExposureStep
             {...commonProps}
             initialValues={formData.startupExposure}
           />
@@ -1287,7 +1585,7 @@ function RegistrationLayoutInner() {
 
       case 6:
         return (
-          <ReferencesAndDocsStep
+          <SSUReferencesAndDocsStep
             {...commonProps}
             initialValues={formData.referencesAndDocs}
           />
@@ -1295,33 +1593,42 @@ function RegistrationLayoutInner() {
 
       case 7:
         return (
-          <Preview
+          <SSUPaymentStep
+            {...commonProps}
+            initialValues={formData.paymentDetails}
             formData={formData}
-            isSubmitted={isSubmitted}
-            submissionWindow={submissionWindow}
-            onPrevious={() => handlePrevious(7)}
-            onFormSubmit={handleFinalSubmit}
-            onNavigateToStep={(step) => {
-              if (isSubmitted && step <= 6) return;
-              setCurrentStep(step);
-            }}
           />
         );
 
       case 8:
         return (
-          <PrintAcknowledgement
+          <SSUPreview
             formData={formData}
-            onNext={() => setCurrentStep(9)}
+            isSubmitted={isSubmitted}
+            submissionWindow={submissionWindow}
+            onPrevious={() => handlePrevious(8)}
+            onFormSubmit={handleFinalSubmit}
+            onNavigateToStep={(step) => {
+              if (isSubmitted && step <= 7) return;
+              setCurrentStep(step);
+            }}
           />
         );
 
       case 9:
         return (
-          <FormStatus
+          <SSUPrintAcknowledgement
+            formData={formData}
+            onNext={() => setCurrentStep(10)}
+          />
+        );
+
+      case 10:
+        return (
+          <SSUFormStatus
             applicationId={formData.applicationId}
             formData={formData}
-            onPrevious={() => handlePrevious(9)}
+            onPrevious={() => handlePrevious(10)}
           />
         );
 
@@ -1330,8 +1637,6 @@ function RegistrationLayoutInner() {
     }
   };
 
-  const gray = "#94A3B8";
-
   if (isInitialLoading) {
     return (
       <div
@@ -1339,6 +1644,7 @@ function RegistrationLayoutInner() {
         style={{ backgroundImage: "url('/bg1.jpg')" }}
       >
         <div className="absolute inset-0 bg-[rgba(247,244,238,0.68)] backdrop-blur-[3px]" />
+
         <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
           <div className="rounded-[32px] border border-white/80 bg-white/75 px-10 py-8 text-center shadow-[0_18px_60px_rgba(15,23,42,0.10)] backdrop-blur-xl">
             <div className="text-lg font-semibold text-slate-800">
@@ -1353,6 +1659,8 @@ function RegistrationLayoutInner() {
     );
   }
 
+  const gray = "#94A3B8";
+
   return (
     <div
       className="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat"
@@ -1361,12 +1669,12 @@ function RegistrationLayoutInner() {
       <div className="absolute inset-0 bg-[rgba(247,244,238,0.58)] backdrop-blur-[3px]" />
 
       <div className="relative z-10">
-        <div className="md:hidden flex items-center justify-between border-b border-white/60 bg-white/40 px-4 py-3 backdrop-blur-xl">
+        <div className="flex items-center justify-between border-b border-white/60 bg-white/40 px-4 py-3 backdrop-blur-xl md:hidden">
           <div>
             <div className="text-lg font-semibold text-slate-800">
-              Startup Bihar
+              SSU Recruitment
             </div>
-            <div className="text-xs text-slate-500">Registration Form</div>
+            <div className="text-xs text-slate-500">Application Form</div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -1405,13 +1713,10 @@ function RegistrationLayoutInner() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-2xl font-bold tracking-tight text-slate-900">
-                      Startup Bihar
+                      SSU Recruitment
                     </div>
-
                     <div className="mt-1 text-sm text-slate-500">
-                      {isLoggedIn
-                        ? "Logged in application"
-                        : "New registration"}
+                      {isLoggedIn ? "Logged In Application" : "New Application"}
                     </div>
                   </div>
 
@@ -1467,6 +1772,7 @@ function RegistrationLayoutInner() {
                     {submissionWindow.message}
                   </div>
                 ) : null}
+
                 {authState?.applicationId ? (
                   <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
                     <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
@@ -1475,9 +1781,9 @@ function RegistrationLayoutInner() {
                     <div className="mt-2 text-sm font-semibold text-slate-800">
                       {authState.applicationId}
                     </div>
-                    {authState.startupName ? (
+                    {authState.fullName ? (
                       <div className="mt-1 text-sm text-slate-500">
-                        {authState.startupName}
+                        {authState.fullName}
                       </div>
                     ) : null}
                   </div>
@@ -1515,28 +1821,30 @@ function RegistrationLayoutInner() {
                         </span>
                       </span>
 
-                      {completed && !locked && (
+                      {completed && !locked ? (
                         <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                           <FaCheck size={12} />
                         </span>
-                      )}
+                      ) : null}
                     </button>
                   );
                 })}
               </nav>
             </aside>
 
-            {mobileNavOpen && (
+            {mobileNavOpen ? (
               <div className="fixed inset-0 z-50 md:hidden">
                 <div
                   className="absolute inset-0 bg-black/35"
                   onClick={() => setMobileNavOpen(false)}
                 />
+
                 <div className="absolute left-0 top-0 h-full w-[84%] max-w-xs bg-white/95 p-4 shadow-xl backdrop-blur-xl">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-4">
                     <div className="text-lg font-semibold text-slate-800">
-                      Registration
+                      SSU Recruitment
                     </div>
+
                     <button
                       onClick={() => setMobileNavOpen(false)}
                       className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200"
@@ -1544,12 +1852,6 @@ function RegistrationLayoutInner() {
                       <FaTimes />
                     </button>
                   </div>
-
-                  {!isSubmitted && submissionWindow.message ? (
-                    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                      {submissionWindow.message}
-                    </div>
-                  ) : null}
 
                   <nav className="mt-4 space-y-2">
                     {stepLabels.map((label, index) => {
@@ -1566,19 +1868,17 @@ function RegistrationLayoutInner() {
                             active ? "bg-slate-100" : "hover:bg-slate-50"
                           } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
                         >
-                          <span className="text-sm text-slate-700">
-                            {label}
-                          </span>
-                          {isStepCompleted(stepNumber) && !locked && (
+                          <span className="text-sm text-slate-700">{label}</span>
+                          {isStepCompleted(stepNumber) && !locked ? (
                             <FaCheck className="text-emerald-600" />
-                          )}
+                          ) : null}
                         </button>
                       );
                     })}
                   </nav>
                 </div>
               </div>
-            )}
+            ) : null}
 
             <main className="flex min-w-0 flex-1 flex-col">
               <div className="flex items-center justify-between border-b border-slate-200/60 px-4 py-3 md:px-8 md:py-4">
@@ -1587,13 +1887,14 @@ function RegistrationLayoutInner() {
                     {stepLabels[currentStep - 1]}
                   </div>
                   <div className="text-sm text-slate-500">
-                    Application ID: {appId || "Will be created on register"}
+                    Application ID:{" "}
+                    {appId || "Will be created after OTP verification"}
                   </div>
                 </div>
 
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden items-center gap-3 md:flex">
                   <div
-                    className="flex items-center gap-3 cursor-pointer"
+                    className="flex cursor-pointer items-center gap-3"
                     onClick={() => navigate("/")}
                   >
                     <img
@@ -1603,32 +1904,30 @@ function RegistrationLayoutInner() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    {!isLoggedIn ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowLoginModal(true)}
-                        className="hidden items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
-                      >
-                        <FaUserCircle />
-                        <span>Login</span>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="hidden rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 md:inline-flex"
-                      >
-                        Logout
-                      </button>
-                    )}
+                  {!isLoggedIn ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginModal(true)}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    >
+                      <FaUserCircle />
+                      <span>Login</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    >
+                      Logout
+                    </button>
+                  )}
 
-                    <LanguageToggle />
-                  </div>
+                  <SSULanguageToggle />
                 </div>
               </div>
 
-              <div className="md:hidden border-b border-slate-200/60 px-3 py-2">
+              <div className="border-b border-slate-200/60 px-3 py-2 md:hidden">
                 <div className="flex gap-2 overflow-x-auto">
                   {stepLabels.map((label, index) => {
                     const n = index + 1;
@@ -1660,7 +1959,8 @@ function RegistrationLayoutInner() {
                   {submissionWindow.message}
                 </div>
               ) : null}
-              <div className="md:hidden px-4 pt-3">
+
+              <div className="px-4 pt-3 md:hidden">
                 <Notice />
               </div>
 
@@ -1672,40 +1972,36 @@ function RegistrationLayoutInner() {
         </div>
       </div>
 
-      {showLoginModal && (
+      {showLoginModal ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/35 p-4">
           <div
             className="absolute inset-0"
             onClick={() => {
-              if (!loginLoading) {
-                setShowLoginModal(false);
-                setLoginError("");
-              }
+              if (!loginLoading) setShowLoginModal(false);
             }}
           />
 
-          <div className="relative z-10 w-full max-w-md rounded-[32px] border border-white/80 bg-white/85 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl">
+          <div className="relative z-10 w-full max-w-md rounded-[32px] border border-white/80 bg-white/90 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.18)] backdrop-blur-2xl">
             <div className="mb-6 flex items-start justify-between gap-3">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
                   <FaShieldAlt />
-                  Secure Login
+                  Applicant Login
                 </div>
+
                 <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
-                  Continue your application
+                  Continue application
                 </h3>
+
                 <p className="mt-2 text-sm text-slate-500">
-                  Login using registration number, email, or mobile number.
+                  Login using registration number, email or mobile number.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => {
-                  if (!loginLoading) {
-                    setShowLoginModal(false);
-                    setLoginError("");
-                  }
+                  if (!loginLoading) setShowLoginModal(false);
                 }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600"
               >
@@ -1716,13 +2012,13 @@ function RegistrationLayoutInner() {
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-800">
-                  Registration No / Email / Mobile
+                  Registration No. / Email / Mobile
                 </label>
                 <input
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
-                  placeholder="SB2026030001 or name@example.com or 9876543210"
-                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  placeholder="SSU2026050001 / email / mobile"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                 />
               </div>
 
@@ -1734,28 +2030,14 @@ function RegistrationLayoutInner() {
                   type="password"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  placeholder="Enter password"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !loginLoading) handleInlineLogin();
+                    if (e.key === "Enter" && !loginLoading) {
+                      handleInlineLogin();
+                    }
                   }}
                 />
-              </div>
-
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowLoginModal(false);
-                    setLoginError("");
-                    setForgotPasswordError("");
-                    setForgotPhone("");
-                    setShowForgotPhoneModal(true);
-                  }}
-                  className="text-sm font-medium text-slate-700 hover:underline"
-                >
-                  Forgot password?
-                </button>
               </div>
 
               {loginError ? (
@@ -1764,15 +2046,21 @@ function RegistrationLayoutInner() {
                 </div>
               ) : null}
 
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setShowForgotPhoneModal(true);
+                }}
+                className="text-sm font-semibold text-slate-700 underline"
+              >
+                Forgot password?
+              </button>
+
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    if (!loginLoading) {
-                      setShowLoginModal(false);
-                      setLoginError("");
-                    }
-                  }}
+                  onClick={() => setShowLoginModal(false)}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
                 >
                   Cancel
@@ -1790,9 +2078,9 @@ function RegistrationLayoutInner() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {showForgotPhoneModal && (
+      {showForgotPhoneModal ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/35 p-4">
           <div
             className="absolute inset-0"
@@ -1811,9 +2099,11 @@ function RegistrationLayoutInner() {
                   <FaShieldAlt />
                   Reset Password
                 </div>
+
                 <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
                   Verify mobile number
                 </h3>
+
                 <p className="mt-2 text-sm text-slate-500">
                   Enter the mobile number used in your application.
                 </p>
@@ -1840,12 +2130,10 @@ function RegistrationLayoutInner() {
                 </label>
                 <input
                   value={forgotPhone}
-                  onChange={(e) =>
-                    setForgotPhone(normalizePhone(e.target.value))
-                  }
+                  onChange={(e) => setForgotPhone(normalizePhone(e.target.value))}
                   placeholder="9876543210"
                   maxLength={10}
-                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !forgotPasswordLoading) {
                       handleForgotPasswordStart();
@@ -1864,10 +2152,8 @@ function RegistrationLayoutInner() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!forgotPasswordLoading) {
-                      resetForgotPasswordFlow();
-                      setShowLoginModal(true);
-                    }
+                    resetForgotPasswordFlow();
+                    setShowLoginModal(true);
                   }}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
                 >
@@ -1880,15 +2166,15 @@ function RegistrationLayoutInner() {
                   disabled={forgotPasswordLoading}
                   className="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
                 >
-                  Continue
+                  {forgotPasswordLoading ? "Checking..." : "Continue"}
                 </button>
               </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <PhoneVerificationModal
+      <SSUPhoneVerificationModal
         isOpen={showResetOtpModal}
         onClose={() => {
           if (!resetPasswordLoading) {
@@ -1896,7 +2182,10 @@ function RegistrationLayoutInner() {
             setShowForgotPhoneModal(true);
           }
         }}
-        onVerified={handleResetOtpVerified}
+        onVerified={() => {
+          setShowResetOtpModal(false);
+          setShowResetPasswordModal(true);
+        }}
         phoneNumber={resetAccount?.phoneNumber || ""}
         title="Verify Mobile Number"
         subtitle="We sent a verification code to"
@@ -1906,7 +2195,7 @@ function RegistrationLayoutInner() {
         successMessage="OTP verified successfully."
       />
 
-      {showResetPasswordModal && (
+      {showResetPasswordModal ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4">
           <div
             className="absolute inset-0"
@@ -1925,12 +2214,13 @@ function RegistrationLayoutInner() {
                   <FaShieldAlt />
                   Create New Password
                 </div>
+
                 <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
                   Set a new password
                 </h3>
+
                 <p className="mt-2 text-sm text-slate-500">
-                  Your mobile number is verified. Create a new password to
-                  continue.
+                  Your mobile number is verified. Create a new password to continue.
                 </p>
               </div>
 
@@ -1958,7 +2248,7 @@ function RegistrationLayoutInner() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                 />
               </div>
 
@@ -1971,7 +2261,7 @@ function RegistrationLayoutInner() {
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   placeholder="Confirm new password"
-                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !resetPasswordLoading) {
                       handleResetPasswordSubmit();
@@ -1990,10 +2280,8 @@ function RegistrationLayoutInner() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!resetPasswordLoading) {
-                      setShowResetPasswordModal(false);
-                      setShowLoginModal(true);
-                    }
+                    setShowResetPasswordModal(false);
+                    setShowLoginModal(true);
                   }}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
                 >
@@ -2012,9 +2300,9 @@ function RegistrationLayoutInner() {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <WorkingDialog
+      <SSUWorkingDialog
         open={workingDialog.open}
         title={workingDialog.title}
         message={workingDialog.message}
@@ -2023,7 +2311,7 @@ function RegistrationLayoutInner() {
   );
 }
 
-export default function RegistrationLayout() {
+export default function SSURegistrationLayout() {
   return (
     <LanguageProvider>
       <RegistrationLayoutInner />

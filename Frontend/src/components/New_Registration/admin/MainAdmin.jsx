@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   collection,
   getDocs,
+  getDoc,
   orderBy,
   query,
   doc,
@@ -24,7 +25,9 @@ import {
   Download,
   Bot,
   BarChart3,
+  Star,
 } from "lucide-react";
+
 import { db, rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 import FeedbackList from "./FeedBackList";
 import DetailDialog from "./DetailDialog";
@@ -45,6 +48,7 @@ const STATUS_OPTIONS = [
 
 const REGISTERED_OPTIONS = ["All", "Yes", "No"];
 const AI_REVIEW_OPTIONS = ["All", "Yes", "No"];
+const EXPERT_REVIEW_OPTIONS = ["All", "Yes", "No"];
 
 const safe = (value) => {
   if (value === null || value === undefined || value === "") return "-";
@@ -55,6 +59,14 @@ const formatDate = (value) => {
   if (!value) return "-";
 
   try {
+    if (typeof value?.toDate === "function") {
+      return value.toDate().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
     if (value?.seconds) {
       return new Date(value.seconds * 1000).toLocaleDateString("en-IN", {
         day: "2-digit",
@@ -102,20 +114,22 @@ const getStartupName = (item) =>
   item?.startupName ||
   item?.startup_name ||
   item?.company_name ||
-  item?.companyName;
+  item?.companyName ||
+  "-";
 
 const getFounderName = (item) =>
   item?.userSignup?.founderName ||
   item?.basicDetails?.fullName ||
   item?.founderName ||
   item?.founder_name ||
-  item?.name;
+  item?.name ||
+  "-";
 
 const getEmail = (item) =>
-  item?.userSignup?.email || item?.email || item?.basicDetails?.email;
+  item?.userSignup?.email || item?.email || item?.basicDetails?.email || "-";
 
 const getPhone = (item) =>
-  item?.userSignup?.phoneNumber || item?.phoneNumber || item?.mobile;
+  item?.userSignup?.phoneNumber || item?.phoneNumber || item?.mobile || "-";
 
 const getDistrict = (item) =>
   item?.basicDetails?.district ||
@@ -123,14 +137,16 @@ const getDistrict = (item) =>
   item?.registeredDistrict ||
   item?.districtRoc ||
   item?.startupDistrict ||
-  item?.entityDetails?.district;
+  item?.entityDetails?.district ||
+  "-";
 
 const getCategory = (item) =>
   item?.startupDetails?.sector ||
   item?.basicDetails?.category ||
   item?.category ||
   item?.sector ||
-  item?.startupCategory;
+  item?.startupCategory ||
+  "-";
 
 const getStage = (item) => item?.startupDetails?.stage || item?.stage || "-";
 
@@ -141,9 +157,7 @@ const hasAIReview = (item) => item?.aiEvaluation?.done === true;
 
 const getAIScore = (item) => {
   const score = item?.aiEvaluation?.finalScore;
-  return score === null || score === undefined || score === ""
-    ? null
-    : Number(score);
+  return score === null || score === undefined || score === "" ? null : Number(score);
 };
 
 const getAIScoreBand = (score) => {
@@ -153,6 +167,34 @@ const getAIScoreBand = (score) => {
   if (n >= 5.5) return "medium";
   return "low";
 };
+
+const getExpertReview = (item) => item?._expertReview || item?.review?.expert || null;
+
+const getExpertScore = (item) => {
+  const review = getExpertReview(item);
+  const score =
+    review?.score ??
+    review?.finalScore ??
+    review?.initialScore ??
+    review?.firstScore ??
+    null;
+
+  return score === null || score === undefined || score === "" ? null : Number(score);
+};
+
+const getExpertInitialScore = (item) => {
+  const review = getExpertReview(item);
+  const score = review?.firstScore ?? review?.initialScore ?? null;
+  return score === null || score === undefined || score === "" ? null : Number(score);
+};
+
+const getExpertFinalScore = (item) => {
+  const review = getExpertReview(item);
+  const score = review?.score ?? review?.finalScore ?? null;
+  return score === null || score === undefined || score === "" ? null : Number(score);
+};
+
+const hasExpertReview = (item) => getExpertScore(item) !== null;
 
 const statusToneMap = {
   submitted: "border-sky-200 bg-sky-50 text-sky-700",
@@ -195,6 +237,7 @@ function SummaryCard({ title, value, subtitle, icon: Icon, accent = "amber" }) {
     emerald: "from-emerald-50 via-white to-teal-50",
     rose: "from-rose-50 via-white to-orange-50",
     slate: "from-slate-50 via-white to-slate-100",
+    violet: "from-violet-50 via-white to-indigo-50",
   };
 
   return (
@@ -253,7 +296,33 @@ function AIScoreBadge({ score, isDraft }) {
     <span
       className={`inline-flex min-w-[82px] items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}
     >
-      {n.toFixed(1)}/10
+      {Number.isFinite(n) ? n.toFixed(1) : "—"}/10
+    </span>
+  );
+}
+
+function ScoreBadge({ score, emptyText = "—" }) {
+  if (score === null || score === undefined || score === "") {
+    return (
+      <span className="inline-flex min-w-[82px] items-center justify-center rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        {emptyText}
+      </span>
+    );
+  }
+
+  const n = Number(score);
+  const tone =
+    n >= 8
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : n >= 6
+      ? "border-amber-200 bg-amber-50 text-amber-700"
+      : "border-rose-200 bg-rose-50 text-rose-700";
+
+  return (
+    <span
+      className={`inline-flex min-w-[82px] items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}
+    >
+      {Number.isFinite(n) ? n.toFixed(1) : emptyText}/10
     </span>
   );
 }
@@ -270,8 +339,11 @@ export default function NewApplicationDashboard() {
   const [registeredFilter, setRegisteredFilter] = useState("All");
   const [districtFilter, setDistrictFilter] = useState("All");
   const [aiReviewedFilter, setAiReviewedFilter] = useState("All");
-  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [expertReviewedFilter, setExpertReviewedFilter] = useState("All");
+  const [aiScoreMinFilter, setAiScoreMinFilter] = useState("");
+  const [expertScoreMinFilter, setExpertScoreMinFilter] = useState("");
 
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [aiModalOpen, setAiModalOpen] = useState(false);
@@ -302,6 +374,7 @@ export default function NewApplicationDashboard() {
 
       const rows = snapshot.docs.map((docItem) => {
         const data = docItem.data();
+
         return {
           id: docItem.id,
           ...data,
@@ -312,7 +385,36 @@ export default function NewApplicationDashboard() {
         };
       });
 
-      setApplications(rows);
+      const enrichedRows = await Promise.all(
+        rows.map(async (item) => {
+          try {
+            const expertReviewRef = doc(
+              db,
+              "startupApplications",
+              item.id,
+              "review",
+              "expert"
+            );
+
+            const expertReviewSnap = await getDoc(expertReviewRef);
+
+            return {
+              ...item,
+              _expertReview: expertReviewSnap.exists()
+                ? expertReviewSnap.data()
+                : null,
+            };
+          } catch (error) {
+            console.warn("Expert review fetch failed:", item.id, error);
+            return {
+              ...item,
+              _expertReview: null,
+            };
+          }
+        })
+      );
+
+      setApplications(enrichedRows);
     } catch (error) {
       console.error("Failed to load applications", error);
       setApplications([]);
@@ -455,6 +557,8 @@ export default function NewApplicationDashboard() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const aiScoreMin = Number(aiScoreMinFilter);
+    const expertScoreMin = Number(expertScoreMinFilter);
 
     return applications.filter((item) => {
       const searchable = [
@@ -483,18 +587,43 @@ export default function NewApplicationDashboard() {
       const matchesDistrict =
         districtFilter === "All" || getDistrict(item) === districtFilter;
 
-      const reviewed = hasAIReview(item);
+      const aiReviewed = hasAIReview(item);
+      const expertReviewed = hasExpertReview(item);
+
       const matchesAIReviewed =
         aiReviewedFilter === "All" ||
-        (aiReviewedFilter === "Yes" && reviewed) ||
-        (aiReviewedFilter === "No" && !reviewed);
+        (aiReviewedFilter === "Yes" && aiReviewed) ||
+        (aiReviewedFilter === "No" && !aiReviewed);
+
+      const matchesExpertReviewed =
+        expertReviewedFilter === "All" ||
+        (expertReviewedFilter === "Yes" && expertReviewed) ||
+        (expertReviewedFilter === "No" && !expertReviewed);
+
+      const aiScore = getAIScore(item);
+      const expertScore = getExpertScore(item);
+
+      const matchesAIScoreMin =
+        !aiScoreMinFilter ||
+        (Number.isFinite(aiScoreMin) &&
+          aiScore !== null &&
+          Number(aiScore) >= aiScoreMin);
+
+      const matchesExpertScoreMin =
+        !expertScoreMinFilter ||
+        (Number.isFinite(expertScoreMin) &&
+          expertScore !== null &&
+          Number(expertScore) >= expertScoreMin);
 
       return (
         matchesSearch &&
         matchesStatus &&
         matchesRegistered &&
         matchesDistrict &&
-        matchesAIReviewed
+        matchesAIReviewed &&
+        matchesExpertReviewed &&
+        matchesAIScoreMin &&
+        matchesExpertScoreMin
       );
     });
   }, [
@@ -504,11 +633,23 @@ export default function NewApplicationDashboard() {
     registeredFilter,
     districtFilter,
     aiReviewedFilter,
+    expertReviewedFilter,
+    aiScoreMinFilter,
+    expertScoreMinFilter,
   ]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, registeredFilter, districtFilter, aiReviewedFilter]);
+  }, [
+    search,
+    statusFilter,
+    registeredFilter,
+    districtFilter,
+    aiReviewedFilter,
+    expertReviewedFilter,
+    aiScoreMinFilter,
+    expertScoreMinFilter,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
@@ -517,8 +658,7 @@ export default function NewApplicationDashboard() {
     return filtered.slice(startIndex, startIndex + PAGE_SIZE);
   }, [filtered, currentPage]);
 
-  const pageStart =
-    filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const pageStart = filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
   const pageEnd = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
   const stats = useMemo(() => {
@@ -530,6 +670,7 @@ export default function NewApplicationDashboard() {
       review: applications.filter((a) => a._status === "Under Review").length,
       approved: applications.filter((a) => a._status === "Approved").length,
       registered: applications.filter((a) => a._registeredCompany).length,
+      expertScored: applications.filter((a) => hasExpertReview(a)).length,
     };
   }, [applications]);
 
@@ -565,109 +706,125 @@ export default function NewApplicationDashboard() {
     try {
       setExporting(true);
 
-      const excelRows = filtered.map((item, index) => ({
-        "S. No.": index + 1,
-        "Application ID": safe(item._applicationId),
-        "Startup Name": safe(getStartupName(item)),
-        "Founder Name": safe(getFounderName(item)),
-        "Email": safe(getEmail(item)),
-        "Phone": safe(getPhone(item)),
-        Status: safe(item._status),
-        "Registered Company": item._registeredCompany ? "Yes" : "No",
-        "AI Reviewed": hasAIReview(item) ? "Yes" : "No",
-        "AI Score":
-          String(item?._status || "").toLowerCase() === "draft"
-            ? "Draft"
-            : getAIScore(item) ?? "-",
-        "AI Score Band": safe(item?.aiEvaluation?.scoreBand),
-        "AI Decision": safe(item?.aiEvaluation?.decision),
-        "AI Startup Quality": safe(item?.aiEvaluation?.startupQuality),
-        "AI Reviewed At (ms)": safe(item?.aiEvaluation?.reviewedAtMs),
+      const excelRows = filtered.map((item, index) => {
+        const expertReview = getExpertReview(item);
 
-        "Application Type": safe(
-          item?.userSignup?.applicationType || item?.applicationType
-        ),
-        "Sector / Category": safe(getCategory(item)),
-        Stage: safe(getStage(item)),
-        "Team Size": safe(item?.startupDetails?.teamSize),
-        Website: safe(item?.startupDetails?.website),
-        District: safe(getDistrict(item)),
-        State: safe(item?.basicDetails?.state || item?.entityDetails?.state),
-        "Block Name": safe(item?.basicDetails?.blockName),
-        Pincode: safe(item?.basicDetails?.pincode),
-        "Applicant Address": safe(item?.basicDetails?.applicantAddress),
-        Gender: safe(item?.basicDetails?.gender),
-        Category: safe(item?.basicDetails?.category),
-        "Date of Birth": safe(item?.basicDetails?.dateOfBirth),
-        Qualification: safe(item?.basicDetails?.qualification),
-        Institution:
-          item?.basicDetails?.institution === "Other"
-            ? safe(item?.basicDetails?.otherInstitution)
-            : safe(item?.basicDetails?.institution),
-        "LinkedIn Profile": safe(item?.basicDetails?.linkedinProfile),
+        return {
+          "S. No.": index + 1,
+          "Application ID": safe(item._applicationId),
+          "Startup Name": safe(getStartupName(item)),
+          "Founder Name": safe(getFounderName(item)),
+          Email: safe(getEmail(item)),
+          Phone: safe(getPhone(item)),
+          Status: safe(item._status),
+          "Registered Company": item._registeredCompany ? "Yes" : "No",
 
-        "Has Registered Entity": item?._registeredCompany ? "Yes" : "No",
-        "Entity Name": safe(item?.entityDetails?.entityName),
-        "Entity Type": safe(item?.entityDetails?.entityType),
-        "Entity Registration Number": safe(
-          item?.entityDetails?.entityRegistrationNumber ||
-            item?.registrationNumber
-        ),
-        "Date of Registration": safe(item?.entityDetails?.dateOfRegistration),
-        "Business Address": safe(item?.entityDetails?.businessAddress),
+          "AI Reviewed": hasAIReview(item) ? "Yes" : "No",
+          "AI Score":
+            String(item?._status || "").toLowerCase() === "draft"
+              ? "Draft"
+              : getAIScore(item) ?? "-",
+          "AI Score Band": safe(item?.aiEvaluation?.scoreBand),
+          "AI Decision": safe(item?.aiEvaluation?.decision),
+          "AI Startup Quality": safe(item?.aiEvaluation?.startupQuality),
+          "AI Reviewed At (ms)": safe(item?.aiEvaluation?.reviewedAtMs),
 
-        "Problem Statement": safe(item?.businessIdea?.problemStatement),
-        Solution: safe(item?.businessIdea?.solution),
-        Innovation: safe(item?.businessIdea?.innovation),
-        "Business Model": safe(item?.businessIdea?.businessModel),
+          "Expert Reviewed": hasExpertReview(item) ? "Yes" : "No",
+          "Expert Score": getExpertScore(item) ?? "-",
+          "Expert Initial Score": getExpertInitialScore(item) ?? "-",
+          "Expert Final Score": getExpertFinalScore(item) ?? "-",
+          "Expert Comment": safe(expertReview?.comment),
+          "Expert First Comment": safe(expertReview?.firstComment),
+          "Expert Reviewer ID": safe(expertReview?.reviewerId),
+          "Expert Score Revised": expertReview?.scoreRevised === true ? "Yes" : "No",
+          "Expert AI Viewed": expertReview?.aiEvaluationViewed === true ? "Yes" : "No",
+          "Score Changed After AI View":
+            expertReview?.scoreChangedAfterAIView === true ? "Yes" : "No",
 
-        "Pitch Deck File Name": safe(item?.businessIdea?.pitchDeckMeta?.fileName),
-        "Pitch Deck URL": safe(item?.businessIdea?.pitchDeckMeta?.downloadURL),
+          "Application Type": safe(
+            item?.userSignup?.applicationType || item?.applicationType
+          ),
+          "Sector / Category": safe(getCategory(item)),
+          Stage: safe(getStage(item)),
+          "Team Size": safe(item?.startupDetails?.teamSize),
+          Website: safe(item?.startupDetails?.website),
+          District: safe(getDistrict(item)),
+          State: safe(item?.basicDetails?.state || item?.entityDetails?.state),
+          "Block Name": safe(item?.basicDetails?.blockName),
+          Pincode: safe(item?.basicDetails?.pincode),
+          "Applicant Address": safe(item?.basicDetails?.applicantAddress),
+          Gender: safe(item?.basicDetails?.gender),
+          Category: safe(item?.basicDetails?.category),
+          "Date of Birth": safe(item?.basicDetails?.dateOfBirth),
+          Qualification: safe(item?.basicDetails?.qualification),
+          Institution:
+            item?.basicDetails?.institution === "Other"
+              ? safe(item?.basicDetails?.otherInstitution)
+              : safe(item?.basicDetails?.institution),
+          "LinkedIn Profile": safe(item?.basicDetails?.linkedinProfile),
 
-        "Profile Photo File Name": safe(
-          item?.basicDetails?.profilePhotoMeta?.fileName
-        ),
-        "Profile Photo URL": safe(
-          item?.basicDetails?.profilePhotoMeta?.downloadURL
-        ),
+          "Has Registered Entity": item?._registeredCompany ? "Yes" : "No",
+          "Entity Name": safe(item?.entityDetails?.entityName),
+          "Entity Type": safe(item?.entityDetails?.entityType),
+          "Entity Registration Number": safe(
+            item?.entityDetails?.entityRegistrationNumber || item?.registrationNumber
+          ),
+          "Date of Registration": safe(item?.entityDetails?.dateOfRegistration),
+          "Business Address": safe(item?.entityDetails?.businessAddress),
 
-        "Entity Certificate File Name": safe(
-          item?.entityDetails?.certificateMeta?.fileName
-        ),
-        "Entity Certificate URL": safe(
-          item?.entityDetails?.certificateMeta?.downloadURL
-        ),
+          "Problem Statement": safe(item?.businessIdea?.problemStatement),
+          Solution: safe(item?.businessIdea?.solution),
+          Innovation: safe(item?.businessIdea?.innovation),
+          "Business Model": safe(item?.businessIdea?.businessModel),
 
-        "Co-Founder Count": Array.isArray(item?.cofounderDetails?.coFounders)
-          ? item.cofounderDetails.coFounders.length
-          : 0,
-        "Is Sole Founder": item?.cofounderDetails?.isSoleFounder ? "Yes" : "No",
-        "Co-Founders": Array.isArray(item?.cofounderDetails?.coFounders)
-          ? item.cofounderDetails.coFounders
-              .map((cf, idx) => {
-                const parts = [
-                  `#${idx + 1}`,
-                  cf?.name || "-",
-                  cf?.email || "-",
-                  cf?.phoneNumber || "-",
-                  cf?.qualification || "-",
-                ];
-                return parts.join(" | ");
-              })
-              .join(" || ")
-          : "-",
+          "Pitch Deck File Name": safe(item?.businessIdea?.pitchDeckMeta?.fileName),
+          "Pitch Deck URL": safe(item?.businessIdea?.pitchDeckMeta?.downloadURL),
 
-        "Feedback Submitted":
-          item?.websiteFeedback?.submitted === true ? "Yes" : "No",
-        "Feedback Experience": safe(item?.websiteFeedback?.experience),
-        "Feedback Rating": safe(item?.websiteFeedback?.rating),
-        "Feedback Message": safe(item?.websiteFeedback?.message),
-        "Feedback Submitted At": formatDate(item?.websiteFeedback?.submittedAt),
+          "Profile Photo File Name": safe(
+            item?.basicDetails?.profilePhotoMeta?.fileName
+          ),
+          "Profile Photo URL": safe(
+            item?.basicDetails?.profilePhotoMeta?.downloadURL
+          ),
 
-        "Aadhar Number": safe(item?.userSignup?.aadharNumber),
-        "Created At": safe(item._createdAtDisplay),
-        "Firestore Doc ID": safe(item.id),
-      }));
+          "Entity Certificate File Name": safe(
+            item?.entityDetails?.certificateMeta?.fileName
+          ),
+          "Entity Certificate URL": safe(
+            item?.entityDetails?.certificateMeta?.downloadURL
+          ),
+
+          "Co-Founder Count": Array.isArray(item?.cofounderDetails?.coFounders)
+            ? item.cofounderDetails.coFounders.length
+            : 0,
+          "Is Sole Founder": item?.cofounderDetails?.isSoleFounder ? "Yes" : "No",
+          "Co-Founders": Array.isArray(item?.cofounderDetails?.coFounders)
+            ? item.cofounderDetails.coFounders
+                .map((cf, idx) => {
+                  const parts = [
+                    `#${idx + 1}`,
+                    cf?.name || "-",
+                    cf?.email || "-",
+                    cf?.phoneNumber || "-",
+                    cf?.qualification || "-",
+                  ];
+                  return parts.join(" | ");
+                })
+                .join(" || ")
+            : "-",
+
+          "Feedback Submitted":
+            item?.websiteFeedback?.submitted === true ? "Yes" : "No",
+          "Feedback Experience": safe(item?.websiteFeedback?.experience),
+          "Feedback Rating": safe(item?.websiteFeedback?.rating),
+          "Feedback Message": safe(item?.websiteFeedback?.message),
+          "Feedback Submitted At": formatDate(item?.websiteFeedback?.submittedAt),
+
+          "Aadhar Number": safe(item?.userSignup?.aadharNumber),
+          "Created At": safe(item._createdAtDisplay),
+          "Firestore Doc ID": safe(item.id),
+        };
+      });
 
       if (excelRows.length === 0) {
         alert("No filtered applications available to export.");
@@ -679,9 +836,10 @@ export default function NewApplicationDashboard() {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
 
       const now = new Date();
-      const datePart = `${now.getFullYear()}-${String(
-        now.getMonth() + 1
-      ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const datePart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${String(now.getDate()).padStart(2, "0")}`;
 
       XLSX.writeFile(workbook, `startup_applications_filtered_${datePart}.xlsx`);
     } catch (error) {
@@ -711,60 +869,59 @@ export default function NewApplicationDashboard() {
                   Admin Dashboard
                 </h1>
                 <p className="mt-2 max-w-3xl text-sm text-slate-500">
-                  Incoming startup applications, premium filters, and full-screen
-                  detail view on row click.
+                  Incoming startup applications, AI scores, expert scores, and filtered Excel export.
                 </p>
               </div>
 
-             <div className="flex flex-wrap gap-3">
-  <button
-    onClick={loadApplications}
-    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-  >
-    <RefreshCw size={16} />
-    Refresh
-  </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={loadApplications}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                  <RefreshCw size={16} />
+                  Refresh
+                </button>
 
-  <button
-    onClick={syncExistingAIReviewsToFirestore}
-    disabled={loading || backfillState.running || applications.length === 0}
-    className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    <Bot size={16} />
-    {backfillState.running ? "Syncing AI Reviews..." : "Sync AI Reviews"}
-  </button>
+                <button
+                  onClick={syncExistingAIReviewsToFirestore}
+                  disabled={loading || backfillState.running || applications.length === 0}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Bot size={16} />
+                  {backfillState.running ? "Syncing AI Reviews..." : "Sync AI Reviews"}
+                </button>
 
-  <button
-    onClick={() => setAnalysisOpen(true)}
-    disabled={loading || filtered.length === 0}
-    className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    <BarChart3 size={16} />
-    Analysis
-  </button>
+                <button
+                  onClick={() => setAnalysisOpen(true)}
+                  disabled={loading || filtered.length === 0}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <BarChart3 size={16} />
+                  Analysis
+                </button>
 
-  <button
-    onClick={exportApplicationsToExcel}
-    disabled={loading || exporting || filtered.length === 0}
-    className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    <Download size={16} />
-    {exporting ? "Exporting..." : "Download Excel"}
-  </button>
+                <button
+                  onClick={exportApplicationsToExcel}
+                  disabled={loading || exporting || filtered.length === 0}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Download size={16} />
+                  {exporting ? "Exporting..." : "Download Excel"}
+                </button>
 
-  <button
-    onClick={() => setFeedbackDialogOpen(true)}
-    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-  >
-    <MessageSquareText size={16} />
-    Website Feedback
-  </button>
-</div>
+                <button
+                  onClick={() => setFeedbackDialogOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                  <MessageSquareText size={16} />
+                  Website Feedback
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="p-5 md:p-7">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
               <SummaryCard
                 title="Total Applications"
                 value={stats.total}
@@ -800,11 +957,18 @@ export default function NewApplicationDashboard() {
                 icon={Building2}
                 accent="slate"
               />
+              <SummaryCard
+                title="Expert Scored"
+                value={stats.expertScored}
+                subtitle="Expert score submitted"
+                icon={Star}
+                accent="violet"
+              />
             </div>
 
             <div className="mt-6 rounded-[30px] border border-white/80 bg-white/78 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-5">
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                <div className="xl:col-span-1">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-8">
+                <div className="xl:col-span-2">
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Search
                   </label>
@@ -822,65 +986,91 @@ export default function NewApplicationDashboard() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Status
-                  </label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                  >
-                    {STATUS_OPTIONS.map((item) => (
-                      <option key={item}>{item}</option>
-                    ))}
-                  </select>
-                </div>
+                <FilterSelect
+                  label="Status"
+                  value={statusFilter}
+                  onChange={setStatusFilter}
+                  options={STATUS_OPTIONS}
+                />
+
+                <FilterSelect
+                  label="Registered"
+                  value={registeredFilter}
+                  onChange={setRegisteredFilter}
+                  options={REGISTERED_OPTIONS}
+                />
+
+                <FilterSelect
+                  label="District"
+                  value={districtFilter}
+                  onChange={setDistrictFilter}
+                  options={districts}
+                />
+
+                <FilterSelect
+                  label="AI Reviewed"
+                  value={aiReviewedFilter}
+                  onChange={setAiReviewedFilter}
+                  options={AI_REVIEW_OPTIONS}
+                />
+
+                <FilterSelect
+                  label="Expert Reviewed"
+                  value={expertReviewedFilter}
+                  onChange={setExpertReviewedFilter}
+                  options={EXPERT_REVIEW_OPTIONS}
+                />
 
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Registered Company
+                    AI Score ≥
                   </label>
-                  <select
-                    value={registeredFilter}
-                    onChange={(e) => setRegisteredFilter(e.target.value)}
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    value={aiScoreMinFilter}
+                    onChange={(e) => setAiScoreMinFilter(e.target.value)}
+                    placeholder="8.2"
                     className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                  >
-                    {REGISTERED_OPTIONS.map((item) => (
-                      <option key={item}>{item}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
+              </div>
 
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-8">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    District
+                    Expert Score ≥
                   </label>
-                  <select
-                    value={districtFilter}
-                    onChange={(e) => setDistrictFilter(e.target.value)}
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    value={expertScoreMinFilter}
+                    onChange={(e) => setExpertScoreMinFilter(e.target.value)}
+                    placeholder="7.6"
                     className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                  >
-                    {districts.map((item) => (
-                      <option key={item}>{item}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    AI Reviewed
-                  </label>
-                  <select
-                    value={aiReviewedFilter}
-                    onChange={(e) => setAiReviewedFilter(e.target.value)}
-                    className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
-                  >
-                    {AI_REVIEW_OPTIONS.map((item) => (
-                      <option key={item}>{item}</option>
-                    ))}
-                  </select>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    setStatusFilter("All");
+                    setRegisteredFilter("All");
+                    setDistrictFilter("All");
+                    setAiReviewedFilter("All");
+                    setExpertReviewedFilter("All");
+                    setAiScoreMinFilter("");
+                    setExpertScoreMinFilter("");
+                  }}
+                  className="mt-6 inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                >
+                  Clear Filters
+                </button>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -891,6 +1081,16 @@ export default function NewApplicationDashboard() {
                 <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
                   Page {currentPage} of {totalPages}
                 </span>
+                {aiScoreMinFilter ? (
+                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+                    AI Score ≥ {aiScoreMinFilter}
+                  </span>
+                ) : null}
+                {expertScoreMinFilter ? (
+                  <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
+                    Expert Score ≥ {expertScoreMinFilter}
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -966,14 +1166,16 @@ export default function NewApplicationDashboard() {
               </div>
 
               <div className="overflow-auto">
-                <table className="min-w-[1350px] w-full">
+                <table className="min-w-[1650px] w-full">
                   <thead className="bg-slate-50/80">
                     <tr className="text-left text-xs uppercase tracking-[0.14em] text-slate-500">
                       <th className="px-5 py-4 font-semibold">Application ID</th>
                       <th className="px-5 py-4 font-semibold">Startup</th>
                       <th className="px-5 py-4 font-semibold">Founder</th>
                       <th className="px-5 py-4 font-semibold">Status</th>
-                      <th className="px-5 py-4 font-semibold">AI Review</th>
+                      <th className="px-5 py-4 font-semibold">AI Score</th>
+                      <th className="px-5 py-4 font-semibold">Expert Score</th>
+
                       <th className="px-5 py-4 font-semibold">Registered Company</th>
                       <th className="px-5 py-4 font-semibold">District</th>
                       <th className="px-5 py-4 font-semibold">Category / Sector</th>
@@ -986,7 +1188,7 @@ export default function NewApplicationDashboard() {
                     {loading ? (
                       Array.from({ length: 8 }).map((_, index) => (
                         <tr key={index} className="border-t border-slate-100">
-                          {Array.from({ length: 10 }).map((__, i) => (
+                          {Array.from({ length: 13 }).map((__, i) => (
                             <td key={i} className="px-5 py-4">
                               <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
                             </td>
@@ -995,7 +1197,7 @@ export default function NewApplicationDashboard() {
                       ))
                     ) : paginatedRows.length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="px-6 py-16 text-center">
+                        <td colSpan={13} className="px-6 py-16 text-center">
                           <div className="mx-auto max-w-md">
                             <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
                               <FileText size={22} />
@@ -1058,12 +1260,15 @@ export default function NewApplicationDashboard() {
                                 }`}
                               >
                                 <Bot size={14} className="text-slate-500" />
-                                <AIScoreBadge
-                                  score={getAIScore(item)}
-                                  isDraft={isDraft}
-                                />
+                                <AIScoreBadge score={getAIScore(item)} isDraft={isDraft} />
                               </button>
                             </td>
+
+                            <td className="px-5 py-4">
+                              <ScoreBadge score={getExpertScore(item)} />
+                            </td>
+
+                         
 
                             <td className="px-5 py-4">
                               <RegisteredBadge value={item._registeredCompany} />
@@ -1188,19 +1393,41 @@ export default function NewApplicationDashboard() {
         startupId={aiModalApplication?._applicationId}
         startupName={aiModalApplication ? getStartupName(aiModalApplication) : ""}
       />
-<Analysis
-  open={analysisOpen}
-  onClose={() => setAnalysisOpen(false)}
-  applications={filtered}
-  allApplications={applications}
-  onDownloadExcel={exportApplicationsToExcel}
-  exporting={exporting}
-/>
+
+      <Analysis
+        open={analysisOpen}
+        onClose={() => setAnalysisOpen(false)}
+        applications={filtered}
+        allApplications={applications}
+        onDownloadExcel={exportApplicationsToExcel}
+        exporting={exporting}
+      />
 
       <FeedbackList
         open={feedbackDialogOpen}
         onClose={() => setFeedbackDialogOpen(false)}
       />
+    </div>
+  );
+}
+
+function FilterSelect({ label, value, onChange, options }) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+      >
+        {options.map((item) => (
+          <option key={item} value={item}>
+            {item}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

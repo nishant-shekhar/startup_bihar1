@@ -1,0 +1,12 @@
+.checkout-card{background:#fff;border-radius:16px;padding:2.5rem 2rem;box-shadow:0 4px 24px rgba(0,0,0,0.08);width:100%;max-width:420px}
+.checkout-icon{font-size:2rem;margin-bottom:.75rem}h1{font-size:1.5rem;font-weight:700;margin-bottom:.4rem}
+.subtitle{font-size:.875rem;color:#666;margin-bottom:1.75rem;line-height:1.5}
+.field{margin-bottom:1.1rem}.field label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.35rem;color:#333}.req{color:#e53e3e}
+.field input{width:100%;padding:.65rem .9rem;border:1.5px solid #dde2e8;border-radius:8px;font-size:1rem;outline:none;transition:border-color .18s;background:#fafbfc}
+.field input:focus{border-color:#3399cc;background:#fff}.input-wrap{position:relative}.input-wrap input{padding-left:2rem}
+.prefix{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#888;font-size:1rem;pointer-events:none}
+.error-msg{background:#fdecea;color:#b71c1c;border:1px solid #f5c6c6;border-radius:8px;padding:.65rem .9rem;font-size:.875rem;margin-bottom:1rem}
+.pay-btn{width:100%;padding:.8rem;background:#3399cc;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:.5rem;transition:background .18s}
+.pay-btn:hover:not(:disabled){background:#2277aa}.pay-btn:disabled{opacity:.7;cursor:not-allowed}
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}

@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function WorkingDialog({
+export default function SSUWorkingDialog({
   open,
   title = "Please wait",
   message = "We are processing your request.",

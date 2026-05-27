@@ -1,19 +1,30 @@
 import React, { useMemo, useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, ErrorMessage, useField } from "formik";
 import * as Yup from "yup";
-import PhoneVerificationModal from "./modals/PhoneVerificationModal";
-import { useLanguage } from "../shared/LanguageContext";
 import {
   FaCheckCircle,
-  FaLock,
-  FaShieldAlt,
   FaEye,
   FaEyeSlash,
   FaIdCard,
+  FaLock,
+  FaMobileAlt,
+  FaShieldAlt,
+  FaUserPlus,
 } from "react-icons/fa";
+
+import SSUPhoneVerificationModal from "./modals/SSUPhoneVerificationModal";
+import { SSU_DEV_MODE } from "../ssuDevMode";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
+
+const normalizeEmail = (value = "") => String(value || "").trim().toLowerCase();
+
+const normalizePhone = (value = "") =>
+  String(value || "").replace(/\D/g, "").slice(0, 10);
+
+const normalizeAadhaar = (value = "") =>
+  String(value || "").replace(/\D/g, "").slice(0, 12);
 
 const getValidationSchema = (isLoggedIn) => {
   if (isLoggedIn) {
@@ -21,33 +32,51 @@ const getValidationSchema = (isLoggedIn) => {
   }
 
   return Yup.object().shape({
-    fullName: Yup.string().trim().required("Full name is required"),
+    fullName: Yup.string()
+      .trim()
+      .min(2, "Enter a valid full name")
+      .required("Full name is required"),
+
     email: Yup.string()
+      .trim()
       .email("Invalid email address")
       .required("Email is required"),
+
     phoneNumber: Yup.string()
       .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits")
       .required("Phone number is required"),
+
     aadharNumber: Yup.string()
       .matches(/^[0-9]{12}$/, "Aadhaar number must be exactly 12 digits")
       .required("Aadhaar number is required"),
+
     password: Yup.string()
       .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
+
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password")], "Passwords must match")
       .required("Confirm password is required"),
   });
 };
 
-export default function UserSignup({
+const buildInitialValues = (initialValues) => ({
+  fullName: initialValues?.fullName || "",
+  email: initialValues?.email || "",
+  phoneNumber: initialValues?.phoneNumber || "",
+  aadharNumber:
+    initialValues?.aadharNumber || initialValues?.aadhaarNumber || "",
+  password: "",
+  confirmPassword: "",
+});
+
+export default function SSUUserSignup({
   onSubmit,
   initialValues,
   isReadOnly = false,
   isLoggedIn = false,
   loginIdentity = "",
 }) {
-  const { t } = useLanguage();
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [formValues, setFormValues] = useState(null);
   const [userPhone, setUserPhone] = useState("");
@@ -59,86 +88,89 @@ export default function UserSignup({
     [isLoggedIn]
   );
 
+  const signupInitialValues = useMemo(
+    () => buildInitialValues(initialValues),
+    [initialValues]
+  );
+
   const sendOtp = async (phoneNumber) => {
-    // ── DEV MODE: OTP sending disabled for local testing ──
-    // Uncomment below block before production deployment
-    /*
+    if (SSU_DEV_MODE) {
+      return { success: true };
+    }
+
     const res = await fetch(`${API_BASE}/otp-auth/send-otp`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ mobile: phoneNumber }),
     });
+
     const data = await res.json();
+
     if (!res.ok || !data.success) {
       throw new Error(data.message || "Failed to send OTP");
     }
+
     return data;
-    */
-    // DEV: just resolve immediately
-    return { success: true };
   };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
-    setSubmitError("");
+  const cleanSignupValues = (values) => ({
+    fullName: String(values.fullName || "").trim().replace(/\s+/g, " "),
+    email: normalizeEmail(values.email),
+    phoneNumber: normalizePhone(values.phoneNumber),
+    aadharNumber: normalizeAadhaar(values.aadharNumber),
+    password: values.password || "",
+    confirmPassword: values.confirmPassword || "",
+  });
 
-    if (isReadOnly) {
-      setSubmitting(false);
+const handleSubmit = async (values, { setSubmitting }) => {
+  setSubmitError("");
+
+  if (isReadOnly) {
+    setSubmitting(false);
+    return;
+  }
+
+  try {
+    setSendingOtp(true);
+
+    const cleanedValues = cleanSignupValues(values);
+
+    if (cleanedValues.phoneNumber.length !== 10) {
+      setSubmitError("Enter a valid 10-digit mobile number.");
       return;
     }
 
-    try {
-      setSendingOtp(true);
-      // ── DEV MODE: skip OTP modal, go directly to verified ──
-      // await sendOtp(values.phoneNumber);  // <-- restore for production
-      // setFormValues({ ...values });
-      // setUserPhone(values.phoneNumber);
-      // setIsPhoneModalOpen(true);           // <-- restore for production
+    await sendOtp(cleanedValues.phoneNumber);
 
-      // DEV: bypass OTP — treat as already verified
-      const mockValues = { ...values };
-      setFormValues(mockValues);
-      setUserPhone(values.phoneNumber);
-      // call handlePhoneVerified inline so modal is never shown
-      const result = await onSubmit?.({
-        type: "registration",
-        registeredAt: new Date().toISOString(),
-        ...mockValues,
-      });
-      if (result?.ok === false) {
-        setSubmitError(result.error || "Registration failed.");
-      }
-    } catch (error) {
-      setSubmitError(error.message || "Could not register.");
-    } finally {
-      setSendingOtp(false);
-      setSubmitting(false);
-    }
-  };
+    setFormValues(cleanedValues);
+    setUserPhone(cleanedValues.phoneNumber);
+    setIsPhoneModalOpen(true);
+  } catch (error) {
+    setSubmitError(error.message || "Could not send OTP.");
+  } finally {
+    setSendingOtp(false);
+    setSubmitting(false);
+  }
+};
 
   const handlePhoneVerified = async () => {
     setIsPhoneModalOpen(false);
     setSubmitError("");
 
-    if (formValues && onSubmit) {
-      const result = await onSubmit({
-        type: "registration",
-        registeredAt: new Date().toISOString(),
-        ...formValues,
-      });
+    if (!formValues || !onSubmit) return;
 
-      if (result?.ok === false) {
-        setSubmitError(result.error || "Registration failed.");
-      }
+    const result = await onSubmit({
+      type: "registration",
+      registeredAt: new Date().toISOString(),
+      phoneVerified: true,
+      ...formValues,
+    });
+
+    if (result?.ok === false) {
+      setSubmitError(result.error || "Registration failed.");
     }
-  };
-
-  const signupInitialValues = {
-    fullName: initialValues?.fullName || "",
-    email: initialValues?.email || "",
-    phoneNumber: initialValues?.phoneNumber || "",
-    aadharNumber: initialValues?.aadharNumber || "",
-    password: "",
-    confirmPassword: "",
   };
 
   return (
@@ -146,15 +178,18 @@ export default function UserSignup({
       <div className="mx-auto w-full max-w-5xl">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-              Step 1 of 6
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+              <FaUserPlus />
+              Step 1
             </div>
+
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-              Create your account
+              Create Your Account
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-500">
-              Register with your personal and contact details. Returning
-              applicants can log in from this same screen.
+
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+              Register with your personal contact details. Your mobile number
+              will be verified through OTP before the application is created.
             </p>
           </div>
 
@@ -164,6 +199,7 @@ export default function UserSignup({
                 <FaCheckCircle />
                 Logged in
               </div>
+
               <div className="mt-1 text-emerald-700">
                 {loginIdentity || "Authenticated applicant"}
               </div>
@@ -178,6 +214,7 @@ export default function UserSignup({
                 <FaLock />
                 Registration details locked
               </div>
+
               <div className="mt-1">
                 This application has already been submitted. Registration
                 details cannot be edited now.
@@ -187,7 +224,7 @@ export default function UserSignup({
             <div className="mb-6 rounded-[24px] border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-800 shadow-sm">
               <div className="font-semibold">You are already logged in.</div>
               <div className="mt-1">
-                Your account is verified. Proceed to fill the application form.
+                Your account is verified. Continue to the application form.
               </div>
             </div>
           ) : (
@@ -196,9 +233,11 @@ export default function UserSignup({
                 <div className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
                   Registration note
                 </div>
-                <div className="mt-2 text-sm text-slate-600">
-                  A secure password is required. Returning applicants can log in
-                  using registration number, email or mobile number.
+
+                <div className="mt-2 text-sm leading-relaxed text-slate-600">
+                  After successful OTP verification, your application ID will be
+                  generated in the format SSUYYYYMM0001. Returning applicants can
+                  log in using registration number, email, or mobile number.
                 </div>
               </div>
 
@@ -207,15 +246,16 @@ export default function UserSignup({
                   <FaShieldAlt className="text-indigo-600" />
                   Verification note
                 </div>
-                <div className="mt-2 text-sm text-slate-500">
-                  Your mobile number will be verified through OTP before
-                  registration is saved.
+
+                <div className="mt-2 text-sm leading-relaxed text-slate-500">
+                  Duplicate registration using the same mobile, email, or Aadhaar
+                  will be blocked after the first successful registration.
                 </div>
               </div>
             </div>
           )}
 
-          {!isLoggedIn && (
+          {!isLoggedIn ? (
             <Formik
               initialValues={signupInitialValues}
               validationSchema={validationSchema}
@@ -227,11 +267,13 @@ export default function UserSignup({
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <InputField
                       name="fullName"
-                      label="Full Name (as per records)"
-                      placeholder="Enter your full name"
+                      label="Full Name"
+                      placeholder="Enter full name"
+                      required
                       errors={errors}
                       touched={touched}
                       disabled={isReadOnly}
+                      icon={<FaIdCard />}
                     />
 
                     <InputField
@@ -239,6 +281,7 @@ export default function UserSignup({
                       type="email"
                       label="Email Address"
                       placeholder="you@example.com"
+                      required
                       errors={errors}
                       touched={touched}
                       disabled={isReadOnly}
@@ -250,9 +293,12 @@ export default function UserSignup({
                       maxLength={10}
                       label="Mobile Number"
                       placeholder="10-digit mobile number"
+                      required
                       errors={errors}
                       touched={touched}
                       disabled={isReadOnly}
+                      icon={<FaMobileAlt />}
+                      onSanitize={normalizePhone}
                     />
 
                     <InputField
@@ -261,16 +307,20 @@ export default function UserSignup({
                       maxLength={12}
                       label="Aadhaar Number"
                       placeholder="12-digit Aadhaar number"
+                      required
                       errors={errors}
                       touched={touched}
                       disabled={isReadOnly}
+                      icon={<FaIdCard />}
+                      onSanitize={normalizeAadhaar}
                     />
 
                     <InputField
                       name="password"
                       type="password"
                       label="Password"
-                      placeholder="••••••••"
+                      placeholder="Minimum 6 characters"
+                      required
                       errors={errors}
                       touched={touched}
                       disabled={isReadOnly}
@@ -280,7 +330,8 @@ export default function UserSignup({
                       name="confirmPassword"
                       type="password"
                       label="Confirm Password"
-                      placeholder="••••••••"
+                      placeholder="Re-enter password"
+                      required
                       errors={errors}
                       touched={touched}
                       disabled={isReadOnly}
@@ -305,7 +356,8 @@ export default function UserSignup({
                   {!isReadOnly ? (
                     <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 md:flex-row md:items-center md:justify-between">
                       <div className="text-sm text-slate-500">
-                        Your details will be saved after phone verification.
+                        Application ID will be generated after mobile OTP
+                        verification.
                       </div>
 
                       <button
@@ -327,9 +379,9 @@ export default function UserSignup({
                 </Form>
               )}
             </Formik>
-          )}
+          ) : null}
 
-          {isLoggedIn && !isReadOnly && (
+          {isLoggedIn && !isReadOnly ? (
             <div className="flex justify-end pt-4">
               <button
                 type="button"
@@ -339,16 +391,22 @@ export default function UserSignup({
                 Continue to Personal Details →
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
       {!isReadOnly && !isLoggedIn ? (
-        <PhoneVerificationModal
+        <SSUPhoneVerificationModal
           isOpen={isPhoneModalOpen}
           onClose={() => setIsPhoneModalOpen(false)}
           onVerified={handlePhoneVerified}
           phoneNumber={userPhone}
+          title="Verify Mobile Number"
+          subtitle="We sent a verification code to"
+          verifyButtonText="Verify & Create Application"
+          verifyingText="Verifying OTP"
+          resendingText="Sending OTP"
+          successMessage="Mobile number verified successfully."
         />
       ) : null}
     </>
@@ -364,10 +422,21 @@ function InputField({
   errors,
   touched,
   disabled = false,
+  required = false,
+  icon = null,
+  onSanitize,
 }) {
+  const [field, meta, helpers] = useField(name);
   const [showPassword, setShowPassword] = useState(false);
-  const hasError = errors[name] && touched[name];
+
+  const hasError = errors?.[name] && touched?.[name];
   const isPasswordField = type === "password";
+
+  const handleChange = (e) => {
+    const rawValue = e.target.value;
+    const value = onSanitize ? onSanitize(rawValue) : rawValue;
+    helpers.setValue(value);
+  };
 
   return (
     <div>
@@ -376,23 +445,33 @@ function InputField({
         className="mb-2 block text-sm font-semibold text-slate-800"
       >
         {label}
+        {required ? <span className="text-red-500"> *</span> : null}
       </label>
 
       <div className="relative">
-        <Field
+        {icon ? (
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
+            {icon}
+          </span>
+        ) : null}
+
+        <input
           id={name}
           name={name}
+          value={field.value || ""}
           type={isPasswordField && showPassword ? "text" : type}
           maxLength={maxLength}
           disabled={disabled}
+          onChange={handleChange}
+          onBlur={field.onBlur}
           className={`block w-full rounded-2xl border px-4 py-3 text-slate-900 outline-none transition ${
-            isPasswordField ? "pr-12" : ""
-          } ${
+            icon ? "pl-10" : ""
+          } ${isPasswordField ? "pr-12" : ""} ${
             disabled
               ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500"
               : hasError
-              ? "border-red-400 bg-red-50"
-              : "border-slate-200 bg-white/85 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
+                ? "border-red-400 bg-red-50"
+                : "border-slate-200 bg-white/85 focus:border-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(148,163,184,0.10)]"
           }`}
           placeholder={placeholder}
         />

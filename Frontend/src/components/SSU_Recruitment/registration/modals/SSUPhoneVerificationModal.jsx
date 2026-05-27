@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
+import {
+  FaCheckCircle,
+  FaMobileAlt,
+  FaTimes,
+} from "react-icons/fa";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
 
-const PhoneVerificationModal = ({
+const SSUPhoneVerificationModal = ({
   isOpen,
   onClose,
   onVerified,
@@ -67,10 +72,18 @@ const PhoneVerificationModal = ({
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
+
+    if (e.key === "Enter") {
+      handleSubmit();
+    }
   };
 
   const handlePaste = (e) => {
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+
     if (!pasted) return;
 
     e.preventDefault();
@@ -93,6 +106,8 @@ const PhoneVerificationModal = ({
       setError("Enter the 6-digit OTP.");
       return;
     }
+
+
 
     try {
       setLoading(true);
@@ -132,6 +147,8 @@ const PhoneVerificationModal = ({
   const handleResend = async () => {
     if (cooldown > 0) return;
 
+
+
     try {
       setResending(true);
       setError("");
@@ -165,39 +182,38 @@ const PhoneVerificationModal = ({
     }
   };
 
+  const isBusy = loading || resending;
+
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/50"
-        onClick={loading || resending ? undefined : onClose}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={isBusy ? undefined : onClose}
       />
 
-      <div className="relative mx-4 w-full max-w-md animate-fadeIn rounded-2xl bg-white p-8 shadow-2xl">
-        <div className="mb-8 text-center">
+      <div className="relative w-full max-w-md rounded-[32px] border border-white/80 bg-white p-6 shadow-2xl md:p-8">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isBusy}
+          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <FaTimes />
+        </button>
+
+        <div className="mb-7 text-center">
           <div className="mb-4">
-            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black/5">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-8 w-8 text-black"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.63 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.29a2 2 0 0 1 2.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0 1 22 16.92Z"
-                />
-              </svg>
+            <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 text-white">
+              <FaMobileAlt className="text-2xl" />
             </span>
           </div>
 
-          <h3 className="mb-2 text-2xl font-bold text-gray-900">{title}</h3>
+          <h3 className="mb-2 text-2xl font-bold text-slate-900">{title}</h3>
 
-          <p className="text-gray-600">
+          <p className="text-sm leading-relaxed text-slate-600">
             {subtitle}
             <br />
-            <span className="font-medium text-gray-900">{phoneNumber}</span>
+            <span className="font-semibold text-slate-900">{phoneNumber}</span>
           </p>
         </div>
 
@@ -214,8 +230,8 @@ const PhoneVerificationModal = ({
               value={digit}
               onChange={(e) => handleChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
-              disabled={loading || resending}
-              className="h-12 w-12 rounded-xl border border-gray-300 text-center text-xl font-semibold outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100"
+              disabled={isBusy}
+              className="h-12 w-12 rounded-xl border border-slate-300 text-center text-xl font-semibold text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:bg-slate-100"
             />
           ))}
         </div>
@@ -227,15 +243,19 @@ const PhoneVerificationModal = ({
         ) : null}
 
         {message ? (
-          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-            {message}
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <div className="flex items-center gap-2">
+              <FaCheckCircle />
+              <span>{message}</span>
+            </div>
           </div>
         ) : null}
 
         <button
+          type="button"
           onClick={handleSubmit}
-          disabled={loading || resending}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3 font-medium text-white transition-colors hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isBusy}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? (
             <>
@@ -248,25 +268,25 @@ const PhoneVerificationModal = ({
         </button>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-sm text-slate-600">
             Didn't receive the code?{" "}
             <button
               type="button"
               onClick={handleResend}
               disabled={resending || loading || cooldown > 0}
-              className="font-medium text-black hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+              className="font-semibold text-slate-900 underline disabled:cursor-not-allowed disabled:opacity-50"
             >
               {resending
                 ? "Sending..."
                 : cooldown > 0
-                ? `Resend in ${cooldown}s`
-                : "Resend"}
+                  ? `Resend in ${cooldown}s`
+                  : "Resend"}
             </button>
           </p>
         </div>
 
-        {(loading || resending) && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-white/80 backdrop-blur-[2px]">
+        {isBusy ? (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[32px] bg-white/80 backdrop-blur-[2px]">
             <div className="mx-6 w-full max-w-xs rounded-2xl border border-blue-100 bg-white px-5 py-5 text-center shadow-lg">
               <div className="mx-auto mb-3 inline-block h-8 w-8 animate-spin rounded-full border-[3px] border-blue-600 border-t-transparent" />
               <div className="text-base font-semibold text-slate-900">
@@ -279,10 +299,10 @@ const PhoneVerificationModal = ({
               </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
 };
 
-export default PhoneVerificationModal;
+export default SSUPhoneVerificationModal;

@@ -33,9 +33,9 @@ import Migration from './components/AdminRedesign/NewApplicationAdmin/Migration/
 import StartupMainFormWrapper from './components/New_Registration/registration/RegistrationLayout';
 import Block from './components/New_Registration/admin/Block';
 import NewApplicationDashboard from './components/New_Registration/admin/MainAdmin';
-import RegistrationLayout from './components/SSU_Recruitment/registration/RegistrationLayout';
 import ReviewerBoard from './components/New_Registration/admin/ReviewerBoard';
 import PIAIReviewedData from './components/AdminRedesign/NewApplicationAdmin/PIAIEvaluationData';
+import SSURegistrationLayout from './components/SSU_Recruitment/registration/SSURegistrationLayout.jsx';
 import RefundPolicy from './components/HomePage/RefundPolicy';
 
 const App = () => {
@@ -127,10 +127,10 @@ const App = () => {
 				/>
 				<Route path="/notif" element={<UserNotification />} />
 				<Route path="/NewStartupForm" element={<StartupDetailsForm />} />
-				<Route path="/ssu-recruitment-test" element={<RegistrationLayout />} />
 				<Route path="/SR" element={<UserSignup />} />
 				<Route path="/rv" element={<Response />} />
 				<Route path="/startupregistration" element={<StartupMainFormWrapper />} />
+				<Route path="/45656325_gchrftf68rft6uj654u6r56r" element={<SSURegistrationLayout />} />
 				<Route path="/ideafest" element={<IdeaFestHome />} />
 						<Route path="/certificate/:id" element={<Certificate />} />
 				

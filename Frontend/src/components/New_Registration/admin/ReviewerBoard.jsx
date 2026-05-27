@@ -1939,7 +1939,7 @@ export default function ReviewerBoard() {
         (scoreFilter === "0 - 4.9" && hasReview && score < 5) ||
         (scoreFilter === "5 - 6.9" && hasReview && score >= 5 && score < 7) ||
         (scoreFilter === "7 - 8.4" && hasReview && score >= 7 && score < 8.5) ||
-        (scoreFilter === "8.5 - 10" && hasReview && score >= 8.5);
+        (scoreFilter === "8.5 - 10" && hasReview && score >= 7.6);
 
       return matchesSearch && matchesStatus && matchesRegistered && matchesReview && matchesScore;
     });

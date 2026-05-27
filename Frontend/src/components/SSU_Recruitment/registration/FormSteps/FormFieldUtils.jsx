@@ -89,7 +89,9 @@ export const renderField = ({
 					name={name}
 					as={as}
 					type={type}
-					className="bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10"
+					className={`bg-white border border-gray-400 text-gray-900 rounded-2xl focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5 pl-10 ${
+						type !== "email" && type !== "password" ? "uppercase" : ""
+					}`}
 					{...props}
 				>
 					{options ? (
