@@ -66,13 +66,11 @@ const GRADUATION_OPTIONS = [
   "Bachelors",
   "Bachelors in Business Management",
   "Bachelors in Graphic Design / Visual Communication / Fine Arts / Media Studies / Animation / Digital Design",
-  "Graduation",
   "LLB",
   "Other Graduation",
 ];
 
 const POST_GRADUATION_OPTIONS = [
-  "Masters",
   "Masters in Business Management",
   "Masters in Business Management Finance",
   "PG Diploma in Business Management",

@@ -139,7 +139,7 @@ const App = () => {
 				<Route path="/SR" element={<UserSignup />} />
 				<Route path="/rv" element={<Response />} />
 				<Route path="/startupregistration" element={<StartupMainFormWrapper />} />
-				<Route path="/45656325_gchrftf68rft6uj654u6r56r" element={<SSURegistrationLayout />} />
+				<Route path="/ssurecruitment" element={<SSURegistrationLayout />} />
 				<Route path="/ideafest" element={<IdeaFestHome />} />
 						<Route path="/certificate/:id" element={<Certificate />} />
 				

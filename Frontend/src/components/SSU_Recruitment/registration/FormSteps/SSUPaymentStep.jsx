@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
   FaCheckCircle,
@@ -11,20 +11,38 @@ import {
   FaTimes,
   FaUniversity,
 } from "react-icons/fa";
+import { doc, getDoc } from "firebase/firestore";
 
-const APPLICATION_FEE = Number(import.meta.env.VITE_SSU_APPLICATION_FEE || 1000);
+import { db } from "../../../AdminRedesign/NewApplicationAdmin/firebase";
+import { ssuDocPath } from "../ssuFirebasePaths";
 
-const SBI_COLLECT_LINK =
-  import.meta.env.VITE_SSU_SBI_COLLECT_LINK || "";
+const ENV_APPLICATION_FEE = Number(
+  import.meta.env.VITE_SSU_APPLICATION_FEE || 1000
+);
+
+const ENV_SBI_COLLECT_LINK = import.meta.env.VITE_SSU_SBI_COLLECT_LINK || "";
+
+const defaultFeeSettings = {
+  active: true,
+  amount: ENV_APPLICATION_FEE,
+  currency: "INR",
+  paymentMode: "SBI_COLLECT",
+  sbiCollectLink: ENV_SBI_COLLECT_LINK,
+  sbiCollectButtonText: "Pay via SBI Collect",
+  applicationNumberInstruction:
+    "Copy your application number and paste it in the SBI Collect form wherever application/reference number is required.",
+  inactiveMessage:
+    "SBI Collect payment link is currently inactive. Should be active by friday. Please check back later.",
+};
 
 const initialState = {
-  status: "submitted_for_verification",
-  verificationStatus: "pending",
-  amount: APPLICATION_FEE,
+  status: "",
+  verificationStatus: "",
+  amount: ENV_APPLICATION_FEE,
   currency: "INR",
   paymentMode: "SBI_COLLECT",
 
-  sbiCollectLink: SBI_COLLECT_LINK,
+  sbiCollectLink: ENV_SBI_COLLECT_LINK,
   utrNumber: "",
   paymentDate: "",
   paymentScreenshotMeta: null,
@@ -39,6 +57,7 @@ const initialState = {
     verifiedBy: "",
     verifiedAt: null,
     remarks: "",
+    utrVerified: false,
   },
 };
 
@@ -79,7 +98,12 @@ function ErrorText({ children }) {
 }
 
 function PaymentStatusPill({ details }) {
-  if (!details?.status) return null;
+  const hasSubmittedProof =
+    !!details?.paymentScreenshotMeta?.downloadURL ||
+    !!details?.utrNumber ||
+    !!details?.submittedAt;
+
+  if (!hasSubmittedProof) return null;
 
   const adminStatus = details?.adminVerification?.status;
   const isVerified =
@@ -106,15 +130,11 @@ function PaymentStatusPill({ details }) {
     );
   }
 
-  if (details.status === "submitted_for_verification") {
-    return (
-      <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-        Payment proof submitted. Verification is pending.
-      </div>
-    );
-  }
-
-  return null;
+  return (
+    <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+      Payment proof submitted. Verification is pending.
+    </div>
+  );
 }
 
 export default function SSUPaymentStep({
@@ -126,12 +146,15 @@ export default function SSUPaymentStep({
 }) {
   const applicationId = formData?.applicationId || "";
 
+  const [feeSettings, setFeeSettings] = useState(defaultFeeSettings);
+  const [feeLoading, setFeeLoading] = useState(true);
+
   const [values, setValues] = useState({
     ...initialState,
     ...(initialValues || {}),
     paymentMode: "SBI_COLLECT",
     sbiCollectLink:
-      initialValues?.sbiCollectLink || SBI_COLLECT_LINK || "",
+      initialValues?.sbiCollectLink || ENV_SBI_COLLECT_LINK || "",
     paymentScreenshotFile: null,
     applicantDeclaration: initialValues?.applicantDeclaration || false,
   });
@@ -143,13 +166,80 @@ export default function SSUPaymentStep({
 
   const canEdit = !isReadOnly;
 
-  const alreadySubmitted =
-    values?.status === "submitted_for_verification" &&
-    values?.paymentScreenshotMeta?.downloadURL;
+  useEffect(() => {
+    let mounted = true;
+
+    const loadFeeSettings = async () => {
+      try {
+        setFeeLoading(true);
+
+        const snap = await getDoc(doc(db, ...ssuDocPath.settingFee()));
+
+        if (!mounted) return;
+
+        if (snap.exists()) {
+          const data = snap.data();
+
+          const nextSettings = {
+            ...defaultFeeSettings,
+            ...data,
+            paymentMode: "SBI_COLLECT",
+            amount: Number(data?.amount || defaultFeeSettings.amount),
+            sbiCollectLink:
+              data?.sbiCollectLink ||
+              data?.sbiCollectUrl ||
+              data?.paymentLink ||
+              ENV_SBI_COLLECT_LINK ||
+              "",
+          };
+
+          setFeeSettings(nextSettings);
+
+          setValues((prev) => ({
+            ...prev,
+            amount: Number(prev.amount || nextSettings.amount),
+            currency: nextSettings.currency || "INR",
+            paymentMode: "SBI_COLLECT",
+            sbiCollectLink:
+              prev.sbiCollectLink ||
+              nextSettings.sbiCollectLink ||
+              ENV_SBI_COLLECT_LINK ||
+              "",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load SBI Collect settings", error);
+      } finally {
+        if (mounted) setFeeLoading(false);
+      }
+    };
+
+    loadFeeSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const effectiveFeeAmount = useMemo(() => {
+    return Number(feeSettings?.amount || values?.amount || ENV_APPLICATION_FEE);
+  }, [feeSettings?.amount, values?.amount]);
 
   const effectiveSbiCollectLink = useMemo(() => {
-    return values?.sbiCollectLink || SBI_COLLECT_LINK || "";
-  }, [values?.sbiCollectLink]);
+    return (
+      feeSettings?.sbiCollectLink ||
+      values?.sbiCollectLink ||
+      ENV_SBI_COLLECT_LINK ||
+      ""
+    );
+  }, [feeSettings?.sbiCollectLink, values?.sbiCollectLink]);
+
+  const isPaymentLinkActive =
+    feeSettings?.active === true && !!effectiveSbiCollectLink;
+
+  const alreadySubmitted =
+    !!values?.paymentScreenshotMeta?.downloadURL ||
+    !!initialValues?.paymentScreenshotMeta?.downloadURL;
 
   const setField = (key, value) => {
     setValues((prev) => ({
@@ -227,8 +317,8 @@ export default function SSUPaymentStep({
     const nextValues = {
       status: "submitted_for_verification",
       verificationStatus: "pending",
-      amount: APPLICATION_FEE,
-      currency: "INR",
+      amount: effectiveFeeAmount,
+      currency: feeSettings?.currency || "INR",
       paymentMode: "SBI_COLLECT",
 
       sbiCollectLink: effectiveSbiCollectLink,
@@ -246,6 +336,7 @@ export default function SSUPaymentStep({
         verifiedBy: "",
         verifiedAt: null,
         remarks: "",
+        utrVerified: false,
       },
     };
 
@@ -293,7 +384,9 @@ export default function SSUPaymentStep({
             <div className="text-xs font-semibold uppercase tracking-[0.18em]">
               Amount
             </div>
-            <div className="mt-1 text-3xl font-bold">₹{APPLICATION_FEE}</div>
+            <div className="mt-1 text-3xl font-bold">
+              ₹{effectiveFeeAmount}
+            </div>
           </div>
         </div>
       </div>
@@ -302,41 +395,9 @@ export default function SSUPaymentStep({
         <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
           <PaymentStatusPill details={initialValues || values} />
 
-          <div className="rounded-[28px] border border-indigo-100 bg-indigo-50/80 p-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white">
-                <FaReceipt />
-              </div>
+         
 
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-bold text-indigo-950">
-                  Application Number for SBI Collect
-                </div>
-
-                <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-center">
-                  <div className="break-all rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-lg font-bold tracking-wide text-slate-900">
-                    {applicationId || "Application ID not generated"}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={copyApplicationId}
-                    disabled={!applicationId}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <FaCopy />
-                    {copied ? "Copied" : "Copy"}
-                  </button>
-                </div>
-
-                <p className="mt-3 text-sm leading-relaxed text-indigo-900/80">
-                  Copy this application number and paste it in the relevant field
-                  of the SBI Collect payment form.
-                </p>
-              </div>
-            </div>
-          </div>
-
+         
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div>
               <label className={labelClass}>Payment Mode</label>
@@ -345,11 +406,17 @@ export default function SSUPaymentStep({
 
             <div>
               <label className={labelClass}>Application Fee</label>
-              <input value={`₹${APPLICATION_FEE}`} disabled className={inputClass} />
+              <input
+                value={`₹${effectiveFeeAmount}`}
+                disabled
+                className={inputClass}
+              />
             </div>
 
             <div className="md:col-span-2">
-              <label className={labelClass}>UTR / Transaction Reference No. *</label>
+              <label className={labelClass}>
+                UTR / Transaction Reference No. *
+              </label>
               <input
                 value={values.utrNumber}
                 disabled={!canEdit}
@@ -377,7 +444,9 @@ export default function SSUPaymentStep({
           </div>
 
           <div className="mt-5">
-            <label className={labelClass}>SBI Collect Success Screenshot *</label>
+            <label className={labelClass}>
+              SBI Collect Success Screenshot *
+            </label>
 
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5">
               {values.paymentScreenshotMeta?.downloadURL ? (
@@ -540,22 +609,6 @@ export default function SSUPaymentStep({
               upload proof.
             </p>
 
-            {effectiveSbiCollectLink ? (
-              <a
-                href={effectiveSbiCollectLink}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-              >
-                <FaExternalLinkAlt />
-                Pay via SBI Collect
-              </a>
-            ) : (
-              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                SBI Collect link is not configured.
-              </div>
-            )}
-
             <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Application Number
@@ -572,8 +625,27 @@ export default function SSUPaymentStep({
               className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FaCopy />
-              {copied ? "Copied Application Number" : "Copy Application Number"}
+              {copied ? "Copied" : "Copy Application Number"}
             </button>
+
+            {isPaymentLinkActive ? (
+              <a
+                href={effectiveSbiCollectLink}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              >
+                <FaExternalLinkAlt />
+                {feeSettings?.sbiCollectButtonText || "Pay via SBI Collect"}
+              </a>
+            ) : (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                {feeLoading
+                  ? "Checking SBI Collect payment link..."
+                  : feeSettings?.inactiveMessage ||
+                    "SBI Collect payment link is currently inactive."}
+              </div>
+            )}
           </div>
 
           <div className="rounded-[28px] border border-blue-200 bg-blue-50 p-5 text-sm text-blue-800">
