@@ -190,7 +190,7 @@ function buildRows(formData) {
       )} Months`,
     ],
     [
-      "Relevant Experience",
+      "Position Relevant Experience",
       `${safe(formData?.workExperience?.relevantExpYears)} Years ${safe(
         formData?.workExperience?.relevantExpMonths
       )} Months`,
@@ -838,7 +838,7 @@ export default function SSUPreview({
           )} Months`}
         />
         <InfoRow
-          label="Relevant Experience"
+          label="Position Relevant Experience"
           value={`${safe(formData?.workExperience?.relevantExpYears)} Years ${safe(
             formData?.workExperience?.relevantExpMonths
           )} Months`}
