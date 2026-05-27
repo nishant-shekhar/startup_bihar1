@@ -16,6 +16,7 @@ import {
   FaIdBadge,
   FaCreditCard,
   FaImage,
+  FaUniversity,
 } from "react-icons/fa";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -56,8 +57,17 @@ function getFileName(meta) {
   return meta.fileName || meta.name || "Uploaded file";
 }
 
+function getPostSnapshot(formData) {
+  return (
+    formData?.personalDetails?.postEligibilitySnapshot ||
+    formData?.educationalQualifications?.selectedPostEligibilitySnapshot ||
+    null
+  );
+}
+
 function buildRows(formData) {
   const rows = [];
+  const postSnapshot = getPostSnapshot(formData);
 
   const addSection = (title, data) => {
     rows.push([
@@ -84,8 +94,17 @@ function buildRows(formData) {
     ["Phone Verified", yesNo(formData?.userSignup?.phoneVerified)],
   ]);
 
-  addSection("Personal Details", [
+  addSection("Post Applied For & ToR Eligibility", [
     ["Post Applied For", formData?.personalDetails?.postAppliedFor],
+    ["Position No.", postSnapshot?.serialNo],
+    ["Level", postSnapshot?.level],
+    ["Category", postSnapshot?.category],
+    ["Emoluments", postSnapshot?.emoluments],
+    ["Required Qualification", postSnapshot?.qualification],
+    ["Required Experience", postSnapshot?.experience],
+  ]);
+
+  addSection("Personal Details", [
     ["Profile Photo", getFileName(formData?.personalDetails?.profilePhotoMeta)],
     ["Father's / Husband's Name", formData?.personalDetails?.fathersName],
     ["Mother's Name", formData?.personalDetails?.mothersName],
@@ -139,6 +158,18 @@ function buildRows(formData) {
     }
   });
 
+  addSection("Qualification Declaration", [
+    [
+      "Required Qualification Accepted",
+      yesNo(formData?.educationalQualifications?.qualificationDeclaration),
+    ],
+    [
+      "Required Qualification Text",
+      formData?.educationalQualifications?.requiredQualificationText ||
+        postSnapshot?.qualification,
+    ],
+  ]);
+
   const certs = formData?.educationalQualifications?.certifications || [];
   certs.forEach((cert, index) => {
     if (cert.certName || cert.issuingOrg) {
@@ -163,6 +194,11 @@ function buildRows(formData) {
       `${safe(formData?.workExperience?.relevantExpYears)} Years ${safe(
         formData?.workExperience?.relevantExpMonths
       )} Months`,
+    ],
+    ["Required Experience As Per ToR", postSnapshot?.experience],
+    [
+      "Experience Declaration Accepted",
+      yesNo(formData?.workExperience?.experienceDeclaration),
     ],
   ]);
 
@@ -237,9 +273,7 @@ function buildRows(formData) {
     ],
     ["Amount", `Rs. ${safe(formData?.paymentDetails?.amount)}`],
     ["Currency", formData?.paymentDetails?.currency || "INR"],
-    ["Payment Mode", formData?.paymentDetails?.paymentMode || "UPI_QR"],
-    ["UPI Mobile Number", formData?.paymentDetails?.payerMobile],
-    ["UPI ID", formData?.paymentDetails?.payerUpiId],
+    ["Payment Mode", formData?.paymentDetails?.paymentMode || "SBI_COLLECT"],
     ["UTR / Reference No.", formData?.paymentDetails?.utrNumber],
     ["Payment Date", formData?.paymentDetails?.paymentDate],
     ["Payment Screenshot", getFileName(formData?.paymentDetails?.paymentScreenshotMeta)],
@@ -436,6 +470,66 @@ function SummaryCard({ label, value, tone = "default" }) {
   );
 }
 
+function EligibilitySnapshotBox({ snapshot }) {
+  if (!snapshot) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+        Post eligibility snapshot is not available. Please revisit Personal Details
+        and select the post again.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-[28px] border border-indigo-100 bg-indigo-50/80 p-5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-700 text-white">
+          <FaBriefcase />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="text-xl font-bold text-indigo-950">
+            {snapshot.postName}
+          </div>
+          <div className="mt-1 text-sm text-indigo-700">
+            Position {safe(snapshot.serialNo)} • {safe(snapshot.level)} •{" "}
+            {safe(snapshot.category)}
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+                Emoluments
+              </div>
+              <div className="mt-1 text-sm font-bold text-slate-900">
+                {safe(snapshot.emoluments)}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3 md:col-span-2">
+              <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+                Required Qualification
+              </div>
+              <div className="mt-1 text-sm font-bold leading-relaxed text-slate-900">
+                {safe(snapshot.qualification)}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3 md:col-span-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+                Required Experience
+              </div>
+              <div className="mt-1 text-sm font-bold leading-relaxed text-slate-900">
+                {safe(snapshot.experience)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PaymentStatusBox({ paymentDetails }) {
   if (!paymentDetails) {
     return (
@@ -484,6 +578,7 @@ export default function SSUPreview({
 }) {
   const canEdit = !isSubmitted;
 
+  const postSnapshot = getPostSnapshot(formData);
   const edu = formData?.educationalQualifications?.education || [];
   const certs = formData?.educationalQualifications?.certifications || [];
   const work = formData?.workExperience?.workExperience || [];
@@ -501,6 +596,7 @@ export default function SSUPreview({
   const canFinalSubmit =
     !!formData?.userSignup &&
     !!formData?.personalDetails &&
+    !!postSnapshot &&
     hasProfilePhoto &&
     !!formData?.educationalQualifications &&
     !!formData?.workExperience &&
@@ -510,7 +606,7 @@ export default function SSUPreview({
     isPaymentSubmitted;
 
   const submitBlockedMessage = !canFinalSubmit
-    ? "Please complete all steps, upload profile photo, submit payment proof, and then final submit."
+    ? "Please complete all steps, select post, upload profile photo, submit payment proof, and then final submit."
     : submissionWindow?.message || "";
 
   return (
@@ -582,6 +678,17 @@ export default function SSUPreview({
       </Section>
 
       <Section
+        icon={<FaBriefcase />}
+        title="Post & Eligibility Snapshot"
+        subtitle="Post, qualification, experience and emoluments as per ToR"
+        step={2}
+        onEdit={onNavigateToStep}
+        canEdit={canEdit}
+      >
+        <EligibilitySnapshotBox snapshot={postSnapshot} />
+      </Section>
+
+      <Section
         icon={<FaIdBadge />}
         title="Personal Details"
         subtitle="Applicant profile, photo and address details"
@@ -591,7 +698,6 @@ export default function SSUPreview({
       >
         <ProfilePhotoRow meta={formData?.personalDetails?.profilePhotoMeta} />
 
-        <InfoRow label="Post Applied For" value={formData?.personalDetails?.postAppliedFor} />
         <InfoRow
           label="Father's / Husband's Name"
           value={formData?.personalDetails?.fathersName}
@@ -643,11 +749,23 @@ export default function SSUPreview({
       <Section
         icon={<FaGraduationCap />}
         title="Educational Qualifications"
-        subtitle="Academic and certification details"
+        subtitle="Academic qualifications and ToR qualification declaration"
         step={3}
         onEdit={onNavigateToStep}
         canEdit={canEdit}
       >
+        <InfoRow
+          label="Required Qualification As Per ToR"
+          value={
+            formData?.educationalQualifications?.requiredQualificationText ||
+            postSnapshot?.qualification
+          }
+        />
+        <InfoRow
+          label="Qualification Declaration"
+          value={yesNo(formData?.educationalQualifications?.qualificationDeclaration)}
+        />
+
         {edu.length ? (
           edu.map((row, index) => (
             <div
@@ -697,11 +815,22 @@ export default function SSUPreview({
       <Section
         icon={<FaBriefcase />}
         title="Work Experience"
-        subtitle="Professional experience details"
+        subtitle="Professional experience and ToR experience declaration"
         step={4}
         onEdit={onNavigateToStep}
         canEdit={canEdit}
       >
+        <InfoRow
+          label="Required Experience As Per ToR"
+          value={
+            formData?.workExperience?.requiredExperienceText ||
+            postSnapshot?.experience
+          }
+        />
+        <InfoRow
+          label="Experience Declaration"
+          value={yesNo(formData?.workExperience?.experienceDeclaration)}
+        />
         <InfoRow
           label="Total Work Experience"
           value={`${safe(formData?.workExperience?.totalExpYears)} Years ${safe(
@@ -851,8 +980,8 @@ export default function SSUPreview({
       </Section>
 
       <Section
-        icon={<FaCreditCard />}
-        title="Payment Details"
+        icon={<FaUniversity />}
+        title="SBI Collect Payment Details"
         subtitle="Application fee proof and verification status"
         step={7}
         onEdit={onNavigateToStep}
@@ -874,9 +1003,7 @@ export default function SSUPreview({
         />
         <InfoRow label="Amount" value={`₹${safe(paymentDetails?.amount)}`} />
         <InfoRow label="Currency" value={paymentDetails?.currency || "INR"} />
-        <InfoRow label="Payment Mode" value={paymentDetails?.paymentMode || "UPI_QR"} />
-        <InfoRow label="UPI Mobile Number" value={paymentDetails?.payerMobile} />
-        <InfoRow label="UPI ID" value={paymentDetails?.payerUpiId} />
+        <InfoRow label="Payment Mode" value={paymentDetails?.paymentMode || "SBI_COLLECT"} />
         <InfoRow label="UTR / Reference No." value={paymentDetails?.utrNumber} />
         <InfoRow label="Payment Date" value={paymentDetails?.paymentDate} />
         <InfoRow
@@ -886,11 +1013,11 @@ export default function SSUPreview({
 
         {paymentDetails?.paymentScreenshotMeta?.downloadURL ? (
           <LinkRow
-            label="Payment Screenshot"
+            label="SBI Collect Screenshot"
             meta={paymentDetails.paymentScreenshotMeta}
           />
         ) : (
-          <InfoRow label="Payment Screenshot" value="Not uploaded" />
+          <InfoRow label="SBI Collect Screenshot" value="Not uploaded" />
         )}
 
         {paymentDetails?.adminVerification?.remarks ? (

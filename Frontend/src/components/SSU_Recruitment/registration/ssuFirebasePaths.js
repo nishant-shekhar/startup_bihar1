@@ -20,6 +20,8 @@ export const SSU_SETTINGS_DOCS = {
   fee: "Fee",
   posts: "Posts",
   stages: "Stages",
+  resultAnnouncement: "ResultAnnouncement",
+  paymentVerification: "PaymentVerification",
 };
 
 export const SSU_BLOCKED_TYPES = {
@@ -38,6 +40,17 @@ export const SSU_APPLICATION_STATUS = {
   rejected: "rejected",
   selected: "selected",
   waitlisted: "waitlisted",
+};
+
+export const SSU_PAYMENT_STATUS = {
+  submittedForVerification: "submitted_for_verification",
+  pending: "pending",
+  verified: "verified",
+  rejected: "rejected",
+};
+
+export const SSU_PAYMENT_MODE = {
+  sbiCollect: "SBI_COLLECT",
 };
 
 export const SSU_TIMELINE_KEYS = {
@@ -191,6 +204,20 @@ export const ssuDocPath = {
     SSU_SETTINGS_DOCS.stages,
   ],
 
+  settingResultAnnouncement: () => [
+    SSU_ROOT_COLLECTION,
+    SSU_ROOT_DOC,
+    SSU_COLLECTIONS.settings,
+    SSU_SETTINGS_DOCS.resultAnnouncement,
+  ],
+
+  settingPaymentVerification: () => [
+    SSU_ROOT_COLLECTION,
+    SSU_ROOT_DOC,
+    SSU_COLLECTIONS.settings,
+    SSU_SETTINGS_DOCS.paymentVerification,
+  ],
+
   blockedEmail: (emailLower) => [
     SSU_ROOT_COLLECTION,
     SSU_ROOT_DOC,
@@ -271,7 +298,7 @@ export const ssuDocPath = {
 
 export const ssuStoragePath = {
   profilePhoto: (applicationId, fileName) =>
-    `ssuRecruitment/${applicationId}/profile/${fileName}`,
+    `ssuRecruitment/${applicationId}/profile/photo/${fileName}`,
 
   resume: (applicationId, fileName) =>
     `ssuRecruitment/${applicationId}/documents/resume/${fileName}`,
@@ -285,11 +312,17 @@ export const ssuStoragePath = {
   identity: (applicationId, fileName) =>
     `ssuRecruitment/${applicationId}/documents/identity/${fileName}`,
 
+  caste: (applicationId, fileName) =>
+    `ssuRecruitment/${applicationId}/documents/caste/${fileName}`,
+
   other: (applicationId, fileName) =>
     `ssuRecruitment/${applicationId}/documents/other/${fileName}`,
 
+  signature: (applicationId, fileName) =>
+    `ssuRecruitment/${applicationId}/documents/signature/${fileName}`,
+
   paymentScreenshot: (applicationId, fileName) =>
-    `ssuRecruitment/${applicationId}/payment/screenshots/${fileName}`,
+    `ssuRecruitment/${applicationId}/payment/sbiCollect/screenshots/${fileName}`,
 
   generic: (applicationId, folder, fileName) =>
     `ssuRecruitment/${applicationId}/${folder}/${fileName}`,
@@ -311,18 +344,49 @@ export const normalizeApplicationId = (value = "") => {
   return String(value || "").trim().toUpperCase();
 };
 
+export const normalizeUtr = (value = "") => {
+  return String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+};
+
 export const isValidSSUApplicationId = (value = "") => {
   return /^SSU\d{10}$/i.test(String(value || "").trim());
+};
+
+export const isValidSSUDevApplicationId = (value = "") => {
+  return /^SSUDEV\d{10}$/i.test(String(value || "").trim());
+};
+
+export const isValidAnySSUApplicationId = (value = "") => {
+  return isValidSSUApplicationId(value) || isValidSSUDevApplicationId(value);
 };
 
 export const buildSSUApplicationId = (yearMonth, nextNumber) => {
   return `SSU${yearMonth}${String(nextNumber).padStart(4, "0")}`;
 };
 
+export const isSafeSbiCollectLink = (value = "") => {
+  if (!value) return true;
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+
+    return (
+      url.protocol === "https:" &&
+      (host === "www.onlinesbi.sbi" ||
+        host === "onlinesbi.sbi" ||
+        host.endsWith(".onlinesbi.sbi"))
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const buildSearchFields = ({
   applicationId = "",
   userSignup = {},
   personalDetails = {},
+  paymentDetails = {},
   status = "draft",
 } = {}) => {
   const fullName =
@@ -335,6 +399,7 @@ export const buildSearchFields = ({
   const phoneNumber = normalizePhone(
     userSignup?.phoneNumber || personalDetails?.phoneNumber || ""
   );
+
   const aadhaar = normalizeAadhaar(
     userSignup?.aadharNumber ||
       userSignup?.aadhaarNumber ||
@@ -345,12 +410,20 @@ export const buildSearchFields = ({
 
   return {
     applicationId: normalizeApplicationId(applicationId),
+    applicationIdLower: normalizeApplicationId(applicationId).toLowerCase(),
     nameLower: String(fullName || "").trim().toLowerCase(),
     emailLower: email,
     phoneNumber,
     aadhaarLast4: aadhaar ? aadhaar.slice(-4) : "",
     postAppliedFor: personalDetails?.postAppliedFor || "",
     status,
+    paymentStatus: paymentDetails?.status || "",
+    paymentVerificationStatus:
+      paymentDetails?.verificationStatus ||
+      paymentDetails?.adminVerification?.status ||
+      "",
+    paymentMode: paymentDetails?.paymentMode || "",
+    utrNumber: normalizeUtr(paymentDetails?.utrNumber || ""),
   };
 };
 

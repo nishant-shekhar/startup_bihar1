@@ -4,9 +4,11 @@ import * as Yup from "yup";
 import {
   FaArrowLeft,
   FaArrowRight,
+  FaBriefcase,
+  FaCamera,
+  FaCheckCircle,
   FaCloudUploadAlt,
   FaIdBadge,
-  FaImage,
   FaMapMarkerAlt,
   FaTimes,
   FaUser,
@@ -14,21 +16,199 @@ import {
 
 import stateDistrictData from "./stateDistrictData.json";
 
-const POSTS = [
-  "Consultant - Startup Ecosystem & Policy",
-  "Consultant - Technology & Innovation",
-  "Consultant - Finance & Investment",
-  "Consultant - Incubation & Program Management",
-  "Program Associate",
-  "Project Coordinator",
-  "Other",
+const SSU_POSTS = [
+  {
+    id: "sr_consultant_startup",
+    serialNo: 1,
+    postName: "Sr. Consultant Startup",
+    emoluments: "₹1.25 - ₹1.50 Lakh/Month",
+    qualification:
+      "B.Tech / BE / Masters or PG Diploma in Business Management or equivalent",
+    experience:
+      "Minimum 10 years overall experience, including at least 4 years in startup ecosystem",
+    category: "Startup",
+    level: "Senior Consultant",
+  },
+  {
+    id: "sr_consultant_incubation",
+    serialNo: 2,
+    postName: "Sr. Consultant Incubation",
+    emoluments: "₹1.25 - ₹1.50 Lakh/Month",
+    qualification:
+      "B.Tech / BE / Masters or PG Diploma in Business Management or equivalent",
+    experience:
+      "Minimum 10 years overall experience, including at least 4 years in startup ecosystem",
+    category: "Incubation",
+    level: "Senior Consultant",
+  },
+  {
+    id: "sr_consultant_finance",
+    serialNo: 3,
+    postName: "Sr. Consultant Finance",
+    emoluments: "₹1.25 - ₹1.50 Lakh/Month",
+    qualification:
+      "Chartered Accountant / Masters or PG Diploma in Business Management Finance",
+    experience:
+      "Minimum 10 years overall experience, including at least 4 years in Government Sector / startup ecosystem",
+    category: "Finance",
+    level: "Senior Consultant",
+  },
+  {
+    id: "consultant_startup",
+    serialNo: 4,
+    postName: "Consultant Startup",
+    emoluments: "₹1.00 - ₹1.25 Lakh/Month",
+    qualification:
+      "B.Tech / BE / Masters or PG Diploma in Business Management or equivalent",
+    experience:
+      "Minimum 8 years overall experience, including at least 3 years in startup ecosystem",
+    category: "Startup",
+    level: "Consultant",
+  },
+  {
+    id: "consultant_incubation",
+    serialNo: 5,
+    postName: "Consultant Incubation",
+    emoluments: "₹1.00 - ₹1.25 Lakh/Month",
+    qualification:
+      "B.Tech / BE / Masters or PG Diploma in Business Management or equivalent",
+    experience:
+      "Minimum 8 years overall experience, including at least 3 years in startup ecosystem",
+    category: "Incubation",
+    level: "Consultant",
+  },
+  {
+    id: "consultant_media_management",
+    serialNo: 6,
+    postName: "Consultant Media Management",
+    emoluments: "₹1.00 - ₹1.25 Lakh/Month",
+    qualification:
+      "Mass Communication / Master's in Advertising, Public Relations or related field",
+    experience:
+      "Minimum 8 years overall experience, including at least 3 years in social media planning and strategy",
+    category: "Media",
+    level: "Consultant",
+  },
+  {
+    id: "consultant_it",
+    serialNo: 7,
+    postName: "Consultant IT",
+    emoluments: "₹1.00 - ₹1.25 Lakh/Month",
+    qualification: "B.Tech / B.E in CS / IT / MCA",
+    experience:
+      "Minimum 8 years overall experience, including at least 3 years in Government Sector",
+    category: "IT",
+    level: "Consultant",
+  },
+  {
+    id: "consultant_finance",
+    serialNo: 8,
+    postName: "Consultant Finance",
+    emoluments: "₹1.00 - ₹1.25 Lakh/Month",
+    qualification:
+      "Masters or PG Diploma in Business Management or equivalent in Finance / CA",
+    experience:
+      "Minimum 8 years overall experience, including at least 3 years in Government / Banking sector",
+    category: "Finance",
+    level: "Consultant",
+  },
+  {
+    id: "jr_consultant_it",
+    serialNo: 9,
+    postName: "Jr. Consultant IT",
+    emoluments: "₹0.75 - ₹1.00 Lakh/Month",
+    qualification: "B.Tech / B.E in CS / IT / MCA",
+    experience:
+      "Minimum 5 years overall experience, preferably 2 years in startup ecosystem",
+    category: "IT",
+    level: "Junior Consultant",
+  },
+  {
+    id: "jr_consultant_finance",
+    serialNo: 10,
+    postName: "Jr. Consultant Finance",
+    emoluments: "₹0.75 - ₹1.00 Lakh/Month",
+    qualification:
+      "Masters or PG Diploma in Business Management or equivalent in Finance / CA",
+    experience:
+      "Minimum 5 years overall experience, preferably 2 years in startup ecosystem",
+    category: "Finance",
+    level: "Junior Consultant",
+  },
+  {
+    id: "jr_consultant_legal",
+    serialNo: 11,
+    postName: "Jr. Consultant Legal",
+    emoluments: "₹0.75 - ₹1.00 Lakh/Month",
+    qualification: "LLB or Masters in Law from recognized university",
+    experience:
+      "Minimum 5 years overall experience, preferably 2 years in Government sector",
+    category: "Legal",
+    level: "Junior Consultant",
+  },
+  {
+    id: "jr_consultant_startup",
+    serialNo: 12,
+    postName: "Jr. Consultant Startup",
+    emoluments: "₹0.75 - ₹1.00 Lakh/Month",
+    qualification:
+      "B.Tech / BE / Masters or PG Diploma in Business Management or equivalent",
+    experience:
+      "Minimum 5 years overall experience, preferably 2 years in startup ecosystem",
+    category: "Startup",
+    level: "Junior Consultant",
+  },
+  {
+    id: "coordinator_graphics_design",
+    serialNo: 13,
+    postName: "Coordinator Graphics Design",
+    emoluments: "₹0.50 - ₹0.75 Lakh/Month",
+    qualification:
+      "Bachelor's / Master's in Graphic Design, Visual Communication, Fine Arts, Media Studies, Animation, Digital Design or equivalent",
+    experience:
+      "Minimum 3 years overall experience, preferably 1 year in startup ecosystem / Government sector",
+    category: "Design",
+    level: "Coordinator",
+  },
+  {
+    id: "coordinator_startup",
+    serialNo: 14,
+    postName: "Coordinator Startup",
+    emoluments: "₹0.50 - ₹0.75 Lakh/Month",
+    qualification:
+      "B.Tech / BE / Bachelors or Masters or PG Diploma in Business Management or equivalent",
+    experience:
+      "Minimum 3 years overall experience, preferably 1 year in startup ecosystem",
+    category: "Startup",
+    level: "Coordinator",
+  },
+  {
+    id: "coordinator_finance",
+    serialNo: 15,
+    postName: "Coordinator Finance",
+    emoluments: "₹0.50 - ₹0.75 Lakh/Month",
+    qualification:
+      "Bachelors or Masters or PG Diploma in Business Management or equivalent in Finance / CA",
+    experience:
+      "Minimum 3 years overall experience in financial management, preferably 1 year in startup ecosystem",
+    category: "Finance",
+    level: "Coordinator",
+  },
+  {
+    id: "coordinator_legal",
+    serialNo: 16,
+    postName: "Coordinator Legal",
+    emoluments: "₹0.50 - ₹0.75 Lakh/Month",
+    qualification: "LLB or Master's in Law from recognized university",
+    experience:
+      "Minimum 3 years overall experience, preferably 1 year in Government sector",
+    category: "Legal",
+    level: "Coordinator",
+  },
 ];
 
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
 const CATEGORY_OPTIONS = ["General", "EWS", "BC", "EBC", "SC", "ST", "Other"];
-
-const PHOTO_MAX_SIZE = 1 * 1024 * 1024;
-const PHOTO_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const inputClass =
   "block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.12)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
@@ -40,9 +220,33 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 const normalizePhone = (value = "") =>
   String(value || "").replace(/\D/g, "").slice(0, 10);
 
+const getPostById = (id) => SSU_POSTS.find((post) => post.id === id) || null;
+
+const buildPostSnapshot = (post) => {
+  if (!post) return null;
+
+  return {
+    id: post.id,
+    serialNo: post.serialNo,
+    postName: post.postName,
+    emoluments: post.emoluments,
+    qualification: post.qualification,
+    experience: post.experience,
+    category: post.category,
+    level: post.level,
+  };
+};
+
 const buildInitialValues = (initialValues, userSignupData) => ({
+  postAppliedForId:
+    initialValues?.postAppliedForId ||
+    initialValues?.postEligibilitySnapshot?.id ||
+    "",
   postAppliedFor: initialValues?.postAppliedFor || "",
-  otherPostAppliedFor: initialValues?.otherPostAppliedFor || "",
+  postEligibilitySnapshot: initialValues?.postEligibilitySnapshot || null,
+
+  profilePhotoMeta: initialValues?.profilePhotoMeta || null,
+  profilePhotoFile: null,
 
   fullName: initialValues?.fullName || userSignupData?.fullName || "",
   fathersName: initialValues?.fathersName || "",
@@ -55,9 +259,6 @@ const buildInitialValues = (initialValues, userSignupData) => ({
   email: initialValues?.email || userSignupData?.email || "",
   phoneNumber: initialValues?.phoneNumber || userSignupData?.phoneNumber || "",
   alternateNumber: initialValues?.alternateNumber || "",
-
-  profilePhotoMeta: initialValues?.profilePhotoMeta || null,
-  profilePhotoFile: null,
 
   presentAddress: initialValues?.presentAddress || "",
   presentState: initialValues?.presentState || "Bihar",
@@ -76,12 +277,10 @@ const buildInitialValues = (initialValues, userSignupData) => ({
 });
 
 const validationSchema = Yup.object().shape({
-  postAppliedFor: Yup.string().required("Post applied for is required"),
-  otherPostAppliedFor: Yup.string().when("postAppliedFor", {
-    is: "Other",
-    then: (schema) => schema.trim().required("Please mention the post"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
+  postAppliedForId: Yup.string().required("Post applied for is required"),
+
+  profilePhotoMeta: Yup.mixed().nullable(),
+  profilePhotoFile: Yup.mixed().nullable(),
 
   fullName: Yup.string().trim().required("Full name is required"),
   fathersName: Yup.string()
@@ -156,7 +355,6 @@ function TextField({
   disabled,
   maxLength,
   as,
-  max,
 }) {
   return (
     <div>
@@ -164,6 +362,7 @@ function TextField({
         {label}
         {required ? <span className="text-red-500"> *</span> : null}
       </label>
+
       <Field
         as={as}
         type={type}
@@ -171,11 +370,9 @@ function TextField({
         placeholder={placeholder}
         disabled={disabled}
         maxLength={maxLength}
-        max={max}
-        className={`${inputClass} ${
-          as === "textarea" ? "min-h-[104px] resize-none" : ""
-        }`}
+        className={`${inputClass} ${as === "textarea" ? "min-h-[104px] resize-none" : ""}`}
       />
+
       <ErrorText name={name} />
     </div>
   );
@@ -188,96 +385,200 @@ function SelectField({ name, label, children, required, disabled }) {
         {label}
         {required ? <span className="text-red-500"> *</span> : null}
       </label>
-      <Field
-        as="select"
-        name={name}
-        disabled={disabled}
-        className={inputClass}
-      >
+
+      <Field as="select" name={name} disabled={disabled} className={inputClass}>
         {children}
       </Field>
+
       <ErrorText name={name} />
     </div>
   );
 }
 
-function ProfilePhotoCard({
-  photoMeta,
-  photoFile,
-  previewUrl,
-  error,
-  disabled,
-  onFile,
-  onRemove,
-}) {
-  const hasUploaded = !!photoMeta?.downloadURL;
-  const hasNewFile = photoFile instanceof File;
+function PostEligibilityCard({ post }) {
+  if (!post) return null;
 
   return (
-    <div>
-      <label className={labelClass}>
-        Profile Photo <span className="text-red-500">*</span>
-      </label>
+    <div className="rounded-[28px] border border-indigo-100 bg-indigo-50/80 p-5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-700 text-white">
+          <FaBriefcase />
+        </div>
 
-      <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5">
-        {hasUploaded || hasNewFile ? (
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-slate-200 bg-white">
-                {previewUrl || photoMeta?.downloadURL ? (
-                  <img
-                    src={previewUrl || photoMeta.downloadURL}
-                    alt="Profile"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <FaImage className="text-3xl text-slate-400" />
-                )}
-              </div>
+        <div>
+          <div className="text-lg font-bold text-indigo-950">
+            {post.postName}
+          </div>
+          <div className="text-sm text-indigo-700">
+            Position {post.serialNo} • {post.level} • {post.category}
+          </div>
+        </div>
+      </div>
 
-              <div className="min-w-0">
-                <div className="break-all text-sm font-semibold text-slate-800">
-                  {photoFile?.name || photoMeta?.fileName || "Profile photo"}
-                </div>
-                <div className="mt-1 text-xs text-slate-500">
-                  {hasNewFile ? "Ready for upload" : "Uploaded"}
-                </div>
-              </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+            Emoluments
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-900">
+            {post.emoluments}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3 md:col-span-2">
+          <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+            Required Qualification
+          </div>
+          <div className="mt-1 text-sm font-bold leading-relaxed text-slate-900">
+            {post.qualification}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3 md:col-span-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+            Required Experience
+          </div>
+          <div className="mt-1 text-sm font-bold leading-relaxed text-slate-900">
+            {post.experience}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfilePhotoUpload({
+  values,
+  setFieldValue,
+  isReadOnly,
+  fileError,
+  setFileError,
+}) {
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  const existingUrl = values?.profilePhotoMeta?.downloadURL || "";
+  const selectedFile = values?.profilePhotoFile || null;
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl("");
+      return;
+    }
+
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [selectedFile]);
+
+  const validatePhoto = (file) => {
+    if (!file) return "Profile photo is required.";
+
+    if (!file.type?.startsWith("image/")) {
+      return "Profile photo must be an image file.";
+    }
+
+    if (file.size > 1 * 1024 * 1024) {
+      return "Profile photo must be 1 MB or less.";
+    }
+
+    return "";
+  };
+
+  const handleFile = (file) => {
+    const error = validatePhoto(file);
+
+    if (error) {
+      setFileError(error);
+      return;
+    }
+
+    setFileError("");
+    setFieldValue("profilePhotoFile", file);
+    setFieldValue("profilePhotoMeta", null);
+  };
+
+  const removePhoto = () => {
+    setFileError("");
+    setFieldValue("profilePhotoFile", null);
+    setFieldValue("profilePhotoMeta", null);
+  };
+
+  const visibleUrl = previewUrl || existingUrl;
+
+  return (
+    <div className="rounded-[28px] border border-slate-100 bg-slate-50/80 p-5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
+          <FaCamera />
+        </div>
+
+        <div>
+          <div className="text-lg font-bold text-slate-900">
+            Profile Photo <span className="text-red-500">*</span>
+          </div>
+          <div className="text-sm text-slate-500">
+            Upload a clear passport-style image. Maximum file size: 1 MB.
+          </div>
+        </div>
+      </div>
+
+      {visibleUrl ? (
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <img
+            src={visibleUrl}
+            alt="Profile preview"
+            className="h-32 w-32 rounded-3xl border border-slate-200 bg-white object-cover"
+          />
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+              <FaCheckCircle />
+              {selectedFile ? "Photo selected" : "Photo uploaded"}
             </div>
 
-            {!disabled ? (
+            <div className="mt-1 break-all text-sm text-slate-600">
+              {selectedFile?.name ||
+                values?.profilePhotoMeta?.fileName ||
+                "Profile photo"}
+            </div>
+
+            {!isReadOnly ? (
               <button
                 type="button"
-                onClick={onRemove}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700"
+                onClick={removePhoto}
+                className="mt-3 inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700"
               >
                 <FaTimes />
-                Replace
+                Remove / Replace
               </button>
             ) : null}
           </div>
-        ) : (
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl bg-white px-4 py-8 text-center transition hover:bg-slate-100">
-            <FaCloudUploadAlt className="text-3xl text-slate-400" />
-            <div className="mt-3 text-sm font-semibold text-slate-800">
-              Upload profile photo
-            </div>
-            <div className="mt-1 text-xs text-slate-500">
-              JPG, PNG or WEBP. Max 1 MB.
-            </div>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              disabled={disabled}
-              onChange={(e) => onFile(e.target.files?.[0])}
-            />
-          </label>
-        )}
-      </div>
+        </div>
+      ) : (
+        <label className="flex cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center transition hover:bg-slate-100">
+          <FaCloudUploadAlt className="text-3xl text-slate-400" />
 
-      {error ? (
-        <div className="mt-1 text-xs font-medium text-red-600">{error}</div>
+          <div className="mt-3 text-sm font-semibold text-slate-800">
+            Upload Profile Photo
+          </div>
+
+          <div className="mt-1 text-xs text-slate-500">
+            JPG, PNG, WEBP. Maximum 1 MB.
+          </div>
+
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={isReadOnly}
+            className="hidden"
+            onChange={(e) => handleFile(e.target.files?.[0])}
+          />
+        </label>
+      )}
+
+      {fileError ? (
+        <div className="mt-2 text-xs font-medium text-red-600">{fileError}</div>
       ) : null}
     </div>
   );
@@ -290,8 +591,7 @@ export default function SSUPersonalDetailsStep({
   userSignupData,
   isReadOnly = false,
 }) {
-  const [photoError, setPhotoError] = useState("");
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState("");
+  const [fileError, setFileError] = useState("");
 
   const formInitialValues = useMemo(
     () => buildInitialValues(initialValues, userSignupData),
@@ -300,52 +600,43 @@ export default function SSUPersonalDetailsStep({
 
   const stateOptions = useMemo(() => Object.keys(stateDistrictData || {}), []);
 
-  const validateProfilePhoto = (file) => {
-    if (!file) return "Profile photo is required.";
-
-    if (!PHOTO_ALLOWED_TYPES.includes(file.type)) {
-      return "Only JPG, PNG or WEBP image is allowed.";
-    }
-
-    if (file.size > PHOTO_MAX_SIZE) {
-      return "Profile photo must be below 1 MB.";
-    }
-
-    return "";
-  };
-
   const handleSubmit = async (values, { setSubmitting, setStatus }) => {
     setStatus("");
-    setPhotoError("");
+    setFileError("");
 
-    if (!values.profilePhotoMeta?.downloadURL && !(values.profilePhotoFile instanceof File)) {
-      setPhotoError("Profile photo is required.");
+    const selectedPost = getPostById(values.postAppliedForId);
+
+    if (!selectedPost) {
+      setStatus("Please select a valid post.");
       setSubmitting(false);
       return;
     }
 
-    if (values.profilePhotoFile instanceof File) {
-      const err = validateProfilePhoto(values.profilePhotoFile);
-      if (err) {
-        setPhotoError(err);
-        setSubmitting(false);
-        return;
-      }
+    if (!values.profilePhotoMeta?.downloadURL && !values.profilePhotoFile) {
+      setFileError("Profile photo is required.");
+      setSubmitting(false);
+      return;
     }
 
     const cleaned = {
       ...values,
+
+      postAppliedForId: selectedPost.id,
+      postAppliedFor: selectedPost.postName,
+      postEligibilitySnapshot: buildPostSnapshot(selectedPost),
+
       fullName: String(values.fullName || "").trim().replace(/\s+/g, " "),
-      fathersName: String(values.fathersName || "").trim().replace(/\s+/g, " "),
-      mothersName: String(values.mothersName || "").trim().replace(/\s+/g, " "),
+      fathersName: String(values.fathersName || "")
+        .trim()
+        .replace(/\s+/g, " "),
+      mothersName: String(values.mothersName || "")
+        .trim()
+        .replace(/\s+/g, " "),
       email: String(values.email || "").trim().toLowerCase(),
       phoneNumber: normalizePhone(values.phoneNumber),
       alternateNumber: normalizePhone(values.alternateNumber),
-
-      profilePhotoMeta: values.profilePhotoMeta || null,
-      profilePhotoFile: values.profilePhotoFile || null,
-
       presentAddress: String(values.presentAddress || "").trim(),
+
       permanentAddress: values.permanentAddressSameAsPresent
         ? String(values.presentAddress || "").trim()
         : String(values.permanentAddress || "").trim(),
@@ -358,11 +649,7 @@ export default function SSUPersonalDetailsStep({
       permanentPincode: values.permanentAddressSameAsPresent
         ? values.presentPincode
         : values.permanentPincode,
-      postAppliedFor:
-        values.postAppliedFor === "Other"
-          ? String(values.otherPostAppliedFor || "").trim()
-          : values.postAppliedFor,
-      originalPostAppliedFor: values.postAppliedFor,
+
       updatedAtIso: new Date().toISOString(),
     };
 
@@ -384,18 +671,24 @@ export default function SSUPersonalDetailsStep({
               <FaUser />
               Step 2
             </div>
+
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
               Personal Details
             </h2>
+
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
-              Fill applicant profile, photo, post applied for, contact and address
-              details.
+              Select the post as per ToR, upload profile photo, and fill
+              applicant profile/contact/address details.
             </p>
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-600">
-            <div className="font-semibold text-slate-800">Profile photo required</div>
-            <div className="mt-1">JPG, PNG or WEBP. Maximum 1 MB.</div>
+            <div className="font-semibold text-slate-800">
+              Application Profile
+            </div>
+            <div className="mt-1">
+              Post eligibility snapshot will be saved with the application.
+            </div>
           </div>
         </div>
       </div>
@@ -410,6 +703,8 @@ export default function SSUPersonalDetailsStep({
           const presentDistricts = stateDistrictData?.[values.presentState] || [];
           const permanentDistricts =
             stateDistrictData?.[values.permanentState] || [];
+
+          const selectedPost = getPostById(values.postAppliedForId);
 
           useEffect(() => {
             if (
@@ -436,84 +731,70 @@ export default function SSUPersonalDetailsStep({
               <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
-                    <FaIdBadge />
+                    <FaBriefcase />
                   </div>
+
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
-                      Applicant Information
+                      Post Applied For
                     </h3>
                     <p className="text-sm text-slate-500">
-                      Basic identity, post preference and photo
+                      Select one contractual position from the ToR list.
                     </p>
                   </div>
                 </div>
 
-                <div className="mb-5">
-                  <ProfilePhotoCard
-                    photoMeta={values.profilePhotoMeta}
-                    photoFile={values.profilePhotoFile}
-                    previewUrl={photoPreviewUrl}
-                    error={photoError}
-                    disabled={isReadOnly}
-                    onFile={(file) => {
-                      const err = validateProfilePhoto(file);
-                      setPhotoError(err);
-                      if (err) return;
-
-                      setFieldValue("profilePhotoFile", file);
-                      setFieldValue("profilePhotoMeta", null);
-                      setPhotoPreviewUrl(URL.createObjectURL(file));
-                    }}
-                    onRemove={() => {
-                      setFieldValue("profilePhotoFile", null);
-                      setFieldValue("profilePhotoMeta", null);
-                      setPhotoPreviewUrl("");
-                    }}
-                  />
-                </div>
-
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-5">
                   <SelectField
-                    name="postAppliedFor"
+                    name="postAppliedForId"
                     label="Post Applied For"
                     required
                     disabled={isReadOnly}
                   >
                     <option value="">Select Post</option>
-                    {POSTS.map((post) => (
-                      <option key={post} value={post}>
-                        {post}
+                    {SSU_POSTS.map((post) => (
+                      <option key={post.id} value={post.id}>
+                        {post.serialNo}. {post.postName} ({post.emoluments})
                       </option>
                     ))}
                   </SelectField>
 
-                  {values.postAppliedFor === "Other" ? (
-                    <TextField
-                      name="otherPostAppliedFor"
-                      label="Mention Post"
-                      placeholder="Enter post name"
-                      required
-                      disabled={isReadOnly}
-                    />
-                  ) : (
-                    <TextField
-                      name="fullName"
-                      label="Full Name"
-                      placeholder="Applicant full name"
-                      required
-                      disabled={isReadOnly}
-                    />
-                  )}
+                  <PostEligibilityCard post={selectedPost} />
+                </div>
+              </div>
 
-                  {values.postAppliedFor === "Other" ? (
-                    <TextField
-                      name="fullName"
-                      label="Full Name"
-                      placeholder="Applicant full name"
-                      required
-                      disabled={isReadOnly}
-                    />
-                  ) : null}
+              <ProfilePhotoUpload
+                values={values}
+                setFieldValue={setFieldValue}
+                isReadOnly={isReadOnly}
+                fileError={fileError}
+                setFileError={setFileError}
+              />
+
+              <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                    <FaIdBadge />
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Applicant Information
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Basic identity details
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-2">
+                  <TextField
+                    name="fullName"
+                    label="Full Name"
+                    placeholder="Applicant full name"
+                    required
+                    disabled={isReadOnly}
+                  />
 
                   <TextField
                     name="fathersName"
@@ -582,6 +863,7 @@ export default function SSUPersonalDetailsStep({
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-700 text-white">
                     <FaUser />
                   </div>
+
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
                       Contact Details
@@ -624,6 +906,7 @@ export default function SSUPersonalDetailsStep({
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-700 text-white">
                     <FaMapMarkerAlt />
                   </div>
+
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">
                       Address Details
@@ -689,6 +972,7 @@ export default function SSUPersonalDetailsStep({
                       disabled={isReadOnly}
                       className="mt-1 h-4 w-4 rounded border-slate-300"
                     />
+
                     <span className="text-sm font-medium text-slate-700">
                       Permanent address is same as present address
                     </span>

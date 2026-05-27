@@ -5,6 +5,7 @@ import {
   FaArrowLeft,
   FaArrowRight,
   FaBook,
+  FaBriefcase,
   FaCertificate,
   FaGraduationCap,
   FaPlus,
@@ -17,10 +18,22 @@ const DEGREE_OPTIONS = [
   "10th / Matriculation",
   "12th / Intermediate",
   "Diploma",
+  "B.Tech / BE",
+  "B.Tech / B.E in CS / IT",
+  "Bachelors",
+  "Bachelors in Graphic Design / Visual Communication / Fine Arts / Media Studies / Animation / Digital Design",
   "Graduation",
-  "Post Graduation",
-  "MBA / PGDM",
-  "M.Tech / ME",
+  "Masters",
+  "Masters in Business Management",
+  "Masters in Business Management Finance",
+  "PG Diploma in Business Management",
+  "PG Diploma in Business Management Finance",
+  "Mass Communication",
+  "Master's in Advertising / Public Relations / Related Field",
+  "MCA",
+  "CA",
+  "LLB",
+  "Masters in Law",
   "PhD",
   "Other",
 ];
@@ -59,6 +72,8 @@ const buildInitialValues = (initialValues) => ({
     initialValues?.certifications?.length > 0
       ? initialValues.certifications
       : [{ ...emptyCertification }],
+  qualificationDeclaration:
+    initialValues?.qualificationDeclaration || false,
 });
 
 const validationSchema = Yup.object().shape({
@@ -72,7 +87,9 @@ const validationSchema = Yup.object().shape({
           otherwise: (schema) => schema.notRequired(),
         }),
         institution: Yup.string().trim().required("Institution is required"),
-        boardUniversity: Yup.string().trim().required("Board/University is required"),
+        boardUniversity: Yup.string()
+          .trim()
+          .required("Board/University is required"),
         specialisation: Yup.string().trim(),
         yearOfPassing: Yup.number()
           .typeError("Enter valid year")
@@ -92,6 +109,10 @@ const validationSchema = Yup.object().shape({
       duration: Yup.string().trim(),
     })
   ),
+  qualificationDeclaration: Yup.boolean().oneOf(
+    [true],
+    "Please confirm that you meet the required qualification for the selected post."
+  ),
 });
 
 function ErrorText({ name }) {
@@ -108,6 +129,7 @@ function TextField({ name, label, placeholder, type = "text", disabled }) {
   return (
     <div>
       <label className={labelClass}>{label}</label>
+
       <Field
         name={name}
         type={type}
@@ -115,6 +137,7 @@ function TextField({ name, label, placeholder, type = "text", disabled }) {
         disabled={disabled}
         className={inputClass}
       />
+
       <ErrorText name={name} />
     </div>
   );
@@ -124,10 +147,51 @@ function SelectField({ name, label, children, disabled }) {
   return (
     <div>
       <label className={labelClass}>{label}</label>
+
       <Field as="select" name={name} disabled={disabled} className={inputClass}>
         {children}
       </Field>
+
       <ErrorText name={name} />
+    </div>
+  );
+}
+
+function RequiredQualificationBox({ selectedPost }) {
+  if (!selectedPost) {
+    return (
+      <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+        Select post in Personal Details first to view required qualification.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-[28px] border border-indigo-100 bg-indigo-50/80 p-5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-700 text-white">
+          <FaBriefcase />
+        </div>
+
+        <div>
+          <div className="text-lg font-bold text-indigo-950">
+            Required Qualification for {selectedPost.postName}
+          </div>
+          <div className="text-sm text-indigo-700">
+            {selectedPost.level} • {selectedPost.category} •{" "}
+            {selectedPost.emoluments}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-indigo-100 bg-white px-4 py-3">
+        <div className="text-xs font-semibold uppercase tracking-wide text-indigo-400">
+          As per ToR
+        </div>
+        <div className="mt-1 text-sm font-bold leading-relaxed text-slate-900">
+          {selectedPost.qualification}
+        </div>
+      </div>
     </div>
   );
 }
@@ -137,16 +201,20 @@ export default function SSUEducationalQualificationsStep({
   onPrevious,
   initialValues,
   isReadOnly = false,
+  formData,
 }) {
   const formInitialValues = useMemo(
     () => buildInitialValues(initialValues),
     [initialValues]
   );
 
+  const selectedPost = formData?.personalDetails?.postEligibilitySnapshot || null;
+
   const handleSubmit = async (values, { setSubmitting, setStatus }) => {
     setStatus("");
 
     const cleaned = {
+      selectedPostEligibilitySnapshot: selectedPost || null,
       education: values.education.map((item) => ({
         ...item,
         degree:
@@ -164,10 +232,7 @@ export default function SSUEducationalQualificationsStep({
       certifications: values.certifications
         .filter(
           (item) =>
-            item.certName ||
-            item.issuingOrg ||
-            item.year ||
-            item.duration
+            item.certName || item.issuingOrg || item.year || item.duration
         )
         .map((item) => ({
           certName: String(item.certName || "").trim(),
@@ -175,6 +240,8 @@ export default function SSUEducationalQualificationsStep({
           year: String(item.year || "").trim(),
           duration: String(item.duration || "").trim(),
         })),
+      qualificationDeclaration: values.qualificationDeclaration === true,
+      requiredQualificationText: selectedPost?.qualification || "",
       updatedAtIso: new Date().toISOString(),
     };
 
@@ -202,11 +269,14 @@ export default function SSUEducationalQualificationsStep({
             </h2>
 
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
-              Add academic qualifications and relevant certifications.
+              Add academic qualifications and compare them with the required
+              qualification for the selected post.
             </p>
           </div>
         </div>
       </div>
+
+      <RequiredQualificationBox selectedPost={selectedPost} />
 
       <Formik
         initialValues={formInitialValues}
@@ -215,7 +285,7 @@ export default function SSUEducationalQualificationsStep({
         enableReinitialize
       >
         {({ values, isSubmitting, status }) => (
-          <Form className="space-y-6">
+          <Form className="mt-6 space-y-6">
             <FieldArray name="education">
               {({ push, remove }) => (
                 <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
@@ -224,6 +294,7 @@ export default function SSUEducationalQualificationsStep({
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white">
                         <FaBook />
                       </div>
+
                       <div>
                         <h3 className="text-lg font-bold text-slate-900">
                           Academic Qualifications
@@ -365,6 +436,7 @@ export default function SSUEducationalQualificationsStep({
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-700 text-white">
                         <FaCertificate />
                       </div>
+
                       <div>
                         <h3 className="text-lg font-bold text-slate-900">
                           Certifications
@@ -445,6 +517,22 @@ export default function SSUEducationalQualificationsStep({
                 </div>
               )}
             </FieldArray>
+
+            <label className="flex items-start gap-3 rounded-[28px] border border-indigo-100 bg-indigo-50/80 px-5 py-4">
+              <Field
+                type="checkbox"
+                name="qualificationDeclaration"
+                disabled={isReadOnly}
+                className="mt-1 h-4 w-4 rounded border-slate-300"
+              />
+
+              <span className="text-sm leading-relaxed text-indigo-950">
+                I confirm that I meet the required educational qualification for
+                the selected post as per the ToR. I understand that proof of
+                qualification will be verified by the department.
+              </span>
+            </label>
+            <ErrorText name="qualificationDeclaration" />
 
             {status ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

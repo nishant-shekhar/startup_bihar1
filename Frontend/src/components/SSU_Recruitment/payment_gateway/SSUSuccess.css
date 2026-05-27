@@ -1,8 +1,0 @@
-.success-card{background:#fff;border-radius:16px;padding:2.5rem 2rem;box-shadow:0 4px 24px rgba(0,0,0,0.08);width:100%;max-width:420px;text-align:center}
-.success-icon{font-size:3rem;margin-bottom:1rem}h2{font-size:1.5rem;font-weight:700;color:#1a7a43;margin-bottom:.5rem}
-p{color:#555;font-size:.95rem;margin-bottom:1.5rem}
-.payment-id{background:#f4f7fb;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.5rem;text-align:left}
-.payment-id .label{font-size:.78rem;font-weight:600;color:#888;display:block;margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.05em}
-.payment-id code{font-size:.875rem;color:#1a1a2e;font-family:monospace;word-break:break-all}
-.reset-btn{padding:.75rem 2rem;background:#3399cc;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .18s}
-.reset-btn:hover{background:#2277aa}

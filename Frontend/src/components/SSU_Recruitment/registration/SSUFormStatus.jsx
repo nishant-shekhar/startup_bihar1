@@ -1,133 +1,37 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
+  FaBell,
   FaCheckCircle,
   FaClock,
   FaExternalLinkAlt,
   FaFileAlt,
-  FaFileImage,
-  FaFlagCheckered,
+  FaFlag,
   FaHourglassHalf,
-  FaIdBadge,
   FaPrint,
-  FaRegStar,
+  FaReceipt,
   FaSpinner,
-  FaStar,
   FaTimesCircle,
-  FaUserTie,
+  FaUniversity,
 } from "react-icons/fa";
 import {
-  collection,
   doc,
   getDoc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
 } from "firebase/firestore";
 
 import { db } from "../../AdminRedesign/NewApplicationAdmin/firebase";
-import { SSU_DEV_MODE } from "../ssuDevMode";
 import {
   SSU_APPLICATION_STATUS,
-  SSU_TIMELINE_KEYS,
-  ssuCollectionPath,
   ssuDocPath,
 } from "./ssuFirebasePaths";
 
-const defaultTimelineSteps = [
-  {
-    key: SSU_TIMELINE_KEYS.registrationStarted,
-    title: "Registration Started",
-    description: "Your SSU recruitment application has been created.",
-    icon: FaIdBadge,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.paymentCompleted,
-    title: "Payment Proof Submitted",
-    description: "Payment details and screenshot have been submitted for verification.",
-    icon: FaClock,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.formSubmitted,
-    title: "Application Submitted",
-    description: "Your application has been submitted successfully.",
-    icon: FaFileAlt,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.stageOneScreening,
-    title: "Stage-I Screening",
-    description: "Application will be screened by the department.",
-    icon: FaHourglassHalf,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.documentVerification,
-    title: "Document Verification",
-    description: "Submitted documents will be verified.",
-    icon: FaCheckCircle,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.writtenExam,
-    title: "Written / Technical Evaluation",
-    description: "Evaluation details will be updated if applicable.",
-    icon: FaFileAlt,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.interview,
-    title: "Interview / Interaction",
-    description: "Interview details will be updated if applicable.",
-    icon: FaUserTie,
-  },
-  {
-    key: SSU_TIMELINE_KEYS.finalSelection,
-    title: "Final Selection",
-    description: "Final result will be updated after completion of the process.",
-    icon: FaFlagCheckered,
-  },
-];
-
-const statusConfig = {
-  draft: {
-    label: "Draft",
-    className: "bg-slate-100 text-slate-700 border-slate-200",
-  },
-  payment_pending: {
-    label: "Payment Verification Pending",
-    className: "bg-amber-50 text-amber-700 border-amber-200",
-  },
-  payment_completed: {
-    label: "Payment Completed",
-    className: "bg-blue-50 text-blue-700 border-blue-200",
-  },
-  submitted: {
-    label: "Submitted",
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  },
-  under_review: {
-    label: "Under Review",
-    className: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  },
-  shortlisted: {
-    label: "Shortlisted",
-    className: "bg-cyan-50 text-cyan-700 border-cyan-200",
-  },
-  selected: {
-    label: "Selected",
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  },
-  waitlisted: {
-    label: "Waitlisted",
-    className: "bg-amber-50 text-amber-700 border-amber-200",
-  },
-  rejected: {
-    label: "Rejected",
-    className: "bg-red-50 text-red-700 border-red-200",
-  },
+const safeValue = (value) => {
+  if (value === null || value === undefined || value === "") return "-";
+  return String(value);
 };
 
 const safeDate = (value) => {
-  if (!value) return "";
+  if (!value) return "-";
 
   if (typeof value?.toDate === "function") {
     return value.toDate().toLocaleString("en-IN", {
@@ -139,25 +43,87 @@ const safeDate = (value) => {
     });
   }
 
-  if (typeof value === "string" || typeof value === "number") {
-    const d = new Date(value);
-    if (!Number.isNaN(d.getTime())) {
-      return d.toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    }
+  const d = new Date(value);
+
+  if (!Number.isNaN(d.getTime())) {
+    return d.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
-  return "";
+  return String(value);
 };
 
-const safeValue = (value) => {
-  if (value === null || value === undefined || value === "") return "-";
-  return String(value);
+const statusConfig = {
+  draft: {
+    label: "Draft",
+    className: "border-slate-200 bg-slate-50 text-slate-700",
+  },
+  payment_pending: {
+    label: "Payment Verification Pending",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  payment_completed: {
+    label: "Payment Completed",
+    className: "border-blue-200 bg-blue-50 text-blue-700",
+  },
+  submitted: {
+    label: "Application Submitted",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  under_review: {
+    label: "Under Review",
+    className: "border-indigo-200 bg-indigo-50 text-indigo-700",
+  },
+  shortlisted: {
+    label: "Shortlisted",
+    className: "border-cyan-200 bg-cyan-50 text-cyan-700",
+  },
+  selected: {
+    label: "Selected",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  },
+  waitlisted: {
+    label: "Waitlisted",
+    className: "border-amber-200 bg-amber-50 text-amber-700",
+  },
+  rejected: {
+    label: "Rejected",
+    className: "border-red-200 bg-red-50 text-red-700",
+  },
+};
+
+const colorClassMap = {
+  amber: "border-amber-200 bg-amber-50 text-amber-800",
+  blue: "border-blue-200 bg-blue-50 text-blue-800",
+  green: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  red: "border-red-200 bg-red-50 text-red-800",
+  slate: "border-slate-200 bg-slate-50 text-slate-800",
+};
+
+const defaultResultAnnouncement = {
+  active: false,
+  title: "Result Announcement",
+  message:
+    "Result notification will be published here after completion of scrutiny and payment verification.",
+  resultLink: "",
+  color: "blue",
+};
+
+const defaultPaymentVerification = {
+  enabled: true,
+  requireUtrUnique: true,
+  showPaymentVerificationStatus: true,
+  pendingMessage:
+    "Your application has been submitted. Payment proof and UTR are pending verification.",
+  verifiedMessage:
+    "Your payment has been verified. Result notification will be published as per schedule.",
+  rejectedMessage:
+    "Your payment proof could not be verified. Please check remarks or contact the department.",
 };
 
 const getApplicantName = (application) => {
@@ -173,202 +139,374 @@ const getPostAppliedFor = (application) => {
   return application?.personalDetails?.postAppliedFor || "-";
 };
 
-const getPaymentVerificationStatus = (application) => {
+const getPaymentState = (application, paymentVerificationSettings) => {
   const payment = application?.paymentDetails || {};
-  const adminStatus = payment?.adminVerification?.status;
+  const adminStatus = payment?.adminVerification?.status || "pending";
+  const verificationStatus = payment?.verificationStatus || adminStatus;
 
-  if (payment?.verified === true || payment?.verificationStatus === "verified" || adminStatus === "verified") {
+  const verified =
+    payment?.verified === true ||
+    verificationStatus === "verified" ||
+    adminStatus === "verified";
+
+  const rejected = verificationStatus === "rejected" || adminStatus === "rejected";
+
+  const submitted =
+    payment?.status === "submitted_for_verification" ||
+    !!payment?.paymentScreenshotMeta?.downloadURL ||
+    !!payment?.utrNumber;
+
+  if (verified) {
     return {
-      label: "Verified",
+      key: "verified",
+      label: "Payment Verified",
+      icon: <FaCheckCircle />,
       className: "border-emerald-200 bg-emerald-50 text-emerald-700",
-      message: "Payment has been verified by the admin team.",
+      message:
+        paymentVerificationSettings?.verifiedMessage ||
+        defaultPaymentVerification.verifiedMessage,
     };
   }
 
-  if (payment?.verificationStatus === "rejected" || adminStatus === "rejected") {
+  if (rejected) {
     return {
-      label: "Rejected",
+      key: "rejected",
+      label: "Payment Rejected",
+      icon: <FaTimesCircle />,
       className: "border-red-200 bg-red-50 text-red-700",
       message:
         payment?.adminVerification?.remarks ||
-        "Payment proof has been rejected. Please contact the department/admin.",
+        paymentVerificationSettings?.rejectedMessage ||
+        defaultPaymentVerification.rejectedMessage,
     };
   }
 
-  if (payment?.status === "submitted_for_verification") {
+  if (submitted) {
     return {
-      label: "Pending Verification",
+      key: "pending",
+      label: "Payment Verification Pending",
+      icon: <FaHourglassHalf />,
       className: "border-amber-200 bg-amber-50 text-amber-700",
-      message: "Payment proof has been submitted and is pending verification.",
+      message:
+        paymentVerificationSettings?.pendingMessage ||
+        defaultPaymentVerification.pendingMessage,
     };
   }
 
   return {
-    label: "Not Submitted",
+    key: "not_submitted",
+    label: "Payment Proof Not Submitted",
+    icon: <FaClock />,
     className: "border-slate-200 bg-slate-50 text-slate-700",
     message: "Payment proof has not been submitted.",
   };
 };
 
-const StarRating = ({ value, onChange, disabled }) => {
+function InfoCard({ label, value }) {
   return (
-    <div className="flex items-center gap-2">
-      {[1, 2, 3, 4, 5].map((n) => {
-        const active = n <= value;
-        return (
-          <button
-            key={n}
-            type="button"
-            disabled={disabled}
-            onClick={() => onChange(n)}
-            className={`text-2xl transition ${
-              active ? "text-amber-400" : "text-slate-300 hover:text-amber-300"
-            } disabled:cursor-not-allowed disabled:opacity-60`}
-          >
-            {active ? <FaStar /> : <FaRegStar />}
-          </button>
-        );
-      })}
+    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+      <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </div>
+      <div className="mt-1 break-words text-sm font-semibold text-slate-800">
+        {safeValue(value)}
+      </div>
     </div>
   );
-};
+}
 
-const FeedbackCard = ({ applicationId }) => {
-  const [message, setMessage] = useState("");
-  const [rating, setRating] = useState(5);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
+function StatusPill({ status }) {
+  const activeStatus = statusConfig[status] || statusConfig.draft;
 
-  const handleSave = async () => {
-    if (!applicationId) return;
+  return (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${activeStatus.className}`}
+    >
+      {activeStatus.label}
+    </span>
+  );
+}
 
-    setError("");
-
-    if (!message.trim()) {
-      setError("Please write a short feedback message.");
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      if (!SSU_DEV_MODE) {
-        await setDoc(
-          doc(db, "SSURecruitment", "main", "Feedback", applicationId),
-          {
-            applicationId,
-            message: message.trim(),
-            rating,
-            source: "applicant_status_page",
-            createdAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
-
-      setSaved(true);
-    } catch (err) {
-      console.error("Feedback save failed", err);
-      setError("Could not save feedback. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
+function SectionCard({ icon, title, subtitle, children, action }) {
   return (
     <div className="rounded-[28px] border border-white/80 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-      <h3 className="text-lg font-bold text-slate-900">Feedback</h3>
-      <p className="mt-1 text-sm text-slate-500">
-        Share your experience about the application process.
-      </p>
+      <div className="mb-5 flex flex-col gap-4 border-b border-slate-100 pb-5 md:flex-row md:items-start md:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
+            {icon}
+          </div>
 
-      {saved ? (
-        <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-          Feedback submitted successfully.
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+            {subtitle ? (
+              <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
         </div>
-      ) : (
-        <>
-          <textarea
-            rows={4}
-            maxLength={250}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Write your feedback here..."
-            className="mt-4 w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-400 focus:shadow-[0_0_0_4px_rgba(148,163,184,0.12)]"
-          />
 
-          <div className="mt-1 text-right text-xs text-slate-400">
-            {message.length}/250
-          </div>
+        {action}
+      </div>
 
-          <div className="mt-4">
-            <div className="mb-2 text-sm font-semibold text-slate-700">
-              Rating
-            </div>
-            <StarRating value={rating} onChange={setRating} disabled={saving} />
-          </div>
-
-          {error ? (
-            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="mt-5 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
-          >
-            {saving ? "Saving..." : "Submit Feedback"}
-          </button>
-        </>
-      )}
+      {children}
     </div>
   );
-};
+}
+
+function ApplicationSubmittedBox({ application }) {
+  const submittedAt = application?.submittedAt || application?.updatedAt;
+
+  return (
+    <div className="rounded-[28px] border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+          <FaCheckCircle className="text-2xl" />
+        </div>
+
+        <div className="min-w-0">
+          <div className="text-xl font-bold">Application Submitted</div>
+          <p className="mt-2 text-sm leading-relaxed">
+            Your SSU recruitment application has been submitted successfully.
+            Please keep your application number for future reference.
+          </p>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-2xl border border-emerald-200 bg-white/75 px-4 py-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                Application Number
+              </div>
+              <div className="mt-1 break-all text-lg font-bold text-emerald-950">
+                {safeValue(application?.applicationId || application?.applicationNo)}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-200 bg-white/75 px-4 py-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                Submitted At
+              </div>
+              <div className="mt-1 text-sm font-bold text-emerald-950">
+                {safeDate(submittedAt)}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentVerificationBox({ application, settings }) {
+  if (settings?.showPaymentVerificationStatus === false) {
+    return null;
+  }
+
+  const payment = application?.paymentDetails || {};
+  const paymentState = getPaymentState(application, settings);
+
+  return (
+    <SectionCard
+      icon={<FaUniversity />}
+      title="Payment Verification"
+      subtitle="SBI Collect payment proof and UTR verification status"
+      action={
+        <span
+          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${paymentState.className}`}
+        >
+          {paymentState.icon}
+          {paymentState.label}
+        </span>
+      }
+    >
+      <div className={`rounded-2xl border px-4 py-3 text-sm font-semibold ${paymentState.className}`}>
+        {paymentState.message}
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <InfoCard label="Payment Mode" value={payment?.paymentMode || "SBI_COLLECT"} />
+        <InfoCard label="Amount" value={payment?.amount ? `₹${payment.amount}` : "-"} />
+        <InfoCard label="Payment Date" value={payment?.paymentDate || "-"} />
+        <InfoCard label="UTR / Reference No." value={payment?.utrNumber || "-"} />
+        <InfoCard
+          label="Verification Status"
+          value={
+            payment?.adminVerification?.status ||
+            payment?.verificationStatus ||
+            "pending"
+          }
+        />
+        <InfoCard
+          label="UTR Verified"
+          value={payment?.adminVerification?.utrVerified ? "Yes" : "Pending"}
+        />
+      </div>
+
+      {payment?.paymentScreenshotMeta?.downloadURL ? (
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <FaReceipt />
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  SBI Collect Screenshot
+                </div>
+                <div className="mt-1 break-all text-sm font-semibold text-slate-800">
+                  {payment.paymentScreenshotMeta.fileName || "Payment screenshot"}
+                </div>
+              </div>
+            </div>
+
+            <a
+              href={payment.paymentScreenshotMeta.downloadURL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            >
+              <FaExternalLinkAlt />
+              View Screenshot
+            </a>
+          </div>
+        </div>
+      ) : null}
+
+      {payment?.adminVerification?.remarks ? (
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="font-semibold">Verification Remarks</div>
+          <div className="mt-1">{payment.adminVerification.remarks}</div>
+        </div>
+      ) : null}
+    </SectionCard>
+  );
+}
+
+function ResultAnnouncementBox({ announcement }) {
+  const active = announcement?.active === true;
+
+  const className =
+    colorClassMap[announcement?.color || "blue"] || colorClassMap.blue;
+
+  return (
+    <SectionCard
+      icon={<FaFlag />}
+      title={announcement?.title || "Result Announcement"}
+      subtitle="Official notification related to result or further process"
+      action={
+        active ? (
+          <span className={`inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${className}`}>
+            Active
+          </span>
+        ) : (
+          <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
+            Awaiting Notification
+          </span>
+        )
+      }
+    >
+      {active ? (
+        <div className={`rounded-2xl border px-5 py-4 ${className}`}>
+          <div className="flex items-start gap-3">
+            <FaBell className="mt-1 shrink-0" />
+            <div className="min-w-0">
+              <div className="font-bold">
+                {announcement?.title || "Result Announcement"}
+              </div>
+
+              <p className="mt-2 text-sm leading-relaxed">
+                {announcement?.message ||
+                  "Result notification has been published."}
+              </p>
+
+              {announcement?.resultLink ? (
+                <a
+                  href={announcement.resultLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-current bg-white/70 px-4 py-2 text-sm font-semibold hover:bg-white"
+                >
+                  <FaExternalLinkAlt />
+                  Open Notification
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm text-slate-700">
+          <div className="flex items-start gap-3">
+            <FaClock className="mt-0.5 shrink-0 text-slate-500" />
+            <div>
+              <div className="font-semibold text-slate-900">
+                Result notification is not published yet.
+              </div>
+              <p className="mt-1 leading-relaxed">
+                {announcement?.message ||
+                  defaultResultAnnouncement.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </SectionCard>
+  );
+}
+
+function BasicApplicationSummary({ application }) {
+  return (
+    <SectionCard
+      icon={<FaFileAlt />}
+      title="Application Summary"
+      subtitle="Basic details submitted in the application"
+    >
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <InfoCard
+          label="Application ID"
+          value={application?.applicationId || application?.applicationNo}
+        />
+        <InfoCard label="Applicant Name" value={getApplicantName(application)} />
+        <InfoCard label="Post Applied For" value={getPostAppliedFor(application)} />
+        <InfoCard
+          label="Current Status"
+          value={
+            statusConfig[application?.status]?.label ||
+            safeValue(application?.status)
+          }
+        />
+      </div>
+    </SectionCard>
+  );
+}
 
 export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
   const [application, setApplication] = useState(formData || null);
-  const [timelineDocs, setTimelineDocs] = useState([]);
+  const [resultAnnouncement, setResultAnnouncement] = useState(
+    defaultResultAnnouncement
+  );
+  const [paymentVerificationSettings, setPaymentVerificationSettings] = useState(
+    defaultPaymentVerification
+  );
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
-  const paymentStatus = useMemo(() => {
-    return getPaymentVerificationStatus(application);
-  }, [application]);
+  const status = application?.status || SSU_APPLICATION_STATUS.draft;
 
   const subtitle = useMemo(() => {
     if (!applicationId) {
       return "Status will be available after your application ID is created.";
     }
 
-    if (application?.status === SSU_APPLICATION_STATUS.selected) {
-      return "Congratulations. Your application has been marked as selected.";
+    if (status === SSU_APPLICATION_STATUS.submitted) {
+      return "Application submitted successfully. Check payment verification and result notification below.";
     }
 
-    if (application?.status === SSU_APPLICATION_STATUS.rejected) {
-      return "Your application has been reviewed. Please check remarks if provided.";
-    }
-
-    if (application?.status === SSU_APPLICATION_STATUS.underReview) {
-      return "Your application is currently under review.";
-    }
-
-    if (application?.status === SSU_APPLICATION_STATUS.submitted) {
-      return "Your application has been submitted. Payment proof is subject to verification.";
-    }
-
-    if (application?.paymentDetails?.status === "submitted_for_verification") {
+    if (status === SSU_APPLICATION_STATUS.paymentPending) {
       return "Payment proof submitted. Final submission may still be pending.";
     }
 
-    if (application?.userSignup) {
-      return "Registration started. Complete all steps and submit the form.";
-    }
-
-    return "Complete the form step by step.";
-  }, [application, applicationId]);
+    return "Complete and submit your SSU recruitment application to see final status.";
+  }, [applicationId, status]);
 
   useEffect(() => {
     let mounted = true;
@@ -379,18 +517,15 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
         return;
       }
 
-      if (SSU_DEV_MODE) {
-        setApplication(formData || null);
-        setTimelineDocs([]);
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
+        setLoadError("");
 
-        const appRef = doc(db, ...ssuDocPath.application(applicationId));
-        const appSnap = await getDoc(appRef);
+        const [appSnap, resultSnap, paymentVerificationSnap] = await Promise.all([
+          getDoc(doc(db, ...ssuDocPath.application(applicationId))),
+          getDoc(doc(db, ...ssuDocPath.settingResultAnnouncement())),
+          getDoc(doc(db, ...ssuDocPath.settingPaymentVerification())),
+        ]);
 
         if (mounted && appSnap.exists()) {
           setApplication({
@@ -399,26 +534,24 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
           });
         }
 
-        try {
-          const timelineRef = collection(
-            db,
-            ...ssuCollectionPath.timeline(applicationId)
-          );
+        if (mounted && resultSnap.exists()) {
+          setResultAnnouncement({
+            ...defaultResultAnnouncement,
+            ...resultSnap.data(),
+          });
+        }
 
-          const timelineQuery = query(timelineRef, orderBy("createdAt", "asc"));
-          const timelineSnap = await getDocs(timelineQuery);
-
-          const items = timelineSnap.docs
-            .map((d) => ({ id: d.id, ...d.data() }))
-            .filter((item) => item.visibleToApplicant !== false);
-
-          if (mounted) setTimelineDocs(items);
-        } catch (timelineError) {
-          console.error("SSU timeline load failed", timelineError);
-          if (mounted) setTimelineDocs([]);
+        if (mounted && paymentVerificationSnap.exists()) {
+          setPaymentVerificationSettings({
+            ...defaultPaymentVerification,
+            ...paymentVerificationSnap.data(),
+          });
         }
       } catch (error) {
         console.error("Failed to load SSU application status", error);
+        if (mounted) {
+          setLoadError("Could not load application status. Please try again.");
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -429,86 +562,7 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
     return () => {
       mounted = false;
     };
-  }, [applicationId, formData]);
-
-  const timelineStatus = useMemo(() => {
-    const statusMap = {};
-
-    defaultTimelineSteps.forEach((step) => {
-      statusMap[step.key] = {
-        completed: false,
-        date: null,
-        description: step.description,
-      };
-    });
-
-    if (application?.userSignup || application?.createdAt) {
-      statusMap[SSU_TIMELINE_KEYS.registrationStarted] = {
-        completed: true,
-        date: application?.createdAt || application?.updatedAt || null,
-        description: "Your SSU recruitment application has been created.",
-      };
-    }
-
-    if (application?.paymentDetails?.status === "submitted_for_verification") {
-      statusMap[SSU_TIMELINE_KEYS.paymentCompleted] = {
-        completed: true,
-        date:
-          application?.paymentDetails?.submittedAt ||
-          application?.paymentDetails?.updatedAt ||
-          application?.updatedAt ||
-          null,
-        description:
-          "Payment proof has been submitted and is pending admin verification.",
-      };
-    }
-
-    if (
-      application?.submittedAt ||
-      application?.status === SSU_APPLICATION_STATUS.submitted ||
-      application?.status === SSU_APPLICATION_STATUS.underReview ||
-      application?.status === SSU_APPLICATION_STATUS.shortlisted ||
-      application?.status === SSU_APPLICATION_STATUS.selected ||
-      application?.status === SSU_APPLICATION_STATUS.rejected ||
-      application?.status === SSU_APPLICATION_STATUS.waitlisted
-    ) {
-      statusMap[SSU_TIMELINE_KEYS.formSubmitted] = {
-        completed: true,
-        date: application?.submittedAt || application?.updatedAt || null,
-        description: "Your application has been submitted successfully.",
-      };
-    }
-
-    timelineDocs.forEach((item) => {
-      if (!item?.key) return;
-
-      statusMap[item.key] = {
-        completed: !!item.completed,
-        date: item.createdAt || item.updatedAt || null,
-        description: item.description || statusMap[item.key]?.description || "",
-      };
-    });
-
-    return statusMap;
-  }, [application, timelineDocs]);
-
-  const completedCount = useMemo(() => {
-    return defaultTimelineSteps.filter(
-      (step) => timelineStatus[step.key]?.completed
-    ).length;
-  }, [timelineStatus]);
-
-  const progressPercent = Math.round(
-    (completedCount / defaultTimelineSteps.length) * 100
-  );
-
-  const status = application?.status || SSU_APPLICATION_STATUS.draft;
-  const activeStatus = statusConfig[status] || statusConfig.draft;
-
-  const paymentDetails = application?.paymentDetails || {};
-  const screenshotUrl = paymentDetails?.paymentScreenshotMeta?.downloadURL || "";
-  const screenshotName =
-    paymentDetails?.paymentScreenshotMeta?.fileName || "Payment Screenshot";
+  }, [applicationId]);
 
   if (loading) {
     return (
@@ -534,6 +588,28 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-5xl rounded-[28px] border border-red-200 bg-red-50 p-8 shadow-lg">
+        <h2 className="text-2xl font-bold text-red-900">
+          Could not load status
+        </h2>
+        <p className="mt-2 text-red-800">{loadError}</p>
+
+        {onPrevious ? (
+          <button
+            type="button"
+            onClick={onPrevious}
+            className="mt-5 inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-700 shadow-sm hover:bg-red-100"
+          >
+            <FaArrowLeft />
+            Back
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="rounded-[28px] border border-white/80 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
@@ -542,15 +618,13 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
             <h2 className="text-3xl font-bold text-slate-900">
               Application Status
             </h2>
-            <p className="mt-2 text-sm text-slate-500">{subtitle}</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-500">
+              {subtitle}
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${activeStatus.className}`}
-            >
-              {activeStatus.label}
-            </span>
+            <StatusPill status={status} />
 
             <button
               type="button"
@@ -562,178 +636,18 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
             </button>
           </div>
         </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-          <InfoCard label="Application ID" value={applicationId} />
-          <InfoCard label="Applicant Name" value={getApplicantName(application)} />
-          <InfoCard label="Post Applied For" value={getPostAppliedFor(application)} />
-          <InfoCard
-            label="Submitted At"
-            value={safeDate(application?.submittedAt) || "-"}
-          />
-        </div>
-
-        {application?.adminRemarks ? (
-          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <div className="font-semibold">Admin Remarks</div>
-            <div className="mt-1">{application.adminRemarks}</div>
-          </div>
-        ) : null}
-
-        <div className="mt-6">
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="font-semibold text-slate-700">Process Progress</span>
-            <span className="font-semibold text-slate-700">
-              {progressPercent}%
-            </span>
-          </div>
-
-          <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-slate-900 via-indigo-700 to-emerald-500 transition-all"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
       </div>
 
-      <div className="rounded-[28px] border border-white/80 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">
-              Payment Verification
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Manual QR payment proof is verified by the admin team.
-            </p>
-          </div>
+      <ApplicationSubmittedBox application={application} />
 
-          <span
-            className={`inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${paymentStatus.className}`}
-          >
-            {paymentStatus.label}
-          </span>
-        </div>
+      <PaymentVerificationBox
+        application={application}
+        settings={paymentVerificationSettings}
+      />
 
-        <div className={`mt-5 rounded-2xl border px-4 py-3 text-sm ${paymentStatus.className}`}>
-          {paymentStatus.message}
-        </div>
+      <ResultAnnouncementBox announcement={resultAnnouncement} />
 
-        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <InfoCard label="Amount" value={`₹${safeValue(paymentDetails?.amount)}`} />
-          <InfoCard
-            label="Amount Paid"
-            value={`₹${safeValue(paymentDetails?.paymentAmountPaid)}`}
-          />
-          <InfoCard label="Payment Mode" value={paymentDetails?.paymentMode || "UPI_QR"} />
-          <InfoCard label="UTR / Reference No." value={paymentDetails?.utrNumber} />
-          <InfoCard label="Payment Date" value={paymentDetails?.paymentDate} />
-          <InfoCard label="Payment Time" value={paymentDetails?.paymentTime} />
-          <InfoCard label="Payer Name" value={paymentDetails?.payerName} />
-          <InfoCard label="Payer Mobile" value={paymentDetails?.payerMobile} />
-          <InfoCard label="Payer Bank" value={paymentDetails?.payerBankName} />
-        </div>
-
-        {screenshotUrl ? (
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-                  <FaFileImage />
-                </div>
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Payment Screenshot
-                  </div>
-                  <div className="mt-1 break-all text-sm font-semibold text-slate-800">
-                    {screenshotName}
-                  </div>
-                </div>
-              </div>
-
-              <a
-                href={screenshotUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-              >
-                <FaExternalLinkAlt />
-                View Screenshot
-              </a>
-            </div>
-          </div>
-        ) : null}
-
-        {paymentDetails?.adminVerification?.remarks ? (
-          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <div className="font-semibold">Verification Remarks</div>
-            <div className="mt-1">{paymentDetails.adminVerification.remarks}</div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="rounded-[28px] border border-white/80 bg-white/85 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-        <h3 className="text-xl font-bold text-slate-900">Application Timeline</h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Updates will appear here as the recruitment process moves forward.
-        </p>
-
-        <div className="mt-6 space-y-4">
-          {defaultTimelineSteps.map((step, index) => {
-            const item = timelineStatus[step.key] || {};
-            const completed = !!item.completed;
-            const Icon = step.icon;
-
-            return (
-              <div key={step.key} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-full border ${
-                      completed
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-600"
-                        : "border-slate-200 bg-slate-50 text-slate-400"
-                    }`}
-                  >
-                    {completed ? <FaCheckCircle /> : <Icon />}
-                  </div>
-
-                  {index < defaultTimelineSteps.length - 1 ? (
-                    <div
-                      className={`mt-2 h-10 w-px ${
-                        completed ? "bg-emerald-200" : "bg-slate-200"
-                      }`}
-                    />
-                  ) : null}
-                </div>
-
-                <div className="min-w-0 flex-1 pb-4">
-                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <div
-                      className={`font-semibold ${
-                        completed ? "text-slate-900" : "text-slate-500"
-                      }`}
-                    >
-                      {step.title}
-                    </div>
-
-                    {item.date ? (
-                      <div className="text-xs font-medium text-slate-400">
-                        {safeDate(item.date)}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {item.description || step.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <FeedbackCard applicationId={applicationId} />
+      <BasicApplicationSummary application={application} />
 
       <div className="flex justify-between print:hidden">
         {onPrevious ? (
@@ -749,30 +663,10 @@ export default function SSUFormStatus({ applicationId, onPrevious, formData }) {
           <span />
         )}
 
-        {application?.status === SSU_APPLICATION_STATUS.rejected ? (
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            <FaTimesCircle />
-            Not Selected / Rejected
-          </div>
-        ) : (
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
-            <FaClock />
-            Keep checking this page for updates
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function InfoCard({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-        {label}
-      </div>
-      <div className="mt-1 break-words text-sm font-semibold text-slate-800">
-        {value || "-"}
+        <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+          <FaClock />
+          Check this page for result notification
+        </div>
       </div>
     </div>
   );

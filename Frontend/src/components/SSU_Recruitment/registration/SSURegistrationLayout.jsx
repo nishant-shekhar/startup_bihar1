@@ -1561,10 +1561,11 @@ function RegistrationLayoutInner() {
 
       case 3:
         return (
-          <SSUEducationalQualificationsStep
-            {...commonProps}
-            initialValues={formData.educationalQualifications}
-          />
+         <SSUEducationalQualificationsStep
+  {...commonProps}
+  initialValues={formData.educationalQualifications}
+  formData={formData}
+/>
         );
 
       case 4:

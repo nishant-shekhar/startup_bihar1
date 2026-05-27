@@ -3,32 +3,28 @@ import {
   FaArrowLeft,
   FaCheckCircle,
   FaCloudUploadAlt,
-  FaExclamationTriangle,
+  FaCopy,
   FaExternalLinkAlt,
   FaFileImage,
   FaInfoCircle,
-  FaQrcode,
+  FaReceipt,
   FaTimes,
+  FaUniversity,
 } from "react-icons/fa";
 
-const APPLICATION_FEE = Number(import.meta.env.VITE_SSU_APPLICATION_FEE || 500);
-const QR_IMAGE_SRC =
-  import.meta.env.VITE_SSU_UPI_QR_IMAGE || "/ssu-upi-qr.png";
-const UPI_ID = import.meta.env.VITE_SSU_UPI_ID || "";
-const PAYEE_NAME =
-  import.meta.env.VITE_SSU_UPI_PAYEE_NAME || "Startup Support Unit";
+const APPLICATION_FEE = Number(import.meta.env.VITE_SSU_APPLICATION_FEE || 1000);
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const SBI_COLLECT_LINK =
+  import.meta.env.VITE_SSU_SBI_COLLECT_LINK || "";
 
 const initialState = {
   status: "submitted_for_verification",
   verificationStatus: "pending",
   amount: APPLICATION_FEE,
   currency: "INR",
-  paymentMode: "UPI_QR",
+  paymentMode: "SBI_COLLECT",
 
-  payerMobile: "",
-  payerUpiId: "",
+  sbiCollectLink: SBI_COLLECT_LINK,
   utrNumber: "",
   paymentDate: "",
   paymentScreenshotMeta: null,
@@ -51,25 +47,10 @@ const inputClass =
 
 const labelClass = "mb-2 block text-sm font-semibold text-slate-800";
 
-const normalizePhone = (value = "") =>
-  String(value || "").replace(/\D/g, "").slice(0, 10);
-
-const validateUpi = (value = "") => {
-  const trimmed = String(value || "").trim();
-  if (!trimmed) return false;
-  return /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/.test(trimmed);
-};
+const todayIso = () => new Date().toISOString().slice(0, 10);
 
 const validate = (values) => {
   const errors = {};
-
-  if (!/^\d{10}$/.test(values.payerMobile.trim())) {
-    errors.payerMobile = "Enter the 10-digit mobile number linked with UPI.";
-  }
-
-  if (!validateUpi(values.payerUpiId)) {
-    errors.payerUpiId = "Enter a valid UPI ID, for example name@upi.";
-  }
 
   if (!values.utrNumber.trim()) {
     errors.utrNumber = "UTR / transaction reference number is required.";
@@ -82,7 +63,7 @@ const validate = (values) => {
   }
 
   if (!values.paymentScreenshotMeta && !values.paymentScreenshotFile) {
-    errors.paymentScreenshotFile = "Upload payment screenshot.";
+    errors.paymentScreenshotFile = "Upload SBI Collect success screenshot.";
   }
 
   if (!values.applicantDeclaration) {
@@ -111,7 +92,7 @@ function PaymentStatusPill({ details }) {
 
   if (isVerified) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+      <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
         Payment verified by admin.
       </div>
     );
@@ -119,7 +100,7 @@ function PaymentStatusPill({ details }) {
 
   if (isRejected) {
     return (
-      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+      <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
         Payment rejected. Please check admin remarks and resubmit if allowed.
       </div>
     );
@@ -127,7 +108,7 @@ function PaymentStatusPill({ details }) {
 
   if (details.status === "submitted_for_verification") {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+      <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
         Payment proof submitted. Verification is pending.
       </div>
     );
@@ -143,9 +124,14 @@ export default function SSUPaymentStep({
   isReadOnly,
   formData,
 }) {
+  const applicationId = formData?.applicationId || "";
+
   const [values, setValues] = useState({
     ...initialState,
     ...(initialValues || {}),
+    paymentMode: "SBI_COLLECT",
+    sbiCollectLink:
+      initialValues?.sbiCollectLink || SBI_COLLECT_LINK || "",
     paymentScreenshotFile: null,
     applicantDeclaration: initialValues?.applicantDeclaration || false,
   });
@@ -153,27 +139,17 @@ export default function SSUPaymentStep({
   const [errors, setErrors] = useState({});
   const [previewUrl, setPreviewUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const applicationId = formData?.applicationId || "";
   const canEdit = !isReadOnly;
 
   const alreadySubmitted =
     values?.status === "submitted_for_verification" &&
     values?.paymentScreenshotMeta?.downloadURL;
 
-  const qrPaymentUrl = useMemo(() => {
-    if (!UPI_ID) return "";
-
-    const params = new URLSearchParams({
-      pa: UPI_ID,
-      pn: PAYEE_NAME,
-      am: String(APPLICATION_FEE),
-      cu: "INR",
-      tn: `SSU Application Fee ${applicationId || ""}`.trim(),
-    });
-
-    return `upi://pay?${params.toString()}`;
-  }, [applicationId]);
+  const effectiveSbiCollectLink = useMemo(() => {
+    return values?.sbiCollectLink || SBI_COLLECT_LINK || "";
+  }, [values?.sbiCollectLink]);
 
   const setField = (key, value) => {
     setValues((prev) => ({
@@ -185,6 +161,18 @@ export default function SSUPaymentStep({
       ...prev,
       [key]: "",
     }));
+  };
+
+  const copyApplicationId = async () => {
+    if (!applicationId) return;
+
+    try {
+      await navigator.clipboard.writeText(applicationId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
   };
 
   const handleScreenshot = (file) => {
@@ -241,10 +229,9 @@ export default function SSUPaymentStep({
       verificationStatus: "pending",
       amount: APPLICATION_FEE,
       currency: "INR",
-      paymentMode: "UPI_QR",
+      paymentMode: "SBI_COLLECT",
 
-      payerMobile: normalizePhone(values.payerMobile),
-      payerUpiId: String(values.payerUpiId || "").trim().toLowerCase(),
+      sbiCollectLink: effectiveSbiCollectLink,
       utrNumber: String(values.utrNumber || "").trim().toUpperCase(),
       paymentDate: values.paymentDate || "",
       paymentScreenshotMeta: values.paymentScreenshotMeta || null,
@@ -287,8 +274,8 @@ export default function SSUPaymentStep({
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
-              <FaQrcode />
-              UPI QR Payment
+              <FaUniversity />
+              SBI Collect Payment
             </div>
 
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
@@ -296,8 +283,9 @@ export default function SSUPaymentStep({
             </h2>
 
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
-              Scan the QR code, complete payment, then upload screenshot with UTR,
-              payment date and UPI details.
+              Pay the application fee through SBI Collect. Use your application
+              number in the SBI Collect form, then upload the success screenshot
+              and transaction reference number.
             </p>
           </div>
 
@@ -314,55 +302,61 @@ export default function SSUPaymentStep({
         <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
           <PaymentStatusPill details={initialValues || values} />
 
+          <div className="rounded-[28px] border border-indigo-100 bg-indigo-50/80 p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white">
+                <FaReceipt />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-bold text-indigo-950">
+                  Application Number for SBI Collect
+                </div>
+
+                <div className="mt-2 flex flex-col gap-3 md:flex-row md:items-center">
+                  <div className="break-all rounded-2xl border border-indigo-200 bg-white px-4 py-3 text-lg font-bold tracking-wide text-slate-900">
+                    {applicationId || "Application ID not generated"}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={copyApplicationId}
+                    disabled={!applicationId}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <FaCopy />
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+
+                <p className="mt-3 text-sm leading-relaxed text-indigo-900/80">
+                  Copy this application number and paste it in the relevant field
+                  of the SBI Collect payment form.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div>
-              <label className={labelClass}>Application ID</label>
-              <input value={applicationId} disabled className={inputClass} />
-            </div>
-
-            <div>
               <label className={labelClass}>Payment Mode</label>
-              <input value="UPI QR" disabled className={inputClass} />
+              <input value="SBI Collect" disabled className={inputClass} />
             </div>
 
             <div>
-              <label className={labelClass}>UPI Mobile Number *</label>
-              <input
-                value={values.payerMobile}
-                disabled={!canEdit}
-                onChange={(e) =>
-                  setField("payerMobile", normalizePhone(e.target.value))
-                }
-                placeholder="10-digit mobile linked with UPI"
-                maxLength={10}
-                className={inputClass}
-              />
-              <ErrorText>{errors.payerMobile}</ErrorText>
+              <label className={labelClass}>Application Fee</label>
+              <input value={`₹${APPLICATION_FEE}`} disabled className={inputClass} />
             </div>
 
-            <div>
-              <label className={labelClass}>UPI ID *</label>
-              <input
-                value={values.payerUpiId}
-                disabled={!canEdit}
-                onChange={(e) => setField("payerUpiId", e.target.value)}
-                placeholder="example@upi"
-                className={inputClass}
-              />
-              <ErrorText>{errors.payerUpiId}</ErrorText>
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                UTR / Transaction Reference No. *
-              </label>
+            <div className="md:col-span-2">
+              <label className={labelClass}>UTR / Transaction Reference No. *</label>
               <input
                 value={values.utrNumber}
                 disabled={!canEdit}
                 onChange={(e) =>
                   setField("utrNumber", e.target.value.toUpperCase())
                 }
-                placeholder="Enter UTR / reference number"
+                placeholder="Enter SBI Collect transaction reference / UTR"
                 className={inputClass}
               />
               <ErrorText>{errors.utrNumber}</ErrorText>
@@ -373,9 +367,9 @@ export default function SSUPaymentStep({
               <input
                 type="date"
                 value={values.paymentDate}
+                max={todayIso()}
                 disabled={!canEdit}
                 onChange={(e) => setField("paymentDate", e.target.value)}
-                max={todayIso()}
                 className={inputClass}
               />
               <ErrorText>{errors.paymentDate}</ErrorText>
@@ -383,7 +377,7 @@ export default function SSUPaymentStep({
           </div>
 
           <div className="mt-5">
-            <label className={labelClass}>Payment Screenshot / Receipt *</label>
+            <label className={labelClass}>SBI Collect Success Screenshot *</label>
 
             <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5">
               {values.paymentScreenshotMeta?.downloadURL ? (
@@ -396,7 +390,7 @@ export default function SSUPaymentStep({
                     <div className="min-w-0">
                       <div className="break-all text-sm font-semibold text-slate-800">
                         {values.paymentScreenshotMeta.fileName ||
-                          "Payment screenshot uploaded"}
+                          "SBI Collect screenshot uploaded"}
                       </div>
                       <a
                         href={values.paymentScreenshotMeta.downloadURL}
@@ -454,7 +448,7 @@ export default function SSUPaymentStep({
                   {previewUrl ? (
                     <img
                       src={previewUrl}
-                      alt="Payment screenshot preview"
+                      alt="SBI Collect success screenshot preview"
                       className="max-h-72 rounded-2xl border border-slate-200 object-contain"
                     />
                   ) : null}
@@ -463,7 +457,7 @@ export default function SSUPaymentStep({
                 <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl bg-white px-4 py-8 text-center transition hover:bg-slate-100">
                   <FaCloudUploadAlt className="text-3xl text-slate-400" />
                   <div className="mt-3 text-sm font-semibold text-slate-800">
-                    Upload payment screenshot
+                    Upload SBI Collect success screenshot
                   </div>
                   <div className="mt-1 text-xs text-slate-500">
                     JPG, PNG, WEBP or PDF. Max 2 MB.
@@ -494,9 +488,9 @@ export default function SSUPaymentStep({
             />
 
             <span className="text-sm text-slate-700">
-              I confirm that the UPI ID, mobile number, UTR, payment date and
-              uploaded screenshot are correct. I understand that the payment will
-              be verified by the admin team.
+              I confirm that I have paid the application fee through SBI Collect
+              and the uploaded screenshot and transaction reference number are
+              correct.
             </span>
           </label>
           <ErrorText>{errors.applicantDeclaration}</ErrorText>
@@ -537,85 +531,64 @@ export default function SSUPaymentStep({
         <aside className="space-y-5">
           <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <FaQrcode />
-              Scan & Pay
+              <FaUniversity />
+              SBI Collect
             </div>
 
-            <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-              <img
-                src={QR_IMAGE_SRC}
-                alt="UPI QR Code"
-                className="mx-auto aspect-square w-full max-w-[260px] rounded-2xl object-contain bg-white p-3"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-            </div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-500">
+              Open SBI Collect, complete payment, then return to this page and
+              upload proof.
+            </p>
 
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Payee
-                </div>
-                <div className="mt-1 font-semibold text-slate-800">
-                  {PAYEE_NAME}
-                </div>
+            {effectiveSbiCollectLink ? (
+              <a
+                href={effectiveSbiCollectLink}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              >
+                <FaExternalLinkAlt />
+                Pay via SBI Collect
+              </a>
+            ) : (
+              <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                SBI Collect link is not configured.
               </div>
+            )}
 
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Amount
-                </div>
-                <div className="mt-1 font-semibold text-slate-800">
-                  ₹{APPLICATION_FEE}
-                </div>
+            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Application Number
               </div>
-
-              {UPI_ID ? (
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    UPI ID
-                  </div>
-                  <div className="mt-1 break-all font-semibold text-slate-800">
-                    {UPI_ID}
-                  </div>
-                </div>
-              ) : null}
-
-              {qrPaymentUrl ? (
-                <a
-                  href={qrPaymentUrl}
-                  className="block rounded-2xl bg-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-                >
-                  Open UPI App
-                </a>
-              ) : null}
+              <div className="mt-1 break-all text-sm font-bold text-slate-900">
+                {applicationId || "-"}
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={copyApplicationId}
+              disabled={!applicationId}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <FaCopy />
+              {copied ? "Copied Application Number" : "Copy Application Number"}
+            </button>
           </div>
 
           <div className="rounded-[28px] border border-blue-200 bg-blue-50 p-5 text-sm text-blue-800">
             <div className="flex items-center gap-2 font-bold">
               <FaInfoCircle />
-              Required After Payment
+              Instructions
             </div>
-            <ul className="mt-3 list-disc space-y-2 pl-5">
-              <li>UPI mobile number</li>
-              <li>UPI ID</li>
-              <li>UTR / transaction reference number</li>
-              <li>Payment date</li>
-              <li>Payment screenshot</li>
-            </ul>
-          </div>
-
-          <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
-            <div className="flex items-center gap-2 font-bold">
-              <FaExclamationTriangle />
-              Important
-            </div>
-            <p className="mt-2 leading-relaxed">
-              Application will proceed only after admin verification of payment
-              proof.
-            </p>
+            <ol className="mt-3 list-decimal space-y-2 pl-5">
+              <li>Copy your application number.</li>
+              <li>Click Pay via SBI Collect.</li>
+              <li>Use the application number in SBI Collect form.</li>
+              <li>Complete payment successfully.</li>
+              <li>Return here and upload success screenshot.</li>
+              <li>Enter UTR / transaction reference number.</li>
+            </ol>
           </div>
         </aside>
       </div>

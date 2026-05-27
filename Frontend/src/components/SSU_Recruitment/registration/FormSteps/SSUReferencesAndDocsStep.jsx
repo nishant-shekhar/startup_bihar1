@@ -31,7 +31,7 @@ const FILE_LIMITS = {
   identity: 2 * 1024 * 1024,
   caste: 2 * 1024 * 1024,
   other: 3 * 1024 * 1024,
-  signature: 200 * 1024,
+  signature: 500 * 1024,
 };
 
 const allowedFileTypes = [
@@ -559,7 +559,7 @@ export default function SSUReferencesAndDocsStep({
                   item={{
                     key: "signature",
                     label: "Signature",
-                    help: "Image/PDF, max 200 KB",
+                    help: "Image/PDF, max 500 KB",
                     limit: FILE_LIMITS.signature,
                   }}
                   value={values.signatureMeta}
