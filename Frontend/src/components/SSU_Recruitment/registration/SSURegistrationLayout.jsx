@@ -1571,9 +1571,10 @@ function RegistrationLayoutInner() {
       case 4:
         return (
           <SSUWorkExperienceStep
-            {...commonProps}
-            initialValues={formData.workExperience}
-          />
+  {...commonProps}
+  initialValues={formData.workExperience}
+  formData={formData}
+/>
         );
 
       case 5:

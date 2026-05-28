@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Formik, Form, ErrorMessage, useField } from "formik";
 import * as Yup from "yup";
 import {
@@ -9,11 +9,23 @@ import {
   FaLock,
   FaMobileAlt,
   FaShieldAlt,
+  FaSpinner,
   FaUserPlus,
 } from "react-icons/fa";
 
+import { doc, getDoc } from "firebase/firestore";
+import {
+  get,
+  ref as rtdbRef,
+  remove,
+  serverTimestamp as rtdbServerTimestamp,
+  set,
+} from "firebase/database";
+
+import { db, rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 import SSUPhoneVerificationModal from "./modals/SSUPhoneVerificationModal";
 import { SSU_DEV_MODE } from "../ssuDevMode";
+import { ssuDocPath } from "./ssuFirebasePaths";
 
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
@@ -25,6 +37,46 @@ const normalizePhone = (value = "") =>
 
 const normalizeAadhaar = (value = "") =>
   String(value || "").replace(/\D/g, "").slice(0, 12);
+
+const formatDeadline = (timestamp) => {
+  if (!timestamp) return "";
+
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const getServerNowFromRTDB = async () => {
+  const tempKey = `ssu_signup_ts_${Date.now()}_${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+
+  const tempRef = rtdbRef(rtdb, `SSURecruitment/tempServerTime/${tempKey}`);
+
+  await set(tempRef, { ts: rtdbServerTimestamp() });
+
+  const snap = await get(tempRef);
+  const serverNow = snap.exists() ? snap.val()?.ts : null;
+
+  try {
+    await remove(tempRef);
+  } catch (error) {
+    console.warn("Could not remove temporary server time node", error);
+  }
+
+  if (!serverNow || Number.isNaN(Number(serverNow))) {
+    throw new Error("Could not fetch trusted server time.");
+  }
+
+  return Number(serverNow);
+};
 
 const getValidationSchema = (isLoggedIn) => {
   if (isLoggedIn) {
@@ -70,6 +122,30 @@ const buildInitialValues = (initialValues) => ({
   confirmPassword: "",
 });
 
+const getClosedMessage = (settingsData, serverNow) => {
+  const isManuallyClosed =
+    settingsData?.close === true || settingsData?.isOpen === false;
+
+  const lastDate = Number(settingsData?.lastDate || 0);
+  const hasDeadline = lastDate > 0;
+  const deadlinePassed = hasDeadline ? Number(serverNow) > lastDate : false;
+
+  if (isManuallyClosed) {
+    return (
+      settingsData?.message ||
+      "SSU Recruitment application form is currently closed."
+    );
+  }
+
+  if (deadlinePassed) {
+    return `SSU Recruitment application form closed on ${formatDeadline(
+      lastDate
+    )}. New registration is not allowed.`;
+  }
+
+  return "";
+};
+
 export default function SSUUserSignup({
   onSubmit,
   initialValues,
@@ -83,6 +159,15 @@ export default function SSUUserSignup({
   const [submitError, setSubmitError] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
 
+  const [formWindow, setFormWindow] = useState({
+    checked: false,
+    loading: true,
+    isOpen: true,
+    message: "",
+    lastDate: null,
+    serverNow: null,
+  });
+
   const validationSchema = useMemo(
     () => getValidationSchema(isLoggedIn),
     [isLoggedIn]
@@ -92,6 +177,54 @@ export default function SSUUserSignup({
     () => buildInitialValues(initialValues),
     [initialValues]
   );
+
+  const verifyFormWindow = async () => {
+    try {
+      setFormWindow((prev) => ({
+        ...prev,
+        loading: true,
+      }));
+
+      const [settingsSnap, serverNow] = await Promise.all([
+        getDoc(doc(db, ...ssuDocPath.settingFormOpen())),
+        getServerNowFromRTDB(),
+      ]);
+
+      const settingsData = settingsSnap.exists() ? settingsSnap.data() : null;
+      const closedMessage = getClosedMessage(settingsData, serverNow);
+
+      const nextState = {
+        checked: true,
+        loading: false,
+        isOpen: !closedMessage,
+        message: closedMessage,
+        lastDate: settingsData?.lastDate || null,
+        serverNow,
+      };
+
+      setFormWindow(nextState);
+      return nextState;
+    } catch (error) {
+      console.error("Failed to verify SSU form window", error);
+
+      const nextState = {
+        checked: true,
+        loading: false,
+        isOpen: false,
+        message:
+          "Unable to verify application window right now. New registration is temporarily blocked.",
+        lastDate: null,
+        serverNow: null,
+      };
+
+      setFormWindow(nextState);
+      return nextState;
+    }
+  };
+
+  useEffect(() => {
+    verifyFormWindow();
+  }, []);
 
   const sendOtp = async (phoneNumber) => {
     if (SSU_DEV_MODE) {
@@ -124,42 +257,62 @@ export default function SSUUserSignup({
     confirmPassword: values.confirmPassword || "",
   });
 
-const handleSubmit = async (values, { setSubmitting }) => {
-  setSubmitError("");
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setSubmitError("");
 
-  if (isReadOnly) {
-    setSubmitting(false);
-    return;
-  }
-
-  try {
-    setSendingOtp(true);
-
-    const cleanedValues = cleanSignupValues(values);
-
-    if (cleanedValues.phoneNumber.length !== 10) {
-      setSubmitError("Enter a valid 10-digit mobile number.");
+    if (isReadOnly) {
+      setSubmitting(false);
       return;
     }
 
-    await sendOtp(cleanedValues.phoneNumber);
+    try {
+      const windowState = await verifyFormWindow();
 
-    setFormValues(cleanedValues);
-    setUserPhone(cleanedValues.phoneNumber);
-    setIsPhoneModalOpen(true);
-  } catch (error) {
-    setSubmitError(error.message || "Could not send OTP.");
-  } finally {
-    setSendingOtp(false);
-    setSubmitting(false);
-  }
-};
+      if (!windowState.isOpen && !isLoggedIn) {
+        setSubmitError(
+          windowState.message ||
+            "SSU Recruitment application form is currently closed."
+        );
+        return;
+      }
+
+      setSendingOtp(true);
+
+      const cleanedValues = cleanSignupValues(values);
+
+      if (cleanedValues.phoneNumber.length !== 10) {
+        setSubmitError("Enter a valid 10-digit mobile number.");
+        return;
+      }
+
+      await sendOtp(cleanedValues.phoneNumber);
+
+      setFormValues(cleanedValues);
+      setUserPhone(cleanedValues.phoneNumber);
+      setIsPhoneModalOpen(true);
+    } catch (error) {
+      setSubmitError(error.message || "Could not send OTP.");
+    } finally {
+      setSendingOtp(false);
+      setSubmitting(false);
+    }
+  };
 
   const handlePhoneVerified = async () => {
     setIsPhoneModalOpen(false);
     setSubmitError("");
 
     if (!formValues || !onSubmit) return;
+
+    const windowState = await verifyFormWindow();
+
+    if (!windowState.isOpen && !isLoggedIn) {
+      setSubmitError(
+        windowState.message ||
+          "SSU Recruitment application form is currently closed."
+      );
+      return;
+    }
 
     const result = await onSubmit({
       type: "registration",
@@ -172,6 +325,10 @@ const handleSubmit = async (values, { setSubmitting }) => {
       setSubmitError(result.error || "Registration failed.");
     }
   };
+
+  const signupBlocked = !isLoggedIn && !formWindow.loading && !formWindow.isOpen;
+  const signupDisabled =
+    isReadOnly || sendingOtp || formWindow.loading || signupBlocked;
 
   return (
     <>
@@ -208,6 +365,47 @@ const handleSubmit = async (values, { setSubmitting }) => {
         </div>
 
         <div className="rounded-[32px] border border-white/80 bg-white/72 p-5 shadow-[0_16px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-8">
+          {formWindow.loading ? (
+            <div className="mb-6 rounded-[24px] border border-blue-200 bg-blue-50 px-4 py-4 text-sm text-blue-800">
+              <div className="flex items-center gap-3 font-semibold">
+                <FaSpinner className="animate-spin" />
+                Checking application window...
+              </div>
+              <div className="mt-1">
+                Please wait while we verify whether new registration is open.
+              </div>
+            </div>
+          ) : signupBlocked ? (
+            <div className="mb-6 rounded-[24px] border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800">
+              <div className="flex items-center gap-2 font-semibold">
+                <FaLock />
+                New registration is closed
+              </div>
+
+              <div className="mt-1">
+                {formWindow.message ||
+                  "SSU Recruitment application form is currently closed."}
+              </div>
+            </div>
+          ) : formWindow.checked && !isLoggedIn ? (
+            <div className="mb-6 rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-800">
+              <div className="flex items-center gap-2 font-semibold">
+                <FaCheckCircle />
+                New registration is open
+              </div>
+
+              {formWindow.lastDate ? (
+                <div className="mt-1">
+                  Last date: {formatDeadline(formWindow.lastDate)}
+                </div>
+              ) : (
+                <div className="mt-1">
+                  You may register and complete the application.
+                </div>
+              )}
+            </div>
+          ) : null}
+
           {isReadOnly ? (
             <div className="mb-6 rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-700">
               <div className="flex items-center gap-2 font-semibold text-slate-800">
@@ -235,9 +433,8 @@ const handleSubmit = async (values, { setSubmitting }) => {
                 </div>
 
                 <div className="mt-2 text-sm leading-relaxed text-slate-600">
-                  After successful OTP verification, your application ID will be
-                  generated in the format SSUYYYYMM0001. Returning applicants can
-                  log in using registration number, email, or mobile number.
+                 After OTP verification, your Application ID will be generated. Returning applicants may log in using their Application ID, email, or mobile number.
+
                 </div>
               </div>
 
@@ -248,8 +445,9 @@ const handleSubmit = async (values, { setSubmitting }) => {
                 </div>
 
                 <div className="mt-2 text-sm leading-relaxed text-slate-500">
-                  Duplicate registration using the same mobile, email, or Aadhaar
-                  will be blocked after the first successful registration.
+                  Duplicate registration using the same mobile, email, or
+                  Aadhaar will be blocked after the first successful
+                  registration.
                 </div>
               </div>
             </div>
@@ -272,7 +470,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       required
                       errors={errors}
                       touched={touched}
-                      disabled={isReadOnly}
+                      disabled={signupDisabled}
                       icon={<FaIdCard />}
                     />
 
@@ -284,7 +482,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       required
                       errors={errors}
                       touched={touched}
-                      disabled={isReadOnly}
+                      disabled={signupDisabled}
                     />
 
                     <InputField
@@ -296,7 +494,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       required
                       errors={errors}
                       touched={touched}
-                      disabled={isReadOnly}
+                      disabled={signupDisabled}
                       icon={<FaMobileAlt />}
                       onSanitize={normalizePhone}
                     />
@@ -310,7 +508,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       required
                       errors={errors}
                       touched={touched}
-                      disabled={isReadOnly}
+                      disabled={signupDisabled}
                       icon={<FaIdCard />}
                       onSanitize={normalizeAadhaar}
                     />
@@ -323,7 +521,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       required
                       errors={errors}
                       touched={touched}
-                      disabled={isReadOnly}
+                      disabled={signupDisabled}
                     />
 
                     <InputField
@@ -334,7 +532,7 @@ const handleSubmit = async (values, { setSubmitting }) => {
                       required
                       errors={errors}
                       touched={touched}
-                      disabled={isReadOnly}
+                      disabled={signupDisabled}
                     />
                   </div>
 
@@ -356,13 +554,14 @@ const handleSubmit = async (values, { setSubmitting }) => {
                   {!isReadOnly ? (
                     <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 md:flex-row md:items-center md:justify-between">
                       <div className="text-sm text-slate-500">
-                        Application ID will be generated after mobile OTP
-                        verification.
+                        {signupBlocked
+                          ? "New registration is not allowed because the application window is closed."
+                          : "Application ID will be generated after mobile OTP verification."}
                       </div>
 
                       <button
                         type="submit"
-                        disabled={isSubmitting || sendingOtp}
+                        disabled={isSubmitting || signupDisabled}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isSubmitting || sendingOtp ? (
@@ -370,6 +569,10 @@ const handleSubmit = async (values, { setSubmitting }) => {
                             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                             Sending OTP...
                           </>
+                        ) : signupBlocked ? (
+                          "Registration Closed"
+                        ) : formWindow.loading ? (
+                          "Checking Form Status..."
                         ) : (
                           "Register & Continue"
                         )}
