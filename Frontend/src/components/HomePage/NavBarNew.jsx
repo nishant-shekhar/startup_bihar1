@@ -128,7 +128,13 @@ const NavBarNew = () => {
             >
               <Link to="/">Notifications</Link>
             </ScrollLink>
-
+<RouterLink
+  to="/ssurecruitment"
+  onClick={toggleMenu}
+  className="nav-mobile-link"
+>
+  SSU Recruitment
+</RouterLink>
             {/* Startup Ecosystem dropdown */}
             <div
               className="relative"
@@ -325,7 +331,9 @@ const NavBarNew = () => {
             >
               <Link to="/">Notifications</Link>
             </ScrollLink>
-
+<Link to="/ssurecruitment" className={navLinkClass}>
+  SSU Recruitment
+</Link>
             {/* Startup Ecosystem dropdown for mobile */}
             <details className="group">
               <summary className="nav-mobile-link flex justify-between items-center cursor-pointer list-none">

@@ -52,7 +52,14 @@ const formatDeadline = (timestamp) => {
     minute: "2-digit",
   });
 };
+const NAME_REGEX = /^[A-Za-z.' ]+$/;
 
+const sanitizeName = (value = "") => {
+  return String(value || "")
+    .replace(/[^A-Za-z.' ]/g, "")
+    .replace(/\s+/g, " ")
+    .trimStart();
+};
 const getServerNowFromRTDB = async () => {
   const tempKey = `ssu_signup_ts_${Date.now()}_${Math.random()
     .toString(36)
@@ -84,10 +91,11 @@ const getValidationSchema = (isLoggedIn) => {
   }
 
   return Yup.object().shape({
-    fullName: Yup.string()
-      .trim()
-      .min(2, "Enter a valid full name")
-      .required("Full name is required"),
+  fullName: Yup.string()
+  .trim()
+  .matches(NAME_REGEX, "Only alphabets, spaces, dot and apostrophe are allowed")
+  .min(2, "Enter a valid full name")
+  .required("Full name is required"),
 
     email: Yup.string()
       .trim()
@@ -248,14 +256,14 @@ export default function SSUUserSignup({
     return data;
   };
 
-  const cleanSignupValues = (values) => ({
-    fullName: String(values.fullName || "").trim().replace(/\s+/g, " "),
-    email: normalizeEmail(values.email),
-    phoneNumber: normalizePhone(values.phoneNumber),
-    aadharNumber: normalizeAadhaar(values.aadharNumber),
-    password: values.password || "",
-    confirmPassword: values.confirmPassword || "",
-  });
+const cleanSignupValues = (values) => ({
+  fullName: sanitizeName(values.fullName),
+  email: normalizeEmail(values.email),
+  phoneNumber: normalizePhone(values.phoneNumber),
+  aadharNumber: normalizeAadhaar(values.aadharNumber),
+  password: values.password || "",
+  confirmPassword: values.confirmPassword || "",
+});
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitError("");
@@ -463,16 +471,17 @@ export default function SSUUserSignup({
               {({ isSubmitting, errors, touched }) => (
                 <Form className="space-y-6">
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <InputField
-                      name="fullName"
-                      label="Full Name"
-                      placeholder="Enter full name"
-                      required
-                      errors={errors}
-                      touched={touched}
-                      disabled={signupDisabled}
-                      icon={<FaIdCard />}
-                    />
+                   <InputField
+  name="fullName"
+  label="Full Name"
+  placeholder="Enter full name"
+  required
+  errors={errors}
+  touched={touched}
+  disabled={signupDisabled}
+  icon={<FaIdCard />}
+  onSanitize={sanitizeName}
+/>
 
                     <InputField
                       name="email"

@@ -215,10 +215,53 @@ const inputClass =
 
 const labelClass = "mb-2 block text-sm font-semibold text-slate-800";
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const NAME_REGEX = /^[A-Za-z.' ]+$/;
 
-const normalizePhone = (value = "") =>
-  String(value || "").replace(/\D/g, "").slice(0, 10);
+const sanitizeName = (value = "") => {
+  return String(value || "")
+    .replace(/[^A-Za-z.' ]/g, "")
+    .replace(/\s+/g, " ")
+    .trimStart();
+};
+
+const normalizePhone = (value = "") => {
+  return String(value || "").replace(/\D/g, "").slice(0, 10);
+};
+
+const normalizePincode = (value = "") => {
+  return String(value || "").replace(/\D/g, "").slice(0, 6);
+};
+
+const toDateInputValue = (date) => {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const getMinimumAgeDate = (age = 18) => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - age);
+  return date;
+};
+
+const minDobIso = () => "1900-01-01";
+
+const maxDobIso = () => toDateInputValue(getMinimumAgeDate(18));
+
+const isAtLeast18 = (value) => {
+  if (!value) return false;
+
+  const dob = new Date(value);
+  if (Number.isNaN(dob.getTime())) return false;
+
+  const cutoff = getMinimumAgeDate(18);
+
+  dob.setHours(0, 0, 0, 0);
+  cutoff.setHours(0, 0, 0, 0);
+
+  return dob <= cutoff;
+};
 
 const getPostById = (id) => SSU_POSTS.find((post) => post.id === id) || null;
 
@@ -282,20 +325,57 @@ const validationSchema = Yup.object().shape({
   profilePhotoMeta: Yup.mixed().nullable(),
   profilePhotoFile: Yup.mixed().nullable(),
 
-  fullName: Yup.string().trim().required("Full name is required"),
+  fullName: Yup.string()
+    .trim()
+    .matches(NAME_REGEX, "Only alphabets, spaces, dot and apostrophe are allowed")
+    .min(2, "Enter a valid full name")
+    .required("Full name is required"),
+
   fathersName: Yup.string()
     .trim()
+    .matches(NAME_REGEX, "Only alphabets, spaces, dot and apostrophe are allowed")
+    .min(2, "Enter a valid name")
     .required("Father's / Husband's name is required"),
-  mothersName: Yup.string().trim(),
-  dateOfBirth: Yup.string().required("Date of birth is required"),
+
+  mothersName: Yup.string()
+    .trim()
+    .test(
+      "valid-mother-name",
+      "Only alphabets, spaces, dot and apostrophe are allowed",
+      (value) => !value || NAME_REGEX.test(value)
+    ),
+
+  dateOfBirth: Yup.string()
+    .required("Date of birth is required")
+    .test("valid-date", "Enter a valid date of birth", (value) => {
+      if (!value) return false;
+      const dob = new Date(value);
+      return !Number.isNaN(dob.getTime());
+    })
+    .test("not-future", "Date of birth cannot be in the future", (value) => {
+      if (!value) return false;
+      const dob = new Date(value);
+      const today = new Date();
+
+      dob.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+
+      return dob <= today;
+    })
+    .test("minimum-age", "Applicant must be at least 18 years old", (value) =>
+      isAtLeast18(value)
+    ),
+
   gender: Yup.string().required("Gender is required"),
   category: Yup.string().required("Category is required"),
   nationality: Yup.string().trim().required("Nationality is required"),
 
   email: Yup.string().email("Invalid email").required("Email is required"),
+
   phoneNumber: Yup.string()
     .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
     .required("Mobile number is required"),
+
   alternateNumber: Yup.string().test(
     "alternate-phone",
     "Alternate number must be 10 digits",
@@ -316,16 +396,19 @@ const validationSchema = Yup.object().shape({
     then: (schema) => schema.trim().required("Permanent address is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
+
   permanentState: Yup.string().when("permanentAddressSameAsPresent", {
     is: false,
     then: (schema) => schema.required("Permanent state is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
+
   permanentDistrict: Yup.string().when("permanentAddressSameAsPresent", {
     is: false,
     then: (schema) => schema.required("Permanent district is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
+
   permanentPincode: Yup.string().when("permanentAddressSameAsPresent", {
     is: false,
     then: (schema) =>
@@ -355,6 +438,7 @@ function TextField({
   disabled,
   maxLength,
   as,
+  onSanitize,
 }) {
   return (
     <div>
@@ -363,15 +447,34 @@ function TextField({
         {required ? <span className="text-red-500"> *</span> : null}
       </label>
 
-      <Field
-        as={as}
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        disabled={disabled}
-        maxLength={maxLength}
-        className={`${inputClass} ${as === "textarea" ? "min-h-[104px] resize-none" : ""}`}
-      />
+      <Field name={name}>
+        {({ field, form }) => {
+          const handleChange = (e) => {
+            const rawValue = e.target.value;
+            const value = onSanitize ? onSanitize(rawValue) : rawValue;
+            form.setFieldValue(name, value);
+          };
+
+          const commonProps = {
+            ...field,
+            type,
+            name,
+            placeholder,
+            disabled,
+            maxLength,
+            onChange: handleChange,
+            className: `${inputClass} ${
+              as === "textarea" ? "min-h-[104px] resize-none" : ""
+            }`,
+          };
+
+          if (as === "textarea") {
+            return <textarea {...commonProps} />;
+          }
+
+          return <input {...commonProps} />;
+        }}
+      </Field>
 
       <ErrorText name={name} />
     </div>
@@ -388,6 +491,47 @@ function SelectField({ name, label, children, required, disabled }) {
 
       <Field as="select" name={name} disabled={disabled} className={inputClass}>
         {children}
+      </Field>
+
+      <ErrorText name={name} />
+    </div>
+  );
+}
+
+function StateSelectField({
+  name,
+  districtName,
+  label,
+  stateOptions,
+  disabled,
+  required,
+}) {
+  return (
+    <div>
+      <label className={labelClass}>
+        {label}
+        {required ? <span className="text-red-500"> *</span> : null}
+      </label>
+
+      <Field name={name}>
+        {({ field, form }) => (
+          <select
+            {...field}
+            disabled={disabled}
+            className={inputClass}
+            onChange={(e) => {
+              form.setFieldValue(name, e.target.value);
+              form.setFieldValue(districtName, "");
+            }}
+          >
+            <option value="">Select State</option>
+            {stateOptions.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
+            ))}
+          </select>
+        )}
       </Field>
 
       <ErrorText name={name} />
@@ -462,7 +606,7 @@ function ProfilePhotoUpload({
   useEffect(() => {
     if (!selectedFile) {
       setPreviewUrl("");
-      return;
+      return undefined;
     }
 
     const url = URL.createObjectURL(selectedFile);
@@ -625,17 +769,18 @@ export default function SSUPersonalDetailsStep({
       postAppliedFor: selectedPost.postName,
       postEligibilitySnapshot: buildPostSnapshot(selectedPost),
 
-      fullName: String(values.fullName || "").trim().replace(/\s+/g, " "),
-      fathersName: String(values.fathersName || "")
-        .trim()
-        .replace(/\s+/g, " "),
-      mothersName: String(values.mothersName || "")
-        .trim()
-        .replace(/\s+/g, " "),
+      fullName: sanitizeName(values.fullName),
+      fathersName: sanitizeName(values.fathersName),
+      mothersName: sanitizeName(values.mothersName),
+
       email: String(values.email || "").trim().toLowerCase(),
       phoneNumber: normalizePhone(values.phoneNumber),
       alternateNumber: normalizePhone(values.alternateNumber),
+
       presentAddress: String(values.presentAddress || "").trim(),
+      presentState: values.presentState || "",
+      presentDistrict: values.presentDistrict || "",
+      presentPincode: normalizePincode(values.presentPincode),
 
       permanentAddress: values.permanentAddressSameAsPresent
         ? String(values.presentAddress || "").trim()
@@ -647,8 +792,8 @@ export default function SSUPersonalDetailsStep({
         ? values.presentDistrict
         : values.permanentDistrict,
       permanentPincode: values.permanentAddressSameAsPresent
-        ? values.presentPincode
-        : values.permanentPincode,
+        ? normalizePincode(values.presentPincode)
+        : normalizePincode(values.permanentPincode),
 
       updatedAtIso: new Date().toISOString(),
     };
@@ -703,28 +848,7 @@ export default function SSUPersonalDetailsStep({
           const presentDistricts = stateDistrictData?.[values.presentState] || [];
           const permanentDistricts =
             stateDistrictData?.[values.permanentState] || [];
-
           const selectedPost = getPostById(values.postAppliedForId);
-
-          useEffect(() => {
-            if (
-              values.presentState &&
-              values.presentDistrict &&
-              !presentDistricts.includes(values.presentDistrict)
-            ) {
-              setFieldValue("presentDistrict", "");
-            }
-          }, [values.presentState]);
-
-          useEffect(() => {
-            if (
-              values.permanentState &&
-              values.permanentDistrict &&
-              !permanentDistricts.includes(values.permanentDistrict)
-            ) {
-              setFieldValue("permanentDistrict", "");
-            }
-          }, [values.permanentState]);
 
           return (
             <Form className="space-y-6">
@@ -794,6 +918,7 @@ export default function SSUPersonalDetailsStep({
                     placeholder="Applicant full name"
                     required
                     disabled={isReadOnly}
+                    onSanitize={sanitizeName}
                   />
 
                   <TextField
@@ -802,6 +927,7 @@ export default function SSUPersonalDetailsStep({
                     placeholder="Enter name"
                     required
                     disabled={isReadOnly}
+                    onSanitize={sanitizeName}
                   />
 
                   <TextField
@@ -809,16 +935,29 @@ export default function SSUPersonalDetailsStep({
                     label="Mother's Name"
                     placeholder="Enter mother's name"
                     disabled={isReadOnly}
+                    onSanitize={sanitizeName}
                   />
 
-                  <TextField
-                    name="dateOfBirth"
-                    label="Date of Birth"
-                    type="date"
-                    required
-                    disabled={isReadOnly}
-                    max={todayIso()}
-                  />
+                  <div>
+                    <label className={labelClass}>
+                      Date of Birth <span className="text-red-500">*</span>
+                    </label>
+
+                    <Field
+                      type="date"
+                      name="dateOfBirth"
+                      disabled={isReadOnly}
+                      min={minDobIso()}
+                      max={maxDobIso()}
+                      className={inputClass}
+                    />
+
+                    <div className="mt-1 text-xs text-slate-500">
+                      Applicant must be at least 18 years old.
+                    </div>
+
+                    <ErrorText name="dateOfBirth" />
+                  </div>
 
                   <SelectField
                     name="gender"
@@ -889,6 +1028,7 @@ export default function SSUPersonalDetailsStep({
                     required
                     disabled={isReadOnly}
                     maxLength={10}
+                    onSanitize={normalizePhone}
                   />
 
                   <TextField
@@ -897,6 +1037,7 @@ export default function SSUPersonalDetailsStep({
                     placeholder="Optional"
                     disabled={isReadOnly}
                     maxLength={10}
+                    onSanitize={normalizePhone}
                   />
                 </div>
               </div>
@@ -929,19 +1070,14 @@ export default function SSUPersonalDetailsStep({
                     />
                   </div>
 
-                  <SelectField
+                  <StateSelectField
                     name="presentState"
+                    districtName="presentDistrict"
                     label="Present State"
                     required
                     disabled={isReadOnly}
-                  >
-                    <option value="">Select State</option>
-                    {stateOptions.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </SelectField>
+                    stateOptions={stateOptions}
+                  />
 
                   <SelectField
                     name="presentDistrict"
@@ -963,6 +1099,7 @@ export default function SSUPersonalDetailsStep({
                     required
                     disabled={isReadOnly}
                     maxLength={6}
+                    onSanitize={normalizePincode}
                   />
 
                   <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -991,19 +1128,14 @@ export default function SSUPersonalDetailsStep({
                         />
                       </div>
 
-                      <SelectField
+                      <StateSelectField
                         name="permanentState"
+                        districtName="permanentDistrict"
                         label="Permanent State"
                         required
                         disabled={isReadOnly}
-                      >
-                        <option value="">Select State</option>
-                        {stateOptions.map((state) => (
-                          <option key={state} value={state}>
-                            {state}
-                          </option>
-                        ))}
-                      </SelectField>
+                        stateOptions={stateOptions}
+                      />
 
                       <SelectField
                         name="permanentDistrict"
@@ -1025,6 +1157,7 @@ export default function SSUPersonalDetailsStep({
                         required
                         disabled={isReadOnly}
                         maxLength={6}
+                        onSanitize={normalizePincode}
                       />
                     </>
                   ) : null}
