@@ -78,6 +78,7 @@ import {
   ssuDocPath,
   ssuStoragePath,
 } from "./ssuFirebasePaths";
+import ToR from "../shared/ToR";
 
 const STORAGE_KEY = "ssuRecruitmentDraft";
 const AUTH_KEY = "ssuRecruitmentAuth";
@@ -1905,6 +1906,7 @@ function RegistrationLayoutInner() {
                       className="h-10 w-auto object-contain"
                     />
                   </div>
+                  <ToR />
 
                   {!isLoggedIn ? (
                     <button
@@ -1924,7 +1926,6 @@ function RegistrationLayoutInner() {
                       Logout
                     </button>
                   )}
-
                   {/*<SSULanguageToggle />*/}
                 </div>
               </div>
