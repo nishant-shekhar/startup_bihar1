@@ -1925,7 +1925,7 @@ function RegistrationLayoutInner() {
                     </button>
                   )}
 
-                  <SSULanguageToggle />
+                  {/*<SSULanguageToggle />*/}
                 </div>
               </div>
 
