@@ -187,9 +187,10 @@ const defaultFormOpen = {
 const defaultNotice = {
   active: true,
   notice:
-    "SSU Recruitment application is open. Please complete payment proof upload and final submission before the last date.",
+    "SSU Recruitment 2026 application is open. Please read the ToR carefully before applying. Complete the form, SBI Collect payment, payment proof upload, and final submission before the last date.",
   link: "",
   color: "amber",
+  linkButtonText: "Read ToR & Eligibility",
 };
 
 const defaultFee = {
@@ -201,6 +202,8 @@ const defaultFee = {
   sbiCollectButtonText: "Pay via SBI Collect",
   applicationNumberInstruction:
     "Copy your application number and paste it in the SBI Collect form wherever application/reference number is required.",
+  inactiveMessage:
+    "SBI Collect payment link is currently inactive. Please check again later or contact the department.",
 };
 
 const defaultResultAnnouncement = {
@@ -394,6 +397,10 @@ export default function SSURecruitmentSettings() {
     };
   }, [formOpen]);
 
+  const sbiLinkSafe = useMemo(() => {
+    return isSafeSbiCollectLink(fee.sbiCollectLink);
+  }, [fee.sbiCollectLink]);
+
   const loadSettings = async () => {
     try {
       setLoading(true);
@@ -415,6 +422,7 @@ export default function SSURecruitmentSettings() {
 
       if (formSnap.exists()) {
         const data = formSnap.data();
+
         setFormOpen({
           isOpen: data?.isOpen !== false,
           close: data?.close === true,
@@ -436,13 +444,21 @@ export default function SSURecruitmentSettings() {
         setFee({
           ...defaultFee,
           ...data,
+          active: data?.active !== false,
           amount: Number(data?.amount || defaultFee.amount),
+          currency: data?.currency || "INR",
           paymentMode: "SBI_COLLECT",
           sbiCollectLink:
             data?.sbiCollectLink ||
             data?.sbiCollectUrl ||
             data?.paymentLink ||
             "",
+          sbiCollectButtonText:
+            data?.sbiCollectButtonText || defaultFee.sbiCollectButtonText,
+          applicationNumberInstruction:
+            data?.applicationNumberInstruction ||
+            defaultFee.applicationNumberInstruction,
+          inactiveMessage: data?.inactiveMessage || defaultFee.inactiveMessage,
         });
       }
 
@@ -514,6 +530,9 @@ export default function SSURecruitmentSettings() {
           notice: String(notice.notice || "").trim(),
           link: String(notice.link || "").trim(),
           color: notice.color || "amber",
+          linkButtonText:
+            String(notice.linkButtonText || "").trim() ||
+            defaultNotice.linkButtonText,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -543,12 +562,12 @@ export default function SSURecruitmentSettings() {
         return;
       }
 
-      if (!sbiCollectLink) {
-        setError("Enter SBI Collect payment link.");
+      if (fee.active && !sbiCollectLink) {
+        setError("Enter SBI Collect payment link or mark payment link inactive.");
         return;
       }
 
-      if (!isSafeSbiCollectLink(sbiCollectLink)) {
+      if (sbiCollectLink && !isSafeSbiCollectLink(sbiCollectLink)) {
         setError(
           "SBI Collect link must be HTTPS and should belong to onlinesbi.sbi."
         );
@@ -569,6 +588,9 @@ export default function SSURecruitmentSettings() {
           applicationNumberInstruction:
             String(fee.applicationNumberInstruction || "").trim() ||
             defaultFee.applicationNumberInstruction,
+          inactiveMessage:
+            String(fee.inactiveMessage || "").trim() ||
+            defaultFee.inactiveMessage,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -699,8 +721,6 @@ export default function SSURecruitmentSettings() {
     );
   }
 
-  const sbiLinkSafe = isSafeSbiCollectLink(fee.sbiCollectLink);
-
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat p-4 md:p-8"
@@ -720,8 +740,9 @@ export default function SSURecruitmentSettings() {
               </h1>
 
               <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
-                Manage form dates, notices, SBI Collect payment link, application
-                fee, result notification and payment verification messages.
+                Manage form dates, notices, SBI Collect payment link,
+                application fee, result notification and payment verification
+                messages.
               </p>
             </div>
 
@@ -753,12 +774,18 @@ export default function SSURecruitmentSettings() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Application Fee
+            <div
+              className={`rounded-2xl border px-4 py-3 ${
+                fee.active
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-red-200 bg-red-50 text-red-700"
+              }`}
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide opacity-75">
+                SBI Collect
               </div>
               <div className="mt-1 text-sm font-bold">
-                ₹{Number(fee.amount || 0)} {fee.currency || "INR"}
+                {fee.active ? "Active" : "Inactive"} • ₹{Number(fee.amount || 0)}
               </div>
             </div>
 
@@ -909,7 +936,7 @@ export default function SSURecruitmentSettings() {
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div>
               <label className={labelClass}>Notice Link</label>
               <input
                 value={notice.link}
@@ -917,26 +944,40 @@ export default function SSURecruitmentSettings() {
                 placeholder="Optional URL"
                 className={inputClass}
               />
+            </div>
 
-              {notice.link ? (
+            <div>
+              <label className={labelClass}>Notice Link Button Text</label>
+              <input
+                value={notice.linkButtonText}
+                onChange={(e) =>
+                  setNoticeField("linkButtonText", e.target.value)
+                }
+                placeholder="Read ToR & Eligibility"
+                className={inputClass}
+              />
+            </div>
+
+            {notice.link ? (
+              <div className="md:col-span-2">
                 <a
                   href={notice.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-indigo-700 underline"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   <FaExternalLinkAlt />
                   Open notice link
                 </a>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </div>
         </SectionCard>
 
         <SectionCard
           icon={<FaUniversity />}
           title="SBI Collect Payment"
-          subtitle="Set application fee and the official SBI Collect payment URL."
+          subtitle="Set application fee, SBI Collect URL, button text and inactive message."
           action={
             <SaveButton
               loading={savingKey === "fee"}
@@ -948,7 +989,7 @@ export default function SSURecruitmentSettings() {
           <div className="grid gap-5 md:grid-cols-2">
             <div className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
               <div className="mb-3 text-sm font-bold text-slate-900">
-                Fee Status
+                Payment Link Status
               </div>
 
               <TogglePill
@@ -957,6 +998,11 @@ export default function SSURecruitmentSettings() {
                 trueLabel="Active"
                 falseLabel="Inactive"
               />
+
+              <FieldHelp>
+                If inactive, applicant payment page will hide the SBI Collect
+                button and show the inactive message.
+              </FieldHelp>
             </div>
 
             <div>
@@ -1035,6 +1081,17 @@ export default function SSURecruitmentSettings() {
             </div>
 
             <div>
+              <label className={labelClass}>Inactive Message</label>
+              <textarea
+                value={fee.inactiveMessage}
+                onChange={(e) => setFeeField("inactiveMessage", e.target.value)}
+                rows={3}
+                placeholder="SBI Collect payment link is currently inactive..."
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+
+            <div className="md:col-span-2">
               <label className={labelClass}>Application Number Instruction</label>
               <textarea
                 value={fee.applicationNumberInstruction}
@@ -1052,10 +1109,7 @@ export default function SSURecruitmentSettings() {
                 <div>
                   <div className="font-bold">Safer storage approach</div>
                   <p className="mt-1 leading-relaxed">
-                    SBI Collect URL is public, so storing it in Firestore
-                    settings is fine. Only admins should write this path.
-                    Frontend reads the link and opens it in a new tab. Never
-                    store bank login credentials or SBI admin details.
+                    Make sure to use a correct SBI Collect link for SSU recruitment fee payment.
                   </p>
                 </div>
               </div>
@@ -1326,9 +1380,7 @@ export default function SSURecruitmentSettings() {
             Important
           </div>
           <p className="mt-2 leading-relaxed">
-            Protect this settings route behind admin login before production.
-            Firestore rules should allow public read for settings but write only
-            for admins.
+            Please ensure that only trusted admins have access to these settings, especially the SBI Collect link and form open/close controls. Regularly review admin access and monitor changes to settings for security.
           </p>
         </div>
       </div>
