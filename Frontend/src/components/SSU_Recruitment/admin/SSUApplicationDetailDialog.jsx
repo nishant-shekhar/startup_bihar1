@@ -8,19 +8,14 @@ import {
   Building2,
   MapPin,
   Phone,
-  Mail,
-  CalendarDays,
   CreditCard,
   ShieldCheck,
-  XCircle,
-  Clock3,
   ExternalLink,
   BadgeCheck,
   AlertTriangle,
   Download,
   Save,
   RefreshCw,
-  CheckCircle2,
   ClipboardCheck,
   Eye,
 } from "lucide-react";
@@ -83,7 +78,8 @@ const normalizeStatus = (value) => {
   return String(value || "draft").trim().toLowerCase();
 };
 
-const getApplicationId = (app) => app?.applicationId || app?.applicationNo || app?.id || "-";
+const getApplicationId = (app) =>
+  app?.applicationId || app?.applicationNo || app?.id || "-";
 
 const getApplicantName = (app) => {
   return (
@@ -125,6 +121,7 @@ const getPaymentStatus = (app) => {
 
   const hasSubmittedProof =
     !!payment?.paymentScreenshotMeta?.downloadURL ||
+    !!payment?.paymentScreenshotMeta?.url ||
     !!payment?.utrNumber ||
     !!payment?.submittedAt;
 
@@ -162,13 +159,16 @@ const paymentToneMap = {
 
 function SSUAdminBadge({ value, type = "status" }) {
   const key = String(value || "").trim().toLowerCase();
+
   const tone =
     type === "payment"
       ? paymentToneMap[key] || paymentToneMap.not_submitted
       : statusToneMap[key] || statusToneMap.draft;
 
   return (
-    <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}>
+    <span
+      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}
+    >
       {safe(key.replaceAll("_", " "))}
     </span>
   );
@@ -211,6 +211,7 @@ function SSUAdminSection({ icon: Icon, title, subtitle, children, action }) {
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
             <Icon size={18} />
           </div>
+
           <div>
             <h3 className="text-lg font-bold text-slate-900">{title}</h3>
             {subtitle ? (
@@ -230,7 +231,13 @@ function SSUAdminSection({ icon: Icon, title, subtitle, children, action }) {
 }
 
 function SSUAdminFileLink({ label, meta }) {
-  const url = meta?.downloadURL || meta?.url || "";
+  const url =
+    meta?.downloadURL ||
+    meta?.url ||
+    meta?.fileUrl ||
+    meta?.fileURL ||
+    meta?.publicUrl ||
+    "";
 
   if (!url) {
     return (
@@ -240,6 +247,14 @@ function SSUAdminFileLink({ label, meta }) {
     );
   }
 
+  const fileName =
+    meta?.fileName ||
+    meta?.filename ||
+    meta?.name ||
+    meta?.originalName ||
+    meta?.path ||
+    "View file";
+
   return (
     <a
       href={url}
@@ -248,10 +263,147 @@ function SSUAdminFileLink({ label, meta }) {
       className="flex items-center justify-between gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
     >
       <span className="min-w-0 break-all">
-        {label}: {meta?.fileName || "View file"}
+        {label}: {fileName}
       </span>
       <ExternalLink size={16} className="shrink-0" />
     </a>
+  );
+}
+
+const humanizeKey = (value) => {
+  return String(value || "")
+    .replace(/Meta$/i, "")
+    .replace(/File$/i, "")
+    .replace(/URL$/i, "")
+    .replace(/Url$/i, "")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim();
+};
+
+const isFileMetaObject = (value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  return !!(
+    value.downloadURL ||
+    value.url ||
+    value.fileUrl ||
+    value.fileURL ||
+    value.publicUrl
+  );
+};
+
+const getFileUrl = (meta) => {
+  return (
+    meta?.downloadURL ||
+    meta?.url ||
+    meta?.fileUrl ||
+    meta?.fileURL ||
+    meta?.publicUrl ||
+    ""
+  );
+};
+
+const getFileName = (meta, fallback = "View file") => {
+  return (
+    meta?.fileName ||
+    meta?.filename ||
+    meta?.name ||
+    meta?.originalName ||
+    meta?.path ||
+    fallback
+  );
+};
+
+const getReadableDocumentLabel = (node, path = []) => {
+  if (node?.label) return node.label;
+  if (node?.documentLabel) return node.documentLabel;
+  if (node?.documentType) return humanizeKey(node.documentType);
+  if (node?.type) return humanizeKey(node.type);
+
+  const lastKey = path[path.length - 1] || "Document";
+  const parentKey = path[path.length - 2] || "";
+
+  const joined = `${humanizeKey(parentKey)} ${humanizeKey(lastKey)}`.trim();
+
+  return joined || "Uploaded Document";
+};
+
+const collectUploadedFiles = (source) => {
+  const files = [];
+  const seen = new Set();
+
+  const skipKeys = new Set([
+    "password",
+    "otp",
+    "token",
+    "accessToken",
+    "refreshToken",
+    "idToken",
+  ]);
+
+  const walk = (node, path = []) => {
+    if (!node || typeof node !== "object") return;
+
+    if (isFileMetaObject(node)) {
+      const url = getFileUrl(node);
+      if (!url || seen.has(url)) return;
+
+      seen.add(url);
+
+      files.push({
+        label: getReadableDocumentLabel(node, path),
+        meta: {
+          ...node,
+          downloadURL: url,
+          fileName: getFileName(node),
+        },
+        path: path.join("."),
+      });
+
+      return;
+    }
+
+    if (Array.isArray(node)) {
+      node.forEach((item, index) => {
+        walk(item, [...path, String(index + 1)]);
+      });
+      return;
+    }
+
+    Object.entries(node).forEach(([key, value]) => {
+      if (skipKeys.has(key)) return;
+      walk(value, [...path, key]);
+    });
+  };
+
+  walk(source);
+
+  return files;
+};
+
+function SSUAdminDynamicFileGrid({ files }) {
+  if (!files?.length) {
+    return (
+      <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+        No uploaded documents found in this application record.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {files.map((file, index) => (
+        <div key={`${file.meta.downloadURL}-${index}`} className="space-y-1">
+          <SSUAdminFileLink label={file.label} meta={file.meta} />
+
+          <div className="px-1 text-[11px] text-slate-400">
+            Saved at: {file.path}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -263,7 +415,10 @@ function SSUAdminTable({ columns, rows, emptyText = "No records available." }) {
           <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
             <tr>
               {columns.map((col) => (
-                <th key={col.key} className="whitespace-nowrap px-4 py-3 font-semibold">
+                <th
+                  key={col.key}
+                  className="whitespace-nowrap px-4 py-3 font-semibold"
+                >
                   {col.label}
                 </th>
               ))}
@@ -283,7 +438,10 @@ function SSUAdminTable({ columns, rows, emptyText = "No records available." }) {
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-8 text-center text-slate-500">
+                <td
+                  colSpan={columns.length}
+                  className="px-4 py-8 text-center text-slate-500"
+                >
                   {emptyText}
                 </td>
               </tr>
@@ -326,7 +484,9 @@ function SSUPaymentVerificationPanel({
   const [utrVerified, setUtrVerified] = useState(
     adminVerification?.utrVerified === true
   );
-  const [verifiedBy, setVerifiedBy] = useState(adminVerification?.verifiedBy || "admin");
+  const [verifiedBy, setVerifiedBy] = useState(
+    adminVerification?.verifiedBy || "admin"
+  );
   const [remarks, setRemarks] = useState(adminVerification?.remarks || "");
   const [saving, setSaving] = useState(false);
   const [localMessage, setLocalMessage] = useState("");
@@ -369,11 +529,25 @@ function SSUPaymentVerificationPanel({
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
       <div className="space-y-5">
         <div className="grid gap-4 md:grid-cols-3">
-          <SSUAdminInfoItem label="Payment Mode" value={payment?.paymentMode || "SBI_COLLECT"} />
-          <SSUAdminInfoItem label="Amount" value={payment?.amount ? `₹${payment.amount}` : "-"} />
+          <SSUAdminInfoItem
+            label="Payment Mode"
+            value={payment?.paymentMode || "SBI_COLLECT"}
+          />
+          <SSUAdminInfoItem
+            label="Amount"
+            value={payment?.amount ? `₹${payment.amount}` : "-"}
+          />
           <SSUAdminInfoItem label="Payment Date" value={payment?.paymentDate} />
-          <SSUAdminInfoItem label="UTR / Reference No." value={payment?.utrNumber} mono />
-          <SSUAdminInfoItem label="Applicant Submitted At" value={formatDateTime(payment?.submittedAt)} />
+          <SSUAdminInfoItem
+            label="UTR / Reference No."
+            value={payment?.utrNumber}
+            mono
+          />
+          <SSUAdminInfoItem
+            label="Applicant Submitted At"
+            value={formatDateTime(payment?.submittedAt)}
+          />
+
           <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
               Current Status
@@ -476,7 +650,11 @@ function SSUPaymentVerificationPanel({
             disabled={saving}
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {saving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+            {saving ? (
+              <RefreshCw size={16} className="animate-spin" />
+            ) : (
+              <Save size={16} />
+            )}
             {saving ? "Saving..." : "Save Verification"}
           </button>
         </div>
@@ -549,7 +727,11 @@ function SSUStatusUpdatePanel({ application, onStatusUpdate, onAfterUpdate }) {
           disabled={saving}
           className="mt-7 inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {saving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+          {saving ? (
+            <RefreshCw size={16} className="animate-spin" />
+          ) : (
+            <Save size={16} />
+          )}
           {saving ? "Saving..." : "Update Status"}
         </button>
       </div>
@@ -584,13 +766,16 @@ export default function SSUApplicationDetailDialog({
 
   const postSnapshot = useMemo(() => getPostSnapshot(application), [application]);
 
+  const uploadedFiles = useMemo(() => {
+    return collectUploadedFiles(application);
+  }, [application]);
+
   if (!open || !application) return null;
 
   const personal = application?.personalDetails || {};
   const education = application?.educationalQualifications || {};
   const experience = application?.workExperience || {};
   const payment = application?.paymentDetails || {};
-  const documents = application?.documents || application?.documentUploads || {};
   const declarationDone = getFinalDeclaration(application);
 
   const educationRows = Array.isArray(education?.education)
@@ -716,9 +901,13 @@ export default function SSUApplicationDetailDialog({
             <div className="space-y-5">
               <div className="grid gap-5 lg:grid-cols-[260px_1fr]">
                 <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-                  {personal?.profilePhotoMeta?.downloadURL ? (
+                  {personal?.profilePhotoMeta?.downloadURL ||
+                  personal?.profilePhotoMeta?.url ? (
                     <img
-                      src={personal.profilePhotoMeta.downloadURL}
+                      src={
+                        personal?.profilePhotoMeta?.downloadURL ||
+                        personal?.profilePhotoMeta?.url
+                      }
                       alt={getApplicantName(application)}
                       className="h-52 w-full rounded-[24px] border border-slate-200 object-cover"
                     />
@@ -739,15 +928,28 @@ export default function SSUApplicationDetailDialog({
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                  <SSUAdminInfoItem label="Application ID" value={getApplicationId(application)} mono />
-                  <SSUAdminInfoItem label="Status" value={normalizeStatus(application?.status).replaceAll("_", " ")} />
-                  <SSUAdminInfoItem label="Payment" value={getPaymentStatus(application).replaceAll("_", " ")} />
+                  <SSUAdminInfoItem
+                    label="Application ID"
+                    value={getApplicationId(application)}
+                    mono
+                  />
+                  <SSUAdminInfoItem
+                    label="Status"
+                    value={normalizeStatus(application?.status).replaceAll("_", " ")}
+                  />
+                  <SSUAdminInfoItem
+                    label="Payment"
+                    value={getPaymentStatus(application).replaceAll("_", " ")}
+                  />
                   <SSUAdminInfoItem label="Email" value={getEmail(application)} />
                   <SSUAdminInfoItem label="Mobile" value={getPhone(application)} />
                   <SSUAdminInfoItem label="District" value={personal?.presentDistrict} />
                   <SSUAdminInfoItem label="Category" value={personal?.category} />
                   <SSUAdminInfoItem label="DOB" value={personal?.dateOfBirth} />
-                  <SSUAdminInfoItem label="Submitted At" value={formatDateTime(application?.submittedAt)} />
+                  <SSUAdminInfoItem
+                    label="Submitted At"
+                    value={formatDateTime(application?.submittedAt)}
+                  />
                 </div>
               </div>
 
@@ -757,15 +959,27 @@ export default function SSUApplicationDetailDialog({
                 subtitle="Exact ToR eligibility snapshot saved with the application"
               >
                 <div className="grid gap-4 md:grid-cols-3">
-                  <SSUAdminInfoItem label="Post" value={postSnapshot?.postName || getPostName(application)} />
+                  <SSUAdminInfoItem
+                    label="Post"
+                    value={postSnapshot?.postName || getPostName(application)}
+                  />
                   <SSUAdminInfoItem label="Level" value={postSnapshot?.level} />
                   <SSUAdminInfoItem label="Category" value={postSnapshot?.category} />
-                  <SSUAdminInfoItem label="Emoluments" value={postSnapshot?.emoluments} />
+                  <SSUAdminInfoItem
+                    label="Emoluments"
+                    value={postSnapshot?.emoluments}
+                  />
                   <div className="md:col-span-2">
-                    <SSUAdminInfoItem label="Required Qualification" value={postSnapshot?.qualification} />
+                    <SSUAdminInfoItem
+                      label="Required Qualification"
+                      value={postSnapshot?.qualification}
+                    />
                   </div>
                   <div className="md:col-span-3">
-                    <SSUAdminInfoItem label="Required Experience" value={postSnapshot?.experience} />
+                    <SSUAdminInfoItem
+                      label="Required Experience"
+                      value={postSnapshot?.experience}
+                    />
                   </div>
                 </div>
               </SSUAdminSection>
@@ -790,7 +1004,9 @@ export default function SSUApplicationDetailDialog({
                       Qualification Declaration
                     </div>
                     <div className="mt-2">
-                      <SSUAdminYesNoBadge value={education?.qualificationDeclaration} />
+                      <SSUAdminYesNoBadge
+                        value={education?.qualificationDeclaration}
+                      />
                     </div>
                   </div>
 
@@ -799,7 +1015,9 @@ export default function SSUApplicationDetailDialog({
                       Experience Declaration
                     </div>
                     <div className="mt-2">
-                      <SSUAdminYesNoBadge value={experience?.experienceDeclaration} />
+                      <SSUAdminYesNoBadge
+                        value={experience?.experienceDeclaration}
+                      />
                     </div>
                   </div>
 
@@ -821,33 +1039,75 @@ export default function SSUApplicationDetailDialog({
               <SSUAdminSection icon={UserRound} title="Personal Details">
                 <div className="grid gap-4 md:grid-cols-3">
                   <SSUAdminInfoItem label="Full Name" value={personal?.fullName} />
-                  <SSUAdminInfoItem label="Father/Husband Name" value={personal?.fathersName} />
+                  <SSUAdminInfoItem
+                    label="Father/Husband Name"
+                    value={personal?.fathersName}
+                  />
                   <SSUAdminInfoItem label="Mother Name" value={personal?.mothersName} />
-                  <SSUAdminInfoItem label="Date of Birth" value={personal?.dateOfBirth} />
+                  <SSUAdminInfoItem
+                    label="Date of Birth"
+                    value={personal?.dateOfBirth}
+                  />
                   <SSUAdminInfoItem label="Gender" value={personal?.gender} />
                   <SSUAdminInfoItem label="Category" value={personal?.category} />
-                  <SSUAdminInfoItem label="Nationality" value={personal?.nationality} />
+                  <SSUAdminInfoItem
+                    label="Nationality"
+                    value={personal?.nationality}
+                  />
                 </div>
               </SSUAdminSection>
 
               <SSUAdminSection icon={Phone} title="Contact Details">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <SSUAdminInfoItem label="Email" value={personal?.email || getEmail(application)} />
-                  <SSUAdminInfoItem label="Mobile" value={personal?.phoneNumber || getPhone(application)} />
-                  <SSUAdminInfoItem label="Alternate Mobile" value={personal?.alternateNumber} />
+                  <SSUAdminInfoItem
+                    label="Email"
+                    value={personal?.email || getEmail(application)}
+                  />
+                  <SSUAdminInfoItem
+                    label="Mobile"
+                    value={personal?.phoneNumber || getPhone(application)}
+                  />
+                  <SSUAdminInfoItem
+                    label="Alternate Mobile"
+                    value={personal?.alternateNumber}
+                  />
                 </div>
               </SSUAdminSection>
 
               <SSUAdminSection icon={MapPin} title="Address Details">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <SSUAdminInfoItem label="Present Address" value={personal?.presentAddress} />
-                  <SSUAdminInfoItem label="Permanent Address" value={personal?.permanentAddress} />
-                  <SSUAdminInfoItem label="Present State" value={personal?.presentState} />
-                  <SSUAdminInfoItem label="Permanent State" value={personal?.permanentState} />
-                  <SSUAdminInfoItem label="Present District" value={personal?.presentDistrict} />
-                  <SSUAdminInfoItem label="Permanent District" value={personal?.permanentDistrict} />
-                  <SSUAdminInfoItem label="Present Pincode" value={personal?.presentPincode} />
-                  <SSUAdminInfoItem label="Permanent Pincode" value={personal?.permanentPincode} />
+                  <SSUAdminInfoItem
+                    label="Present Address"
+                    value={personal?.presentAddress}
+                  />
+                  <SSUAdminInfoItem
+                    label="Permanent Address"
+                    value={personal?.permanentAddress}
+                  />
+                  <SSUAdminInfoItem
+                    label="Present State"
+                    value={personal?.presentState}
+                  />
+                  <SSUAdminInfoItem
+                    label="Permanent State"
+                    value={personal?.permanentState}
+                  />
+                  <SSUAdminInfoItem
+                    label="Present District"
+                    value={personal?.presentDistrict}
+                  />
+                  <SSUAdminInfoItem
+                    label="Permanent District"
+                    value={personal?.permanentDistrict}
+                  />
+                  <SSUAdminInfoItem
+                    label="Present Pincode"
+                    value={personal?.presentPincode}
+                  />
+                  <SSUAdminInfoItem
+                    label="Permanent Pincode"
+                    value={personal?.permanentPincode}
+                  />
                 </div>
               </SSUAdminSection>
             </div>
@@ -894,12 +1154,30 @@ export default function SSUApplicationDetailDialog({
             <div className="space-y-5">
               <SSUAdminSection icon={BriefcaseBusiness} title="Experience Summary">
                 <div className="grid gap-4 md:grid-cols-4">
-                  <SSUAdminInfoItem label="Total Experience" value={experience?.totalExperienceText} />
-                  <SSUAdminInfoItem label="Relevant Experience" value={experience?.relevantExperienceText} />
-                  <SSUAdminInfoItem label="Total Years" value={experience?.totalExpYears} />
-                  <SSUAdminInfoItem label="Relevant Years" value={experience?.relevantExpYears} />
+                  <SSUAdminInfoItem
+                    label="Total Experience"
+                    value={experience?.totalExperienceText}
+                  />
+                  <SSUAdminInfoItem
+                    label="Relevant Experience"
+                    value={experience?.relevantExperienceText}
+                  />
+                  <SSUAdminInfoItem
+                    label="Total Years"
+                    value={experience?.totalExpYears}
+                  />
+                  <SSUAdminInfoItem
+                    label="Relevant Years"
+                    value={experience?.relevantExpYears}
+                  />
                   <div className="md:col-span-4">
-                    <SSUAdminInfoItem label="Required Experience as per ToR" value={experience?.requiredExperienceText || postSnapshot?.experience} />
+                    <SSUAdminInfoItem
+                      label="Required Experience as per ToR"
+                      value={
+                        experience?.requiredExperienceText ||
+                        postSnapshot?.experience
+                      }
+                    />
                   </div>
                 </div>
               </SSUAdminSection>
@@ -942,29 +1220,12 @@ export default function SSUApplicationDetailDialog({
               <SSUAdminSection
                 icon={FileText}
                 title="Uploaded Files"
-                subtitle="Applicant uploaded files and generated payment proof"
+                subtitle="All uploaded files found in the application record"
               >
-                <div className="grid gap-3 md:grid-cols-2">
-                  <SSUAdminFileLink label="Profile Photo" meta={personal?.profilePhotoMeta} />
-                  <SSUAdminFileLink label="Payment Screenshot" meta={payment?.paymentScreenshotMeta} />
-                  <SSUAdminFileLink label="Resume" meta={documents?.resumeMeta || application?.resumeMeta} />
-                  <SSUAdminFileLink label="Qualification Document" meta={documents?.qualificationMeta} />
-                  <SSUAdminFileLink label="Experience Document" meta={documents?.experienceMeta} />
-                  <SSUAdminFileLink label="Identity Document" meta={documents?.identityMeta} />
-                  <SSUAdminFileLink label="Caste / Category Certificate" meta={documents?.casteMeta} />
-                  <SSUAdminFileLink label="Signature" meta={documents?.signatureMeta} />
-                  <SSUAdminFileLink label="Other Document" meta={documents?.otherMeta} />
-                </div>
+                <SSUAdminDynamicFileGrid files={uploadedFiles} />
               </SSUAdminSection>
 
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                <div className="flex gap-2">
-                  <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-                  <span>
-                    Document names depend on the upload step field names. If any file is saved under a different key, share that file structure and I will map it here.
-                  </span>
-                </div>
-              </div>
+              
             </div>
           ) : null}
 
@@ -984,29 +1245,60 @@ export default function SSUApplicationDetailDialog({
                   <div className="rounded-[26px] border border-slate-200 bg-slate-50 p-5">
                     <div className="mb-4 flex items-center gap-2 text-base font-bold text-slate-900">
                       <Download size={18} />
-                      Quick Links
+                      Quick Files
                     </div>
 
                     <div className="space-y-3">
-                      <SSUAdminFileLink label="Profile Photo" meta={personal?.profilePhotoMeta} />
-                      <SSUAdminFileLink label="Payment Screenshot" meta={payment?.paymentScreenshotMeta} />
+                      {uploadedFiles.slice(0, 6).map((file, index) => (
+                        <SSUAdminFileLink
+                          key={`${file.meta.downloadURL}-${index}`}
+                          label={file.label}
+                          meta={file.meta}
+                        />
+                      ))}
+
+                      {!uploadedFiles.length ? (
+                        <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 text-sm text-slate-500">
+                          No uploaded files found.
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                      Admin can use the main Excel download from dashboard for filtered exports.
+                      Admin can use the main Excel download from dashboard for
+                      filtered exports.
                     </div>
                   </div>
                 </div>
               </SSUAdminSection>
 
-              <SSUAdminSection icon={Clock3} title="System Metadata">
+              <SSUAdminSection icon={RefreshCw} title="System Metadata">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <SSUAdminInfoItem label="Firestore Doc ID" value={application?.id} mono />
-                  <SSUAdminInfoItem label="Created At" value={formatDateTime(application?.createdAt)} />
-                  <SSUAdminInfoItem label="Updated At" value={formatDateTime(application?.updatedAt)} />
-                  <SSUAdminInfoItem label="Submitted At" value={formatDateTime(application?.submittedAt)} />
-                  <SSUAdminInfoItem label="Registered At" value={formatDateTime(application?.registeredAt)} />
-                  <SSUAdminInfoItem label="Application Source" value={application?.source || "SSU Recruitment"} />
+                  <SSUAdminInfoItem
+                    label="Firestore Doc ID"
+                    value={application?.id}
+                    mono
+                  />
+                  <SSUAdminInfoItem
+                    label="Created At"
+                    value={formatDateTime(application?.createdAt)}
+                  />
+                  <SSUAdminInfoItem
+                    label="Updated At"
+                    value={formatDateTime(application?.updatedAt)}
+                  />
+                  <SSUAdminInfoItem
+                    label="Submitted At"
+                    value={formatDateTime(application?.submittedAt)}
+                  />
+                  <SSUAdminInfoItem
+                    label="Registered At"
+                    value={formatDateTime(application?.registeredAt)}
+                  />
+                  <SSUAdminInfoItem
+                    label="Application Source"
+                    value={application?.source || "SSU Recruitment"}
+                  />
                 </div>
               </SSUAdminSection>
             </div>
