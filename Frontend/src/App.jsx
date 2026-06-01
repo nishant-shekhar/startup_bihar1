@@ -39,6 +39,8 @@ import SSURegistrationLayout from './components/SSU_Recruitment/registration/SSU
 import RefundPolicy from './components/HomePage/RefundPolicy';
 import SSURecruitmentSettings from './components/SSU_Recruitment/registration/SSURecruitmentSetting.jsx';
 import SSUMain from './components/SSU_Recruitment/admin/SSUMain.jsx';
+import Shortlist from './components/New_Registration/admin/Shortlist.jsx';
+import StartupShortlistingMain from './components/New_Registration/admin/Shortlisting/StartupShortlistingMain.jsx';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -131,6 +133,15 @@ const App = () => {
 						</PrivateRoute>
 					}
 				/>
+				<Route
+					path="/startup-shortlisting"
+					element={
+						<PrivateRoute role="admin">
+							<StartupShortlistingMain />
+						</PrivateRoute>
+					}
+				/>
+
 				<Route
 					path="/block"
 					element={

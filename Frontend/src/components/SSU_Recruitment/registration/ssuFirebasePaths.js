@@ -374,7 +374,7 @@ export const isSafeSbiCollectLink = (value = "") => {
     return (
       url.protocol === "https:" &&
       (host === "www.onlinesbi.sbi" ||
-        host === "onlinesbi.sbi" ||
+        host === "onlinesbi.sbi.bank.in" ||
         host.endsWith(".onlinesbi.sbi"))
     );
   } catch {

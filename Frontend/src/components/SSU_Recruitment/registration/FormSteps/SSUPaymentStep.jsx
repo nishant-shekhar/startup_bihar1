@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
   FaCheckCircle,
+  FaChevronLeft,
+  FaChevronRight,
   FaCloudUploadAlt,
   FaCopy,
   FaExternalLinkAlt,
@@ -20,7 +22,24 @@ const ENV_APPLICATION_FEE = Number(
   import.meta.env.VITE_SSU_APPLICATION_FEE || 1000
 );
 
-const ENV_SBI_COLLECT_LINK = import.meta.env.VITE_SSU_SBI_COLLECT_LINK || "";
+const ENV_SBI_COLLECT_LINK =
+  import.meta.env.VITE_SSU_SBI_COLLECT_LINK ||
+  "https://onlinesbi.sbi.bank.in/sbicollect/#";
+
+const paymentGuideImages = [
+  {
+    src: "/ssu-payment/sbi-step-1.jpg",
+    title: "Search Bihar Start Up",
+  },
+  {
+    src: "/ssu-payment/sbi-step-2.jpg",
+    title: "Select Payment Category",
+  },
+  {
+    src: "/ssu-payment/sbi-step-3.jpg",
+    title: "Enter Payment Details",
+  },
+];
 
 const defaultFeeSettings = {
   active: true,
@@ -29,10 +48,8 @@ const defaultFeeSettings = {
   paymentMode: "SBI_COLLECT",
   sbiCollectLink: ENV_SBI_COLLECT_LINK,
   sbiCollectButtonText: "Pay via SBI Collect",
-  applicationNumberInstruction:
-    "Copy your application number and paste it in the SBI Collect form wherever application/reference number is required.",
   inactiveMessage:
-    "SBI Collect payment link is currently inactive. Should be active by friday. Please check back later.",
+    "SBI Collect payment link is currently inactive. Please check again later.",
 };
 
 const initialState = {
@@ -94,6 +111,7 @@ const validate = (values) => {
 
 function ErrorText({ children }) {
   if (!children) return null;
+
   return <div className="mt-1 text-xs font-medium text-red-600">{children}</div>;
 }
 
@@ -137,6 +155,98 @@ function PaymentStatusPill({ details }) {
   );
 }
 
+function ImagePreviewDialog({ images, activeIndex, onClose, onMove }) {
+  const activeImage = images?.[activeIndex];
+
+  useEffect(() => {
+    if (activeIndex === null || activeIndex === undefined) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+      if (event.key === "ArrowLeft") onMove(-1);
+      if (event.key === "ArrowRight") onMove(1);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeIndex, onClose, onMove]);
+
+  if (activeIndex === null || activeIndex === undefined || !activeImage) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-5xl rounded-[28px] bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 md:px-5">
+          <div>
+            <div className="text-sm font-bold text-slate-900">
+              {activeImage.title}
+            </div>
+            <div className="text-xs text-slate-500">
+              {activeIndex + 1} of {images.length}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
+            aria-label="Close image preview"
+          >
+            <FaTimes />
+          </button>
+        </div>
+
+        <div className="relative flex min-h-[280px] items-center justify-center p-4 md:min-h-[560px] md:p-6">
+          <button
+            type="button"
+            onClick={() => onMove(-1)}
+            className="absolute left-3 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-lg transition hover:bg-white md:left-5 md:h-12 md:w-12"
+            aria-label="Previous image"
+          >
+            <FaChevronLeft />
+          </button>
+
+          <img
+            src={activeImage.src}
+            alt={activeImage.title}
+            className="max-h-[70vh] w-full rounded-2xl object-contain"
+          />
+
+          <button
+            type="button"
+            onClick={() => onMove(1)}
+            className="absolute right-3 top-1/2 z-10 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-slate-800 shadow-lg transition hover:bg-white md:right-5 md:h-12 md:w-12"
+            aria-label="Next image"
+          >
+            <FaChevronRight />
+          </button>
+        </div>
+
+        <div className="flex justify-center gap-2 border-t border-slate-100 px-4 py-3">
+          {images.map((item, index) => (
+            <button
+              type="button"
+              key={item.src}
+              onClick={() => onMove(index, true)}
+              className={`h-2 rounded-full transition-all ${
+                index === activeIndex
+                  ? "w-7 bg-slate-900"
+                  : "w-2 bg-slate-300 hover:bg-slate-400"
+              }`}
+              aria-label={`Open image ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SSUPaymentStep({
   onSubmit,
   onPrevious,
@@ -144,8 +254,6 @@ export default function SSUPaymentStep({
   isReadOnly,
   formData,
 }) {
-  const applicationId = formData?.applicationId || "";
-
   const [feeSettings, setFeeSettings] = useState(defaultFeeSettings);
   const [feeLoading, setFeeLoading] = useState(true);
 
@@ -162,7 +270,8 @@ export default function SSUPaymentStep({
   const [errors, setErrors] = useState({});
   const [previewUrl, setPreviewUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState("");
+  const [activeGuideImage, setActiveGuideImage] = useState(null);
 
   const canEdit = !isReadOnly;
 
@@ -221,6 +330,12 @@ export default function SSUPaymentStep({
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const effectiveFeeAmount = useMemo(() => {
     return Number(feeSettings?.amount || values?.amount || ENV_APPLICATION_FEE);
   }, [feeSettings?.amount, values?.amount]);
@@ -250,19 +365,31 @@ export default function SSUPaymentStep({
     setErrors((prev) => ({
       ...prev,
       [key]: "",
+      form: "",
     }));
   };
 
-  const copyApplicationId = async () => {
-    if (!applicationId) return;
+  const copyText = async (text, label) => {
+    if (!text) return;
 
     try {
-      await navigator.clipboard.writeText(applicationId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+      await navigator.clipboard.writeText(text);
+      setCopied(label);
+      setTimeout(() => setCopied(""), 1500);
     } catch {
-      setCopied(false);
+      setCopied("");
     }
+  };
+
+  const moveGuideImage = (step, absolute = false) => {
+    setActiveGuideImage((current) => {
+      if (absolute) return step;
+
+      const total = paymentGuideImages.length;
+      if (current === null || current === undefined) return 0;
+
+      return (current + step + total) % total;
+    });
   };
 
   const handleScreenshot = (file) => {
@@ -297,6 +424,8 @@ export default function SSUPaymentStep({
       paymentScreenshotFile: "",
     }));
 
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
     if (file.type.startsWith("image/")) {
       setPreviewUrl(URL.createObjectURL(file));
     } else {
@@ -310,6 +439,8 @@ export default function SSUPaymentStep({
       paymentScreenshotFile: null,
       paymentScreenshotMeta: null,
     }));
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl("");
   };
 
@@ -323,6 +454,10 @@ export default function SSUPaymentStep({
 
       sbiCollectLink: effectiveSbiCollectLink,
       utrNumber: String(values.utrNumber || "").trim().toUpperCase(),
+      utrNumberNormalized: String(values.utrNumber || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, ""),
       paymentDate: values.paymentDate || "",
       paymentScreenshotMeta: values.paymentScreenshotMeta || null,
       paymentScreenshotFile: values.paymentScreenshotFile || null,
@@ -361,28 +496,34 @@ export default function SSUPaymentStep({
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-6 rounded-[34px] border border-white/80 bg-white/78 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-7">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <ImagePreviewDialog
+        images={paymentGuideImages}
+        activeIndex={activeGuideImage}
+        onClose={() => setActiveGuideImage(null)}
+        onMove={moveGuideImage}
+      />
+
+      <div className="mb-6 rounded-[32px] border border-white/80 bg-white/80 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-7">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
               <FaUniversity />
               SBI Collect Payment
             </div>
 
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
               Application Fee Payment
             </h2>
 
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-500">
-              Pay the application fee through SBI Collect. Use your application
-              number in the SBI Collect form, then upload the success screenshot
-              and transaction reference number.
+              Pay through SBI Collect, then upload the success screenshot and
+              transaction reference number here.
             </p>
           </div>
 
           <div className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-800">
             <div className="text-xs font-semibold uppercase tracking-[0.18em]">
-              Amount
+              Application Fee
             </div>
             <div className="mt-1 text-3xl font-bold">
               ₹{effectiveFeeAmount}
@@ -391,14 +532,42 @@ export default function SSUPaymentStep({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="rounded-[32px] border border-white/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-6">
           <PaymentStatusPill details={initialValues || values} />
 
-         
+          <div className="mb-5 flex flex-col gap-3 rounded-[26px] border border-indigo-100 bg-indigo-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+                <FaUniversity className="text-indigo-600" />
+                Complete payment on SBI Collect
+              </div>
+              <p className="mt-1 text-sm text-slate-600">
+                Use the button below to open the official SBI Collect page.
+              </p>
+            </div>
 
-         
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {isPaymentLinkActive ? (
+              <a
+                href={effectiveSbiCollectLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              >
+                <FaExternalLinkAlt />
+                {feeSettings?.sbiCollectButtonText || "Pay via SBI Collect"}
+              </a>
+            ) : (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                {feeLoading
+                  ? "Checking SBI Collect payment link..."
+                  : feeSettings?.inactiveMessage ||
+                    "SBI Collect payment link is currently inactive."}
+              </div>
+            )}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className={labelClass}>Payment Mode</label>
               <input value="SBI Collect" disabled className={inputClass} />
@@ -562,6 +731,7 @@ export default function SSUPaymentStep({
               correct.
             </span>
           </label>
+
           <ErrorText>{errors.applicantDeclaration}</ErrorText>
 
           {errors.form ? (
@@ -595,72 +765,136 @@ export default function SSUPaymentStep({
                   : "Submit Payment Proof"}
             </button>
           </div>
-        </div>
+        </section>
 
         <aside className="space-y-5">
-          <div className="rounded-[32px] border border-white/80 bg-white/82 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+          <div className="rounded-[32px] border border-white/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <FaUniversity />
-              SBI Collect
+              <FaInfoCircle className="text-blue-600" />
+              How to Pay
             </div>
 
-            <p className="mt-2 text-sm leading-relaxed text-slate-500">
-              Open SBI Collect, complete payment, then return to this page and
-              upload proof.
-            </p>
+            <ol className="mt-4 space-y-3 text-sm text-slate-700">
+              <li className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                  1
+                </span>
+                <span>Click Pay via SBI Collect.</span>
+              </li>
 
-            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3">
+              <li className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                  2
+                </span>
+                <span>
+                  Search <b>bihar start up</b>. Keep space between{" "}
+                  <b>start</b> and <b>up</b>.
+                </span>
+              </li>
+
+              <li className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                  3
+                </span>
+                <span>
+                  Select <b>BIHAR START UP FUND TRUST</b>.
+                </span>
+              </li>
+
+              <li className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                  4
+                </span>
+                <span>
+                  Choose <b>APPLICATION FEES</b> from payment category.
+                </span>
+              </li>
+
+              <li className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                  5
+                </span>
+                <span>
+                  Enter same mobile number and email ID used in this
+                  application.
+                </span>
+              </li>
+
+              <li className="flex gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+                  6
+                </span>
+                <span>
+                  Complete payment, then upload success screenshot and UTR here.
+                </span>
+              </li>
+            </ol>
+
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Application Number
+                Search Text
               </div>
-              <div className="mt-1 break-all text-sm font-bold text-slate-900">
-                {applicationId || "-"}
+
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <div className="text-sm font-bold text-slate-900">
+                  bihar start up
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => copyText("bihar start up", "search")}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <FaCopy />
+                  {copied === "search" ? "Copied" : "Copy"}
+                </button>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={copyApplicationId}
-              disabled={!applicationId}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <FaCopy />
-              {copied ? "Copied" : "Copy Application Number"}
-            </button>
-
-            {isPaymentLinkActive ? (
-              <a
-                href={effectiveSbiCollectLink}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-              >
-                <FaExternalLinkAlt />
-                {feeSettings?.sbiCollectButtonText || "Pay via SBI Collect"}
-              </a>
-            ) : (
-              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                {feeLoading
-                  ? "Checking SBI Collect payment link..."
-                  : feeSettings?.inactiveMessage ||
-                    "SBI Collect payment link is currently inactive."}
+            <div className="mt-4">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Quick Visual Guide
               </div>
-            )}
+
+              <div className="flex items-center gap-2">
+                {paymentGuideImages.map((image, index) => (
+                  <button
+                    type="button"
+                    key={image.src}
+                    onClick={() => setActiveGuideImage(index)}
+                    className="group relative h-14 w-20 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    title={image.title}
+                  >
+                    <img
+                      src={image.src}
+                      alt={image.title}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                    />
+
+                    <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
+                      {index + 1}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-2 text-[11px] text-slate-500">
+                Click any thumbnail to view larger image.
+              </div>
+            </div>
           </div>
 
-          <div className="rounded-[28px] border border-blue-200 bg-blue-50 p-5 text-sm text-blue-800">
+          <div className="rounded-[28px] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
             <div className="flex items-center gap-2 font-bold">
-              <FaInfoCircle />
-              Instructions
+              <FaReceipt />
+              Important
             </div>
-            <ol className="mt-3 list-decimal space-y-2 pl-5">
-              <li>Copy your application number.</li>
-              <li>Click Pay via SBI Collect.</li>
-              <li>Use the application number in SBI Collect form.</li>
-              <li>Complete payment successfully.</li>
-              <li>Return here and upload success screenshot.</li>
-              <li>Enter UTR / transaction reference number.</li>
-            </ol>
+
+            <p className="mt-2 leading-relaxed">
+              One UTR / transaction reference number should be used for one
+              application only. Do not use the same UTR for multiple
+              applications.
+            </p>
           </div>
         </aside>
       </div>
