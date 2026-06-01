@@ -221,7 +221,7 @@ function buildRows(formData) {
       "Worked with Startup Ecosystem",
       yesNo(formData?.startupExposure?.workedWithStartupEcosystem),
     ],
-    ["Startup Ecosystem Details", formData?.startupExposure?.startupEcosystemDetails],
+    ["Startup Ecosystem Experience Details", formData?.startupExposure?.startupEcosystemDetails],
     ["Incubators / Organisations", formData?.startupExposure?.ecosystemIncubators],
     ["Startup Programs Handled", formData?.startupExposure?.startupProgramsHandled],
     ["Investment / Funding Exposure", formData?.startupExposure?.investmentExposure],
@@ -882,7 +882,7 @@ export default function SSUPreview({
           value={yesNo(formData?.startupExposure?.workedWithStartupEcosystem)}
         />
         <InfoRow
-          label="Startup Ecosystem Details"
+          label="Startup Ecosystem Experience Details"
           value={formData?.startupExposure?.startupEcosystemDetails}
         />
         <InfoRow

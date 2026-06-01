@@ -190,12 +190,12 @@ const HomePage = () => {
             </motion.p>
 
          <motion.div variants={fadeIn} className="hero-cta-row">
-   {/* <Link to="/startupregistration" className="hero-cta-btn">
+    <Link to="/startupregistration" className="hero-cta-btn">
     Register New Startup <span aria-hidden="true">→</span>
-  </Link>*/}
-    <Link to="/ssurecruitment" className="hero-cta-btn">
-    SSU Recruitment <span aria-hidden="true">→</span>
   </Link>
+   {/* <Link to="/ssurecruitment" className="hero-cta-btn">
+    SSU Recruitment <span aria-hidden="true">→</span>
+  </Link>*/}
 
   <Link to="/AllStartups" className="hero-cta-btn-secondary">
     Explore Startups

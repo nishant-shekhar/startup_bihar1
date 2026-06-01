@@ -38,6 +38,7 @@ import PIAIReviewedData from './components/AdminRedesign/NewApplicationAdmin/PIA
 import SSURegistrationLayout from './components/SSU_Recruitment/registration/SSURegistrationLayout.jsx';
 import RefundPolicy from './components/HomePage/RefundPolicy';
 import SSURecruitmentSettings from './components/SSU_Recruitment/registration/SSURecruitmentSetting.jsx';
+import SSUMain from './components/SSU_Recruitment/admin/SSUMain.jsx';
 
 const App = () => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -111,6 +112,14 @@ const App = () => {
 					element={
 						<PrivateRoute role="admin">
 							<SSURecruitmentSettings />
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path="/ssuadminmain"
+					element={
+						<PrivateRoute role="admin">
+							<SSUMain />
 						</PrivateRoute>
 					}
 				/>
