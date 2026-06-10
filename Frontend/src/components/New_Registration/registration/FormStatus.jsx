@@ -34,7 +34,12 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { db, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 
 const timelineSteps = [
@@ -84,6 +89,16 @@ const feedbackOptions = [
   "Could Be Better",
   "Found a bug / Issue",
 ];
+
+const STATUS = {
+  PENDING: "pending",
+  SHORTLISTED: "shortlisted",
+  NOT_SHORTLISTED: "not_shortlisted",
+  SELECTED: "selected",
+  NOT_SELECTED: "not_selected",
+  RECOGNISED: "recognised",
+  NOT_RECOGNISED: "not_recognised",
+};
 
 const statusLabelMap = {
   pending: "Pending",
@@ -250,6 +265,146 @@ const resolvePublishedStageStatus = ({ stage, batchApplication, publish }) => {
   }
 
   return "pending";
+};
+
+const getFinalStatus = (batchApplication) => {
+  if (batchApplication?.final?.status) return batchApplication.final.status;
+  if (batchApplication?.pi?.selected === true) return STATUS.RECOGNISED;
+  if (batchApplication?.pi?.selected === false) return STATUS.NOT_RECOGNISED;
+  return STATUS.PENDING;
+};
+
+const getShortlistingCurrentStatus = (batchApplication) => {
+  if (!batchApplication) return "Not Assigned";
+
+  if (
+    batchApplication?.final?.status === STATUS.RECOGNISED ||
+    batchApplication?.pi?.selected === true
+  ) {
+    return "Recognised";
+  }
+
+  if (
+    batchApplication?.final?.status === STATUS.NOT_RECOGNISED ||
+    batchApplication?.pi?.selected === false
+  ) {
+    return "Pitch / PI Not Cleared";
+  }
+
+  if (batchApplication?.pi?.schedule?.date) {
+    return "Pitch / PI Pending";
+  }
+
+  if (batchApplication?.written?.status === STATUS.SELECTED) {
+    return "Written Assessment Cleared";
+  }
+
+  if (batchApplication?.written?.status === STATUS.NOT_SELECTED) {
+    return "Written Assessment Not Cleared";
+  }
+
+  if (batchApplication?.written?.schedule?.date) {
+    return "Written Assessment Scheduled";
+  }
+
+  if (batchApplication?.expert?.status === STATUS.SHORTLISTED) {
+    return "Expert Review Qualified";
+  }
+
+  if (batchApplication?.expert?.status === STATUS.NOT_SHORTLISTED) {
+    return "Expert Review Not Shortlisted";
+  }
+
+  if (batchApplication?.ai?.status === STATUS.SHORTLISTED) {
+    return "Application Screening Qualified";
+  }
+
+  if (batchApplication?.ai?.status === STATUS.NOT_SHORTLISTED) {
+    return "Application Screening Not Shortlisted";
+  }
+
+  return "Assigned - Pending";
+};
+
+const getDeckType = (deck) => {
+  if (!deck) return "";
+  if (deck?.type === "canva") return "canva";
+  if (deck?.downloadURL || deck?.storagePath) return "file";
+  return "";
+};
+
+const getDeckUrl = (deck) => {
+  if (!deck) return "";
+  if (deck?.type === "canva") return deck?.canvaLink || "";
+  return deck?.downloadURL || "";
+};
+
+const buildShortlistingSummary = ({
+  batch,
+  application,
+  batchApplication,
+  updatedPitchDeck,
+}) => {
+  const batchId =
+    batch?.id ||
+    batch?.batchId ||
+    application?.shortlistingBatch?.batchId ||
+    batchApplication?.batchId ||
+    "";
+
+  const batchName =
+    batch?.batchName ||
+    batch?.batchId ||
+    application?.shortlistingBatch?.batchName ||
+    batchApplication?.batchName ||
+    batchId ||
+    "";
+
+  const deck =
+    updatedPitchDeck ||
+    batchApplication?.UpdatedPitchDeck ||
+    application?.UpdatedPitchDeck ||
+    null;
+
+  return {
+    ...(application?.shortlistingSummary || {}),
+
+    batchId,
+    batchName,
+    applicationId: batchApplication?.applicationId || application?.applicationId || "",
+
+    aiStatus: batchApplication?.ai?.status || STATUS.PENDING,
+    aiCutoffUsed: batchApplication?.ai?.cutoffUsed ?? null,
+
+    expertStatus: batchApplication?.expert?.status || STATUS.PENDING,
+    expertCutoffUsed: batchApplication?.expert?.cutoffUsed ?? null,
+
+    writtenStatus: batchApplication?.written?.status || STATUS.PENDING,
+    writtenMarks: batchApplication?.written?.marks ?? null,
+    writtenSchedule: batchApplication?.written?.schedule || null,
+
+    piSelected:
+      batchApplication?.pi?.selected === true
+        ? true
+        : batchApplication?.pi?.selected === false
+        ? false
+        : null,
+    piMarks: batchApplication?.pi?.marks ?? null,
+    piSchedule: batchApplication?.pi?.schedule || null,
+
+    finalStatus: getFinalStatus(batchApplication),
+
+    currentStage: batchApplication?.currentStage || "",
+    currentStatus: getShortlistingCurrentStatus(batchApplication),
+
+    updatedPitchDeckType: getDeckType(deck),
+    updatedPitchDeckUrl: getDeckUrl(deck),
+    updatedPitchDeckStoragePath: deck?.storagePath || "",
+    updatedPitchDeckFileName: deck?.fileName || "",
+    updatedPitchDeckSubmittedAt: deck?.submittedAt || null,
+
+    updatedAt: serverTimestamp(),
+  };
 };
 
 const getTerminalFailureStage = ({ batchApplication, publish }) => {
@@ -766,7 +921,7 @@ const UpdatedPitchDeckCard = ({
   const existingDeck =
     application?.UpdatedPitchDeck || batchApplication?.UpdatedPitchDeck || null;
 
-  const maxSize = 15 * 1024 * 1024;
+  const maxSize = 10 * 1024 * 1024;
 
   const handleFileChange = (event) => {
     const selected = event.target.files?.[0] || null;
@@ -787,7 +942,7 @@ const UpdatedPitchDeckCard = ({
     }
 
     if (selected.size > maxSize) {
-      alert("Maximum file size allowed is 15 MB.");
+      alert("Maximum file size allowed is 10 MB.");
       event.target.value = "";
       setFile(null);
       return;
@@ -810,8 +965,6 @@ const UpdatedPitchDeckCard = ({
       await deleteObject(oldFileRef);
     } catch (error) {
       console.warn("Old updated pitch deck could not be deleted:", error);
-      // Do not block user submission if deletion fails.
-      // Firestore now points to the new deck, so the applicant flow remains correct.
     }
   };
 
@@ -868,11 +1021,18 @@ const UpdatedPitchDeckCard = ({
         };
       }
 
+      const batchId = batch?.id || application?.shortlistingBatch?.batchId;
+
       await updateDoc(doc(db, "startupApplications", applicationId), {
         UpdatedPitchDeck: payload,
+        shortlistingSummary: buildShortlistingSummary({
+          batch,
+          application,
+          batchApplication,
+          updatedPitchDeck: payload,
+        }),
+        firestoreUpdatedAt: serverTimestamp(),
       });
-
-      const batchId = batch?.id || application?.shortlistingBatch?.batchId;
 
       if (batchId) {
         await setDoc(
@@ -991,9 +1151,7 @@ const UpdatedPitchDeckCard = ({
                 Selected: {file.name}
               </div>
             ) : (
-              <div className="mt-1 text-xs text-emerald-700">
-                Max 15 MB.
-              </div>
+              <div className="mt-1 text-xs text-emerald-700">Max 10 MB.</div>
             )}
           </div>
         ) : (
@@ -1591,15 +1749,24 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
                         batch={batch}
                         batchApplication={batchApplication}
                         onSaved={(payload) => {
-                          setApplication((prev) => ({
-                            ...(prev || {}),
+                          const nextBatchApplication = {
+                            ...(batchApplication || {}),
                             UpdatedPitchDeck: payload,
-                          }));
+                          };
 
-                          setBatchApplication((prev) => ({
-                            ...(prev || {}),
+                          const nextApplication = {
+                            ...(application || {}),
                             UpdatedPitchDeck: payload,
-                          }));
+                            shortlistingSummary: buildShortlistingSummary({
+                              batch,
+                              application,
+                              batchApplication: nextBatchApplication,
+                              updatedPitchDeck: payload,
+                            }),
+                          };
+
+                          setApplication(nextApplication);
+                          setBatchApplication(nextBatchApplication);
                         }}
                       />
                     ) : null}

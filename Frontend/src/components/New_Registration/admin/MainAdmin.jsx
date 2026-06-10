@@ -15,7 +15,6 @@ import {
   Search,
   RefreshCw,
   FileText,
-  Building2,
   CircleCheckBig,
   Clock3,
   Sparkles,
@@ -26,6 +25,8 @@ import {
   Bot,
   BarChart3,
   Star,
+  Layers,
+  ExternalLink,
 } from "lucide-react";
 
 import { db, rtdb } from "../../AdminRedesign/NewApplicationAdmin/firebase";
@@ -37,13 +38,32 @@ import Analysis from "./Analysis";
 const PAGE_SIZE = 50;
 const AI_MONTH_KEY = "April";
 
+const APP_COLLECTION = "startupApplications";
+const BATCH_COLLECTION = "startupShortlistingBatches";
+
 const STATUS_OPTIONS = [
   "All",
+  "draft",
   "submitted",
   "Under Review",
   "Approved",
   "Rejected",
-  "draft",
+];
+
+const SHORTLISTING_STATUS_OPTIONS = [
+  "All",
+  "Not Assigned",
+  "Assigned - Pending",
+  "Application Screening Qualified",
+  "Application Screening Not Shortlisted",
+  "Expert Review Qualified",
+  "Expert Review Not Shortlisted",
+  "Written Assessment Scheduled",
+  "Written Assessment Cleared",
+  "Written Assessment Not Cleared",
+  "Pitch / PI Pending",
+  "Pitch / PI Not Cleared",
+  "Recognised",
 ];
 
 const REGISTERED_OPTIONS = ["All", "Yes", "No"];
@@ -85,12 +105,24 @@ const formatDate = (value) => {
   }
 };
 
+const normalizeStatus = (status) => {
+  const value = String(status || "").trim();
+
+  if (!value) return "submitted";
+  if (value.toLowerCase() === "draft") return "draft";
+  if (value.toLowerCase() === "submitted") return "submitted";
+
+  return value;
+};
+
 const getStatus = (item) =>
-  item?.status ||
-  item?.applicationStatus ||
-  item?.reviewStatus ||
-  item?.documentStatus ||
-  "Submitted";
+  normalizeStatus(
+    item?.status ||
+      item?.applicationStatus ||
+      item?.reviewStatus ||
+      item?.documentStatus ||
+      "submitted"
+  );
 
 const hasRegisteredCompany = (item) =>
   !!(
@@ -115,6 +147,7 @@ const getStartupName = (item) =>
   item?.startup_name ||
   item?.company_name ||
   item?.companyName ||
+  item?.entityDetails?.entityName ||
   "-";
 
 const getFounderName = (item) =>
@@ -129,7 +162,11 @@ const getEmail = (item) =>
   item?.userSignup?.email || item?.email || item?.basicDetails?.email || "-";
 
 const getPhone = (item) =>
-  item?.userSignup?.phoneNumber || item?.phoneNumber || item?.mobile || "-";
+  item?.userSignup?.phoneNumber ||
+  item?.phoneNumber ||
+  item?.mobile ||
+  item?.basicDetails?.phoneNumber ||
+  "-";
 
 const getDistrict = (item) =>
   item?.basicDetails?.district ||
@@ -151,13 +188,15 @@ const getCategory = (item) =>
 const getStage = (item) => item?.startupDetails?.stage || item?.stage || "-";
 
 const getCreatedAt = (item) =>
-  item?.createdAt || item?.submittedAt || item?.firestoreUpdatedAt || null;
+  item?.submittedAt || item?.createdAt || item?.firestoreUpdatedAt || null;
 
 const hasAIReview = (item) => item?.aiEvaluation?.done === true;
 
 const getAIScore = (item) => {
   const score = item?.aiEvaluation?.finalScore;
-  return score === null || score === undefined || score === "" ? null : Number(score);
+  return score === null || score === undefined || score === ""
+    ? null
+    : Number(score);
 };
 
 const getAIScoreBand = (score) => {
@@ -179,22 +218,121 @@ const getExpertScore = (item) => {
     review?.firstScore ??
     null;
 
-  return score === null || score === undefined || score === "" ? null : Number(score);
+  return score === null || score === undefined || score === ""
+    ? null
+    : Number(score);
 };
 
 const getExpertInitialScore = (item) => {
   const review = getExpertReview(item);
   const score = review?.firstScore ?? review?.initialScore ?? null;
-  return score === null || score === undefined || score === "" ? null : Number(score);
+  return score === null || score === undefined || score === ""
+    ? null
+    : Number(score);
 };
 
 const getExpertFinalScore = (item) => {
   const review = getExpertReview(item);
   const score = review?.score ?? review?.finalScore ?? null;
-  return score === null || score === undefined || score === "" ? null : Number(score);
+  return score === null || score === undefined || score === ""
+    ? null
+    : Number(score);
 };
 
 const hasExpertReview = (item) => getExpertScore(item) !== null;
+
+const getShortlistingSummary = (item) => item?.shortlistingSummary || null;
+
+const getAssignedBatchId = (item) =>
+  item?.shortlistingSummary?.batchId ||
+  item?.shortlistingBatch?.batchId ||
+  item?.shortlistingBatchId ||
+  item?.batchId ||
+  "";
+
+const getAssignedBatchName = (item) =>
+  item?.shortlistingSummary?.batchName ||
+  item?.shortlistingBatch?.batchName ||
+  item?.shortlistingBatch?.batchId ||
+  getAssignedBatchId(item) ||
+  "";
+
+const getShortlistingStatus = (item) => {
+  const summary = getShortlistingSummary(item);
+  const batchId = getAssignedBatchId(item);
+
+  if (!batchId) return "Not Assigned";
+
+  if (summary?.currentStatus) return summary.currentStatus;
+
+  if (summary?.finalStatus === "recognised") return "Recognised";
+  if (summary?.finalStatus === "not_recognised") return "Pitch / PI Not Cleared";
+
+  if (summary?.piSelected === true) return "Recognised";
+  if (summary?.piSelected === false) return "Pitch / PI Not Cleared";
+  if (summary?.piSchedule?.date) return "Pitch / PI Pending";
+
+  if (summary?.writtenStatus === "selected") return "Written Assessment Cleared";
+  if (summary?.writtenStatus === "not_selected") {
+    return "Written Assessment Not Cleared";
+  }
+  if (summary?.writtenSchedule?.date) return "Written Assessment Scheduled";
+
+  if (summary?.expertStatus === "shortlisted") return "Expert Review Qualified";
+  if (summary?.expertStatus === "not_shortlisted") {
+    return "Expert Review Not Shortlisted";
+  }
+
+  if (summary?.aiStatus === "shortlisted") {
+    return "Application Screening Qualified";
+  }
+  if (summary?.aiStatus === "not_shortlisted") {
+    return "Application Screening Not Shortlisted";
+  }
+
+  return "Assigned - Pending";
+};
+
+const getUpdatedPitchDeck = (item) => {
+  const appDeck = item?.UpdatedPitchDeck || null;
+
+  if (appDeck) {
+    return appDeck;
+  }
+
+  const summary = getShortlistingSummary(item);
+
+  if (summary?.updatedPitchDeckUrl) {
+    return {
+      type: summary?.updatedPitchDeckType || "file",
+      downloadURL:
+        summary?.updatedPitchDeckType === "canva"
+          ? ""
+          : summary?.updatedPitchDeckUrl,
+      canvaLink:
+        summary?.updatedPitchDeckType === "canva"
+          ? summary?.updatedPitchDeckUrl
+          : "",
+      storagePath: summary?.updatedPitchDeckStoragePath || "",
+      fileName: summary?.updatedPitchDeckFileName || "",
+    };
+  }
+
+  return null;
+};
+
+const getUpdatedPitchDeckUrl = (deck) => {
+  if (!deck) return "";
+  if (deck?.type === "canva") return deck?.canvaLink || "";
+  return deck?.downloadURL || "";
+};
+
+const getUpdatedPitchDeckType = (deck) => {
+  if (!deck) return "No Deck";
+  if (deck?.type === "canva") return "Canva";
+  if (deck?.downloadURL) return "File";
+  return "No Deck";
+};
 
 const statusToneMap = {
   submitted: "border-sky-200 bg-sky-50 text-sky-700",
@@ -204,6 +342,22 @@ const statusToneMap = {
   Rejected: "border-rose-200 bg-rose-50 text-rose-700",
   draft: "border-slate-200 bg-slate-100 text-slate-700",
   Draft: "border-slate-200 bg-slate-100 text-slate-700",
+};
+
+const shortlistingToneMap = {
+  "Not Assigned": "border-slate-200 bg-slate-100 text-slate-700",
+  "Assigned - Pending": "border-amber-200 bg-amber-50 text-amber-700",
+  "Application Screening Qualified": "border-sky-200 bg-sky-50 text-sky-700",
+  "Application Screening Not Shortlisted":
+    "border-rose-200 bg-rose-50 text-rose-700",
+  "Expert Review Qualified": "border-violet-200 bg-violet-50 text-violet-700",
+  "Expert Review Not Shortlisted": "border-rose-200 bg-rose-50 text-rose-700",
+  "Written Assessment Scheduled": "border-indigo-200 bg-indigo-50 text-indigo-700",
+  "Written Assessment Cleared": "border-emerald-200 bg-emerald-50 text-emerald-700",
+  "Written Assessment Not Cleared": "border-rose-200 bg-rose-50 text-rose-700",
+  "Pitch / PI Pending": "border-amber-200 bg-amber-50 text-amber-700",
+  "Pitch / PI Not Cleared": "border-rose-200 bg-rose-50 text-rose-700",
+  Recognised: "border-emerald-200 bg-emerald-50 text-emerald-700",
 };
 
 function StatusBadge({ status }) {
@@ -218,6 +372,19 @@ function StatusBadge({ status }) {
   );
 }
 
+function ShortlistingBadge({ status }) {
+  return (
+    <span
+      className={`inline-flex max-w-[240px] rounded-full border px-3 py-1 text-xs font-semibold ${
+        shortlistingToneMap[status] ||
+        "border-slate-200 bg-slate-100 text-slate-700"
+      }`}
+    >
+      <span className="truncate">{safe(status)}</span>
+    </span>
+  );
+}
+
 function RegisteredBadge({ value }) {
   return value ? (
     <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -227,6 +394,48 @@ function RegisteredBadge({ value }) {
     <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
       No
     </span>
+  );
+}
+
+function BatchBadge({ batchName }) {
+  if (!batchName) {
+    return (
+      <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+        Unassigned
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex max-w-[160px] rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+      <span className="truncate">{batchName}</span>
+    </span>
+  );
+}
+
+function UpdatedPitchDeckLink({ deck }) {
+  const url = getUpdatedPitchDeckUrl(deck);
+  const type = getUpdatedPitchDeckType(deck);
+
+  if (!url) {
+    return (
+      <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+        No Deck
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      onClick={(event) => event.stopPropagation()}
+      className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+    >
+      <ExternalLink size={12} />
+      {type}
+    </a>
   );
 }
 
@@ -329,6 +538,8 @@ function ScoreBadge({ score, emptyText = "—" }) {
 
 export default function NewApplicationDashboard() {
   const [applications, setApplications] = useState([]);
+  const [batches, setBatches] = useState([]);
+
   const [selected, setSelected] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -336,6 +547,8 @@ export default function NewApplicationDashboard() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [shortlistingStatusFilter, setShortlistingStatusFilter] = useState("All");
+  const [batchFilter, setBatchFilter] = useState("All");
   const [registeredFilter, setRegisteredFilter] = useState("All");
   const [districtFilter, setDistrictFilter] = useState("All");
   const [aiReviewedFilter, setAiReviewedFilter] = useState("All");
@@ -361,56 +574,67 @@ export default function NewApplicationDashboard() {
     message: "",
   });
 
+  const loadBatches = async () => {
+    const snap = await getDocs(
+      query(collection(db, BATCH_COLLECTION), orderBy("createdAt", "desc"))
+    );
+
+    const rows = snap.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    }));
+
+    setBatches(rows);
+    return rows;
+  };
+
   const loadApplications = async () => {
     setLoading(true);
 
     try {
-      const q = query(
-        collection(db, "startupApplications"),
-        orderBy("createdAt", "desc")
-      );
+      await loadBatches();
 
+      const q = query(collection(db, APP_COLLECTION), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
 
       const rows = snapshot.docs.map((docItem) => {
         const data = docItem.data();
+        const appId = getApplicationId(data, docItem.id);
+        const status = getStatus(data);
 
         return {
           id: docItem.id,
           ...data,
-          _status: getStatus(data),
+          _status: status,
           _registeredCompany: hasRegisteredCompany(data),
-          _applicationId: getApplicationId(data, docItem.id),
+          _applicationId: appId,
           _createdAtDisplay: formatDate(getCreatedAt(data)),
         };
       });
 
       const enrichedRows = await Promise.all(
         rows.map(async (item) => {
+          let expertReview = null;
+
           try {
             const expertReviewRef = doc(
               db,
-              "startupApplications",
+              APP_COLLECTION,
               item.id,
               "review",
               "expert"
             );
 
             const expertReviewSnap = await getDoc(expertReviewRef);
-
-            return {
-              ...item,
-              _expertReview: expertReviewSnap.exists()
-                ? expertReviewSnap.data()
-                : null,
-            };
+            expertReview = expertReviewSnap.exists() ? expertReviewSnap.data() : null;
           } catch (error) {
             console.warn("Expert review fetch failed:", item.id, error);
-            return {
-              ...item,
-              _expertReview: null,
-            };
           }
+
+          return {
+            ...item,
+            _expertReview: expertReview,
+          };
         })
       );
 
@@ -418,6 +642,7 @@ export default function NewApplicationDashboard() {
     } catch (error) {
       console.error("Failed to load applications", error);
       setApplications([]);
+      setBatches([]);
     } finally {
       setLoading(false);
     }
@@ -431,6 +656,7 @@ export default function NewApplicationDashboard() {
     if (backfillState.running) return;
 
     const rows = applications || [];
+
     if (!rows.length) {
       alert("No applications loaded.");
       return;
@@ -512,7 +738,7 @@ export default function NewApplicationDashboard() {
           firestoreUpdatedAt: serverTimestamp(),
         };
 
-        await updateDoc(doc(db, "startupApplications", docId), payload);
+        await updateDoc(doc(db, APP_COLLECTION, docId), payload);
         updated += 1;
       } catch (error) {
         console.error(`Backfill failed for ${sbNo}`, error);
@@ -555,12 +781,30 @@ export default function NewApplicationDashboard() {
     return ["All", ...Array.from(values).sort()];
   }, [applications]);
 
+  const batchOptions = useMemo(() => {
+    const values = batches.map((batch) => ({
+      value: batch.id,
+      label: batch.batchName || batch.batchId || batch.id,
+    }));
+
+    return [
+      { value: "All", label: "All" },
+      { value: "Unassigned", label: "Unassigned" },
+      ...values,
+    ];
+  }, [batches]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const aiScoreMin = Number(aiScoreMinFilter);
     const expertScoreMin = Number(expertScoreMinFilter);
 
     return applications.filter((item) => {
+      const shortlistingStatus = getShortlistingStatus(item);
+      const assignedBatchId = getAssignedBatchId(item);
+      const assignedBatchName = getAssignedBatchName(item);
+      const updatedDeck = getUpdatedPitchDeck(item);
+
       const searchable = [
         item._applicationId,
         getStartupName(item),
@@ -570,14 +814,30 @@ export default function NewApplicationDashboard() {
         getDistrict(item),
         getCategory(item),
         getStage(item),
+        item._status,
+        assignedBatchId,
+        assignedBatchName,
+        shortlistingStatus,
+        getUpdatedPitchDeckType(updatedDeck),
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
       const matchesSearch = !q || searchable.includes(q);
+
       const matchesStatus =
         statusFilter === "All" || item._status === statusFilter;
+
+      const matchesShortlistingStatus =
+        shortlistingStatusFilter === "All" ||
+        shortlistingStatus === shortlistingStatusFilter;
+
+      const matchesBatch =
+        batchFilter === "All" ||
+        (batchFilter === "Unassigned" && !assignedBatchId) ||
+        assignedBatchId === batchFilter ||
+        assignedBatchName === batchFilter;
 
       const matchesRegistered =
         registeredFilter === "All" ||
@@ -618,6 +878,8 @@ export default function NewApplicationDashboard() {
       return (
         matchesSearch &&
         matchesStatus &&
+        matchesShortlistingStatus &&
+        matchesBatch &&
         matchesRegistered &&
         matchesDistrict &&
         matchesAIReviewed &&
@@ -630,6 +892,8 @@ export default function NewApplicationDashboard() {
     applications,
     search,
     statusFilter,
+    shortlistingStatusFilter,
+    batchFilter,
     registeredFilter,
     districtFilter,
     aiReviewedFilter,
@@ -643,6 +907,8 @@ export default function NewApplicationDashboard() {
   }, [
     search,
     statusFilter,
+    shortlistingStatusFilter,
+    batchFilter,
     registeredFilter,
     districtFilter,
     aiReviewedFilter,
@@ -664,12 +930,19 @@ export default function NewApplicationDashboard() {
   const stats = useMemo(() => {
     return {
       total: applications.length,
+      draft: applications.filter(
+        (a) => String(a._status).toLowerCase() === "draft"
+      ).length,
       submitted: applications.filter(
         (a) => a._status === "submitted" || a._status === "Submitted"
       ).length,
       review: applications.filter((a) => a._status === "Under Review").length,
       approved: applications.filter((a) => a._status === "Approved").length,
-      registered: applications.filter((a) => a._registeredCompany).length,
+      assigned: applications.filter((a) => !!getAssignedBatchId(a)).length,
+      unassigned: applications.filter((a) => !getAssignedBatchId(a)).length,
+      recognised: applications.filter(
+        (a) => getShortlistingStatus(a) === "Recognised"
+      ).length,
       expertScored: applications.filter((a) => hasExpertReview(a)).length,
     };
   }, [applications]);
@@ -682,6 +955,7 @@ export default function NewApplicationDashboard() {
   const openAIModal = (item) => {
     const isDraft = String(item?._status || "").toLowerCase() === "draft";
     const reviewed = hasAIReview(item);
+
     if (isDraft || !reviewed) return;
 
     setAiModalApplication(item);
@@ -708,6 +982,9 @@ export default function NewApplicationDashboard() {
 
       const excelRows = filtered.map((item, index) => {
         const expertReview = getExpertReview(item);
+        const updatedDeck = getUpdatedPitchDeck(item);
+        const updatedDeckUrl = getUpdatedPitchDeckUrl(updatedDeck);
+        const summary = getShortlistingSummary(item);
 
         return {
           "S. No.": index + 1,
@@ -716,7 +993,33 @@ export default function NewApplicationDashboard() {
           "Founder Name": safe(getFounderName(item)),
           Email: safe(getEmail(item)),
           Phone: safe(getPhone(item)),
-          Status: safe(item._status),
+
+          "Application Status": safe(item._status),
+
+          "Shortlisting Batch": safe(getAssignedBatchName(item)),
+          "Shortlisting Batch ID": safe(getAssignedBatchId(item)),
+          "Shortlisting Status": safe(getShortlistingStatus(item)),
+
+          "AI Shortlisting Status": safe(summary?.aiStatus),
+          "Expert Shortlisting Status": safe(summary?.expertStatus),
+          "Written Status": safe(summary?.writtenStatus),
+          "PI Selected":
+            summary?.piSelected === true
+              ? "Yes"
+              : summary?.piSelected === false
+              ? "No"
+              : "-",
+          "Recognition Status": safe(summary?.finalStatus),
+
+          "Updated Pitch Deck Type": safe(getUpdatedPitchDeckType(updatedDeck)),
+          "Updated Pitch Deck URL": safe(updatedDeckUrl),
+          "Updated Pitch Deck File Name": safe(
+            updatedDeck?.fileName || summary?.updatedPitchDeckFileName
+          ),
+          "Updated Pitch Deck Storage Path": safe(
+            updatedDeck?.storagePath || summary?.updatedPitchDeckStoragePath
+          ),
+
           "Registered Company": item._registeredCompany ? "Yes" : "No",
 
           "AI Reviewed": hasAIReview(item) ? "Yes" : "No",
@@ -777,8 +1080,12 @@ export default function NewApplicationDashboard() {
           Innovation: safe(item?.businessIdea?.innovation),
           "Business Model": safe(item?.businessIdea?.businessModel),
 
-          "Pitch Deck File Name": safe(item?.businessIdea?.pitchDeckMeta?.fileName),
-          "Pitch Deck URL": safe(item?.businessIdea?.pitchDeckMeta?.downloadURL),
+          "Original Pitch Deck File Name": safe(
+            item?.businessIdea?.pitchDeckMeta?.fileName
+          ),
+          "Original Pitch Deck URL": safe(
+            item?.businessIdea?.pitchDeckMeta?.downloadURL
+          ),
 
           "Profile Photo File Name": safe(
             item?.basicDetails?.profilePhotoMeta?.fileName
@@ -836,10 +1143,9 @@ export default function NewApplicationDashboard() {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Applications");
 
       const now = new Date();
-      const datePart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}-${String(now.getDate()).padStart(2, "0")}`;
+      const datePart = `${now.getFullYear()}-${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
       XLSX.writeFile(workbook, `startup_applications_filtered_${datePart}.xlsx`);
     } catch (error) {
@@ -857,7 +1163,7 @@ export default function NewApplicationDashboard() {
     >
       <div className="absolute inset-0 bg-white/70 backdrop-[blur(2px)]" />
 
-      <div className="relative mx-auto max-w-[1650px] p-4 md:p-6 xl:p-8">
+      <div className="relative mx-auto max-w-[1750px] p-4 md:p-6 xl:p-8">
         <div className="overflow-hidden rounded-[38px] border border-white/80 bg-white/58 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-xl">
           <div className="border-b border-white/70 bg-white/30 px-5 py-5 md:px-7 md:py-6">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -869,7 +1175,8 @@ export default function NewApplicationDashboard() {
                   Admin Dashboard
                 </h1>
                 <p className="mt-2 max-w-3xl text-sm text-slate-500">
-                  Incoming startup applications, AI scores, expert scores, and filtered Excel export.
+                  Startup application lifecycle, AI/expert review, batch assignment,
+                  shortlisting status, and updated pitch deck tracking.
                 </p>
               </div>
 
@@ -921,48 +1228,62 @@ export default function NewApplicationDashboard() {
           </div>
 
           <div className="p-5 md:p-7">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-8">
               <SummaryCard
-                title="Total Applications"
+                title="Total"
                 value={stats.total}
-                subtitle="All incoming applications"
+                subtitle="All applications"
                 icon={FileText}
                 accent="amber"
               />
               <SummaryCard
+                title="Draft"
+                value={stats.draft}
+                subtitle="Not submitted"
+                icon={FileText}
+                accent="slate"
+              />
+              <SummaryCard
                 title="Submitted"
                 value={stats.submitted}
-                subtitle="Awaiting action"
+                subtitle="Submitted forms"
                 icon={Clock3}
                 accent="blue"
               />
               <SummaryCard
                 title="Under Review"
                 value={stats.review}
-                subtitle="Currently being checked"
+                subtitle="Main status"
                 icon={Search}
                 accent="amber"
               />
               <SummaryCard
                 title="Approved"
                 value={stats.approved}
-                subtitle="Successfully cleared"
+                subtitle="Main approval"
                 icon={CircleCheckBig}
                 accent="emerald"
               />
               <SummaryCard
-                title="Registered Company"
-                value={stats.registered}
-                subtitle="Company already registered"
-                icon={Building2}
-                accent="slate"
+                title="Batch Assigned"
+                value={stats.assigned}
+                subtitle="In shortlisting batch"
+                icon={Layers}
+                accent="violet"
               />
               <SummaryCard
-                title="Expert Scored"
-                value={stats.expertScored}
-                subtitle="Expert score submitted"
+                title="Unassigned"
+                value={stats.unassigned}
+                subtitle="No batch assigned"
+                icon={FileText}
+                accent="rose"
+              />
+              <SummaryCard
+                title="Recognised"
+                value={stats.recognised}
+                subtitle="PI cleared"
                 icon={Star}
-                accent="violet"
+                accent="emerald"
               />
             </div>
 
@@ -980,17 +1301,31 @@ export default function NewApplicationDashboard() {
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search startup, founder, mobile, email..."
+                      placeholder="Search startup, founder, mobile, email, batch..."
                       className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 pl-11 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
                     />
                   </div>
                 </div>
 
                 <FilterSelect
-                  label="Status"
+                  label="Application Status"
                   value={statusFilter}
                   onChange={setStatusFilter}
                   options={STATUS_OPTIONS}
+                />
+
+                <FilterSelect
+                  label="Shortlisting Status"
+                  value={shortlistingStatusFilter}
+                  onChange={setShortlistingStatusFilter}
+                  options={SHORTLISTING_STATUS_OPTIONS}
+                />
+
+                <FilterSelectObject
+                  label="Batch"
+                  value={batchFilter}
+                  onChange={setBatchFilter}
+                  options={batchOptions}
                 />
 
                 <FilterSelect
@@ -1013,7 +1348,9 @@ export default function NewApplicationDashboard() {
                   onChange={setAiReviewedFilter}
                   options={AI_REVIEW_OPTIONS}
                 />
+              </div>
 
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-8">
                 <FilterSelect
                   label="Expert Reviewed"
                   value={expertReviewedFilter}
@@ -1036,9 +1373,7 @@ export default function NewApplicationDashboard() {
                     className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
                   />
                 </div>
-              </div>
 
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-8">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Expert Score ≥
@@ -1060,6 +1395,8 @@ export default function NewApplicationDashboard() {
                   onClick={() => {
                     setSearch("");
                     setStatusFilter("All");
+                    setShortlistingStatusFilter("All");
+                    setBatchFilter("All");
                     setRegisteredFilter("All");
                     setDistrictFilter("All");
                     setAiReviewedFilter("All");
@@ -1078,17 +1415,26 @@ export default function NewApplicationDashboard() {
                   <Sparkles size={12} />
                   Showing {pageStart}-{pageEnd} of {filtered.length}
                 </span>
+
                 <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
                   Page {currentPage} of {totalPages}
                 </span>
-                {aiScoreMinFilter ? (
-                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
-                    AI Score ≥ {aiScoreMinFilter}
+
+                {statusFilter !== "All" ? (
+                  <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700">
+                    Application Status: {statusFilter}
                   </span>
                 ) : null}
-                {expertScoreMinFilter ? (
+
+                {shortlistingStatusFilter !== "All" ? (
                   <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700">
-                    Expert Score ≥ {expertScoreMinFilter}
+                    Shortlisting: {shortlistingStatusFilter}
+                  </span>
+                ) : null}
+
+                {batchFilter !== "All" ? (
+                  <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700">
+                    Batch: {batchFilter}
                   </span>
                 ) : null}
               </div>
@@ -1161,21 +1507,24 @@ export default function NewApplicationDashboard() {
                   Incoming Applications
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Click any row to open the full details dialog
+                  Click any row to open full details. Updated pitch deck links open
+                  in a new tab.
                 </p>
               </div>
 
               <div className="overflow-auto">
-                <table className="min-w-[1650px] w-full">
+                <table className="min-w-[2050px] w-full">
                   <thead className="bg-slate-50/80">
                     <tr className="text-left text-xs uppercase tracking-[0.14em] text-slate-500">
                       <th className="px-5 py-4 font-semibold">Application ID</th>
                       <th className="px-5 py-4 font-semibold">Startup</th>
                       <th className="px-5 py-4 font-semibold">Founder</th>
-                      <th className="px-5 py-4 font-semibold">Status</th>
+                      <th className="px-5 py-4 font-semibold">Application Status</th>
+                      <th className="px-5 py-4 font-semibold">Batch</th>
+                      <th className="px-5 py-4 font-semibold">Shortlisting Status</th>
+                      <th className="px-5 py-4 font-semibold">Updated Pitch Deck</th>
                       <th className="px-5 py-4 font-semibold">AI Score</th>
                       <th className="px-5 py-4 font-semibold">Expert Score</th>
-
                       <th className="px-5 py-4 font-semibold">Registered Company</th>
                       <th className="px-5 py-4 font-semibold">District</th>
                       <th className="px-5 py-4 font-semibold">Category / Sector</th>
@@ -1188,7 +1537,7 @@ export default function NewApplicationDashboard() {
                     {loading ? (
                       Array.from({ length: 8 }).map((_, index) => (
                         <tr key={index} className="border-t border-slate-100">
-                          {Array.from({ length: 13 }).map((__, i) => (
+                          {Array.from({ length: 14 }).map((__, i) => (
                             <td key={i} className="px-5 py-4">
                               <div className="h-4 w-full animate-pulse rounded bg-slate-100" />
                             </td>
@@ -1197,7 +1546,7 @@ export default function NewApplicationDashboard() {
                       ))
                     ) : paginatedRows.length === 0 ? (
                       <tr>
-                        <td colSpan={13} className="px-6 py-16 text-center">
+                        <td colSpan={14} className="px-6 py-16 text-center">
                           <div className="mx-auto max-w-md">
                             <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
                               <FileText size={22} />
@@ -1215,6 +1564,9 @@ export default function NewApplicationDashboard() {
                       paginatedRows.map((item) => {
                         const isDraft =
                           String(item?._status || "").toLowerCase() === "draft";
+
+                        const shortlistingStatus = getShortlistingStatus(item);
+                        const updatedDeck = getUpdatedPitchDeck(item);
 
                         return (
                           <tr
@@ -1243,6 +1595,18 @@ export default function NewApplicationDashboard() {
                               <StatusBadge status={item._status} />
                             </td>
 
+                            <td className="px-5 py-4">
+                              <BatchBadge batchName={getAssignedBatchName(item)} />
+                            </td>
+
+                            <td className="px-5 py-4">
+                              <ShortlistingBadge status={shortlistingStatus} />
+                            </td>
+
+                            <td className="px-5 py-4">
+                              <UpdatedPitchDeckLink deck={updatedDeck} />
+                            </td>
+
                             <td
                               className="px-5 py-4"
                               onClick={(e) => {
@@ -1260,15 +1624,16 @@ export default function NewApplicationDashboard() {
                                 }`}
                               >
                                 <Bot size={14} className="text-slate-500" />
-                                <AIScoreBadge score={getAIScore(item)} isDraft={isDraft} />
+                                <AIScoreBadge
+                                  score={getAIScore(item)}
+                                  isDraft={isDraft}
+                                />
                               </button>
                             </td>
 
                             <td className="px-5 py-4">
                               <ScoreBadge score={getExpertScore(item)} />
                             </td>
-
-                         
 
                             <td className="px-5 py-4">
                               <RegisteredBadge value={item._registeredCompany} />
@@ -1425,6 +1790,27 @@ function FilterSelect({ label, value, onChange, options }) {
         {options.map((item) => (
           <option key={item} value={item}>
             {item}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function FilterSelectObject({ label, value, onChange, options }) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-2xl border border-white/80 bg-white/85 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+      >
+        {options.map((item) => (
+          <option key={item.value} value={item.value}>
+            {item.label}
           </option>
         ))}
       </select>

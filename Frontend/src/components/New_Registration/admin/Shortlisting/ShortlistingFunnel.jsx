@@ -37,8 +37,10 @@ import {
   DEFAULT_PUBLISH,
   FUNNEL_STAGES,
   STATUS,
+  buildApplicationShortlistingPatch,
   buildBatchApplication,
   buildSchedule,
+  buildShortlistingSummary,
   calculateCounts,
   formatDate,
   getAIScore,
@@ -49,9 +51,11 @@ import {
   getFounderName,
   getPhone,
   getRowsForStage,
+  getShortlistingCurrentStatus,
   getStartupName,
   getStatus,
   isSubmittedStatus,
+  normalizeId,
   readExpertReview,
   safe,
   toDate,
@@ -96,13 +100,6 @@ const getStageLabel = (stage) => {
   if (stage === FUNNEL_STAGES.FINAL) return "Final";
   return "Applications";
 };
-
-const normalizeId = (value) =>
-  String(value || "")
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "")
-    .replace(/[^A-Z0-9]/g, "");
 
 const getResetPublishPatch = (stage, currentPublish = {}) => {
   if (stage === FUNNEL_STAGES.AI) {
@@ -270,6 +267,7 @@ const getExcelRowsForStage = (stage, rows) => {
       Phone: item.phone || "",
       "Submitted On": formatDate(item.submittedAt) || "",
       "Current Stage": item.currentStage || "",
+      "Current Shortlisting Status": getShortlistingCurrentStatus(item),
     };
 
     if (stage === FUNNEL_STAGES.ALL) {
@@ -284,6 +282,11 @@ const getExcelRowsForStage = (stage, rows) => {
         "PI Status": getPiStatusText(item),
         "PI Marks": item.pi?.marks ?? "",
         "Final Status": getFinalStatusText(item),
+        "Updated Pitch Deck Type": item.UpdatedPitchDeck?.type || "",
+        "Updated Pitch Deck URL":
+          item.UpdatedPitchDeck?.type === "canva"
+            ? item.UpdatedPitchDeck?.canvaLink || ""
+            : item.UpdatedPitchDeck?.downloadURL || "",
       };
     }
 
@@ -334,6 +337,11 @@ const getExcelRowsForStage = (stage, rows) => {
         "PI Marks": item.pi?.marks ?? "",
         "PI Status": getPiStatusText(item),
         "Final Status": getFinalStatusText(item),
+        "Updated Pitch Deck Type": item.UpdatedPitchDeck?.type || "",
+        "Updated Pitch Deck URL":
+          item.UpdatedPitchDeck?.type === "canva"
+            ? item.UpdatedPitchDeck?.canvaLink || ""
+            : item.UpdatedPitchDeck?.downloadURL || "",
       };
     }
 
@@ -395,7 +403,9 @@ const extractApplicationIdsFromExcel = async (file) => {
     }
 
     if (!value) {
-      const firstValue = Object.values(row).find((item) => String(item || "").trim());
+      const firstValue = Object.values(row).find((item) =>
+        String(item || "").trim()
+      );
       value = firstValue || "";
     }
 
@@ -417,7 +427,10 @@ export default function ShortlistingFunnel() {
   const [batchForm, setBatchForm] = useState(emptyBatchForm);
 
   const [assignPanelOpen, setAssignPanelOpen] = useState(false);
-  const [previewDateRange, setPreviewDateRange] = useState({ from: "", to: "" });
+  const [previewDateRange, setPreviewDateRange] = useState({
+    from: "",
+    to: "",
+  });
   const [previewRows, setPreviewRows] = useState([]);
   const [selectedPreviewIds, setSelectedPreviewIds] = useState({});
   const [previewStats, setPreviewStats] = useState({
@@ -465,7 +478,10 @@ export default function ShortlistingFunnel() {
             ? STATUS.SHORTLISTED
             : STATUS.NOT_SHORTLISTED;
 
-        return { ...item, nextStatus };
+        return {
+          ...item,
+          nextStatus,
+        };
       });
     }
 
@@ -479,7 +495,10 @@ export default function ShortlistingFunnel() {
             ? STATUS.SHORTLISTED
             : STATUS.NOT_SHORTLISTED;
 
-        return { ...item, nextStatus };
+        return {
+          ...item,
+          nextStatus,
+        };
       });
     }
 
@@ -500,9 +519,10 @@ export default function ShortlistingFunnel() {
         item.ai?.status,
         item.expert?.status,
         item.written?.status,
-        item.pi?.selected === true ? "pi selected" : "",
+        item.pi?.selected === true ? "pi selected recognised" : "",
         item.pi?.selected === false ? "pi not selected" : "",
         item.final?.status,
+        getShortlistingCurrentStatus(item),
       ]
         .filter(Boolean)
         .join(" ")
@@ -536,6 +556,28 @@ export default function ShortlistingFunnel() {
   const selectedVisibleRows = () =>
     filteredRows.filter((item) => selectedRowIds[item.applicationId]);
 
+  const getApplicationDocIdForRow = (item) =>
+    item?.applicationDocId || item?.id || item?.applicationId || "";
+
+  const buildApplicationPatchForRow = (item, nextBatchApplication) => {
+    const batchId = selectedBatchId || selectedBatch?.batchId || item?.batchId || "";
+    const batchName =
+      selectedBatch?.batchName ||
+      selectedBatch?.batchId ||
+      item?.batchName ||
+      selectedBatchId ||
+      "";
+
+    return buildApplicationShortlistingPatch({
+      batchId,
+      batchName,
+      batchApplication: nextBatchApplication,
+      existingSummary: item?.shortlistingSummary || {},
+      updatedPitchDeck: nextBatchApplication?.UpdatedPitchDeck || item?.UpdatedPitchDeck,
+      serverTimestampValue: serverTimestamp(),
+    });
+  };
+
   const getResetRows = (stage) => {
     const selectedRows = selectedVisibleRows();
 
@@ -545,14 +587,23 @@ export default function ShortlistingFunnel() {
         stage
       )
     ) {
-      return { rows: selectedRows, scopeText: "selected applications" };
+      return {
+        rows: selectedRows,
+        scopeText: "selected applications",
+      };
     }
 
     if (stage === FUNNEL_STAGES.AI) {
-      return { rows: batchRows, scopeText: "all applications in this batch" };
+      return {
+        rows: batchRows,
+        scopeText: "all applications in this batch",
+      };
     }
 
-    return { rows: stageRows, scopeText: "all applications in this stage" };
+    return {
+      rows: stageRows,
+      scopeText: "all applications in this stage",
+    };
   };
 
   const loadBatches = async () => {
@@ -560,7 +611,11 @@ export default function ShortlistingFunnel() {
       query(collection(db, BATCH_COLLECTION), orderBy("createdAt", "desc"))
     );
 
-    const rows = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+    const rows = snap.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    }));
+
     setBatches(rows);
 
     if (!selectedBatchId && rows.length) {
@@ -577,7 +632,10 @@ export default function ShortlistingFunnel() {
     const snap = await getDoc(doc(db, BATCH_COLLECTION, batchId));
 
     if (snap.exists()) {
-      setSelectedBatch({ id: snap.id, ...snap.data() });
+      setSelectedBatch({
+        id: snap.id,
+        ...snap.data(),
+      });
     } else {
       setSelectedBatch(null);
     }
@@ -594,7 +652,10 @@ export default function ShortlistingFunnel() {
     );
 
     const rows = snap.docs
-      .map((item) => ({ id: item.id, ...item.data() }))
+      .map((item) => ({
+        id: item.id,
+        ...item.data(),
+      }))
       .sort((a, b) =>
         String(a.applicationId || "").localeCompare(String(b.applicationId || ""))
       );
@@ -622,7 +683,9 @@ export default function ShortlistingFunnel() {
   };
 
   useEffect(() => {
-    loadBatches().catch(console.error);
+    loadBatches().catch((error) => {
+      console.error("Load batches failed", error);
+    });
   }, []);
 
   useEffect(() => {
@@ -700,7 +763,10 @@ export default function ShortlistingFunnel() {
 
       const start = new Date(`${fromDate}T00:00:00`);
       const end = new Date(`${toDateValue}T23:59:59`);
-      const alreadyAdded = new Set(batchRows.map((item) => String(item.applicationId)));
+
+      const alreadyAdded = new Set(
+        batchRows.map((item) => String(item.applicationId))
+      );
 
       const snap = await getDocs(
         query(collection(db, APP_COLLECTION), orderBy("createdAt", "desc"))
@@ -717,6 +783,7 @@ export default function ShortlistingFunnel() {
 
       snap.docs.forEach((docItem) => {
         scanned += 1;
+
         const data = docItem.data();
 
         if (!isSubmittedStatus(data)) {
@@ -821,14 +888,32 @@ export default function ShortlistingFunnel() {
         const batch = writeBatch(db);
 
         chunk.forEach((item) => {
-          const payload = buildBatchApplication({
-            item,
-            selectedBatchId,
-            selectedBatch,
+          const payload = {
+            ...buildBatchApplication({
+              item,
+              selectedBatchId,
+              selectedBatch,
+            }),
+            createdAt: serverTimestamp(),
+            lastUpdatedAt: serverTimestamp(),
+          };
+
+          const summary = buildShortlistingSummary({
+            batchId: selectedBatchId,
+            batchName: selectedBatch?.batchName || selectedBatchId,
+            batchApplication: payload,
+            existingSummary: item?.shortlistingSummary || {},
+            updatedPitchDeck: payload?.UpdatedPitchDeck,
           });
 
           batch.set(
-            doc(db, BATCH_COLLECTION, selectedBatchId, "applications", item.applicationId),
+            doc(
+              db,
+              BATCH_COLLECTION,
+              selectedBatchId,
+              "applications",
+              item.applicationId
+            ),
             payload,
             { merge: true }
           );
@@ -840,6 +925,10 @@ export default function ShortlistingFunnel() {
                 batchId: selectedBatchId,
                 batchName: selectedBatch?.batchName || selectedBatchId,
                 assignedAt: serverTimestamp(),
+              },
+              shortlistingSummary: {
+                ...summary,
+                updatedAt: serverTimestamp(),
               },
               firestoreUpdatedAt: serverTimestamp(),
             },
@@ -874,7 +963,11 @@ export default function ShortlistingFunnel() {
       collection(db, BATCH_COLLECTION, selectedBatchId, "applications")
     );
 
-    const rows = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
+    const rows = snap.docs.map((item) => ({
+      id: item.id,
+      ...item.data(),
+    }));
+
     const countsNext = calculateCounts(rows);
 
     await updateDoc(doc(db, BATCH_COLLECTION, selectedBatchId), {
@@ -883,6 +976,7 @@ export default function ShortlistingFunnel() {
     });
 
     setBatchRows(rows);
+
     await Promise.all([loadSelectedBatch(selectedBatchId), loadBatches()]);
   };
 
@@ -900,16 +994,38 @@ export default function ShortlistingFunnel() {
     try {
       setSaving(true);
 
-      for (let index = 0; index < rows.length; index += 300) {
-        const chunk = rows.slice(index, index + 300);
+      for (let index = 0; index < rows.length; index += 250) {
+        const chunk = rows.slice(index, index + 250);
         const batch = writeBatch(db);
 
         chunk.forEach((item) => {
+          const payload = getPayload(item);
+          const nextBatchApplication = {
+            ...item,
+            ...payload,
+          };
+
           batch.set(
-            doc(db, BATCH_COLLECTION, selectedBatchId, "applications", item.applicationId),
-            getPayload(item),
+            doc(
+              db,
+              BATCH_COLLECTION,
+              selectedBatchId,
+              "applications",
+              item.applicationId
+            ),
+            payload,
             { merge: true }
           );
+
+          const applicationDocId = getApplicationDocIdForRow(item);
+
+          if (applicationDocId) {
+            batch.set(
+              doc(db, APP_COLLECTION, applicationDocId),
+              buildApplicationPatchForRow(item, nextBatchApplication),
+              { merge: true }
+            );
+          }
         });
 
         await batch.commit();
@@ -955,8 +1071,8 @@ export default function ShortlistingFunnel() {
       rows: [
         {
           "SB No": "SB202600001",
-          "Selected": "YES",
-          "Remarks": "Optional",
+          Selected: "YES",
+          Remarks: "Optional",
         },
       ],
     });
@@ -969,7 +1085,11 @@ export default function ShortlistingFunnel() {
 
     if (!file) return;
 
-    if (![FUNNEL_STAGES.WRITTEN, FUNNEL_STAGES.PI, FUNNEL_STAGES.FINAL].includes(stage)) {
+    if (
+      ![FUNNEL_STAGES.WRITTEN, FUNNEL_STAGES.PI, FUNNEL_STAGES.FINAL].includes(
+        stage
+      )
+    ) {
       alert("Excel selection upload is available only for Written, PI and Final stages.");
       return;
     }
@@ -1067,7 +1187,9 @@ export default function ShortlistingFunnel() {
 
     if (!window.confirm(confirmText)) return;
 
-    const secondConfirm = window.prompt(`Type RESET to confirm resetting ${stageLabel}.`);
+    const secondConfirm = window.prompt(
+      `Type RESET to confirm resetting ${stageLabel}.`
+    );
 
     if (secondConfirm !== "RESET") {
       alert("Reset cancelled.");
@@ -1077,16 +1199,38 @@ export default function ShortlistingFunnel() {
     try {
       setSaving(true);
 
-      for (let index = 0; index < rows.length; index += 300) {
-        const chunk = rows.slice(index, index + 300);
+      for (let index = 0; index < rows.length; index += 250) {
+        const chunk = rows.slice(index, index + 250);
         const batch = writeBatch(db);
 
         chunk.forEach((item) => {
+          const payload = getResetPayload(stage, item);
+          const nextBatchApplication = {
+            ...item,
+            ...payload,
+          };
+
           batch.set(
-            doc(db, BATCH_COLLECTION, selectedBatchId, "applications", item.applicationId),
-            getResetPayload(stage, item),
+            doc(
+              db,
+              BATCH_COLLECTION,
+              selectedBatchId,
+              "applications",
+              item.applicationId
+            ),
+            payload,
             { merge: true }
           );
+
+          const applicationDocId = getApplicationDocIdForRow(item);
+
+          if (applicationDocId) {
+            batch.set(
+              doc(db, APP_COLLECTION, applicationDocId),
+              buildApplicationPatchForRow(item, nextBatchApplication),
+              { merge: true }
+            );
+          }
         });
 
         await batch.commit();
@@ -1103,6 +1247,7 @@ export default function ShortlistingFunnel() {
 
       await afterRowsUpdated();
       await loadSelectedBatch(selectedBatchId);
+
       setSelectedRowIds({});
 
       alert(`${stageLabel} reset completed for ${rows.length} applications.`);
@@ -1123,6 +1268,7 @@ export default function ShortlistingFunnel() {
     }
 
     const rows = batchRows;
+
     const shortlisted = rows.filter((item) => Number(item.aiScore) >= cutoff).length;
     const notShortlisted = rows.length - shortlisted;
 
@@ -1145,6 +1291,7 @@ export default function ShortlistingFunnel() {
 
         return {
           ai: {
+            ...(item.ai || {}),
             status,
             cutoffUsed: cutoff,
             updatedAt: serverTimestamp(),
@@ -1167,6 +1314,7 @@ export default function ShortlistingFunnel() {
     }
 
     const rows = batchRows.filter((item) => item?.ai?.status === STATUS.SHORTLISTED);
+
     const shortlisted = rows.filter((item) => Number(item.expertScore) >= cutoff).length;
     const notShortlisted = rows.length - shortlisted;
 
@@ -1189,6 +1337,7 @@ export default function ShortlistingFunnel() {
 
         return {
           expert: {
+            ...(item.expert || {}),
             status,
             cutoffUsed: cutoff,
             updatedAt: serverTimestamp(),
@@ -1214,10 +1363,11 @@ export default function ShortlistingFunnel() {
 
     await updateSelectedRows(
       rows,
-      () => ({
+      (item) => ({
         written: {
+          ...(item.written || {}),
           schedule: buildSchedule(writtenSchedule),
-          status: STATUS.PENDING,
+          status: item?.written?.status || STATUS.PENDING,
           updatedAt: serverTimestamp(),
         },
         currentStage: FUNNEL_STAGES.WRITTEN,
@@ -1256,10 +1406,16 @@ export default function ShortlistingFunnel() {
 
     await updateSelectedRows(
       rows,
-      () => ({
+      (item) => ({
         pi: {
+          ...(item.pi || {}),
           schedule: buildSchedule(piSchedule),
-          selected: null,
+          selected:
+            item?.pi?.selected === true
+              ? true
+              : item?.pi?.selected === false
+              ? false
+              : null,
           updatedAt: serverTimestamp(),
         },
         currentStage: FUNNEL_STAGES.PI,
@@ -1377,8 +1533,7 @@ export default function ShortlistingFunnel() {
         ["Shortlisted", counts.expertShortlisted, "emerald"],
         [
           "Not Shortlisted",
-          stageRows.filter((x) => x?.expert?.status === STATUS.NOT_SHORTLISTED)
-            .length,
+          stageRows.filter((x) => x?.expert?.status === STATUS.NOT_SHORTLISTED).length,
           "rose",
         ],
       ];
@@ -1462,8 +1617,8 @@ export default function ShortlistingFunnel() {
               </h1>
               <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-500">
                 Move applications step by step: Applications → AI → Expert →
-                Written → PI → Recognition. Marks are optional at Written and PI
-                stages.
+                Written → PI → Recognition. A compact shortlisting summary is
+                also saved inside each application for faster dashboard loading.
               </p>
             </div>
 
@@ -1911,14 +2066,15 @@ function StageActions({
 }) {
   const uploadInputRef = useRef(null);
 
-  const resetButton = activeStage !== FUNNEL_STAGES.ALL ? (
-    <ResetButton
-      stage={activeStage}
-      count={resetCount}
-      saving={saving}
-      onClick={() => resetStage(activeStage)}
-    />
-  ) : null;
+  const resetButton =
+    activeStage !== FUNNEL_STAGES.ALL ? (
+      <ResetButton
+        stage={activeStage}
+        count={resetCount}
+        saving={saving}
+        onClick={() => resetStage(activeStage)}
+      />
+    ) : null;
 
   const downloadButton = (
     <button
@@ -2250,7 +2406,9 @@ function ScheduleForm({ form, setForm }) {
         <input
           type="date"
           value={form.date}
-          onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, date: event.target.value }))
+          }
           className={inputClass}
         />
       </Field>
@@ -2280,7 +2438,9 @@ function ScheduleForm({ form, setForm }) {
       <Field label="Mode">
         <select
           value={form.mode}
-          onChange={(event) => setForm((prev) => ({ ...prev, mode: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, mode: event.target.value }))
+          }
           className={inputClass}
         >
           <option value="Online">Online</option>
@@ -2292,7 +2452,9 @@ function ScheduleForm({ form, setForm }) {
       <Field label="Venue / Link">
         <input
           value={form.venue}
-          onChange={(event) => setForm((prev) => ({ ...prev, venue: event.target.value }))}
+          onChange={(event) =>
+            setForm((prev) => ({ ...prev, venue: event.target.value }))
+          }
           placeholder="Venue or meeting link"
           className={inputClass}
         />
@@ -2342,7 +2504,7 @@ function ApplicationTable({
     activeStage === FUNNEL_STAGES.FINAL;
 
   return (
-    <table className="min-w-[1250px] w-full text-sm">
+    <table className="min-w-[1350px] w-full text-sm">
       <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
         <tr>
           {selectable ? (
@@ -2357,6 +2519,7 @@ function ApplicationTable({
           <th className="px-4 py-3">Application</th>
           <th className="px-4 py-3">Startup</th>
           <th className="px-4 py-3">Founder</th>
+          <th className="px-4 py-3">Current Status</th>
 
           {activeStage === FUNNEL_STAGES.ALL ? (
             <>
@@ -2418,7 +2581,7 @@ function ApplicationTable({
       <tbody>
         {rows.length === 0 ? (
           <tr>
-            <td colSpan={12} className="px-4 py-12 text-center text-slate-500">
+            <td colSpan={14} className="px-4 py-12 text-center text-slate-500">
               No applications found.
             </td>
           </tr>
@@ -2452,6 +2615,12 @@ function ApplicationTable({
               </td>
 
               <td className="px-4 py-3">{safe(item.founderName)}</td>
+
+              <td className="px-4 py-3">
+                <span className="inline-flex max-w-[230px] rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                  <span className="truncate">{getShortlistingCurrentStatus(item)}</span>
+                </span>
+              </td>
 
               {activeStage === FUNNEL_STAGES.ALL ? (
                 <>
