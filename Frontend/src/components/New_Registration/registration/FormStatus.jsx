@@ -34,7 +34,7 @@ import {
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { db, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
 
 const timelineSteps = [
@@ -766,7 +766,7 @@ const UpdatedPitchDeckCard = ({
   const existingDeck =
     application?.UpdatedPitchDeck || batchApplication?.UpdatedPitchDeck || null;
 
-  const maxSize = 10 * 1024 * 1024;
+  const maxSize = 15 * 1024 * 1024;
 
   const handleFileChange = (event) => {
     const selected = event.target.files?.[0] || null;
@@ -787,13 +787,32 @@ const UpdatedPitchDeckCard = ({
     }
 
     if (selected.size > maxSize) {
-      alert("Maximum file size allowed is 10 MB.");
+      alert("Maximum file size allowed is 15 MB.");
       event.target.value = "";
       setFile(null);
       return;
     }
 
     setFile(selected);
+  };
+
+  const deleteOldDeckFromStorage = async (oldDeck, newStoragePath = "") => {
+    try {
+      if (!oldDeck) return;
+
+      const oldStoragePath = oldDeck.storagePath;
+
+      if (!oldStoragePath) return;
+      if (oldDeck.type !== "file") return;
+      if (oldStoragePath === newStoragePath) return;
+
+      const oldFileRef = ref(storage, oldStoragePath);
+      await deleteObject(oldFileRef);
+    } catch (error) {
+      console.warn("Old updated pitch deck could not be deleted:", error);
+      // Do not block user submission if deletion fails.
+      // Firestore now points to the new deck, so the applicant flow remains correct.
+    }
   };
 
   const handleSubmit = async () => {
@@ -825,6 +844,7 @@ const UpdatedPitchDeckCard = ({
         const fileRef = ref(storage, storagePath);
 
         await uploadBytes(fileRef, file);
+
         const downloadURL = await getDownloadURL(fileRef);
 
         payload = {
@@ -870,6 +890,8 @@ const UpdatedPitchDeckCard = ({
           { merge: true }
         );
       }
+
+      await deleteOldDeckFromStorage(existingDeck, payload.storagePath);
 
       onSaved?.(payload);
 
@@ -970,7 +992,7 @@ const UpdatedPitchDeckCard = ({
               </div>
             ) : (
               <div className="mt-1 text-xs text-emerald-700">
-                Max 10 MB.
+                Max 15 MB.
               </div>
             )}
           </div>
