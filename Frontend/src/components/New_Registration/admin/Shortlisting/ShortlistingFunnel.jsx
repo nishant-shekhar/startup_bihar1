@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   collection,
   doc,
@@ -23,7 +23,10 @@ import {
   CalendarClock,
   RotateCcw,
   AlertTriangle,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 
 import { db } from "../../../AdminRedesign/NewApplicationAdmin/firebase";
 
@@ -93,6 +96,13 @@ const getStageLabel = (stage) => {
   if (stage === FUNNEL_STAGES.FINAL) return "Final";
   return "Applications";
 };
+
+const normalizeId = (value) =>
+  String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/[^A-Z0-9]/g, "");
 
 const getResetPublishPatch = (stage, currentPublish = {}) => {
   if (stage === FUNNEL_STAGES.AI) {
@@ -237,6 +247,166 @@ const getResetPayload = (stage, item) => {
   return {};
 };
 
+const getPiStatusText = (item) => {
+  if (item?.pi?.selected === true) return "Selected";
+  if (item?.pi?.selected === false) return "Not Selected";
+  return "Pending";
+};
+
+const getFinalStatusText = (item) => {
+  if (item?.final?.status === STATUS.RECOGNISED) return "Recognised";
+  if (item?.final?.status === STATUS.NOT_RECOGNISED) return "Not Recognised";
+  return item?.final?.status || "Pending";
+};
+
+const getExcelRowsForStage = (stage, rows) => {
+  return rows.map((item, index) => {
+    const base = {
+      "Sl No": index + 1,
+      "SB No": item.applicationId || "",
+      "Startup Name": item.startupName || "",
+      "Founder Name": item.founderName || "",
+      Email: item.email || "",
+      Phone: item.phone || "",
+      "Submitted On": formatDate(item.submittedAt) || "",
+      "Current Stage": item.currentStage || "",
+    };
+
+    if (stage === FUNNEL_STAGES.ALL) {
+      return {
+        ...base,
+        "AI Status": item.ai?.status || "pending",
+        "AI Score": item.aiScore ?? "",
+        "Expert Status": item.expert?.status || "pending",
+        "Expert Score": item.expertScore ?? "",
+        "Written Status": item.written?.status || "pending",
+        "Written Marks": item.written?.marks ?? "",
+        "PI Status": getPiStatusText(item),
+        "PI Marks": item.pi?.marks ?? "",
+        "Final Status": getFinalStatusText(item),
+      };
+    }
+
+    if (stage === FUNNEL_STAGES.AI) {
+      return {
+        ...base,
+        "AI Score": item.aiScore ?? "",
+        "Current AI Status": item.ai?.status || "pending",
+        "Preview Next AI Status": item.nextStatus || "",
+      };
+    }
+
+    if (stage === FUNNEL_STAGES.EXPERT) {
+      return {
+        ...base,
+        "AI Status": item.ai?.status || "pending",
+        "Expert Score": item.expertScore ?? "",
+        "Current Expert Status": item.expert?.status || "pending",
+        "Preview Next Expert Status": item.nextStatus || "",
+      };
+    }
+
+    if (stage === FUNNEL_STAGES.WRITTEN) {
+      return {
+        ...base,
+        "Expert Status": item.expert?.status || "pending",
+        "Written Date": item.written?.schedule?.date || "",
+        "Written Start Time": item.written?.schedule?.startTime || "",
+        "Written End Time": item.written?.schedule?.endTime || "",
+        "Written Mode": item.written?.schedule?.mode || "",
+        "Written Venue / Link": item.written?.schedule?.venue || "",
+        "Written Instruction": item.written?.schedule?.instruction || "",
+        "Written Marks": item.written?.marks ?? "",
+        "Written Status": item.written?.status || "pending",
+      };
+    }
+
+    if (stage === FUNNEL_STAGES.PI) {
+      return {
+        ...base,
+        "Written Status": item.written?.status || "pending",
+        "PI Date": item.pi?.schedule?.date || "",
+        "PI Start Time": item.pi?.schedule?.startTime || "",
+        "PI End Time": item.pi?.schedule?.endTime || "",
+        "PI Mode": item.pi?.schedule?.mode || "",
+        "PI Venue / Link": item.pi?.schedule?.venue || "",
+        "PI Instruction": item.pi?.schedule?.instruction || "",
+        "PI Marks": item.pi?.marks ?? "",
+        "PI Status": getPiStatusText(item),
+        "Final Status": getFinalStatusText(item),
+      };
+    }
+
+    return {
+      ...base,
+      "PI Status": getPiStatusText(item),
+      "Final Status": getFinalStatusText(item),
+    };
+  });
+};
+
+const downloadWorkbook = ({ fileName, sheetName, rows }) => {
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName.slice(0, 31));
+  XLSX.writeFile(workbook, fileName);
+};
+
+const extractApplicationIdsFromExcel = async (file) => {
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const firstSheetName = workbook.SheetNames[0];
+
+  if (!firstSheetName) return [];
+
+  const sheet = workbook.Sheets[firstSheetName];
+  const rows = XLSX.utils.sheet_to_json(sheet, {
+    defval: "",
+    raw: false,
+  });
+
+  if (!rows.length) return [];
+
+  const possibleKeys = [
+    "SB No",
+    "SBNo",
+    "SB_NO",
+    "Application ID",
+    "ApplicationID",
+    "Application Id",
+    "applicationId",
+    "application_id",
+    "Registration No",
+    "Registration Number",
+    "Startup ID",
+  ];
+
+  const ids = [];
+
+  rows.forEach((row) => {
+    let value = "";
+
+    for (const key of possibleKeys) {
+      if (row[key]) {
+        value = row[key];
+        break;
+      }
+    }
+
+    if (!value) {
+      const firstValue = Object.values(row).find((item) => String(item || "").trim());
+      value = firstValue || "";
+    }
+
+    const normalized = normalizeId(value);
+
+    if (normalized) ids.push(normalized);
+  });
+
+  return [...new Set(ids)];
+};
+
 export default function ShortlistingFunnel() {
   const [batches, setBatches] = useState([]);
   const [selectedBatchId, setSelectedBatchId] = useState("");
@@ -244,14 +414,10 @@ export default function ShortlistingFunnel() {
   const [batchRows, setBatchRows] = useState([]);
 
   const [activeStage, setActiveStage] = useState(FUNNEL_STAGES.ALL);
-
   const [batchForm, setBatchForm] = useState(emptyBatchForm);
 
   const [assignPanelOpen, setAssignPanelOpen] = useState(false);
-  const [previewDateRange, setPreviewDateRange] = useState({
-    from: "",
-    to: "",
-  });
+  const [previewDateRange, setPreviewDateRange] = useState({ from: "", to: "" });
   const [previewRows, setPreviewRows] = useState([]);
   const [selectedPreviewIds, setSelectedPreviewIds] = useState({});
   const [previewStats, setPreviewStats] = useState({
@@ -264,7 +430,7 @@ export default function ShortlistingFunnel() {
     alreadyAdded: 0,
   });
 
-  const [aiCutoff, setAiCutoff] = useState("7.7");
+  const [aiCutoff, setAiCutoff] = useState("8");
   const [expertCutoff, setExpertCutoff] = useState("7.5");
 
   const [writtenSchedule, setWrittenSchedule] = useState(emptyScheduleForm);
@@ -281,7 +447,6 @@ export default function ShortlistingFunnel() {
     selectedBatch?.batchName || selectedBatch?.batchId || selectedBatchId || "-";
 
   const counts = useMemo(() => calculateCounts(batchRows), [batchRows]);
-
   const publish = selectedBatch?.publish || DEFAULT_PUBLISH;
 
   const stageRows = useMemo(
@@ -300,10 +465,7 @@ export default function ShortlistingFunnel() {
             ? STATUS.SHORTLISTED
             : STATUS.NOT_SHORTLISTED;
 
-        return {
-          ...item,
-          nextStatus,
-        };
+        return { ...item, nextStatus };
       });
     }
 
@@ -317,10 +479,7 @@ export default function ShortlistingFunnel() {
             ? STATUS.SHORTLISTED
             : STATUS.NOT_SHORTLISTED;
 
-        return {
-          ...item,
-          nextStatus,
-        };
+        return { ...item, nextStatus };
       });
     }
 
@@ -386,23 +545,14 @@ export default function ShortlistingFunnel() {
         stage
       )
     ) {
-      return {
-        rows: selectedRows,
-        scopeText: "selected applications",
-      };
+      return { rows: selectedRows, scopeText: "selected applications" };
     }
 
     if (stage === FUNNEL_STAGES.AI) {
-      return {
-        rows: batchRows,
-        scopeText: "all applications in this batch",
-      };
+      return { rows: batchRows, scopeText: "all applications in this batch" };
     }
 
-    return {
-      rows: stageRows,
-      scopeText: "all applications in this stage",
-    };
+    return { rows: stageRows, scopeText: "all applications in this stage" };
   };
 
   const loadBatches = async () => {
@@ -410,11 +560,7 @@ export default function ShortlistingFunnel() {
       query(collection(db, BATCH_COLLECTION), orderBy("createdAt", "desc"))
     );
 
-    const rows = snap.docs.map((item) => ({
-      id: item.id,
-      ...item.data(),
-    }));
-
+    const rows = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
     setBatches(rows);
 
     if (!selectedBatchId && rows.length) {
@@ -431,10 +577,7 @@ export default function ShortlistingFunnel() {
     const snap = await getDoc(doc(db, BATCH_COLLECTION, batchId));
 
     if (snap.exists()) {
-      setSelectedBatch({
-        id: snap.id,
-        ...snap.data(),
-      });
+      setSelectedBatch({ id: snap.id, ...snap.data() });
     } else {
       setSelectedBatch(null);
     }
@@ -451,10 +594,7 @@ export default function ShortlistingFunnel() {
     );
 
     const rows = snap.docs
-      .map((item) => ({
-        id: item.id,
-        ...item.data(),
-      }))
+      .map((item) => ({ id: item.id, ...item.data() }))
       .sort((a, b) =>
         String(a.applicationId || "").localeCompare(String(b.applicationId || ""))
       );
@@ -482,9 +622,7 @@ export default function ShortlistingFunnel() {
   };
 
   useEffect(() => {
-    loadBatches().catch((error) => {
-      console.error("Load batches failed", error);
-    });
+    loadBatches().catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -562,10 +700,7 @@ export default function ShortlistingFunnel() {
 
       const start = new Date(`${fromDate}T00:00:00`);
       const end = new Date(`${toDateValue}T23:59:59`);
-
-      const alreadyAdded = new Set(
-        batchRows.map((item) => String(item.applicationId))
-      );
+      const alreadyAdded = new Set(batchRows.map((item) => String(item.applicationId)));
 
       const snap = await getDocs(
         query(collection(db, APP_COLLECTION), orderBy("createdAt", "desc"))
@@ -582,7 +717,6 @@ export default function ShortlistingFunnel() {
 
       snap.docs.forEach((docItem) => {
         scanned += 1;
-
         const data = docItem.data();
 
         if (!isSubmittedStatus(data)) {
@@ -694,13 +828,7 @@ export default function ShortlistingFunnel() {
           });
 
           batch.set(
-            doc(
-              db,
-              BATCH_COLLECTION,
-              selectedBatchId,
-              "applications",
-              item.applicationId
-            ),
+            doc(db, BATCH_COLLECTION, selectedBatchId, "applications", item.applicationId),
             payload,
             { merge: true }
           );
@@ -746,11 +874,7 @@ export default function ShortlistingFunnel() {
       collection(db, BATCH_COLLECTION, selectedBatchId, "applications")
     );
 
-    const rows = snap.docs.map((item) => ({
-      id: item.id,
-      ...item.data(),
-    }));
-
+    const rows = snap.docs.map((item) => ({ id: item.id, ...item.data() }));
     const countsNext = calculateCounts(rows);
 
     await updateDoc(doc(db, BATCH_COLLECTION, selectedBatchId), {
@@ -759,7 +883,6 @@ export default function ShortlistingFunnel() {
     });
 
     setBatchRows(rows);
-
     await Promise.all([loadSelectedBatch(selectedBatchId), loadBatches()]);
   };
 
@@ -783,13 +906,7 @@ export default function ShortlistingFunnel() {
 
         chunk.forEach((item) => {
           batch.set(
-            doc(
-              db,
-              BATCH_COLLECTION,
-              selectedBatchId,
-              "applications",
-              item.applicationId
-            ),
+            doc(db, BATCH_COLLECTION, selectedBatchId, "applications", item.applicationId),
             getPayload(item),
             { merge: true }
           );
@@ -806,6 +923,102 @@ export default function ShortlistingFunnel() {
       alert("Failed to update selected applications.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const downloadCurrentStageExcel = () => {
+    const stageLabel = getStageLabel(activeStage).replace(/[^\w]+/g, "_");
+    const batchSafe = String(batchLabel || "Batch").replace(/[^\w]+/g, "_");
+
+    const rows = getExcelRowsForStage(activeStage, filteredRows);
+
+    if (!rows.length) {
+      alert("No rows available to download.");
+      return;
+    }
+
+    downloadWorkbook({
+      fileName: `${batchSafe}_${stageLabel}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`,
+      sheetName: getStageLabel(activeStage),
+      rows,
+    });
+  };
+
+  const downloadSelectionTemplate = (stage) => {
+    const stageLabel = getStageLabel(stage).replace(/[^\w]+/g, "_");
+
+    downloadWorkbook({
+      fileName: `${stageLabel}_Selection_Template.xlsx`,
+      sheetName: "Selection List",
+      rows: [
+        {
+          "SB No": "SB202600001",
+          "Selected": "YES",
+          "Remarks": "Optional",
+        },
+      ],
+    });
+  };
+
+  const uploadSelectionExcel = async (event, stage) => {
+    const file = event.target.files?.[0];
+
+    event.target.value = "";
+
+    if (!file) return;
+
+    if (![FUNNEL_STAGES.WRITTEN, FUNNEL_STAGES.PI, FUNNEL_STAGES.FINAL].includes(stage)) {
+      alert("Excel selection upload is available only for Written, PI and Final stages.");
+      return;
+    }
+
+    try {
+      const ids = await extractApplicationIdsFromExcel(file);
+
+      if (!ids.length) {
+        alert("No SB No / Application ID found in Excel.");
+        return;
+      }
+
+      const availableMap = new Map(
+        filteredRows.map((item) => [normalizeId(item.applicationId), item])
+      );
+
+      const nextSelection = {};
+      const matched = [];
+      const unmatched = [];
+
+      ids.forEach((id) => {
+        const item = availableMap.get(id);
+
+        if (item) {
+          nextSelection[item.applicationId] = true;
+          matched.push(item.applicationId);
+        } else {
+          unmatched.push(id);
+        }
+      });
+
+      setSelectedRowIds(nextSelection);
+
+      alert(
+        [
+          `Excel selection loaded for ${getStageLabel(stage)}.`,
+          "",
+          `IDs in Excel: ${ids.length}`,
+          `Matched in current filtered stage: ${matched.length}`,
+          `Not found / not eligible in this stage: ${unmatched.length}`,
+          "",
+          matched.length
+            ? "Now click the relevant Mark Selected / Mark Recognised button."
+            : "No applications were selected.",
+        ].join("\n")
+      );
+    } catch (error) {
+      console.error("Excel selection upload failed", error);
+      alert("Failed to read Excel file. Please use .xlsx/.xls format.");
     }
   };
 
@@ -854,9 +1067,7 @@ export default function ShortlistingFunnel() {
 
     if (!window.confirm(confirmText)) return;
 
-    const secondConfirm = window.prompt(
-      `Type RESET to confirm resetting ${stageLabel}.`
-    );
+    const secondConfirm = window.prompt(`Type RESET to confirm resetting ${stageLabel}.`);
 
     if (secondConfirm !== "RESET") {
       alert("Reset cancelled.");
@@ -872,13 +1083,7 @@ export default function ShortlistingFunnel() {
 
         chunk.forEach((item) => {
           batch.set(
-            doc(
-              db,
-              BATCH_COLLECTION,
-              selectedBatchId,
-              "applications",
-              item.applicationId
-            ),
+            doc(db, BATCH_COLLECTION, selectedBatchId, "applications", item.applicationId),
             getResetPayload(stage, item),
             { merge: true }
           );
@@ -898,7 +1103,6 @@ export default function ShortlistingFunnel() {
 
       await afterRowsUpdated();
       await loadSelectedBatch(selectedBatchId);
-
       setSelectedRowIds({});
 
       alert(`${stageLabel} reset completed for ${rows.length} applications.`);
@@ -919,7 +1123,6 @@ export default function ShortlistingFunnel() {
     }
 
     const rows = batchRows;
-
     const shortlisted = rows.filter((item) => Number(item.aiScore) >= cutoff).length;
     const notShortlisted = rows.length - shortlisted;
 
@@ -964,7 +1167,6 @@ export default function ShortlistingFunnel() {
     }
 
     const rows = batchRows.filter((item) => item?.ai?.status === STATUS.SHORTLISTED);
-
     const shortlisted = rows.filter((item) => Number(item.expertScore) >= cutoff).length;
     const notShortlisted = rows.length - shortlisted;
 
@@ -1175,7 +1377,8 @@ export default function ShortlistingFunnel() {
         ["Shortlisted", counts.expertShortlisted, "emerald"],
         [
           "Not Shortlisted",
-          stageRows.filter((x) => x?.expert?.status === STATUS.NOT_SHORTLISTED).length,
+          stageRows.filter((x) => x?.expert?.status === STATUS.NOT_SHORTLISTED)
+            .length,
           "rose",
         ],
       ];
@@ -1429,6 +1632,9 @@ export default function ShortlistingFunnel() {
             resetStage={resetStage}
             resetCount={resetCount}
             saving={saving}
+            downloadCurrentStageExcel={downloadCurrentStageExcel}
+            downloadSelectionTemplate={downloadSelectionTemplate}
+            uploadSelectionExcel={uploadSelectionExcel}
           />
 
           <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -1699,28 +1905,80 @@ function StageActions({
   resetStage,
   resetCount,
   saving,
+  downloadCurrentStageExcel,
+  downloadSelectionTemplate,
+  uploadSelectionExcel,
 }) {
-  if (activeStage === FUNNEL_STAGES.ALL) {
-    return (
-      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-        Use this stage to review all applications assigned to the selected batch.
-      </div>
-    );
-  }
+  const uploadInputRef = useRef(null);
 
-  const resetButton = (
+  const resetButton = activeStage !== FUNNEL_STAGES.ALL ? (
     <ResetButton
       stage={activeStage}
       count={resetCount}
       saving={saving}
       onClick={() => resetStage(activeStage)}
     />
+  ) : null;
+
+  const downloadButton = (
+    <button
+      type="button"
+      onClick={downloadCurrentStageExcel}
+      className={`${buttonBase} border border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50`}
+    >
+      <Download size={16} />
+      Download Excel
+    </button>
   );
+
+  const uploadSelectionButtons =
+    activeStage === FUNNEL_STAGES.WRITTEN ||
+    activeStage === FUNNEL_STAGES.PI ||
+    activeStage === FUNNEL_STAGES.FINAL ? (
+      <>
+        <input
+          ref={uploadInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          className="hidden"
+          onChange={(event) => uploadSelectionExcel(event, activeStage)}
+        />
+
+        <button
+          type="button"
+          onClick={() => uploadInputRef.current?.click()}
+          className={`${buttonBase} border border-sky-200 bg-white text-sky-700 hover:bg-sky-50`}
+        >
+          <FileSpreadsheet size={16} />
+          Upload SB No Excel
+        </button>
+
+        <button
+          type="button"
+          onClick={() => downloadSelectionTemplate(activeStage)}
+          className={`${buttonBase} border border-slate-200 bg-white text-slate-700 hover:bg-slate-50`}
+        >
+          <Download size={16} />
+          Template
+        </button>
+      </>
+    ) : null;
+
+  if (activeStage === FUNNEL_STAGES.ALL) {
+    return (
+      <div className="mt-4 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+        {downloadButton}
+        <span className="flex items-center text-sm">
+          Use this stage to review all applications assigned to the selected batch.
+        </span>
+      </div>
+    );
+  }
 
   if (activeStage === FUNNEL_STAGES.AI) {
     return (
       <div className="mt-5 space-y-3 rounded-2xl border border-sky-200 bg-sky-50 p-4">
-        <div className="grid gap-3 md:grid-cols-[220px_auto_auto_auto]">
+        <div className="flex flex-wrap gap-2">
           <Field label="AI Cutoff">
             <input
               type="number"
@@ -1731,17 +1989,15 @@ function StageActions({
             />
           </Field>
 
-          <div className="flex items-end">
-            <button
-              type="button"
-              onClick={applyAiCutoff}
-              disabled={saving}
-              className={`${buttonBase} bg-sky-600 text-white hover:bg-sky-700`}
-            >
-              <Save size={16} />
-              Mark AI Shortlisted
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={applyAiCutoff}
+            disabled={saving}
+            className={`${buttonBase} bg-sky-600 text-white hover:bg-sky-700 self-end`}
+          >
+            <Save size={16} />
+            Mark AI Shortlisted
+          </button>
 
           <PublishButton
             label="Application Screening Result"
@@ -1749,7 +2005,8 @@ function StageActions({
             onClick={() => togglePublish("aiResult")}
           />
 
-          <div className="flex items-end">{resetButton}</div>
+          {downloadButton}
+          {resetButton}
         </div>
 
         <ResetHint text="Resetting AI will also reset Expert, Written, PI and Final data." />
@@ -1760,7 +2017,7 @@ function StageActions({
   if (activeStage === FUNNEL_STAGES.EXPERT) {
     return (
       <div className="mt-5 space-y-3 rounded-2xl border border-violet-200 bg-violet-50 p-4">
-        <div className="grid gap-3 md:grid-cols-[220px_auto_auto_auto]">
+        <div className="flex flex-wrap gap-2">
           <Field label="Expert Cutoff">
             <input
               type="number"
@@ -1771,17 +2028,15 @@ function StageActions({
             />
           </Field>
 
-          <div className="flex items-end">
-            <button
-              type="button"
-              onClick={applyExpertCutoff}
-              disabled={saving}
-              className={`${buttonBase} bg-violet-600 text-white hover:bg-violet-700`}
-            >
-              <Save size={16} />
-              Mark Expert Shortlisted
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={applyExpertCutoff}
+            disabled={saving}
+            className={`${buttonBase} bg-violet-600 text-white hover:bg-violet-700 self-end`}
+          >
+            <Save size={16} />
+            Mark Expert Shortlisted
+          </button>
 
           <PublishButton
             label="Expert Review Result"
@@ -1789,7 +2044,8 @@ function StageActions({
             onClick={() => togglePublish("expertResult")}
           />
 
-          <div className="flex items-end">{resetButton}</div>
+          {downloadButton}
+          {resetButton}
         </div>
 
         <ResetHint text="Resetting Expert will also reset Written, PI and Final data." />
@@ -1845,10 +2101,12 @@ function StageActions({
             onClick={() => togglePublish("writtenResult")}
           />
 
+          {downloadButton}
+          {uploadSelectionButtons}
           {resetButton}
         </div>
 
-        <ResetHint text="If applicants are selected in the table, reset applies only to selected applicants. If none are selected, it resets all applicants in Written stage. Resetting Written will also reset PI and Final data." />
+        <ResetHint text="Upload Excel with SB No / Application ID to auto-select applications in this Written stage. Then click Mark Written Selected or Not Selected." />
 
         <div className="text-xs font-semibold text-emerald-800">
           Marks are optional. You can directly mark selected or not selected.
@@ -1905,14 +2163,15 @@ function StageActions({
             onClick={() => togglePublish("piResult")}
           />
 
+          {downloadButton}
+          {uploadSelectionButtons}
           {resetButton}
         </div>
 
-        <ResetHint text="If applicants are selected in the table, reset applies only to selected applicants. If none are selected, it resets all applicants in PI stage. Resetting PI will also reset Final data." />
+        <ResetHint text="Upload Excel with SB No / Application ID to auto-select applications in this PI stage. Then click Mark PI Selected + Recognised or Mark PI Not Selected." />
 
         <div className="text-xs font-semibold text-amber-800">
-          Marks are optional. PI selected automatically marks the startup as
-          recognised.
+          Marks are optional. PI selected automatically marks the startup as recognised.
         </div>
       </div>
     );
@@ -1948,10 +2207,12 @@ function StageActions({
             onClick={() => togglePublish("finalResult")}
           />
 
+          {downloadButton}
+          {uploadSelectionButtons}
           {resetButton}
         </div>
 
-        <ResetHint text="If applicants are selected in the table, reset applies only to selected applicants. If none are selected, it resets all applicants in Final stage." />
+        <ResetHint text="Upload Excel with SB No / Application ID to auto-select applications in Final stage." />
       </div>
     );
   }
@@ -1989,9 +2250,7 @@ function ScheduleForm({ form, setForm }) {
         <input
           type="date"
           value={form.date}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, date: event.target.value }))
-          }
+          onChange={(event) => setForm((prev) => ({ ...prev, date: event.target.value }))}
           className={inputClass}
         />
       </Field>
@@ -2021,9 +2280,7 @@ function ScheduleForm({ form, setForm }) {
       <Field label="Mode">
         <select
           value={form.mode}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, mode: event.target.value }))
-          }
+          onChange={(event) => setForm((prev) => ({ ...prev, mode: event.target.value }))}
           className={inputClass}
         >
           <option value="Online">Online</option>
@@ -2035,9 +2292,7 @@ function ScheduleForm({ form, setForm }) {
       <Field label="Venue / Link">
         <input
           value={form.venue}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, venue: event.target.value }))
-          }
+          onChange={(event) => setForm((prev) => ({ ...prev, venue: event.target.value }))}
           placeholder="Venue or meeting link"
           className={inputClass}
         />

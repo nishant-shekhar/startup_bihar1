@@ -105,11 +105,6 @@ const statusLabelMap = {
   final: "Recognition",
 };
 
-const safe = (value) => {
-  if (value === null || value === undefined || value === "") return "-";
-  return String(value);
-};
-
 const formatDate = (value) => {
   if (!value) return "";
 
@@ -249,7 +244,9 @@ const resolvePublishedStageStatus = ({ stage, batchApplication, publish }) => {
 
   if (stage === "pi") {
     if (!publish?.piResult) return "pending";
-    return batchApplication?.pi?.selected === true ? "recognised" : "not_selected";
+    return batchApplication?.pi?.selected === true
+      ? "recognised"
+      : "not_selected";
   }
 
   return "pending";
@@ -388,6 +385,7 @@ const getPitchDeckAccess = ({ batchApplication, publish }) => {
 
   return (
     publish?.writtenResult === true &&
+    publish?.piResult !== true &&
     writtenStatus === "selected" &&
     terminalFailureStage !== "pi"
   );
@@ -403,10 +401,21 @@ const getCurrentStatusText = ({ application, batchApplication, publish }) => {
     publish,
   });
 
-  if (terminalFailureStage === "ai") return "Application Screening Not Shortlisted";
-  if (terminalFailureStage === "expert") return "Expert Review Not Shortlisted";
-  if (terminalFailureStage === "written") return "Written Assessment Not Cleared";
-  if (terminalFailureStage === "pi") return "Pitch / PI Not Cleared";
+  if (terminalFailureStage === "ai") {
+    return "Application Screening Not Shortlisted";
+  }
+
+  if (terminalFailureStage === "expert") {
+    return "Expert Review Not Shortlisted";
+  }
+
+  if (terminalFailureStage === "written") {
+    return "Written Assessment Not Cleared";
+  }
+
+  if (terminalFailureStage === "pi") {
+    return "Pitch / PI Not Cleared";
+  }
 
   const piStatus = resolvePublishedStageStatus({
     stage: "pi",
@@ -497,6 +506,7 @@ const WebsiteFeedbackPopup = ({ applicationId, application, onSaved }) => {
   const sessionDismissKey = `websiteFeedbackDismissed_${
     applicationId || "unknown"
   }`;
+
   const alreadySubmitted = application?.websiteFeedback?.submitted === true;
 
   useEffect(() => {
@@ -580,7 +590,9 @@ const WebsiteFeedbackPopup = ({ applicationId, application, onSaved }) => {
     }
   };
 
-  if (!mounted || !applicationId || alreadySubmitted || !shouldRender) return null;
+  if (!mounted || !applicationId || alreadySubmitted || !shouldRender) {
+    return null;
+  }
 
   return createPortal(
     <div className="pointer-events-none fixed inset-x-0 bottom-3 z-[9999] flex justify-center px-3 sm:bottom-5 sm:justify-end sm:px-5">
@@ -679,7 +691,7 @@ const WebsiteFeedbackPopup = ({ applicationId, application, onSaved }) => {
   );
 };
 
-const ScheduleCard = ({ title, schedule }) => {
+const ScheduleInlineCard = ({ title, schedule }) => {
   if (!schedule?.date) return null;
 
   return (
@@ -724,6 +736,21 @@ const ScheduleCard = ({ title, schedule }) => {
   );
 };
 
+const EmailDisclaimerInline = () => {
+  return (
+    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+      <div className="flex items-start gap-2">
+        <FaEnvelope className="mt-1 shrink-0" />
+        <div>
+          Please check your registered email regularly for communication from
+          Startup Bihar, including schedule updates, document requirements, or
+          correction notices.
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const UpdatedPitchDeckCard = ({
   applicationId,
   application,
@@ -739,7 +766,7 @@ const UpdatedPitchDeckCard = ({
   const existingDeck =
     application?.UpdatedPitchDeck || batchApplication?.UpdatedPitchDeck || null;
 
-  const maxSize = 25 * 1024 * 1024;
+  const maxSize = 10 * 1024 * 1024;
 
   const handleFileChange = (event) => {
     const selected = event.target.files?.[0] || null;
@@ -749,16 +776,10 @@ const UpdatedPitchDeckCard = ({
       return;
     }
 
-    const allowedTypes = [
-      "application/pdf",
-      "application/vnd.ms-powerpoint",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ];
-
     const extension = selected.name.split(".").pop()?.toLowerCase();
     const allowedExtension = ["pdf", "ppt", "pptx"].includes(extension);
 
-    if (!allowedTypes.includes(selected.type) && !allowedExtension) {
+    if (!allowedExtension) {
       alert("Please upload only PDF, PPT or PPTX file.");
       event.target.value = "";
       setFile(null);
@@ -766,7 +787,7 @@ const UpdatedPitchDeckCard = ({
     }
 
     if (selected.size > maxSize) {
-      alert("Maximum file size allowed is 25 MB.");
+      alert("Maximum file size allowed is 10 MB.");
       event.target.value = "";
       setFile(null);
       return;
@@ -795,7 +816,7 @@ const UpdatedPitchDeckCard = ({
         type: deckType,
         updatedAt: serverTimestamp(),
         submittedAt: serverTimestamp(),
-        source: "after_written_cleared",
+        source: "after_written_cleared_before_pi_result",
       };
 
       if (deckType === "file") {
@@ -865,138 +886,119 @@ const UpdatedPitchDeckCard = ({
   };
 
   return (
-    <div className="mt-5 rounded-[24px] border border-emerald-200 bg-emerald-50 p-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700">
-            <FaUpload />
+          <div className="flex items-center gap-2 text-sm font-bold text-emerald-900">
+            <FaUpload className="text-emerald-700" />
             Updated Pitch Deck
           </div>
 
-          <h3 className="mt-3 text-lg font-bold text-emerald-950">
-            Upload updated pitch deck for Pitch / PI stage
-          </h3>
-
-          <p className="mt-1 text-sm leading-6 text-emerald-900">
-            You have cleared the Written Assessment stage. Upload your updated
-            pitch deck as PDF/PPT/PPTX or provide a Canva presentation link.
+          <p className="mt-1 text-xs leading-5 text-emerald-800">
+            Upload PDF/PPT/PPTX or share Canva link before the Pitch / PI result
+            is announced.
           </p>
         </div>
 
         {existingDeck ? (
-          <div className="rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-800">
-            Deck already submitted
+          <div className="flex flex-wrap gap-2">
+            {existingDeck.type === "canva" && existingDeck.canvaLink ? (
+              <a
+                href={existingDeck.canvaLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+              >
+                <FaExternalLinkAlt />
+                View Canva
+              </a>
+            ) : existingDeck.downloadURL ? (
+              <a
+                href={existingDeck.downloadURL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+              >
+                <FaFilePdf />
+                View Deck
+              </a>
+            ) : null}
+
+            <span className="inline-flex items-center rounded-xl border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700">
+              Submitted
+            </span>
           </div>
         ) : null}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-        <div className="flex items-start gap-2">
-          <FaEnvelope className="mt-1 shrink-0" />
-          <div>
-            Please also check emails from Startup Bihar regularly. Any
-            additional instruction, meeting update, or correction notice may also
-            be shared through email.
-          </div>
-        </div>
-      </div>
-
-      {existingDeck ? (
-        <div className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4">
-          <div className="mb-2 text-sm font-semibold text-slate-800">
-            Current submitted updated deck
-          </div>
-
-          {existingDeck.type === "canva" ? (
-            <a
-              href={existingDeck.canvaLink}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-            >
-              <FaExternalLinkAlt />
-              Open Canva Link
-            </a>
-          ) : existingDeck.downloadURL ? (
-            <a
-              href={existingDeck.downloadURL}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-            >
-              <FaFilePdf />
-              Open Uploaded Deck
-            </a>
-          ) : null}
-
-          <div className="mt-2 text-xs text-slate-500">
-            Last updated: {formatDate(existingDeck.updatedAt)}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="mt-5 grid gap-4 md:grid-cols-[220px_1fr]">
+      <div className="mt-3 grid gap-3 md:grid-cols-[180px_1fr_auto] md:items-end">
         <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-emerald-800">
-            Submission Type
+          <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+            Type
           </label>
 
           <select
             value={deckType}
-            onChange={(e) => setDeckType(e.target.value)}
-            className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-400"
+            onChange={(e) => {
+              setDeckType(e.target.value);
+              setFile(null);
+              setCanvaLink("");
+            }}
+            className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-emerald-400"
           >
-            <option value="file">Upload PDF / PPT / PPTX</option>
-            <option value="canva">Canva Presentation Link</option>
+            <option value="file">File Upload</option>
+            <option value="canva">Canva Link</option>
           </select>
         </div>
 
         {deckType === "file" ? (
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              File
+            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+              PDF / PPT / PPTX
             </label>
 
             <input
               type="file"
-              accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+              accept=".pdf,.ppt,.pptx"
               onChange={handleFileChange}
-              className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none"
+              className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-emerald-800"
             />
 
-            <div className="mt-1 text-xs text-emerald-800">
-              Allowed: PDF, PPT, PPTX. Maximum size: 25 MB.
-            </div>
+            {file ? (
+              <div className="mt-1 truncate text-xs text-emerald-800">
+                Selected: {file.name}
+              </div>
+            ) : (
+              <div className="mt-1 text-xs text-emerald-700">
+                Max 10 MB.
+              </div>
+            )}
           </div>
         ) : (
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              Canva Link
+            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
+              Canva Presentation Link
             </label>
 
             <input
               value={canvaLink}
               onChange={(e) => setCanvaLink(e.target.value)}
-              placeholder="Paste Canva presentation link"
-              className="w-full rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-400"
+              placeholder="Paste Canva link"
+              className="w-full rounded-xl border border-emerald-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-emerald-400"
             />
           </div>
         )}
-      </div>
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={saving}
-        className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <FaUpload />
-        {saving
-          ? "Saving..."
-          : existingDeck
-          ? "Replace Updated Pitch Deck"
-          : "Submit Updated Pitch Deck"}
-      </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={saving}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          <FaUpload />
+          {saving ? "Saving..." : existingDeck ? "Replace" : "Submit"}
+        </button>
+      </div>
     </div>
   );
 };
@@ -1228,7 +1230,8 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
           : "This stage is pending.",
         status: publish?.writtenResult ? writtenStatus : "pending",
         locked: !publish?.writtenResult,
-        inactive: terminalFailureStage === "ai" || terminalFailureStage === "expert",
+        inactive:
+          terminalFailureStage === "ai" || terminalFailureStage === "expert",
       };
 
       statusMap.pitchRecognition = {
@@ -1285,11 +1288,13 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
   }, [timelineStatus, visibleTimelineSteps]);
 
   const inactiveCount = useMemo(() => {
-    return visibleTimelineSteps.filter((step) => timelineStatus[step.key]?.inactive)
-      .length;
+    return visibleTimelineSteps.filter(
+      (step) => timelineStatus[step.key]?.inactive
+    ).length;
   }, [timelineStatus, visibleTimelineSteps]);
 
-  const pendingCount = visibleTimelineSteps.length - completedCount - inactiveCount;
+  const pendingCount =
+    visibleTimelineSteps.length - completedCount - inactiveCount;
 
   const progressPercent =
     visibleTimelineSteps.length > 0
@@ -1378,64 +1383,6 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
               <div>{applicantMessage}</div>
             </div>
           </div>
-
-          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-            <div className="flex items-start gap-2">
-              <FaEnvelope className="mt-1 shrink-0" />
-              <div>
-                Please check your registered email regularly for communication
-                from Startup Bihar, including schedule updates, document
-                requirements, or correction notices.
-              </div>
-            </div>
-          </div>
-
-          {publish?.writtenSchedule &&
-          batchApplication?.written?.schedule?.date &&
-          !["ai", "expert"].includes(terminalFailureStage) ? (
-            <ScheduleCard
-              title="Written Assessment Schedule"
-              schedule={batchApplication.written.schedule}
-            />
-          ) : null}
-
-          {publish?.piSchedule &&
-          batchApplication?.pi?.schedule?.date &&
-          !["ai", "expert", "written"].includes(terminalFailureStage) ? (
-            <ScheduleCard
-              title="Pitch / Personal Interaction Schedule"
-              schedule={batchApplication.pi.schedule}
-            />
-          ) : null}
-
-          {canUploadUpdatedPitchDeck ? (
-            <UpdatedPitchDeckCard
-              applicationId={applicationId}
-              application={application}
-              batch={batch}
-              batchApplication={batchApplication}
-              onSaved={(payload) => {
-                setApplication((prev) => ({
-                  ...(prev || {}),
-                  UpdatedPitchDeck: payload,
-                }));
-
-                setBatchApplication((prev) => ({
-                  ...(prev || {}),
-                  UpdatedPitchDeck: payload,
-                }));
-              }}
-            />
-          ) : null}
-
-          {application?.adminRemarks ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-              <div className="mb-1 font-semibold text-slate-800">
-                Admin Remarks
-              </div>
-              <div>{application.adminRemarks}</div>
-            </div>
-          ) : null}
         </div>
 
         <div className="mb-6 rounded-[28px] border border-white/20 bg-white/85 p-6 shadow-xl backdrop-blur">
@@ -1482,6 +1429,29 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
                 : state.status || "pending";
               const negative = isNegativeStatus(status);
               const inactive = state.inactive;
+
+              const showWrittenSchedule =
+                step.key === "writtenAssessment" &&
+                publish?.writtenSchedule &&
+                batchApplication?.written?.schedule?.date &&
+                !["ai", "expert"].includes(terminalFailureStage);
+
+              const showPiSchedule =
+                step.key === "pitchRecognition" &&
+                publish?.piSchedule &&
+                batchApplication?.pi?.schedule?.date &&
+                !["ai", "expert", "written"].includes(terminalFailureStage);
+
+              const showEmailDisclaimer =
+                (step.key === "writtenAssessment" && showWrittenSchedule) ||
+                (step.key === "pitchRecognition" &&
+                  (showPiSchedule || canUploadUpdatedPitchDeck));
+
+              const showPitchDeckUpload =
+                step.key === "pitchRecognition" &&
+                canUploadUpdatedPitchDeck &&
+                !inactive &&
+                !publish?.piResult;
 
               return (
                 <div
@@ -1574,6 +1544,42 @@ const FormStatus = ({ applicationId, onPrevious, formData }) => {
                       <div className="mt-3 text-sm font-medium text-slate-600">
                         Updated on: {formatDate(state.date)}
                       </div>
+                    ) : null}
+
+                    {showWrittenSchedule ? (
+                      <ScheduleInlineCard
+                        title="Written Assessment Schedule"
+                        schedule={batchApplication.written.schedule}
+                      />
+                    ) : null}
+
+                    {showPiSchedule ? (
+                      <ScheduleInlineCard
+                        title="Pitch / Personal Interaction Schedule"
+                        schedule={batchApplication.pi.schedule}
+                      />
+                    ) : null}
+
+                    {showEmailDisclaimer ? <EmailDisclaimerInline /> : null}
+
+                    {showPitchDeckUpload ? (
+                      <UpdatedPitchDeckCard
+                        applicationId={applicationId}
+                        application={application}
+                        batch={batch}
+                        batchApplication={batchApplication}
+                        onSaved={(payload) => {
+                          setApplication((prev) => ({
+                            ...(prev || {}),
+                            UpdatedPitchDeck: payload,
+                          }));
+
+                          setBatchApplication((prev) => ({
+                            ...(prev || {}),
+                            UpdatedPitchDeck: payload,
+                          }));
+                        }}
+                      />
                     ) : null}
                   </div>
                 </div>
