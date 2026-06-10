@@ -20,6 +20,55 @@ export const STATUS = {
   NOT_RECOGNISED: "not_recognised",
 };
 
+export const APPLICATION_STATUS = {
+  DRAFT: "draft",
+  SUBMITTED: "submitted",
+  UNDER_REVIEW: "Under Review",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+};
+
+export const STATUS_LABELS = {
+  pending: "Pending",
+  shortlisted: "Shortlisted",
+  not_shortlisted: "Not Shortlisted",
+  selected: "Cleared",
+  not_selected: "Not Cleared",
+  recognised: "Recognised",
+  not_recognised: "Not Recognised",
+
+  draft: "Draft",
+  submitted: "Submitted",
+  "Under Review": "Under Review",
+  Approved: "Approved",
+  Rejected: "Rejected",
+
+  all: "Applications",
+  ai: "AI Screening",
+  expert: "Expert Review",
+  written: "Written Assessment",
+  pi: "Pitch / PI",
+  final: "Recognition",
+};
+
+export const STATUS_TONE = {
+  pending: "border-slate-200 bg-slate-100 text-slate-600",
+
+  shortlisted: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  selected: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  recognised: "border-emerald-200 bg-emerald-50 text-emerald-700",
+
+  not_shortlisted: "border-rose-200 bg-rose-50 text-rose-700",
+  not_selected: "border-rose-200 bg-rose-50 text-rose-700",
+  not_recognised: "border-rose-200 bg-rose-50 text-rose-700",
+
+  draft: "border-slate-200 bg-slate-100 text-slate-700",
+  submitted: "border-sky-200 bg-sky-50 text-sky-700",
+  "Under Review": "border-amber-200 bg-amber-50 text-amber-700",
+  Approved: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  Rejected: "border-rose-200 bg-rose-50 text-rose-700",
+};
+
 export const DEFAULT_PUBLISH = {
   aiResult: false,
   expertResult: false,
@@ -32,14 +81,19 @@ export const DEFAULT_PUBLISH = {
 
 export const DEFAULT_COUNTS = {
   total: 0,
+
   aiShortlisted: 0,
   aiNotShortlisted: 0,
+
   expertShortlisted: 0,
   expertNotShortlisted: 0,
+
   writtenSelected: 0,
   writtenNotSelected: 0,
+
   piSelected: 0,
   piNotSelected: 0,
+
   recognised: 0,
   notRecognised: 0,
 };
@@ -77,12 +131,53 @@ export const formatDate = (value) => {
   });
 };
 
+export const formatSlotDateTime = (schedule) => {
+  if (!schedule?.date) return "-";
+
+  const date = new Date(`${schedule.date}T00:00:00`);
+
+  const dateText = Number.isNaN(date.getTime())
+    ? schedule.date
+    : date.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+
+  const start = schedule.startTime || "-";
+  const end = schedule.endTime || "-";
+
+  return `${dateText}, ${start} - ${end}`;
+};
+
+export const scoreText = (value) => {
+  if (value === null || value === undefined || value === "") return "—";
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) return "—";
+
+  return `${number.toFixed(1)}/10`;
+};
+
+export const normalizeId = (value) =>
+  String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "")
+    .replace(/[^A-Z0-9]/g, "");
+
 export const normalizeStatus = (value) => {
   const status = String(value || "").trim();
 
   if (!status) return "";
-  if (status.toLowerCase() === "draft") return "draft";
-  if (status.toLowerCase() === "submitted") return "submitted";
+  if (status.toLowerCase() === "draft") return APPLICATION_STATUS.DRAFT;
+  if (status.toLowerCase() === "submitted") return APPLICATION_STATUS.SUBMITTED;
+  if (status.toLowerCase() === "under review") {
+    return APPLICATION_STATUS.UNDER_REVIEW;
+  }
+  if (status.toLowerCase() === "approved") return APPLICATION_STATUS.APPROVED;
+  if (status.toLowerCase() === "rejected") return APPLICATION_STATUS.REJECTED;
 
   return status;
 };
@@ -97,14 +192,18 @@ export const getStatus = (item) => {
   );
 };
 
+export const isDraftStatus = (item) => {
+  return getStatus(item).toLowerCase() === "draft";
+};
+
 export const isSubmittedStatus = (item) => {
-  const status = getStatus(item).toLowerCase();
+  const status = getStatus(item);
 
   return (
-    status === "submitted" ||
-    status === "under review" ||
-    status === "approved" ||
-    status === "rejected"
+    status === APPLICATION_STATUS.SUBMITTED ||
+    status === APPLICATION_STATUS.UNDER_REVIEW ||
+    status === APPLICATION_STATUS.APPROVED ||
+    status === APPLICATION_STATUS.REJECTED
   );
 };
 
@@ -179,6 +278,10 @@ export const getSector = (item) => {
   );
 };
 
+export const getStage = (item) => {
+  return item?.startupDetails?.stage || item?.stage || "-";
+};
+
 export const getEffectiveSubmittedDate = (item) => {
   return (
     item?.submittedAt ||
@@ -221,8 +324,12 @@ export const readExpertReview = async ({ db, applicationDocId }) => {
   }
 };
 
+export const getExpertReview = (item) => {
+  return item?._expertReview || item?.review?.expert || item?.expertReview || null;
+};
+
 export const getExpertScore = (item) => {
-  const review = item?._expertReview || item?.review?.expert || item?.expertReview;
+  const review = getExpertReview(item);
 
   const value =
     review?.score ??
@@ -256,12 +363,13 @@ export const calculateCounts = (rows = []) => {
 
   rows.forEach((item) => {
     if (item?.ai?.status === STATUS.SHORTLISTED) counts.aiShortlisted += 1;
-    if (item?.ai?.status === STATUS.NOT_SHORTLISTED) counts.aiNotShortlisted += 1;
+    if (item?.ai?.status === STATUS.NOT_SHORTLISTED) {
+      counts.aiNotShortlisted += 1;
+    }
 
     if (item?.expert?.status === STATUS.SHORTLISTED) {
       counts.expertShortlisted += 1;
     }
-
     if (item?.expert?.status === STATUS.NOT_SHORTLISTED) {
       counts.expertNotShortlisted += 1;
     }
@@ -269,7 +377,6 @@ export const calculateCounts = (rows = []) => {
     if (item?.written?.status === STATUS.SELECTED) {
       counts.writtenSelected += 1;
     }
-
     if (item?.written?.status === STATUS.NOT_SELECTED) {
       counts.writtenNotSelected += 1;
     }
@@ -327,72 +434,10 @@ export const getRowsForStage = (stage, rows = []) => {
   return rows;
 };
 
-export const buildBatchApplication = ({ item, selectedBatchId, selectedBatch }) => {
-  const applicationId = getApplicationId(item, item?.id);
-
-  return {
-    applicationId,
-    applicationDocId: item?.applicationDocId || item?.id || "",
-    startupName: getStartupName(item),
-    founderName: getFounderName(item),
-    email: getEmail(item),
-    phone: getPhone(item),
-    district: getDistrict(item),
-    sector: getSector(item),
-    status: getStatus(item) || "submitted",
-    submittedAt: getEffectiveSubmittedDate(item),
-
-    batchId: selectedBatchId,
-    batchName: selectedBatch?.batchName || selectedBatch?.batchId || selectedBatchId,
-
-    aiScore: getAIScore(item),
-    expertScore: getExpertScore(item),
-
-    ai: {
-      status: STATUS.PENDING,
-      cutoffUsed: null,
-      updatedAt: null,
-    },
-
-    expert: {
-      status: STATUS.PENDING,
-      cutoffUsed: null,
-      updatedAt: null,
-    },
-
-    written: {
-      schedule: null,
-      marks: null,
-      maxMarks: 100,
-      status: STATUS.PENDING,
-      remarks: "",
-      updatedAt: null,
-    },
-
-    pi: {
-      schedule: null,
-      selected: null,
-      marks: null,
-      remarks: "",
-      updatedAt: null,
-    },
-
-    final: {
-      status: STATUS.PENDING,
-      remarks: "",
-      updatedAt: null,
-    },
-
-    currentStage: FUNNEL_STAGES.ALL,
-    createdAt: null,
-    lastUpdatedAt: null,
-  };
-};
-
 export const getPiStatusText = (batchApplication) => {
-  if (batchApplication?.pi?.selected === true) return "selected";
-  if (batchApplication?.pi?.selected === false) return "not_selected";
-  return "pending";
+  if (batchApplication?.pi?.selected === true) return STATUS.SELECTED;
+  if (batchApplication?.pi?.selected === false) return STATUS.NOT_SELECTED;
+  return STATUS.PENDING;
 };
 
 export const getFinalStatusText = (batchApplication) => {
@@ -471,6 +516,70 @@ export const getUpdatedPitchDeckUrl = (deck) => {
   return deck?.downloadURL || "";
 };
 
+export const buildBatchApplication = ({ item, selectedBatchId, selectedBatch }) => {
+  const applicationId = getApplicationId(item, item?.id);
+
+  return {
+    applicationId,
+    applicationDocId: item?.applicationDocId || item?.id || "",
+    startupName: getStartupName(item),
+    founderName: getFounderName(item),
+    email: getEmail(item),
+    phone: getPhone(item),
+    district: getDistrict(item),
+    sector: getSector(item),
+    status: getStatus(item) || APPLICATION_STATUS.SUBMITTED,
+    submittedAt: getEffectiveSubmittedDate(item),
+
+    batchId: selectedBatchId,
+    batchName: selectedBatch?.batchName || selectedBatch?.batchId || selectedBatchId,
+
+    aiScore: getAIScore(item),
+    expertScore: getExpertScore(item),
+
+    ai: {
+      status: STATUS.PENDING,
+      cutoffUsed: null,
+      updatedAt: null,
+    },
+
+    expert: {
+      status: STATUS.PENDING,
+      cutoffUsed: null,
+      updatedAt: null,
+    },
+
+    written: {
+      schedule: null,
+      marks: null,
+      maxMarks: 100,
+      status: STATUS.PENDING,
+      remarks: "",
+      updatedAt: null,
+    },
+
+    pi: {
+      schedule: null,
+      selected: null,
+      marks: null,
+      remarks: "",
+      updatedAt: null,
+    },
+
+    final: {
+      status: STATUS.PENDING,
+      remarks: "",
+      updatedAt: null,
+    },
+
+    UpdatedPitchDeck: item?.UpdatedPitchDeck || null,
+
+    currentStage: FUNNEL_STAGES.ALL,
+    createdAt: null,
+    lastUpdatedAt: null,
+  };
+};
+
 export const buildShortlistingSummary = ({
   batchId,
   batchName,
@@ -480,16 +589,21 @@ export const buildShortlistingSummary = ({
 }) => {
   const deck = updatedPitchDeck || batchApplication?.UpdatedPitchDeck || null;
 
+  const resolvedBatchId =
+    batchId || batchApplication?.batchId || existingSummary?.batchId || "";
+
+  const resolvedBatchName =
+    batchName ||
+    batchApplication?.batchName ||
+    existingSummary?.batchName ||
+    resolvedBatchId ||
+    "";
+
   return {
     ...(existingSummary || {}),
 
-    batchId: batchId || batchApplication?.batchId || existingSummary?.batchId || "",
-    batchName:
-      batchName ||
-      batchApplication?.batchName ||
-      existingSummary?.batchName ||
-      batchId ||
-      "",
+    batchId: resolvedBatchId,
+    batchName: resolvedBatchName,
 
     applicationId:
       batchApplication?.applicationId || existingSummary?.applicationId || "",
@@ -550,10 +664,12 @@ export const buildApplicationShortlistingPatch = ({
       batchName: summary.batchName,
       assignedAt: existingSummary?.assignedAt || null,
     },
+
     shortlistingSummary: {
       ...summary,
       updatedAt: serverTimestampValue,
     },
+
     firestoreUpdatedAt: serverTimestampValue,
   };
 };
@@ -564,15 +680,25 @@ export const buildUnassignedShortlistingSummary = ({
 }) => {
   return {
     ...(existingSummary || {}),
+
     batchId: "",
     batchName: "",
+
     aiStatus: STATUS.PENDING,
     expertStatus: STATUS.PENDING,
     writtenStatus: STATUS.PENDING,
+    writtenMarks: null,
+    writtenSchedule: null,
+
     piSelected: null,
+    piMarks: null,
+    piSchedule: null,
+
     finalStatus: STATUS.PENDING,
+
     currentStage: "",
     currentStatus: "Not Assigned",
+
     updatedAt: serverTimestampValue,
   };
 };
@@ -586,9 +712,44 @@ export const getStageLabel = (stage) => {
   return "Applications";
 };
 
-export const normalizeId = (value) =>
-  String(value || "")
-    .trim()
-    .toUpperCase()
-    .replace(/\s+/g, "")
-    .replace(/[^A-Z0-9]/g, "");
+export const getStatusLabel = (status) => {
+  if (STATUS_LABELS[status]) return STATUS_LABELS[status];
+  return safe(status);
+};
+
+export const getApplicationShortlistingSummary = (application) => {
+  return application?.shortlistingSummary || null;
+};
+
+export const getApplicationShortlistingStatus = (application) => {
+  const summary = getApplicationShortlistingSummary(application);
+
+  if (!summary?.batchId) return "Not Assigned";
+
+  return summary?.currentStatus || "Assigned - Pending";
+};
+
+export const getApplicationUpdatedPitchDeck = (application) => {
+  if (application?.UpdatedPitchDeck) return application.UpdatedPitchDeck;
+
+  const summary = getApplicationShortlistingSummary(application);
+
+  if (summary?.updatedPitchDeckUrl) {
+    return {
+      type: summary.updatedPitchDeckType || "file",
+      downloadURL:
+        summary.updatedPitchDeckType === "canva"
+          ? ""
+          : summary.updatedPitchDeckUrl,
+      canvaLink:
+        summary.updatedPitchDeckType === "canva"
+          ? summary.updatedPitchDeckUrl
+          : "",
+      storagePath: summary.updatedPitchDeckStoragePath || "",
+      fileName: summary.updatedPitchDeckFileName || "",
+      submittedAt: summary.updatedPitchDeckSubmittedAt || null,
+    };
+  }
+
+  return null;
+};
