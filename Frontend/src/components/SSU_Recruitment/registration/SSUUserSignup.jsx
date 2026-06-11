@@ -3,6 +3,7 @@ import { Formik, Form, ErrorMessage, useField } from "formik";
 import * as Yup from "yup";
 import {
   FaCheckCircle,
+  FaExclamationTriangle,
   FaEye,
   FaEyeSlash,
   FaIdCard,
@@ -30,6 +31,8 @@ import { ssuDocPath } from "./ssuFirebasePaths";
 const API_BASE =
   import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi";
 
+const NAME_REGEX = /^[A-Za-z.' ]+$/;
+
 const normalizeEmail = (value = "") => String(value || "").trim().toLowerCase();
 
 const normalizePhone = (value = "") =>
@@ -37,6 +40,24 @@ const normalizePhone = (value = "") =>
 
 const normalizeAadhaar = (value = "") =>
   String(value || "").replace(/\D/g, "").slice(0, 12);
+
+const sanitizeName = (value = "") => {
+  return String(value || "")
+    .replace(/[^A-Za-z.' ]/g, "")
+    .replace(/\s+/g, " ")
+    .trimStart();
+};
+
+const uniqueArray = (items = []) => {
+  return Array.from(
+    new Set(
+      items
+        .filter(Boolean)
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+    )
+  );
+};
 
 const formatDeadline = (timestamp) => {
   if (!timestamp) return "";
@@ -52,14 +73,7 @@ const formatDeadline = (timestamp) => {
     minute: "2-digit",
   });
 };
-const NAME_REGEX = /^[A-Za-z.' ]+$/;
 
-const sanitizeName = (value = "") => {
-  return String(value || "")
-    .replace(/[^A-Za-z.' ]/g, "")
-    .replace(/\s+/g, " ")
-    .trimStart();
-};
 const getServerNowFromRTDB = async () => {
   const tempKey = `ssu_signup_ts_${Date.now()}_${Math.random()
     .toString(36)
@@ -85,17 +99,97 @@ const getServerNowFromRTDB = async () => {
   return Number(serverNow);
 };
 
+const readIdentifierApplicationIds = async (pathParts) => {
+  const snap = await getDoc(doc(db, ...pathParts));
+
+  if (!snap.exists()) return [];
+
+  const data = snap.data() || {};
+
+  return uniqueArray([
+    ...(Array.isArray(data.applicationIds) ? data.applicationIds : []),
+    data.applicationId,
+    data.latestApplicationId,
+  ]);
+};
+
+const checkDuplicateIdentifiers = async ({
+  email,
+  phoneNumber,
+  aadharNumber,
+}) => {
+  const normalizedEmail = normalizeEmail(email);
+  const normalizedPhone = normalizePhone(phoneNumber);
+  const normalizedAadhaar = normalizeAadhaar(aadharNumber);
+
+  const checks = [];
+
+  if (normalizedEmail) {
+    checks.push({
+      field: "email",
+      label: "Email ID",
+      value: normalizedEmail,
+      ids: await readIdentifierApplicationIds(
+        ssuDocPath.blockedEmail(normalizedEmail)
+      ),
+    });
+  }
+
+  if (normalizedPhone) {
+    checks.push({
+      field: "mobile",
+      label: "Mobile Number",
+      value: normalizedPhone,
+      ids: await readIdentifierApplicationIds(
+        ssuDocPath.blockedPhone(normalizedPhone)
+      ),
+    });
+  }
+
+  if (normalizedAadhaar) {
+    checks.push({
+      field: "aadhaar",
+      label: "Aadhaar Number",
+      value: normalizedAadhaar,
+      ids: await readIdentifierApplicationIds(
+        ssuDocPath.blockedAadhaar(normalizedAadhaar)
+      ),
+    });
+  }
+
+  const matches = checks
+    .filter((item) => item.ids.length > 0)
+    .map((item) => ({
+      field: item.field,
+      label: item.label,
+      existingApplicationIds: item.ids,
+      count: item.ids.length,
+    }));
+
+  return {
+    hasDuplicate: matches.length > 0,
+    matchedFields: matches.map((item) => item.field),
+    existingApplicationIds: uniqueArray(
+      matches.flatMap((item) => item.existingApplicationIds)
+    ),
+    matches,
+  };
+};
+
 const getValidationSchema = (isLoggedIn) => {
   if (isLoggedIn) {
     return Yup.object().shape({});
   }
 
   return Yup.object().shape({
-  fullName: Yup.string()
-  .trim()
-  .matches(NAME_REGEX, "Only alphabets, spaces, dot and apostrophe are allowed")
-  .min(2, "Enter a valid full name")
-  .required("Full name is required"),
+    fullName: Yup.string()
+      .trim()
+      .matches(
+        NAME_REGEX,
+        "Only alphabets, spaces, dot and apostrophe are allowed"
+      )
+      .min(2, "Enter a valid full name")
+      .required("Full name is required"),
 
     email: Yup.string()
       .trim()
@@ -160,12 +254,19 @@ export default function SSUUserSignup({
   isReadOnly = false,
   isLoggedIn = false,
   loginIdentity = "",
+  onRequestLogin,
 }) {
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [formValues, setFormValues] = useState(null);
   const [userPhone, setUserPhone] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
+
+  const [duplicateWarning, setDuplicateWarning] = useState({
+    open: false,
+    cleanedValues: null,
+    duplicateInfo: null,
+  });
 
   const [formWindow, setFormWindow] = useState({
     checked: false,
@@ -256,14 +357,49 @@ export default function SSUUserSignup({
     return data;
   };
 
-const cleanSignupValues = (values) => ({
-  fullName: sanitizeName(values.fullName),
-  email: normalizeEmail(values.email),
-  phoneNumber: normalizePhone(values.phoneNumber),
-  aadharNumber: normalizeAadhaar(values.aadharNumber),
-  password: values.password || "",
-  confirmPassword: values.confirmPassword || "",
-});
+  const cleanSignupValues = (values) => ({
+    fullName: sanitizeName(values.fullName),
+    email: normalizeEmail(values.email),
+    phoneNumber: normalizePhone(values.phoneNumber),
+    aadharNumber: normalizeAadhaar(values.aadharNumber),
+    password: values.password || "",
+    confirmPassword: values.confirmPassword || "",
+  });
+
+  const startOtpFlow = async (cleanedValues, duplicateInfo = null) => {
+    try {
+      setSendingOtp(true);
+      setSubmitError("");
+
+      await sendOtp(cleanedValues.phoneNumber);
+
+      const duplicateIdentifierWarning = duplicateInfo?.hasDuplicate
+        ? {
+            shown: true,
+            accepted: true,
+            acceptedAt: new Date().toISOString(),
+            matchedFields: duplicateInfo.matchedFields || [],
+            existingApplicationIds: duplicateInfo.existingApplicationIds || [],
+            matches: duplicateInfo.matches || [],
+          }
+        : null;
+
+      setFormValues({
+        ...cleanedValues,
+        duplicateIdentifierWarning,
+      });
+
+      setUserPhone(cleanedValues.phoneNumber);
+      setIsPhoneModalOpen(true);
+
+      return { ok: true };
+    } catch (error) {
+      setSubmitError(error.message || "Could not send OTP.");
+      return { ok: false };
+    } finally {
+      setSendingOtp(false);
+    }
+  };
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitError("");
@@ -284,8 +420,6 @@ const cleanSignupValues = (values) => ({
         return;
       }
 
-      setSendingOtp(true);
-
       const cleanedValues = cleanSignupValues(values);
 
       if (cleanedValues.phoneNumber.length !== 10) {
@@ -293,15 +427,26 @@ const cleanSignupValues = (values) => ({
         return;
       }
 
-      await sendOtp(cleanedValues.phoneNumber);
+      if (cleanedValues.aadharNumber.length !== 12) {
+        setSubmitError("Enter a valid 12-digit Aadhaar number.");
+        return;
+      }
 
-      setFormValues(cleanedValues);
-      setUserPhone(cleanedValues.phoneNumber);
-      setIsPhoneModalOpen(true);
+      const duplicateInfo = await checkDuplicateIdentifiers(cleanedValues);
+
+      if (duplicateInfo.hasDuplicate) {
+        setDuplicateWarning({
+          open: true,
+          cleanedValues,
+          duplicateInfo,
+        });
+        return;
+      }
+
+      await startOtpFlow(cleanedValues, null);
     } catch (error) {
-      setSubmitError(error.message || "Could not send OTP.");
+      setSubmitError(error.message || "Could not continue registration.");
     } finally {
-      setSendingOtp(false);
       setSubmitting(false);
     }
   };
@@ -441,21 +586,22 @@ const cleanSignupValues = (values) => ({
                 </div>
 
                 <div className="mt-2 text-sm leading-relaxed text-slate-600">
-                 After OTP verification, your Application ID will be generated. Returning applicants may log in using their Application ID, email, or mobile number.
-
+                  After OTP verification, your Application ID will be generated.
+                  Returning applicants may log in using their Application ID,
+                  email, or mobile number.
                 </div>
               </div>
 
               <div className="rounded-[24px] border border-indigo-100 bg-indigo-50/70 p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
                   <FaShieldAlt className="text-indigo-600" />
-                  Verification note
+                  Duplicate identifier note
                 </div>
 
                 <div className="mt-2 text-sm leading-relaxed text-slate-500">
-                  Duplicate registration using the same mobile, email, or
-                  Aadhaar will be blocked after the first successful
-                  registration.
+                  If the same mobile, email, or Aadhaar is already used, you
+                  will see a warning. Continue only if you are intentionally
+                  creating another application.
                 </div>
               </div>
             </div>
@@ -471,17 +617,17 @@ const cleanSignupValues = (values) => ({
               {({ isSubmitting, errors, touched }) => (
                 <Form className="space-y-6">
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                   <InputField
-  name="fullName"
-  label="Full Name"
-  placeholder="Enter full name"
-  required
-  errors={errors}
-  touched={touched}
-  disabled={signupDisabled}
-  icon={<FaIdCard />}
-  onSanitize={sanitizeName}
-/>
+                    <InputField
+                      name="fullName"
+                      label="Full Name"
+                      placeholder="Enter full name"
+                      required
+                      errors={errors}
+                      touched={touched}
+                      disabled={signupDisabled}
+                      icon={<FaIdCard />}
+                      onSanitize={sanitizeName}
+                    />
 
                     <InputField
                       name="email"
@@ -607,6 +753,39 @@ const cleanSignupValues = (values) => ({
         </div>
       </div>
 
+      <DuplicateIdentifierWarningModal
+        open={duplicateWarning.open}
+        duplicateInfo={duplicateWarning.duplicateInfo}
+        loading={sendingOtp}
+        onCancel={() =>
+          setDuplicateWarning({
+            open: false,
+            cleanedValues: null,
+            duplicateInfo: null,
+          })
+        }
+        onLoginExisting={() => {
+          setDuplicateWarning({
+            open: false,
+            cleanedValues: null,
+            duplicateInfo: null,
+          });
+          onRequestLogin?.();
+        }}
+        onContinue={async () => {
+          const cleanedValues = duplicateWarning.cleanedValues;
+          const duplicateInfo = duplicateWarning.duplicateInfo;
+
+          setDuplicateWarning({
+            open: false,
+            cleanedValues: null,
+            duplicateInfo: null,
+          });
+
+          await startOtpFlow(cleanedValues, duplicateInfo);
+        }}
+      />
+
       {!isReadOnly && !isLoggedIn ? (
         <SSUPhoneVerificationModal
           isOpen={isPhoneModalOpen}
@@ -638,7 +817,7 @@ function InputField({
   icon = null,
   onSanitize,
 }) {
-  const [field, meta, helpers] = useField(name);
+  const [field, , helpers] = useField(name);
   const [showPassword, setShowPassword] = useState(false);
 
   const hasError = errors?.[name] && touched?.[name];
@@ -706,6 +885,106 @@ function InputField({
         component="p"
         className="mt-2 text-sm text-red-500"
       />
+    </div>
+  );
+}
+
+function DuplicateIdentifierWarningModal({
+  open,
+  duplicateInfo,
+  loading,
+  onCancel,
+  onLoginExisting,
+  onContinue,
+}) {
+  if (!open) return null;
+
+  const matches = duplicateInfo?.matches || [];
+
+  return (
+    <div className="fixed inset-0 z-[105] flex items-center justify-center bg-black/45 p-4">
+      <div
+        className="absolute inset-0"
+        onClick={loading ? undefined : onCancel}
+      />
+
+      <div className="relative z-10 w-full max-w-lg rounded-[32px] border border-white/80 bg-white p-6 shadow-[0_25px_80px_rgba(15,23,42,0.22)]">
+        <div className="mb-5 flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+            <FaExclamationTriangle />
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">
+              Existing Application Found
+            </h3>
+
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              An application already exists with the same mobile number, Aadhaar
+              number, or email ID. Continue only if you are intentionally
+              submitting a new application, for example for another post.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-3xl border border-amber-200 bg-amber-50 p-4">
+          <div className="text-sm font-bold text-amber-900">
+            Matched duplicate field(s)
+          </div>
+
+          {matches.map((item) => (
+            <div
+              key={item.field}
+              className="rounded-2xl border border-amber-200 bg-white px-4 py-3"
+            >
+              <div className="text-sm font-semibold text-slate-900">
+                {item.label}
+              </div>
+
+              <div className="mt-1 text-xs text-slate-500">
+                Existing Application ID(s):{" "}
+                <span className="font-mono font-semibold">
+                  {item.existingApplicationIds.join(", ")}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-700">
+          Duplicate or false applications may be rejected during scrutiny. This
+          confirmation will be recorded with your new application.
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={onLoginExisting}
+            disabled={loading}
+            className="rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
+          >
+            Login Existing Application
+          </button>
+
+          <button
+            type="button"
+            onClick={onContinue}
+            disabled={loading}
+            className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-60"
+          >
+            {loading ? "Sending OTP..." : "Continue Anyway"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

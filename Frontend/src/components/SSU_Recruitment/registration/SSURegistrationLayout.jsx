@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FaBars,
   FaCheck,
+  FaChartBar,
   FaClipboardCheck,
   FaClipboardList,
   FaCreditCard,
@@ -9,13 +10,12 @@ import {
   FaHome,
   FaInfoCircle,
   FaLock,
+  FaShieldAlt,
   FaSignOutAlt,
   FaTimes,
   FaUserCheck,
   FaUserCircle,
-  FaChartBar,
   FaWallet,
-  FaShieldAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -33,20 +33,24 @@ import {
 } from "firebase/firestore";
 
 import {
+  getDownloadURL,
   ref as storageRef,
   uploadBytes,
-  getDownloadURL,
 } from "firebase/storage";
 
 import {
-  ref as rtdbRef,
   get,
-  set,
+  ref as rtdbRef,
   remove,
   serverTimestamp as rtdbServerTimestamp,
+  set,
 } from "firebase/database";
 
-import { db, rtdb, storage } from "../../AdminRedesign/NewApplicationAdmin/firebase";
+import {
+  db,
+  rtdb,
+  storage,
+} from "../../AdminRedesign/NewApplicationAdmin/firebase";
 
 import { LanguageProvider } from "../shared/SSULanguageContext";
 import SSULanguageToggle from "../shared/SSULanguageToggle";
@@ -78,6 +82,7 @@ import {
   ssuDocPath,
   ssuStoragePath,
 } from "./ssuFirebasePaths";
+
 import ToR from "../shared/ToR";
 
 const STORAGE_KEY = "ssuRecruitmentDraft";
@@ -121,6 +126,7 @@ const initialFormData = {
   statusMessage: "Complete the application step by step.",
   adminRemarks: "",
   userSignup: null,
+  duplicateIdentifierWarning: null,
   personalDetails: null,
   educationalQualifications: null,
   workExperience: null,
@@ -162,11 +168,25 @@ const buildYearMonthFromTimestamp = (timestamp) => {
     throw new Error("Invalid server timestamp received.");
   }
 
-  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}`;
+};
+
+const uniqueArray = (items = []) => {
+  return Array.from(
+    new Set(
+      items
+        .filter(Boolean)
+        .map((item) => String(item || "").trim())
+        .filter(Boolean)
+    )
+  );
 };
 
 async function sha256(text) {
-  const encoded = new TextEncoder().encode(text);
+  const encoded = new TextEncoder().encode(String(text || ""));
   const buffer = await crypto.subtle.digest("SHA-256", encoded);
 
   return Array.from(new Uint8Array(buffer))
@@ -438,7 +458,9 @@ function RegistrationLayoutInner() {
     async (applicationId) => {
       if (!applicationId) return null;
 
-      const snap = await getDoc(doc(db, ...ssuDocPath.application(applicationId)));
+      const snap = await getDoc(
+        doc(db, ...ssuDocPath.application(applicationId))
+      );
 
       if (!snap.exists()) return null;
 
@@ -499,7 +521,12 @@ function RegistrationLayoutInner() {
     };
 
     loadDraft();
-  }, [closeWorkingDialog, getStepFromData, loadApplicationById, openWorkingDialog]);
+  }, [
+    closeWorkingDialog,
+    getStepFromData,
+    loadApplicationById,
+    openWorkingDialog,
+  ]);
 
   const savePaymentAudit = useCallback(
     async ({ applicationId, paymentDetails }) => {
@@ -516,20 +543,25 @@ function RegistrationLayoutInner() {
           applicationId,
           applicationNo: applicationId,
           applicantName:
-            formData?.userSignup?.fullName ||
             formData?.personalDetails?.fullName ||
+            formData?.userSignup?.fullName ||
             "",
-          phoneNumber: formData?.userSignup?.phoneNumber || "",
-          email: formData?.userSignup?.email || "",
+          phoneNumber:
+            formData?.personalDetails?.phoneNumber ||
+            formData?.userSignup?.phoneNumber ||
+            "",
+          email:
+            formData?.personalDetails?.email ||
+            formData?.userSignup?.email ||
+            "",
 
           status: paymentDetails?.status || "submitted_for_verification",
           verificationStatus: paymentDetails?.verificationStatus || "pending",
-          amount: Number(paymentDetails?.amount || 500),
+          amount: Number(paymentDetails?.amount || 1000),
           currency: paymentDetails?.currency || "INR",
-          paymentMode: paymentDetails?.paymentMode || "UPI_QR",
+          paymentMode: paymentDetails?.paymentMode || "SBI_COLLECT",
 
-          payerMobile: paymentDetails?.payerMobile || "",
-          payerUpiId: paymentDetails?.payerUpiId || "",
+          sbiCollectLink: paymentDetails?.sbiCollectLink || "",
           utrNumber: paymentDetails?.utrNumber || "",
           paymentDate: paymentDetails?.paymentDate || "",
           paymentScreenshotMeta: paymentDetails?.paymentScreenshotMeta || null,
@@ -542,6 +574,7 @@ function RegistrationLayoutInner() {
             verifiedBy: "",
             verifiedAt: null,
             remarks: "",
+            utrVerified: false,
           },
 
           createdAt: serverTimestamp(),
@@ -554,19 +587,22 @@ function RegistrationLayoutInner() {
     [formData]
   );
 
-  const saveTimelineEvent = useCallback(async ({ applicationId, eventId, data }) => {
-    if (!applicationId || !eventId) return;
+  const saveTimelineEvent = useCallback(
+    async ({ applicationId, eventId, data }) => {
+      if (!applicationId || !eventId) return;
 
-    await setDoc(
-      doc(db, ...ssuDocPath.timelineEvent(applicationId, eventId)),
-      {
-        applicationId,
-        ...data,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-  }, []);
+      await setDoc(
+        doc(db, ...ssuDocPath.timelineEvent(applicationId, eventId)),
+        {
+          applicationId,
+          ...data,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    },
+    []
+  );
 
   const saveSectionToFirestore = useCallback(
     async ({ applicationId, sectionKey, payload, nextStep, preserveStatus }) => {
@@ -626,6 +662,11 @@ function RegistrationLayoutInner() {
             documentsVerified: false,
             paymentVerified: false,
           };
+
+          if (payload?.duplicateIdentifierWarning) {
+            basePayload.duplicateIdentifierWarning =
+              payload.duplicateIdentifierWarning;
+          }
         }
 
         if (sectionKey === "paymentDetails") {
@@ -640,9 +681,11 @@ function RegistrationLayoutInner() {
           };
         }
 
-        await setDoc(doc(db, ...ssuDocPath.application(applicationId)), basePayload, {
-          merge: true,
-        });
+        await setDoc(
+          doc(db, ...ssuDocPath.application(applicationId)),
+          basePayload,
+          { merge: true }
+        );
 
         if (sectionKey === "paymentDetails") {
           await savePaymentAudit({ applicationId, paymentDetails: payload });
@@ -685,38 +728,73 @@ function RegistrationLayoutInner() {
 
   const checkIdentifierExists = useCallback(
     async ({ email, phoneNumber, aadharNumber, currentApplicationId = "" }) => {
-      const existing = [];
-
       const currentId = normalizeApplicationId(currentApplicationId);
       const normalizedEmail = normalizeEmail(email);
       const normalizedPhone = normalizePhone(phoneNumber);
       const normalizedAadhaar = normalizeAadhaar(aadharNumber);
 
-      if (normalizedEmail) {
-        const snap = await getDoc(doc(db, ...ssuDocPath.blockedEmail(normalizedEmail)));
+      const readIds = async (pathParts) => {
+        const snap = await getDoc(doc(db, ...pathParts));
 
-        if (snap.exists() && snap.data()?.applicationId !== currentId) {
-          existing.push("email");
+        if (!snap.exists()) return [];
+
+        const data = snap.data() || {};
+
+        return uniqueArray([
+          ...(Array.isArray(data.applicationIds) ? data.applicationIds : []),
+          data.applicationId,
+          data.latestApplicationId,
+        ])
+          .map((id) => normalizeApplicationId(id))
+          .filter((id) => id && id !== currentId);
+      };
+
+      const matches = [];
+
+      if (normalizedEmail) {
+        const ids = await readIds(ssuDocPath.blockedEmail(normalizedEmail));
+        if (ids.length) {
+          matches.push({
+            field: "email",
+            label: "Email ID",
+            existingApplicationIds: ids,
+            count: ids.length,
+          });
         }
       }
 
       if (normalizedPhone) {
-        const snap = await getDoc(doc(db, ...ssuDocPath.blockedPhone(normalizedPhone)));
-
-        if (snap.exists() && snap.data()?.applicationId !== currentId) {
-          existing.push("mobile");
+        const ids = await readIds(ssuDocPath.blockedPhone(normalizedPhone));
+        if (ids.length) {
+          matches.push({
+            field: "mobile",
+            label: "Mobile Number",
+            existingApplicationIds: ids,
+            count: ids.length,
+          });
         }
       }
 
       if (normalizedAadhaar) {
-        const snap = await getDoc(doc(db, ...ssuDocPath.blockedAadhaar(normalizedAadhaar)));
-
-        if (snap.exists() && snap.data()?.applicationId !== currentId) {
-          existing.push("aadhaar");
+        const ids = await readIds(ssuDocPath.blockedAadhaar(normalizedAadhaar));
+        if (ids.length) {
+          matches.push({
+            field: "aadhaar",
+            label: "Aadhaar Number",
+            existingApplicationIds: ids,
+            count: ids.length,
+          });
         }
       }
 
-      return existing;
+      return {
+        hasDuplicate: matches.length > 0,
+        matchedFields: matches.map((item) => item.field),
+        existingApplicationIds: uniqueArray(
+          matches.flatMap((item) => item.existingApplicationIds)
+        ),
+        matches,
+      };
     },
     []
   );
@@ -731,57 +809,62 @@ function RegistrationLayoutInner() {
         userSignup.aadharNumber || userSignup.aadhaarNumber
       );
 
-      const writes = [];
+      const upsertIdentifierIndex = async ({ pathParts, type, value }) => {
+        if (!value) return;
 
-      if (email) {
-        writes.push(
-          setDoc(
-            doc(db, ...ssuDocPath.blockedEmail(email)),
-            {
-              applicationId,
-              type: "email",
-              value: email,
-              blockedAt: serverTimestamp(),
-              reason: "application_created",
-            },
-            { merge: true }
-          )
+        const ref = doc(db, ...pathParts);
+        const snap = await getDoc(ref);
+        const existing = snap.exists() ? snap.data() || {} : {};
+
+        const applicationIds = uniqueArray([
+          ...(Array.isArray(existing.applicationIds)
+            ? existing.applicationIds
+            : []),
+          existing.applicationId,
+          existing.latestApplicationId,
+          applicationId,
+        ]).map((id) => normalizeApplicationId(id));
+
+        await setDoc(
+          ref,
+          {
+            identifierType: type,
+            type,
+            identifierValue: value,
+            value,
+
+            applicationIds,
+            count: applicationIds.length,
+            latestApplicationId: applicationId,
+            latestFullName: userSignup.fullName || "",
+            latestEmail: email,
+            latestPhoneNumber: phone,
+
+            reason: "application_created",
+            updatedAt: serverTimestamp(),
+            blockedAt: existing.blockedAt || serverTimestamp(),
+          },
+          { merge: true }
         );
-      }
+      };
 
-      if (phone) {
-        writes.push(
-          setDoc(
-            doc(db, ...ssuDocPath.blockedPhone(phone)),
-            {
-              applicationId,
-              type: "phone",
-              value: phone,
-              blockedAt: serverTimestamp(),
-              reason: "application_created",
-            },
-            { merge: true }
-          )
-        );
-      }
-
-      if (aadhaar) {
-        writes.push(
-          setDoc(
-            doc(db, ...ssuDocPath.blockedAadhaar(aadhaar)),
-            {
-              applicationId,
-              type: "aadhaar",
-              value: aadhaar,
-              blockedAt: serverTimestamp(),
-              reason: "application_created",
-            },
-            { merge: true }
-          )
-        );
-      }
-
-      await Promise.all(writes);
+      await Promise.all([
+        upsertIdentifierIndex({
+          pathParts: ssuDocPath.blockedEmail(email),
+          type: "email",
+          value: email,
+        }),
+        upsertIdentifierIndex({
+          pathParts: ssuDocPath.blockedPhone(phone),
+          type: "phone",
+          value: phone,
+        }),
+        upsertIdentifierIndex({
+          pathParts: ssuDocPath.blockedAadhaar(aadhaar),
+          type: "aadhaar",
+          value: aadhaar,
+        }),
+      ]);
     },
     []
   );
@@ -884,8 +967,9 @@ function RegistrationLayoutInner() {
           ...stepData,
           status: "submitted_for_verification",
           verificationStatus: "pending",
-          currency: "INR",
-          paymentMode: "UPI_QR",
+          amount: Number(stepData?.amount || 1000),
+          currency: stepData?.currency || "INR",
+          paymentMode: stepData?.paymentMode || "SBI_COLLECT",
           verified: false,
           submittedAt: stepData?.submittedAt || new Date().toISOString(),
           adminVerification: stepData?.adminVerification || {
@@ -893,6 +977,7 @@ function RegistrationLayoutInner() {
             verifiedBy: "",
             verifiedAt: null,
             remarks: "",
+            utrVerified: false,
           },
         };
 
@@ -951,21 +1036,38 @@ function RegistrationLayoutInner() {
             "Please wait while we validate your registration information."
           );
 
-          const exists = await checkIdentifierExists({
+          const duplicateInfo = await checkIdentifierExists({
             email: rawStepData.email,
             phoneNumber: rawStepData.phoneNumber,
             aadharNumber: rawStepData.aadharNumber,
           });
 
-          if (exists.length > 0) {
+          const duplicateAccepted =
+            rawStepData?.duplicateIdentifierWarning?.accepted === true;
+
+          if (duplicateInfo.hasDuplicate && !duplicateAccepted) {
             closeWorkingDialog();
 
             return {
               ok: false,
-              error: `The following already exist or are blocked: ${exists.join(", ")}.`,
-              existingFields: exists,
+              error:
+                "An existing application was found with the same mobile, Aadhaar, or email. Please confirm the duplicate warning before continuing.",
+              duplicateInfo,
             };
           }
+
+          const duplicateIdentifierWarning = duplicateInfo.hasDuplicate
+            ? {
+                shown: true,
+                accepted: true,
+                acceptedAt:
+                  rawStepData?.duplicateIdentifierWarning?.acceptedAt ||
+                  new Date().toISOString(),
+                matchedFields: duplicateInfo.matchedFields,
+                existingApplicationIds: duplicateInfo.existingApplicationIds,
+                matches: duplicateInfo.matches,
+              }
+            : null;
 
           const applicationId = await createOrGetApplicationId();
           const passwordHash = await sha256(rawStepData.password);
@@ -983,9 +1085,12 @@ function RegistrationLayoutInner() {
               aadharNumber: normalizeAadhaar(rawStepData.aadharNumber),
               phoneVerified: true,
               registrationType: rawStepData.type || "registration",
-              registeredAt: rawStepData.registeredAt || new Date().toISOString(),
+              registeredAt:
+                rawStepData.registeredAt || new Date().toISOString(),
               passwordHash,
+              duplicateIdentifierWarning,
             },
+            duplicateIdentifierWarning,
           };
 
           persistAuth({
@@ -1028,15 +1133,16 @@ function RegistrationLayoutInner() {
             nextFormData.paymentDetails = {
               status: "submitted_for_verification",
               verificationStatus: "pending",
-              amount: 500,
-              currency: "INR",
-              paymentMode: "UPI_QR",
+              amount: Number(stepData?.amount || 1000),
+              currency: stepData?.currency || "INR",
+              paymentMode: stepData?.paymentMode || "SBI_COLLECT",
               verified: false,
               adminVerification: {
                 status: "pending",
                 verifiedBy: "",
                 verifiedAt: null,
                 remarks: "",
+                utrVerified: false,
               },
               ...stepData,
             };
@@ -1252,43 +1358,62 @@ function RegistrationLayoutInner() {
     resetForgotPasswordFlow();
   };
 
-  const findApplicationForLogin = async (identifier) => {
-    const trimmed = identifier.trim();
+  const findApplicationForLogin = async (identifier, passwordHash = "") => {
+    const trimmed = String(identifier || "").trim();
     const applicationsRef = collection(db, ...ssuCollectionPath.applications);
 
     if (/^SSU\d{10}$/i.test(trimmed)) {
       const applicationId = normalizeApplicationId(trimmed);
-      const snap = await getDoc(doc(db, ...ssuDocPath.application(applicationId)));
-
-      return snap.exists() ? { id: snap.id, ...snap.data() } : null;
-    }
-
-    if (/^\d{10}$/.test(trimmed)) {
-      const q = query(
-        applicationsRef,
-        where("userSignup.phoneNumber", "==", normalizePhone(trimmed)),
-        limit(1)
+      const snap = await getDoc(
+        doc(db, ...ssuDocPath.application(applicationId))
       );
 
+      if (!snap.exists()) return null;
+
+      const data = { id: snap.id, ...snap.data() };
+
+      if (passwordHash && data?.userSignup?.passwordHash !== passwordHash) {
+        return null;
+      }
+
+      return data;
+    }
+
+    const queries = [];
+
+    if (/^\d{10}$/.test(trimmed)) {
+      queries.push(
+        query(
+          applicationsRef,
+          where("userSignup.phoneNumber", "==", normalizePhone(trimmed)),
+          limit(20)
+        )
+      );
+    } else {
+      queries.push(
+        query(
+          applicationsRef,
+          where("userSignup.email", "==", normalizeEmail(trimmed)),
+          limit(20)
+        )
+      );
+    }
+
+    for (const q of queries) {
       const result = await getDocs(q);
 
       if (!result.empty) {
-        const d = result.docs[0];
-        return { id: d.id, ...d.data() };
+        const rows = result.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        if (passwordHash) {
+          const exact = rows.find(
+            (item) => item?.userSignup?.passwordHash === passwordHash
+          );
+          if (exact) return exact;
+        } else {
+          return rows[0];
+        }
       }
-    }
-
-    const q = query(
-      applicationsRef,
-      where("userSignup.email", "==", normalizeEmail(trimmed)),
-      limit(1)
-    );
-
-    const result = await getDocs(q);
-
-    if (!result.empty) {
-      const d = result.docs[0];
-      return { id: d.id, ...d.data() };
     }
 
     return null;
@@ -1297,71 +1422,57 @@ function RegistrationLayoutInner() {
   const handleInlineLogin = async () => {
     setLoginError("");
 
-    const identifier = loginIdentifier.trim();
-    const password = loginPassword;
+    if (!loginIdentifier.trim()) {
+      setLoginError("Enter registration number, email or mobile number.");
+      return;
+    }
 
-    if (!identifier || !password) {
-      setLoginError("Enter registration number, email or mobile, and password.");
+    if (!loginPassword) {
+      setLoginError("Enter password.");
       return;
     }
 
     try {
       setLoginLoading(true);
-      openWorkingDialog(
-        "Checking your account",
-        "Please wait while we verify your login details."
+
+      const passwordHash = await sha256(loginPassword);
+      const application = await findApplicationForLogin(
+        loginIdentifier,
+        passwordHash
       );
 
-      const application = await findApplicationForLogin(identifier);
-
       if (!application) {
-        setLoginError("No application found for the entered details.");
+        setLoginError("Invalid login details.");
         return;
       }
 
-      const passwordHash = await sha256(password);
-      const savedHash = application?.userSignup?.passwordHash || "";
+      const applicationId = normalizeApplicationId(
+        application.applicationId || application.id
+      );
 
-      if (!savedHash || savedHash !== passwordHash) {
-        setLoginError("Invalid password.");
-        return;
-      }
-
-      const auth = {
-        applicationId: application.applicationId || application.id,
+      persistAuth({
+        applicationId,
         fullName: application?.userSignup?.fullName || "",
         email: application?.userSignup?.email || "",
         phoneNumber: application?.userSignup?.phoneNumber || "",
-      };
-
-      persistAuth(auth);
-
-      const loaded = {
-        ...initialFormData,
-        ...application,
-        applicationId: application.applicationId || application.id,
-      };
-
-      setFormData(loaded);
-      setCurrentStep(getStepFromData(loaded));
-      persistLocalDraft(loaded);
+      });
 
       setShowLoginModal(false);
       setLoginIdentifier("");
       setLoginPassword("");
-      setLoginError("");
+      await loadApplicationById(applicationId);
     } catch (error) {
       console.error("Login failed", error);
-      setLoginError("Login failed. Please try again.");
+      setLoginError("Could not login. Please try again.");
     } finally {
-      closeWorkingDialog();
       setLoginLoading(false);
     }
   };
 
-  const handleForgotPasswordStart = async () => {
-    const phone = normalizePhone(forgotPhone);
+  const handleForgotPasswordSendOtp = async () => {
     setForgotPasswordError("");
+
+    const phone = normalizePhone(forgotPhone);
 
     if (phone.length !== 10) {
       setForgotPasswordError("Enter a valid 10-digit mobile number.");
@@ -1370,39 +1481,66 @@ function RegistrationLayoutInner() {
 
     try {
       setForgotPasswordLoading(true);
-      openWorkingDialog(
-        "Checking mobile number",
-        "Please wait while we look for your application."
+
+      const applicationsRef = collection(db, ...ssuCollectionPath.applications);
+      const q = query(
+        applicationsRef,
+        where("userSignup.phoneNumber", "==", phone),
+        limit(1)
       );
 
-      const application = await findApplicationForLogin(phone);
+      const result = await getDocs(q);
 
-      if (!application) {
-        setForgotPasswordError("No application found for this mobile number.");
+      if (result.empty) {
+        setForgotPasswordError(
+          "No application found with this mobile number."
+        );
         return;
       }
 
-      setResetAccount({
-        applicationId: application.applicationId || application.id,
-        phoneNumber: application?.userSignup?.phoneNumber || phone,
-        userSignup: application?.userSignup || {},
-      });
+      const d = result.docs[0];
+      const account = { id: d.id, ...d.data() };
 
+      const res = await fetch(
+        `${
+          import.meta.env.VITE_API_BASE || "https://startup.bihar.gov.in/newapi"
+        }/otp-auth/send-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ mobile: phone }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setForgotPasswordError(data.message || "Could not send OTP.");
+        return;
+      }
+
+      setResetAccount(account);
       setShowForgotPhoneModal(false);
       setShowResetOtpModal(true);
     } catch (error) {
-      console.error("Forgot password lookup failed", error);
-      setForgotPasswordError("Unable to continue. Please try again.");
+      console.error("Forgot password OTP failed", error);
+      setForgotPasswordError("Could not send OTP. Please try again.");
     } finally {
-      closeWorkingDialog();
       setForgotPasswordLoading(false);
     }
+  };
+
+  const handleResetOtpVerified = () => {
+    setShowResetOtpModal(false);
+    setShowResetPasswordModal(true);
   };
 
   const handleResetPasswordSubmit = async () => {
     setResetPasswordError("");
 
-    if (newPassword.length < 6) {
+    if (!newPassword || newPassword.length < 6) {
       setResetPasswordError("Password must be at least 6 characters.");
       return;
     }
@@ -1412,79 +1550,62 @@ function RegistrationLayoutInner() {
       return;
     }
 
-    if (!resetAccount?.applicationId) {
-      setResetPasswordError("Reset session expired. Please try again.");
+    if (!resetAccount) {
+      setResetPasswordError("Reset account not found.");
       return;
     }
 
     try {
       setResetPasswordLoading(true);
-      openWorkingDialog(
-        "Updating password",
-        "Please wait while we securely update your password."
+
+      const applicationId = normalizeApplicationId(
+        resetAccount.applicationId || resetAccount.id
       );
 
       const passwordHash = await sha256(newPassword);
 
       await setDoc(
-        doc(db, ...ssuDocPath.application(resetAccount.applicationId)),
+        doc(db, ...ssuDocPath.application(applicationId)),
         {
-          applicationId: resetAccount.applicationId,
-          userSignup: {
-            ...(resetAccount.userSignup || {}),
-            phoneNumber: normalizePhone(resetAccount?.userSignup?.phoneNumber || ""),
-            email: normalizeEmail(resetAccount?.userSignup?.email || ""),
-            aadharNumber: normalizeAadhaar(
-              resetAccount?.userSignup?.aadharNumber || ""
-            ),
-            passwordHash,
-            passwordResetAt: new Date().toISOString(),
-          },
+          "userSignup.passwordHash": passwordHash,
           updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
 
-      setShowResetPasswordModal(false);
-      setShowLoginModal(true);
-      setLoginIdentifier(resetAccount.phoneNumber || "");
-      setLoginPassword("");
       resetForgotPasswordFlow();
+      setShowLoginModal(true);
+      setLoginIdentifier(
+        resetAccount?.userSignup?.email ||
+          resetAccount?.userSignup?.phoneNumber ||
+          applicationId
+      );
+      setLoginPassword("");
+      setLoginError("Password updated. Please login with the new password.");
     } catch (error) {
-      console.error("Password reset failed", error);
-      setResetPasswordError("Could not update password. Please try again.");
+      console.error("Reset password failed", error);
+      setResetPasswordError("Could not update password.");
     } finally {
-      closeWorkingDialog();
       setResetPasswordLoading(false);
     }
   };
 
-  const isStepCompleted = (n) => {
-    switch (n) {
-      case 1:
-        return !!formData.userSignup;
-      case 2:
-        return !!formData.personalDetails?.profilePhotoMeta?.downloadURL;
-      case 3:
-        return !!formData.educationalQualifications;
-      case 4:
-        return !!formData.workExperience;
-      case 5:
-        return !!formData.startupExposure;
-      case 6:
-        return !!formData.referencesAndDocs;
-      case 7:
-        return !!formData.paymentDetails;
-      case 8:
-        return !!formData.paymentDetails;
-      case 9:
-        return formData.status === SSU_APPLICATION_STATUS.submitted;
-      case 10:
-        return !!formData.applicationId;
-      default:
-        return false;
-    }
-  };
+  const isStepCompleted = useCallback(
+    (n) => {
+      if (n === 1) return !!formData.userSignup;
+      if (n === 2) return !!formData.personalDetails;
+      if (n === 3) return !!formData.educationalQualifications;
+      if (n === 4) return !!formData.workExperience;
+      if (n === 5) return !!formData.startupExposure;
+      if (n === 6) return !!formData.referencesAndDocs;
+      if (n === 7) return !!formData.paymentDetails;
+      if (n === 8) return isSubmitted;
+      if (n === 9) return isSubmitted;
+      if (n === 10) return isSubmitted;
+      return false;
+    },
+    [formData, isSubmitted]
+  );
 
   const isLocked = (n) => {
     const hasRegisteredOrLoggedIn =
@@ -1526,7 +1647,7 @@ function RegistrationLayoutInner() {
       formData.status === SSU_APPLICATION_STATUS.submitted ? 1 : 0;
 
     return Math.round(((completedSteps + finalSubmitDone) / 8) * 100);
-  }, [formData]);
+  }, [formData, isStepCompleted]);
 
   const renderStep = () => {
     const commonProps = {
@@ -1548,6 +1669,7 @@ function RegistrationLayoutInner() {
               authState?.phoneNumber ||
               ""
             }
+            onRequestLogin={() => setShowLoginModal(true)}
           />
         );
 
@@ -1562,20 +1684,20 @@ function RegistrationLayoutInner() {
 
       case 3:
         return (
-         <SSUEducationalQualificationsStep
-  {...commonProps}
-  initialValues={formData.educationalQualifications}
-  formData={formData}
-/>
+          <SSUEducationalQualificationsStep
+            {...commonProps}
+            initialValues={formData.educationalQualifications}
+            formData={formData}
+          />
         );
 
       case 4:
         return (
           <SSUWorkExperienceStep
-  {...commonProps}
-  initialValues={formData.workExperience}
-  formData={formData}
-/>
+            {...commonProps}
+            initialValues={formData.workExperience}
+            formData={formData}
+          />
         );
 
       case 5:
@@ -1710,223 +1832,248 @@ function RegistrationLayoutInner() {
         </div>
 
         <div className="px-4 py-4 md:px-8 md:py-8">
-          <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl overflow-hidden rounded-[34px] border border-white/80 bg-white/58 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
-            <aside className="hidden w-[300px] shrink-0 border-r border-slate-200/60 bg-white/45 backdrop-blur-xl md:flex md:flex-col">
-              <div className="border-b border-slate-200/60 p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-2xl font-bold tracking-tight text-slate-900">
-                      SSU Recruitment
-                    </div>
-                    <div className="mt-1 text-sm text-slate-500">
-                      {isLoggedIn ? "Logged In Application" : "New Application"}
-                    </div>
-                  </div>
-
-                  {isLoggedIn ? (
-                    <button
-                      onClick={handleLogout}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
-                      title="Logout"
-                    >
-                      <FaSignOutAlt />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setShowLoginModal(true)}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                      title="Login"
-                    >
-                      <FaUserCircle />
-                      <span>Login</span>
-                    </button>
-                  )}
+          <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl overflow-hidden rounded-[34px] border border-white/80 bg-white/58 shadow-[0_30px_90px_rgba(15,23,42,0.13)] backdrop-blur-xl">
+            <aside className="hidden w-[315px] shrink-0 border-r border-white/70 bg-white/62 p-5 md:flex md:flex-col">
+              <div className="mb-6">
+                <div className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                  Startup Bihar
                 </div>
 
-                <div className="mt-5 rounded-[24px] border border-white/80 bg-white/75 p-4 shadow-sm">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Progress</span>
-                    <span className="font-semibold text-slate-700">
-                      {progressPercent}%
-                    </span>
-                  </div>
+                <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+                  SSU Recruitment
+                </h1>
 
-                  <div className="mt-3 h-2 rounded-full bg-slate-100">
-                    <div
-                      className="h-2 rounded-full bg-gradient-to-r from-slate-900 via-indigo-700 to-amber-500 transition-all"
-                      style={{ width: `${progressPercent}%` }}
-                    />
-                  </div>
-
-                  <div className="mt-3 text-xs text-slate-500">
-                    {saveMessage ||
-                      (isSaving
-                        ? "Saving..."
-                        : isSubmitted
-                          ? "Submitted"
-                          : isLoggedIn
-                            ? "Final submission pending"
-                            : "Guest mode")}
-                  </div>
-                </div>
-
-                {!isSubmitted && submissionWindow.message ? (
-                  <div className="mt-4 rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                    {submissionWindow.message}
-                  </div>
-                ) : null}
-
-                {authState?.applicationId ? (
-                  <div className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
-                      Current application
-                    </div>
-                    <div className="mt-2 text-sm font-semibold text-slate-800">
-                      {authState.applicationId}
-                    </div>
-                    {authState.fullName ? (
-                      <div className="mt-1 text-sm text-slate-500">
-                        {authState.fullName}
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-
-                <Notice />
+                <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                  Complete the application step by step.
+                </p>
               </div>
 
-              <nav className="flex-1 space-y-2 p-4">
+              <div className="mb-5 rounded-3xl border border-slate-200 bg-white/70 p-4">
+                <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  <span>Progress</span>
+                  <span>{progressPercent}%</span>
+                </div>
+
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-slate-900 transition-all"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+
+                {appId ? (
+                  <div className="mt-3 rounded-2xl bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                    Application ID:
+                    <div className="mt-1 font-mono font-bold text-slate-900">
+                      {appId}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex-1 space-y-2 overflow-auto pr-1">
                 {stepLabels.map((label, index) => {
-                  const stepNumber = index + 1;
-                  const active = currentStep === stepNumber;
-                  const locked = isLocked(stepNumber);
-                  const completed = isStepCompleted(stepNumber);
+                  const n = index + 1;
+                  const active = currentStep === n;
+                  const completed = isStepCompleted(n);
+                  const locked = isLocked(n);
 
                   return (
                     <button
                       key={label}
-                      onClick={() => !locked && handleTabClick(index)}
+                      type="button"
+                      onClick={() => handleTabClick(index)}
                       disabled={locked}
-                      className={`flex w-full items-center justify-between rounded-[22px] px-4 py-3 text-left transition ${
+                      className={`group flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${
                         active
-                          ? "border border-slate-200 bg-white shadow-sm"
+                          ? "border-slate-900 bg-slate-900 text-white shadow-sm"
                           : locked
-                            ? "cursor-not-allowed opacity-50"
-                            : "hover:bg-white/70"
+                            ? "border-slate-200 bg-slate-50 text-slate-400"
+                            : "border-white/70 bg-white/70 text-slate-700 hover:border-slate-200 hover:bg-white"
                       }`}
                     >
-                      <span className="flex items-center gap-3">
-                        <span style={{ color: locked ? "#CBD5E1" : gray }}>
-                          {locked ? <FaLock /> : icons[index]}
-                        </span>
-                        <span className="text-sm font-medium text-slate-700">
-                          {label}
-                        </span>
+                      <span
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                          active
+                            ? "bg-white/15 text-white"
+                            : completed
+                              ? "bg-emerald-50 text-emerald-600"
+                              : locked
+                                ? "bg-slate-100 text-slate-400"
+                                : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {completed ? <FaCheck /> : locked ? <FaLock /> : icons[index]}
                       </span>
 
-                      {completed && !locked ? (
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                          <FaCheck size={12} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold">
+                          {label}
                         </span>
-                      ) : null}
+                        <span
+                          className={`mt-0.5 block text-xs ${
+                            active ? "text-white/65" : "text-slate-400"
+                          }`}
+                        >
+                          Step {n}
+                        </span>
+                      </span>
                     </button>
                   );
                 })}
-              </nav>
+              </div>
+
+              <div className="mt-5 space-y-3 border-t border-slate-200 pt-5">
+                {isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                  >
+                    <FaSignOutAlt />
+                    Logout
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginModal(true)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <FaUserCircle />
+                    Login Existing Application
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <FaHome />
+                  Back to Home
+                </button>
+              </div>
             </aside>
 
             {mobileNavOpen ? (
-              <div className="fixed inset-0 z-50 md:hidden">
+              <div className="fixed inset-0 z-[55] md:hidden">
                 <div
                   className="absolute inset-0 bg-black/35"
                   onClick={() => setMobileNavOpen(false)}
                 />
 
-                <div className="absolute left-0 top-0 h-full w-[84%] max-w-xs bg-white/95 p-4 shadow-xl backdrop-blur-xl">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-                    <div className="text-lg font-semibold text-slate-800">
-                      SSU Recruitment
+                <div className="absolute bottom-0 left-0 right-0 max-h-[82vh] overflow-auto rounded-t-[30px] bg-white p-4 shadow-2xl">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-lg font-bold text-slate-900">
+                        Steps
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        Select an available section
+                      </div>
                     </div>
 
                     <button
                       onClick={() => setMobileNavOpen(false)}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700"
                     >
                       <FaTimes />
                     </button>
                   </div>
 
-                  <nav className="mt-4 space-y-2">
+                  <div className="space-y-2">
                     {stepLabels.map((label, index) => {
-                      const stepNumber = index + 1;
-                      const active = currentStep === stepNumber;
-                      const locked = isLocked(stepNumber);
+                      const n = index + 1;
+                      const active = currentStep === n;
+                      const completed = isStepCompleted(n);
+                      const locked = isLocked(n);
 
                       return (
                         <button
                           key={label}
-                          onClick={() => !locked && handleTabClick(index)}
+                          type="button"
                           disabled={locked}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-3 text-left ${
-                            active ? "bg-slate-100" : "hover:bg-slate-50"
-                          } ${locked ? "cursor-not-allowed opacity-50" : ""}`}
+                          onClick={() => handleTabClick(index)}
+                          className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-3 text-left ${
+                            active
+                              ? "border-slate-900 bg-slate-900 text-white"
+                              : locked
+                                ? "border-slate-200 bg-slate-50 text-slate-400"
+                                : "border-slate-200 bg-white text-slate-700"
+                          }`}
                         >
-                          <span className="text-sm text-slate-700">{label}</span>
-                          {isStepCompleted(stepNumber) && !locked ? (
-                            <FaCheck className="text-emerald-600" />
-                          ) : null}
+                          <span
+                            className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                              active
+                                ? "bg-white/15"
+                                : completed
+                                  ? "bg-emerald-50 text-emerald-600"
+                                  : "bg-slate-100"
+                            }`}
+                          >
+                            {completed ? <FaCheck /> : locked ? <FaLock /> : icons[index]}
+                          </span>
+                          <span className="text-sm font-semibold">{label}</span>
                         </button>
                       );
                     })}
-                  </nav>
+                  </div>
                 </div>
               </div>
             ) : null}
 
             <main className="flex min-w-0 flex-1 flex-col">
-              <div className="flex items-center justify-between border-b border-slate-200/60 px-4 py-3 md:px-8 md:py-4">
-                <div>
-                  <div className="text-lg font-semibold text-slate-800">
-                    {stepLabels[currentStep - 1]}
+              <div className="hidden border-b border-slate-200/60 bg-white/55 px-8 py-5 backdrop-blur-xl md:block">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                      SSU Recruitment
+                    </div>
+                    <div className="mt-1 text-2xl font-bold text-slate-900">
+                      {stepLabels[currentStep - 1]}
+                    </div>
+                    <div className="mt-1 text-sm text-slate-500">
+                      {isSubmitted
+                        ? "Application submitted. You may print acknowledgement and check status."
+                        : "Fill accurate details and save each step before proceeding."}
+                    </div>
                   </div>
-                  <div className="text-sm text-slate-500">
-                    Application ID:{" "}
-                    {appId || "Will be created after OTP verification"}
-                  </div>
-                </div>
 
-                <div className="hidden items-center gap-3 md:flex">
-                  <div
-                    className="flex cursor-pointer items-center gap-3"
-                    onClick={() => navigate("/")}
-                  >
-                    <img
-                      src="/startup_bihar_logo1.png"
-                      alt="Startup Bihar"
-                      className="h-10 w-auto object-contain"
-                    />
-                  </div>
-                  <ToR />
+                  <div className="flex flex-wrap items-center gap-2">
+                    {saveMessage ? (
+                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600">
+                        {saveMessage}
+                      </span>
+                    ) : null}
 
-                  {!isLoggedIn ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowLoginModal(true)}
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    >
-                      <FaUserCircle />
-                      <span>Login</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-                    >
-                      Logout
-                    </button>
-                  )}
-                  {/*<SSULanguageToggle />*/}
+                    {isSaving ? (
+                      <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+                        Saving...
+                      </span>
+                    ) : null}
+
+                    {isLoggedIn ? (
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+                      >
+                        <FaSignOutAlt />
+                        Logout
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowLoginModal(true)}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <FaUserCircle />
+                        Login
+                      </button>
+                    )}
+
+                    <SSULanguageToggle />
+                  </div>
                 </div>
               </div>
 
@@ -1968,9 +2115,19 @@ function RegistrationLayoutInner() {
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                {currentStep === 1 ? (
+                  <div className="mb-5">
+                    <Notice />
+                  </div>
+                ) : null}
+
                 {renderStep()}
               </div>
             </main>
+          </div>
+
+          <div className="mx-auto mt-5 max-w-7xl">
+            <ToR />
           </div>
         </div>
       </div>
@@ -2044,7 +2201,13 @@ function RegistrationLayoutInner() {
               </div>
 
               {loginError ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div
+                  className={`rounded-2xl border px-4 py-3 text-sm ${
+                    loginError.includes("updated")
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-red-200 bg-red-50 text-red-700"
+                  }`}
+                >
                   {loginError}
                 </div>
               ) : null}
@@ -2108,7 +2271,7 @@ function RegistrationLayoutInner() {
                 </h3>
 
                 <p className="mt-2 text-sm text-slate-500">
-                  Enter the mobile number used in your application.
+                  Enter the mobile number used during registration.
                 </p>
               </div>
 
@@ -2134,14 +2297,9 @@ function RegistrationLayoutInner() {
                 <input
                   value={forgotPhone}
                   onChange={(e) => setForgotPhone(normalizePhone(e.target.value))}
-                  placeholder="9876543210"
+                  placeholder="10-digit mobile number"
                   maxLength={10}
                   className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-400"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !forgotPasswordLoading) {
-                      handleForgotPasswordStart();
-                    }
-                  }}
                 />
               </div>
 
@@ -2160,16 +2318,16 @@ function RegistrationLayoutInner() {
                   }}
                   className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
                 >
-                  Back
+                  Cancel
                 </button>
 
                 <button
                   type="button"
-                  onClick={handleForgotPasswordStart}
+                  onClick={handleForgotPasswordSendOtp}
                   disabled={forgotPasswordLoading}
                   className="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
                 >
-                  {forgotPasswordLoading ? "Checking..." : "Continue"}
+                  {forgotPasswordLoading ? "Sending..." : "Send OTP"}
                 </button>
               </div>
             </div>
@@ -2180,22 +2338,17 @@ function RegistrationLayoutInner() {
       <SSUPhoneVerificationModal
         isOpen={showResetOtpModal}
         onClose={() => {
-          if (!resetPasswordLoading) {
-            setShowResetOtpModal(false);
-            setShowForgotPhoneModal(true);
-          }
-        }}
-        onVerified={() => {
           setShowResetOtpModal(false);
-          setShowResetPasswordModal(true);
+          setShowForgotPhoneModal(true);
         }}
-        phoneNumber={resetAccount?.phoneNumber || ""}
+        onVerified={handleResetOtpVerified}
+        phoneNumber={forgotPhone}
         title="Verify Mobile Number"
-        subtitle="We sent a verification code to"
+        subtitle="We sent a password reset code to"
         verifyButtonText="Verify OTP"
         verifyingText="Verifying OTP"
         resendingText="Sending OTP"
-        successMessage="OTP verified successfully."
+        successMessage="Mobile verified successfully."
       />
 
       {showResetPasswordModal ? (
@@ -2215,7 +2368,7 @@ function RegistrationLayoutInner() {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                   <FaShieldAlt />
-                  Create New Password
+                  New Password
                 </div>
 
                 <h3 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
@@ -2223,7 +2376,8 @@ function RegistrationLayoutInner() {
                 </h3>
 
                 <p className="mt-2 text-sm text-slate-500">
-                  Your mobile number is verified. Create a new password to continue.
+                  Your mobile number is verified. Create a new password to
+                  continue.
                 </p>
               </div>
 
