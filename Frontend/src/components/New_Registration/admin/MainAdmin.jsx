@@ -1228,7 +1228,7 @@ export default function NewApplicationDashboard() {
           </div>
 
           <div className="p-5 md:p-7">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-8">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
               <SummaryCard
                 title="Total"
                 value={stats.total}
@@ -1250,20 +1250,7 @@ export default function NewApplicationDashboard() {
                 icon={Clock3}
                 accent="blue"
               />
-              <SummaryCard
-                title="Under Review"
-                value={stats.review}
-                subtitle="Main status"
-                icon={Search}
-                accent="amber"
-              />
-              <SummaryCard
-                title="Approved"
-                value={stats.approved}
-                subtitle="Main approval"
-                icon={CircleCheckBig}
-                accent="emerald"
-              />
+          
               <SummaryCard
                 title="Batch Assigned"
                 value={stats.assigned}
