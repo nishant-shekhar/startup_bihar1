@@ -1,54 +1,113 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Link as ScrollLink, animateScroll as scroll } from "react-scroll";
+import {
+  Link as ScrollLink,
+  animateScroll as scroll,
+} from "react-scroll";
 import { FiChevronDown, FiMenu, FiX } from "react-icons/fi";
-
-import { Link as RouterLink } from "react-router-dom";
 
 const NavBarNew = () => {
   const [sticky, setSticky] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+
   const dropdownRef = useRef(null);
+  const lastScrollYRef = useRef(0);
+  const dropdownCloseTimerRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      setSticky(window.scrollY > 50);
+      const currentScrollY = window.scrollY;
 
-      // Determine scroll direction
-      if (window.scrollY > lastScrollY) {
-        setVisible(false); // Scrolling down
+      setSticky(currentScrollY > 50);
+
+      if (currentScrollY > lastScrollYRef.current && currentScrollY > 80) {
+        setVisible(false);
       } else {
-        setVisible(true); // Scrolling up
+        setVisible(true);
       }
-      setLastScrollY(window.scrollY);
+
+      lastScrollYRef.current = currentScrollY;
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Clean up the event listener on component unmount
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY]);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
         setIsDropDownOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (dropdownCloseTimerRef.current) {
+        clearTimeout(dropdownCloseTimerRef.current);
+      }
+    };
   }, []);
 
   const toggleMenu = () => {
-    setMobileMenu((prev) => !prev);
+    setMobileMenu((previousValue) => !previousValue);
   };
 
-  /* ── Shared link style for desktop nav ── */
+  const closeMobileMenu = () => {
+    setMobileMenu(false);
+  };
+
+  const openDropdown = () => {
+    if (dropdownCloseTimerRef.current) {
+      clearTimeout(dropdownCloseTimerRef.current);
+      dropdownCloseTimerRef.current = null;
+    }
+
+    setIsDropDownOpen(true);
+  };
+
+  const closeDropdownWithDelay = () => {
+    if (dropdownCloseTimerRef.current) {
+      clearTimeout(dropdownCloseTimerRef.current);
+    }
+
+    dropdownCloseTimerRef.current = setTimeout(() => {
+      setIsDropDownOpen(false);
+    }, 180);
+  };
+
+  const closeDropdownImmediately = () => {
+    if (dropdownCloseTimerRef.current) {
+      clearTimeout(dropdownCloseTimerRef.current);
+      dropdownCloseTimerRef.current = null;
+    }
+
+    setIsDropDownOpen(false);
+  };
+
+  const toggleDropdown = () => {
+    if (dropdownCloseTimerRef.current) {
+      clearTimeout(dropdownCloseTimerRef.current);
+      dropdownCloseTimerRef.current = null;
+    }
+
+    setIsDropDownOpen((previousValue) => !previousValue);
+  };
+
   const navLinkClass =
     "nav-link-base text-sm font-medium leading-6 cursor-pointer transition-colors duration-200";
 
@@ -59,19 +118,22 @@ const NavBarNew = () => {
           visible ? "translate-y-0" : "-translate-y-full"
         }`}
         style={{
-          background: sticky ? "rgba(255, 255, 255, 0.92)" : "transparent",
-          backdropFilter: sticky ? "blur(12px)" : "none",
-          WebkitBackdropFilter: sticky ? "blur(12px)" : "none",
-          boxShadow: sticky ? "0 2px 16px rgba(0,0,0,0.06)" : "none",
+          background: sticky ? "rgba(237, 242, 250, 0.94)" : "#EDF2FA",
+          backdropFilter: sticky ? "blur(14px)" : "none",
+          WebkitBackdropFilter: sticky ? "blur(14px)" : "none",
+          boxShadow: sticky
+            ? "0 4px 20px rgba(8, 22, 60, 0.08)"
+            : "none",
         }}
       >
-        <nav className="nav-bar-base" aria-label="Global">
-          {/* ── Logo ── */}
+        <nav className="nav-bar-base" aria-label="Global navigation">
+          {/* Logo */}
           <div className="flex items-center">
             <Link
               onClick={() => scroll.scrollToTop()}
               to="/"
               className="flex items-center gap-3 cursor-pointer"
+              aria-label="Startup Bihar home"
             >
               <img
                 className="h-10 w-auto"
@@ -81,11 +143,11 @@ const NavBarNew = () => {
             </Link>
           </div>
 
-          {/* ── Desktop Menu ── */}
+          {/* Desktop Menu */}
           <div className="hidden lg:flex lg:items-center lg:gap-x-8">
             <ScrollLink
               to="startups"
-              smooth={true}
+              smooth
               offset={-50}
               duration={500}
               className={navLinkClass}
@@ -103,7 +165,7 @@ const NavBarNew = () => {
 
             <ScrollLink
               to="contact"
-              smooth={true}
+              smooth
               offset={-50}
               duration={500}
               className={navLinkClass}
@@ -121,228 +183,333 @@ const NavBarNew = () => {
 
             <ScrollLink
               to="notification"
-              smooth={true}
+              smooth
               offset={-50}
               duration={500}
               className={navLinkClass}
             >
               <Link to="/">Notifications</Link>
             </ScrollLink>
-<RouterLink
-  to="/ssurecruitment"
-  onClick={toggleMenu}
-  className="nav-mobile-link"
->
-  SSU Recruitment
-</RouterLink>
-            {/* Startup Ecosystem dropdown */}
-            <div
-              className="relative"
-              ref={dropdownRef}
-              onMouseEnter={() => setIsDropDownOpen(true)}
-              onMouseLeave={() => setIsDropDownOpen(false)}
+
+            <Link
+              to="/ssu-recruitment"
+              className="text-sm font-semibold leading-6 cursor-pointer transition-all duration-200 px-3.5 py-1.5 rounded-full text-black hover:text-white"
             >
-              <RouterLink
-                to="/ecosystem"
-                className={`${navLinkClass} flex items-center gap-1 py-2`}
+              SSU Recruitment
+            </Link>
+
+            {/* Desktop Ecosystem dropdown */}
+            <div
+              ref={dropdownRef}
+              className="nav-dropdown-wrapper"
+              onMouseEnter={openDropdown}
+              onMouseLeave={closeDropdownWithDelay}
+              onFocus={openDropdown}
+              onBlur={(event) => {
+                if (
+                  dropdownRef.current &&
+                  !dropdownRef.current.contains(event.relatedTarget)
+                ) {
+                  closeDropdownWithDelay();
+                }
+              }}
+            >
+              <button
+                type="button"
+                onClick={toggleDropdown}
+                className={`${navLinkClass} nav-ecosystem-button`}
+                aria-expanded={isDropDownOpen}
+                aria-haspopup="menu"
               >
-                Ecosystem
+                <span>Ecosystem</span>
                 <FiChevronDown
+                  aria-hidden="true"
                   className={`transition-transform duration-300 text-xs ${
                     isDropDownOpen ? "rotate-180" : "rotate-0"
                   }`}
                 />
-              </RouterLink>
+              </button>
 
               {isDropDownOpen && (
-                <div className="nav-dropdown-base">
-                  <a
-                    href="https://iciitp.com/zerolab/"
-                    target="_blank"
-                    className="nav-dropdown-item"
+                <div
+                  className="nav-dropdown-shell"
+                  onMouseEnter={openDropdown}
+                  onMouseLeave={closeDropdownWithDelay}
+                >
+                  <div
+                    className="nav-dropdown-base"
+                    role="menu"
+                    aria-label="Ecosystem menu"
                   >
-                    Zero Lab
-                  </a>
-                  <RouterLink
-                    to="/ecosystem#bfsc-image"
-                    className="nav-dropdown-item"
-                  >
-                    BSFT
-                  </RouterLink>
-                  <RouterLink
-                    to="/ecosystem#psc-image"
-                    className="nav-dropdown-item"
-                  >
-                    PSC
-                  </RouterLink>
-                  <RouterLink
-                    to="/ecosystem#smic-image"
-                    className="nav-dropdown-item"
-                  >
-                    SMIC
-                  </RouterLink>
-                  <RouterLink
-                    to="/ecosystem#ssu-image"
-                    className="nav-dropdown-item"
-                  >
-                    SSU
-                  </RouterLink>
-                  <RouterLink to="/StartupCell" className="nav-dropdown-item">
-                    Startup Cell
-                  </RouterLink>
-                  <RouterLink
-                    to="/IncubationCell"
-                    className="nav-dropdown-item"
-                  >
-                    Incubation Cell
-                  </RouterLink>
-                  <RouterLink to="/Mentors" className="nav-dropdown-item">
-                    Mentors
-                  </RouterLink>
+                    <Link
+                      to="/ecosystem"
+                      className="nav-dropdown-item nav-dropdown-highlight"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      Ecosystem Overview
+                    </Link>
 
-                  <hr className="border-t border-gray-100 my-1" />
+                    <a
+                      href="https://iciitp.com/zerolab/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Zero Lab
+                    </a>
 
-                  <a
-                    href="https://bhub.org.in/"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    B-Hub
-                  </a>
-                  <a
-                    href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Acceleration Program
-                  </a>
-                  <a
-                    href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Post-seed Fund Support
-                  </a>
-                  <a
-                    href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Exit Policy
-                  </a>
-                  <a
-                    href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Intellectual Property Rights
-                  </a>
-                  <a
-                    href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Matching Loan
-                  </a>
-                  <a
-                    href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Second Tranche
-                  </a>
-                  <a
-                    href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362"
-                    target="_blank"
-                    className="nav-dropdown-item"
-                  >
-                    Documents for Seed Fund
-                  </a>
+                    <Link
+                      to="/ecosystem#bfsc-image"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      BSFT
+                    </Link>
+
+                    <Link
+                      to="/ecosystem#psc-image"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      PSC
+                    </Link>
+
+                    <Link
+                      to="/ecosystem#smic-image"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      SMIC
+                    </Link>
+
+                    <Link
+                      to="/ecosystem#ssu-image"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      SSU
+                    </Link>
+
+                    <Link
+                      to="/StartupCell"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      Startup Cell
+                    </Link>
+
+                    <Link
+                      to="/IncubationCell"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      Incubation Cell
+                    </Link>
+
+                    <Link
+                      to="/Mentors"
+                      className="nav-dropdown-item"
+                      onClick={closeDropdownImmediately}
+                      role="menuitem"
+                    >
+                      Mentors
+                    </Link>
+
+                    <hr className="nav-dropdown-divider" />
+
+                    <a
+                      href="https://bhub.org.in/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      B-Hub
+                    </a>
+
+                    <a
+                      href="/docs/AccelerationProgram.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Acceleration Program
+                    </a>
+
+                    <a
+                      href="/docs/PostSeedFundSupport.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Post-seed Fund Support
+                    </a>
+
+                    <a
+                      href="/docs/ExitPolicy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Exit Policy
+                    </a>
+
+                    <a
+                      href="/docs/IntellectualPropertyRights.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Intellectual Property Rights
+                    </a>
+
+                    <a
+                      href="/docs/MatchingLoan.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Matching Loan
+                    </a>
+
+                    <a
+                      href="/docs/SecondTranche.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Second Tranche
+                    </a>
+
+                    <a
+                      href="/docs/SeedFundDocumentList.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nav-dropdown-item"
+                      role="menuitem"
+                    >
+                      Documents for Seed Fund
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* ── Right side: Login button ── */}
+          {/* Desktop Login */}
           <div className="hidden lg:flex lg:items-center lg:gap-x-4">
             <Link to="/login" className="nav-login-link">
               Login
             </Link>
           </div>
 
-          {/* ── Mobile hamburger ── */}
+          {/* Mobile Menu Button */}
           <button
+            type="button"
             onClick={toggleMenu}
             className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-200"
-            style={{
-              color: sticky ? "#1e293b" : "#1e293b",
-            }}
+            style={{ color: "#1e293b" }}
+            aria-label={mobileMenu ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenu}
           >
             {mobileMenu ? <FiX size={22} /> : <FiMenu size={22} />}
           </button>
         </nav>
 
-        {/* ── Mobile Menu ── */}
+        {/* Mobile Menu */}
         {mobileMenu && (
           <div className="nav-mobile-menu">
-            <RouterLink to="/" onClick={toggleMenu} className="nav-mobile-link">
+            <Link to="/" onClick={closeMobileMenu} className="nav-mobile-link">
               Home
-            </RouterLink>
+            </Link>
 
-            <RouterLink
+            <Link
               to="/PublicDashboard"
-              onClick={toggleMenu}
+              onClick={closeMobileMenu}
               className="nav-mobile-link"
             >
               Dashboard
-            </RouterLink>
+            </Link>
 
-            <RouterLink
+            <Link
               to="/about-us"
-              onClick={toggleMenu}
+              onClick={closeMobileMenu}
               className="nav-mobile-link"
             >
               About Us
-            </RouterLink>
+            </Link>
 
-            <RouterLink
+            <Link
               to="/contact-us"
-              onClick={toggleMenu}
+              onClick={closeMobileMenu}
               className="nav-mobile-link"
             >
               Startup Team
-            </RouterLink>
+            </Link>
 
-            <RouterLink
+            <Link
               to="/Events"
-              onClick={toggleMenu}
+              onClick={closeMobileMenu}
               className="nav-mobile-link"
             >
               Events
-            </RouterLink>
+            </Link>
 
             <ScrollLink
               to="notification"
-              smooth={true}
+              smooth
               offset={-50}
               duration={500}
               className="nav-mobile-link"
-              onClick={toggleMenu}
+              onClick={closeMobileMenu}
             >
               <Link to="/">Notifications</Link>
             </ScrollLink>
-<Link to="/ssurecruitment" className={navLinkClass}>
-  SSU Recruitment
-</Link>
-            {/* Startup Ecosystem dropdown for mobile */}
-            <details className="group">
+
+            <Link
+              to="/ssu-recruitment"
+              onClick={closeMobileMenu}
+              className="nav-mobile-link flex items-center justify-between text-[#4A6CF7] font-semibold"
+              style={{ color: "#4A6CF7" }}
+            >
+              <span>SSU Recruitment</span>
+              <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-[#4A6CF7]/10 border border-[#4A6CF7]/20">
+                New
+              </span>
+            </Link>
+
+            {/* Mobile Ecosystem dropdown */}
+            <details className="group nav-mobile-details">
               <summary className="nav-mobile-link flex justify-between items-center cursor-pointer list-none">
-                Startup Ecosystem
-                <span className="ml-1 transition-transform group-open:rotate-180">
+                <span>Startup Ecosystem</span>
+                <span className="ml-1 transition-transform duration-200 group-open:rotate-180">
                   <FiChevronDown />
                 </span>
               </summary>
-              <div className="pl-4 flex flex-col space-y-1 mt-1">
+
+              <div className="nav-mobile-submenu">
+                <Link
+                  to="/ecosystem"
+                  onClick={closeMobileMenu}
+                  className="nav-mobile-sub-link font-semibold"
+                >
+                  Ecosystem Overview
+                </Link>
+
                 <a
                   href="https://iciitp.com/zerolab/"
                   target="_blank"
@@ -351,56 +518,65 @@ const NavBarNew = () => {
                 >
                   Zero Lab
                 </a>
-                <RouterLink
+
+                <Link
                   to="/ecosystem#bfsc-image"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   BSFT
-                </RouterLink>
-                <RouterLink
+                </Link>
+
+                <Link
                   to="/ecosystem#psc-image"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   PSC
-                </RouterLink>
-                <RouterLink
+                </Link>
+
+                <Link
                   to="/ecosystem#smic-image"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   SMIC
-                </RouterLink>
-                <RouterLink
+                </Link>
+
+                <Link
                   to="/ecosystem#ssu-image"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   SSU
-                </RouterLink>
-                <RouterLink
+                </Link>
+
+                <Link
                   to="/StartupCell"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   Startup Cell
-                </RouterLink>
-                <RouterLink
+                </Link>
+
+                <Link
                   to="/IncubationCell"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   Incubation Cell
-                </RouterLink>
-                <RouterLink
+                </Link>
+
+                <Link
                   to="/Mentors"
-                  onClick={toggleMenu}
+                  onClick={closeMobileMenu}
                   className="nav-mobile-sub-link"
                 >
                   Mentors
-                </RouterLink>
+                </Link>
+
                 <hr className="my-2 border-gray-200" />
+
                 <a
                   href="https://bhub.org.in/"
                   target="_blank"
@@ -409,56 +585,63 @@ const NavBarNew = () => {
                 >
                   B-Hub
                 </a>
+
                 <a
-                  href="https://startup.bihar.gov.in/static/media/Acceleration%20Program.bf71b2d74535485bfc5f.pdf"
+                  href="/docs/AccelerationProgram.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
                 >
                   Acceleration Program
                 </a>
+
                 <a
-                  href="https://startup.bihar.gov.in/static/media/SOP%20for%20Early%20Stage%20Funding-%20Revised.51d15bea123ee299bd5f.pdf"
+                  href="/docs/PostSeedFundSupport.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
                 >
                   Post-seed Fund Support
                 </a>
+
                 <a
-                  href="https://startup.bihar.gov.in/static/media/Exit%20Policy.929b6eb912040f50f1f7.pdf"
+                  href="/docs/ExitPolicy.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
                 >
                   Exit Policy
                 </a>
+
                 <a
-                  href="https://startup.bihar.gov.in/static/media/Intellectual%20Property%20Rights.fb6778157b1d80402ab0.pdf"
+                  href="/docs/IntellectualPropertyRights.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
                 >
                   Intellectual Property Rights
                 </a>
+
                 <a
-                  href="https://startup.bihar.gov.in/static/media/Matching%20Loan.14234dba2d6580a941c6.pdf"
+                  href="/docs/MatchingLoan.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
                 >
                   Matching Loan
                 </a>
+
                 <a
-                  href="https://startup.bihar.gov.in/static/media/Second%20Tranche.beabb8973b7e3b174e5d.pdf"
+                  href="/docs/SecondTranche.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
                 >
                   Second Tranche
                 </a>
+
                 <a
-                  href="https://firebasestorage.googleapis.com/v0/b/gatishaktibihar.firebasestorage.app/o/startup_bihar%2FPdf%2FSeed%20Fund%20Document%20List.pdf?alt=media&token=adff7f46-1060-4d64-9740-bfe16cdd2362"
+                  href="/docs/SeedFundDocumentList.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="nav-mobile-sub-link"
@@ -468,9 +651,13 @@ const NavBarNew = () => {
               </div>
             </details>
 
-            {/* Mobile login */}
+            {/* Mobile Login */}
             <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-3">
-              <Link to="/login" onClick={toggleMenu} className="nav-login-link">
+              <Link
+                to="/login"
+                onClick={closeMobileMenu}
+                className="nav-login-link"
+              >
                 Login
               </Link>
             </div>
@@ -478,7 +665,7 @@ const NavBarNew = () => {
         )}
       </header>
 
-      {/* ===== Navbar Scoped Styles ===== */}
+      {/* Navbar Scoped Styles */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -493,65 +680,141 @@ const NavBarNew = () => {
           font-family: 'Inter', sans-serif;
         }
 
-        .nav-logo-text {
-          font-size: 1.15rem;
-          font-weight: 800;
-          color: #1e293b;
-          letter-spacing: -0.02em;
-        }
-
-        /* ── Desktop nav links ── */
         .nav-link-base {
           color: #475569;
           text-decoration: none;
           position: relative;
           padding: 4px 0;
         }
-        .nav-link-base:hover {
+
+        .nav-link-base:hover,
+        .nav-link-base:focus-visible {
           color: #4A6CF7 !important;
         }
+
         .nav-link-base a {
           color: inherit;
           text-decoration: none;
         }
 
-        /* ── Dropdown ── */
-        .nav-dropdown-base {
+        /* Desktop Ecosystem dropdown */
+        .nav-dropdown-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .nav-ecosystem-button {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          border: 0;
+          outline: none;
+          background: transparent;
+          font-family: inherit;
+          font-size: 0.875rem;
+          font-weight: 500;
+          line-height: 1.5rem;
+          cursor: pointer;
+        }
+
+        .nav-ecosystem-button:focus-visible {
+          outline: 2px solid rgba(74, 108, 247, 0.45);
+          outline-offset: 5px;
+          border-radius: 4px;
+        }
+
+        /*
+         * Padding creates hoverable spacing between the trigger and menu.
+         * Do not replace this with margin-top, because margin creates a dead gap.
+         */
+        .nav-dropdown-shell {
           position: absolute;
           left: 0;
           top: 100%;
-          margin-top: 8px;
+          width: 270px;
+          padding-top: 10px;
+          z-index: 100;
+        }
+
+        .nav-dropdown-base {
           display: flex;
           flex-direction: column;
-          background: #fff;
-          border: 1px solid #f1f5f9;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-          border-radius: 12px;
-          overflow: hidden;
-          width: 260px;
-          z-index: 50;
+          width: 270px;
+          max-height: calc(100vh - 105px);
+          overflow-x: hidden;
+          overflow-y: auto;
           padding: 6px 0;
-          animation: dropdownFade 0.2s ease;
+          background: #EDF2FA;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 14px 42px rgba(8, 22, 60, 0.14);
+          border-radius: 12px;
+          animation: dropdownFade 0.18s ease;
+          overscroll-behavior: contain;
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 transparent;
+        }
+
+        .nav-dropdown-base::-webkit-scrollbar {
+          width: 7px;
+        }
+
+        .nav-dropdown-base::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .nav-dropdown-base::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 20px;
         }
 
         @keyframes dropdownFade {
-          from { opacity: 0; transform: translateY(-4px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-5px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .nav-dropdown-item {
-          padding: 8px 18px;
+          display: block;
+          flex-shrink: 0;
+          padding: 9px 18px;
           font-size: 0.85rem;
+          line-height: 1.25rem;
           color: #475569;
           text-decoration: none;
-          transition: all 0.15s ease;
-        }
-        .nav-dropdown-item:hover {
-          background: #f0f4ff;
-          color: #4A6CF7;
+          transition:
+            background-color 0.15s ease,
+            color 0.15s ease,
+            padding-left 0.15s ease;
         }
 
-        /* ── Login buttons ── */
+        .nav-dropdown-item:hover,
+        .nav-dropdown-item:focus-visible {
+          background: #f0f4ff;
+          color: #4A6CF7;
+          padding-left: 21px;
+          outline: none;
+        }
+
+        .nav-dropdown-highlight {
+          color: #334155;
+          font-weight: 700;
+        }
+
+        .nav-dropdown-divider {
+          flex-shrink: 0;
+          margin: 5px 12px;
+          border: 0;
+          border-top: 1px solid #dbe3ef;
+        }
+
+        /* Login */
         .nav-login-link {
           font-size: 0.9rem;
           font-weight: 600;
@@ -560,44 +823,31 @@ const NavBarNew = () => {
           padding: 8px 20px;
           background: #ffffff;
           border-radius: 40px;
-		  opacity: 0.8;
+          opacity: 0.8;
           border: 1px solid #e2e8f0;
           transition: all 0.2s ease;
         }
-        .nav-login-link:hover {
+
+        .nav-login-link:hover,
+        .nav-login-link:focus-visible {
           color: #4A6CF7;
           border-color: #4A6CF7;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          outline: none;
         }
 
-        .nav-login-btn {
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #4A6CF7;
-          background: #ffffff;
-		  
-          text-decoration: none;
-          padding: 8px 24px;
-          border-radius: 10px;
-          border: 1px solid #4A6CF7;
-          transition: all 0.2s ease;
-          box-shadow: 0 2px 10px rgba(74, 108, 247, 0.1);
-        }
-        .nav-login-btn:hover {
-          background: #f8faff;
-          box-shadow: 0 4px 14px rgba(74, 108, 247, 0.15);
-          transform: translateY(-1px);
-        }
-
-        /* ── Mobile menu ── */
+        /* Mobile menu */
         .nav-mobile-menu {
           display: flex;
           flex-direction: column;
+          max-height: calc(100vh - 72px);
+          overflow-y: auto;
           padding: 16px 24px 24px;
-          background: #fff;
+          background: #EDF2FA;
           border-top: 1px solid #f1f5f9;
           box-shadow: 0 8px 24px rgba(0,0,0,0.06);
           animation: dropdownFade 0.25s ease;
+          font-family: 'Inter', sans-serif;
         }
 
         .nav-mobile-link {
@@ -609,26 +859,52 @@ const NavBarNew = () => {
           border-bottom: 1px solid #f8fafc;
           transition: color 0.2s ease;
         }
+
         .nav-mobile-link:hover {
           color: #4A6CF7;
         }
+
         .nav-mobile-link a {
           color: inherit;
           text-decoration: none;
         }
 
+        .nav-mobile-details summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .nav-mobile-submenu {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          margin-top: 4px;
+          padding: 2px 0 6px 16px;
+        }
+
         .nav-mobile-sub-link {
           font-size: 0.82rem;
+          line-height: 1.25rem;
           color: #64748b;
           text-decoration: none;
-          padding: 6px 0;
+          padding: 7px 0;
           transition: color 0.2s ease;
         }
+
         .nav-mobile-sub-link:hover {
           color: #4A6CF7;
         }
 
-        /* ── Responsive ── */
+        @media (max-width: 1279px) and (min-width: 1024px) {
+          .nav-bar-base {
+            padding-left: 20px;
+            padding-right: 20px;
+          }
+
+          .nav-bar-base > div:nth-child(2) {
+            column-gap: 1.25rem;
+          }
+        }
+
         @media (max-width: 1024px) {
           .nav-bar-base {
             padding: 14px 20px;
